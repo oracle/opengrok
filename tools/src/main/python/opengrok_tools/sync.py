@@ -152,7 +152,7 @@ def main():
     parser.add_argument('--nolock', action='store_false', default=True,
                         help='do not acquire lock that prevents multiple '
                         'instances from running')
-    parser.add_argument('--api_timeout', type=int,
+    parser.add_argument('--api_timeout', type=int, default=3,
                         help='Set response timeout in seconds'
                         'for RESTful API calls')
     add_http_headers(parser)
