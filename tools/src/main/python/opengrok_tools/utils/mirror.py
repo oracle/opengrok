@@ -495,7 +495,7 @@ def mirror_project(config, project_name, check_changes, uri,
             ret = FAILURE_EXITVAL
 
         if repo.top_level():
-            logger.info("Repository {} is top level, breaking".format(repo))
+            logger.debug("Repository {} is top level, breaking".format(repo))
             break
 
     if not process_hook(HOOK_POST_PROPERTY, posthook, source_root, project_name,
