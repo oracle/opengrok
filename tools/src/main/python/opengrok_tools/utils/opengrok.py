@@ -174,10 +174,13 @@ def list_indexed_projects(logger, uri, headers=None, timeout=None):
     return res.json()
 
 
-def add_project(logger, project, uri, headers=None, timeout=None):
+def add_project(logger, project, uri, headers=None, timeout=None, api_timeout=None):
     try:
-        do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
-                    data=project, headers=headers, timeout=timeout)
+        r = do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
+                        data=project, headers=headers, timeout=timeout, api_timeout=api_timeout)
+        if r is None or r.status_code != 201:
+            logger.error(f"could not add project '{project}' in web application")
+            return False
     except Exception as exception:
         logger.error("could not add project '{}' to web application: {}".
                      format(project, exception))

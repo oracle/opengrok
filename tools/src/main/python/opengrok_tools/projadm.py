@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -164,18 +164,16 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                     install_config(doit, logger, fmerged.name, main_config)
 
 
-def project_add(doit, logger, project, uri, headers=None, timeout=None):
+def project_add(doit, logger, project, uri, headers=None, timeout=None, api_timeout=None):
     """
-    Adds a project to configuration. Works in multiple steps:
-
-      1. add the project to configuration
-      2. refresh on disk configuration
+    Adds a project to configuration.
     """
 
     logger.info("Adding project {}".format(project))
 
     if doit:
-        if add_project(logger, project, uri, headers=headers, timeout=timeout):
+        if add_project(logger, project, uri, headers=headers, timeout=timeout,
+                       api_timeout=api_timeout):
             repos = get_repos(logger, project, uri,
                               headers=headers, timeout=timeout)
             if repos:
@@ -356,7 +354,8 @@ def main():
                     project_add(doit=doit, logger=logger,
                                 project=proj,
                                 uri=uri, headers=headers,
-                                timeout=args.api_timeout)
+                                timeout=args.api_timeout,
+                                api_timeout=args.async_api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
