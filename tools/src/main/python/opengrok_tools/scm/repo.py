@@ -36,6 +36,13 @@ class RepoRepository(Repository):
         if not self.command:
             raise RepositoryException("Cannot get repo command")
 
+    def top_level(self):
+        """
+        It is not desired to descend into sub-repositories when syncing.
+        :return:
+        """
+        return True
+
     def reposync(self):
         return self._run_custom_sync_command([self.command, 'sync', '-cf'])
 
