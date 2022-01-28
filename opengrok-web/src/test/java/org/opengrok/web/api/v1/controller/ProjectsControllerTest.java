@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -155,10 +155,11 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertTrue(proj.isHandleRenamedFiles());
     }
 
-    private void addProject(final String project) {
-        target("projects")
+    private Response addProject(final String project) {
+        Response response = target("projects")
                 .request()
                 .post(Entity.text(project));
+        return waitForTask(response);
     }
 
     /**
@@ -319,8 +320,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         for (String proj : projectsToDelete) {
-            Response response = delete(proj);
-            waitForTask(response);
+            deleteProject(proj);
         }
 
         assertEquals(1, env.getProjects().size());
@@ -349,11 +349,12 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertEquals(0, group.getProjects().size());
     }
 
-    private Response delete(final String project) {
-        return target("projects")
+    private Response deleteProject(final String project) {
+        Response response = target("projects")
                 .path(project)
                 .request()
                 .delete();
+        return waitForTask(response);
     }
 
     @Test

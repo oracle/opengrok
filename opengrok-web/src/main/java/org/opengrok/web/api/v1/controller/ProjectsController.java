@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -85,10 +85,22 @@ public class ProjectsController {
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public Response addProject(String projectName) {
+    public Response addProject(@Context HttpServletRequest request, String projectNameParam) {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
 
+        LOGGER.log(Level.INFO, "adding project {0}", projectName);
+
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(),
+                        () -> {
+                            addProjectWorkHorse(projectName);
+                            return null;
+                        },
+                        Response.Status.CREATED));
+    }
+
+    private void addProjectWorkHorse(String projectName) {
         File srcRoot = env.getSourceRootFile();
         File projDir = new File(srcRoot, projectName);
 
@@ -138,8 +150,6 @@ public class ProjectsController {
                 map.put(project, repos);
             }
         }
-
-        return Response.status(Response.Status.CREATED).build();
     }
 
     private List<RepositoryInfo> getRepositoriesInDir(final File projDir) {
