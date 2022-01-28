@@ -1328,8 +1328,8 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(historyEnabled, Configuration::setHistoryEnabled);
     }
 
-    public boolean getDisplayRepositories() {
-        return syncReadConfiguration(Configuration::getDisplayRepositories);
+    public boolean isDisplayRepositories() {
+        return syncReadConfiguration(Configuration::isDisplayRepositories);
     }
 
     public void setDisplayRepositories(boolean displayRepositories) {

@@ -1177,7 +1177,7 @@ public final class Configuration {
         this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
     }
 
-    public boolean getDisplayRepositories() {
+    public boolean isDisplayRepositories() {
         return this.displayRepositories;
     }
 
