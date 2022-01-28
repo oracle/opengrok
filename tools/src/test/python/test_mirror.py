@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2022, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -456,6 +456,33 @@ def test_mirror_project_timeout(monkeypatch):
         test_mirror_project(global_config_2)
 
 
+def test_get_repos_for_project_first_repo(monkeypatch):
+    """
+    Test that get_repos_for_project() returns the list where the first item is the
+    repository matching the project.
+    """
+    project_name = 'foo'
+    test_repo = "/" + project_name
+
+    def mock_get_repos(*args, **kwargs):
+        return [test_repo + "/x", test_repo, test_repo + "/y"]
+
+    def mock_get_repo_type(*args, **kwargs):
+        return "Git"
+
+    with tempfile.TemporaryDirectory() as source_root:
+        with monkeypatch.context() as m:
+            m.setattr("opengrok_tools.utils.mirror.get_repos",
+                      mock_get_repos)
+            m.setattr("opengrok_tools.utils.mirror.get_repo_type",
+                      mock_get_repo_type)
+
+            repos = get_repos_for_project(project_name, None, source_root)
+            assert len(repos) == 3
+            assert isinstance(repos[0], GitRepository)
+            assert repos[0].path == os.path.join(source_root, project_name)
+
+
 def test_get_repos_for_project(monkeypatch):
     """
     Test argument passing between get_repos_for_project() and get_repository()
@@ -468,10 +495,10 @@ def test_get_repos_for_project(monkeypatch):
     timeout = 314159
     test_repo = "/" + project_name
 
-    def mock_get_repos(*args, headers=None, timeout=None):
+    def mock_get_repos(*args, **kwargs):
         return [test_repo]
 
-    def mock_get_repo_type(*args, headers=None, timeout=None):
+    def mock_get_repo_type(*args, **kwargs):
         return "Git"
 
     with tempfile.TemporaryDirectory() as source_root:
