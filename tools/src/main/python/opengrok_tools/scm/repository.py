@@ -234,7 +234,6 @@ class Repository:
 
     def top_level(self):
         """
-
-        :return:
+        :return: Whether to terminate the synchronization processing at the top level.
         """
         return False
