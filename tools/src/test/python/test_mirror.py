@@ -462,7 +462,7 @@ def test_get_repos_for_project_first_repo(monkeypatch):
     repository matching the project.
     """
     project_name = 'foo'
-    test_repo = "/" + project_name
+    test_repo = os.path.sep + project_name
 
     def mock_get_repos(*args, **kwargs):
         return [test_repo + os.path.sep + "x", test_repo, test_repo + os.path.sep + "y"]
