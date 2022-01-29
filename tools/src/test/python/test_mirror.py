@@ -465,7 +465,7 @@ def test_get_repos_for_project_first_repo(monkeypatch):
     test_repo = "/" + project_name
 
     def mock_get_repos(*args, **kwargs):
-        return [test_repo + "/x", test_repo, test_repo + "/y"]
+        return [test_repo + os.path.sep + "x", test_repo, test_repo + os.path.sep + "y"]
 
     def mock_get_repo_type(*args, **kwargs):
         return "Git"
