@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -92,7 +92,6 @@ public class LdapAttrPluginTest {
         plugin.load(parameters, new FakeLdapFacade());
     }
 
-    @SuppressWarnings("unchecked")
     private void prepareRequest(String username, String mail, String... ous) {
         dummyRequest = new DummyHttpServletRequestLdap();
         dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR,
@@ -124,7 +123,7 @@ public class LdapAttrPluginTest {
      * Test of {@code isAllowed} method.
      */
     @Test
-    public void testIsAllowed() {
+    void testIsAllowed() {
         /*
          * whitelist[mail] => [james@bond.com, random@email.com, just_a_text]
          */
@@ -165,7 +164,7 @@ public class LdapAttrPluginTest {
      * </ul>
      */
     @Test
-    public void testAttrLookup() throws LdapException {
+    void testAttrLookup() throws LdapException {
         String attr_to_get = "mail";
         String instance_num = "42";
         String mail_attr_value = "james@bond.com";
