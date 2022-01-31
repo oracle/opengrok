@@ -192,7 +192,7 @@ public class LdapAttrPluginTest {
         request.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR + instance_num, ldapUser);
 
         // Here it comes all together.
-        User user = new User("foo@bar.cz", "id");
+        User user = new User("jbond", "007");
         plugin.fillSession(request, user);
 
         // See if LdapAttrPlugin set its own session attribute based on the mocked query.
