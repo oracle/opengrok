@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -172,10 +172,10 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             ldapUser.setAttribute(ldapAttr, attributeValues);
         }
 
-        boolean sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
+        boolean isAttrInWhitelist = attributeValues.stream().anyMatch(whitelist::contains);
         LOGGER.log(Level.FINEST, "LDAP user {0} {1} against {2}",
-                new Object[]{ldapUser, sessionAllowed ? "allowed" : "denied", filePath});
-        updateSession(req, sessionAllowed);
+                new Object[]{ldapUser, isAttrInWhitelist ? "allowed" : "denied", filePath});
+        updateSession(req, isAttrInWhitelist);
     }
 
     /**
