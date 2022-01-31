@@ -74,7 +74,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <hamcrest.version>2.2</hamcrest.version>
         <maven-surefire.version>3.0.0-M5</maven-surefire.version>
         <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
-        <micrometer.version>1.7.3</micrometer.version>
+        <micrometer.version>1.8.2</micrometer.version>
         <mockito.version>3.12.4</mockito.version>
     </properties>
 
