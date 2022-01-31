@@ -177,7 +177,6 @@ public class LdapAttrPluginTest {
         AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> result =
                 new AbstractLdapProvider.LdapSearchResult<>(dn, attrs);
         assertNotNull(result);
-        // TODO use Mockito Argument captor ?
         when(mockProvider.lookupLdapContent(anyString(), any(String[].class))).thenReturn(result);
 
         // Load the LdapAttrPlugin using the mock LDAP provider.
