@@ -24,7 +24,7 @@
  */
 package org.opengrok.indexer.history;
 
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Color;
 import org.opengrok.indexer.util.LazilyInstantiate;
@@ -92,7 +92,7 @@ public class Annotation {
         return ret;
     }
 
-    @VisibleForTesting
+    @TestOnly
     Set<String> getAuthors() {
         Set<String> ret = new HashSet<>();
         for (Line ln : this.lines) {
