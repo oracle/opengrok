@@ -169,7 +169,7 @@ public class LdapAttrPluginTest {
         String instance_num = "42";
         String mail_attr_value = "james@bond.com";
 
-        // Create mock LDAP provider, simulating the work of LdapUserPlugin.
+        // Create mock LDAP provider, simulating the work of LDAP server for LdapAttrPlugin#fillSession().
         AbstractLdapProvider mockProvider = mock(LdapFacade.class);
         Map<String, Set<String>> attrs = new HashMap<>();
         attrs.put(attr_to_get, Collections.singleton(mail_attr_value));
