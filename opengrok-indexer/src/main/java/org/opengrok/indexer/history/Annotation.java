@@ -91,6 +91,14 @@ public class Annotation {
         return ret;
     }
 
+    Set<String> getAuthors() {
+        Set<String> ret = new HashSet<>();
+        for (Line ln : this.lines) {
+            ret.add(ln.author);
+        }
+        return ret;
+    }
+
     /**
      * Gets the author who last modified the specified line.
      *

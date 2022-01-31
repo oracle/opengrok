@@ -127,6 +127,7 @@ class SCCSRepositoryTest {
         assertNotNull(annotation);
         Set<String> revSet = Set.of("1.2", "1.1");
         assertEquals(revSet, annotation.getRevisions());
+        assertEquals(Set.of("trond"), annotation.getAuthors());
     }
 
     @Test

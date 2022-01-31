@@ -100,8 +100,7 @@ public class SCCSRepository extends Repository {
         argv.add(RepoCommand);
         argv.add("prs");
         argv.add("-e");
-        argv.add("-d");
-        argv.add(":I: :P:");
+        argv.add("-d:I: :P:");
         argv.add(file.getCanonicalPath());
 
         Executor executor = new Executor(argv, file.getCanonicalFile().getParentFile(),

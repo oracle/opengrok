@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -46,8 +46,7 @@ public class SCCSRepositoryAuthorParser implements Executor.StreamHandler {
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
      */
-    private static final Pattern AUTHOR_PATTERN
-            = Pattern.compile("^([\\d.]+)\\s+(\\S+)");
+    private static final Pattern AUTHOR_PATTERN = Pattern.compile("^([\\d.]+)\\s+(\\S+)");
 
     @Override
     public void processStream(InputStream input) throws IOException {
