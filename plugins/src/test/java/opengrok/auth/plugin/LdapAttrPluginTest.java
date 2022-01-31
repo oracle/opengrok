@@ -78,7 +78,7 @@ public class LdapAttrPluginTest {
 
     @AfterAll
     public static void afterClass() {
-        whitelistFile.delete();
+        whitelistFile.deleteOnExit();
     }
 
     @BeforeEach
