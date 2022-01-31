@@ -94,11 +94,7 @@ public class Annotation {
 
     @TestOnly
     Set<String> getAuthors() {
-        Set<String> ret = new HashSet<>();
-        for (Line ln : this.lines) {
-            ret.add(ln.author);
-        }
-        return ret;
+        return lines.stream().map(ln -> ln.author).collect(Collectors.toSet());
     }
 
     /**
