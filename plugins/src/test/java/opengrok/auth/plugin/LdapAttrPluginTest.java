@@ -170,7 +170,7 @@ public class LdapAttrPluginTest {
         String mail_attr_value = "james@bond.com";
 
         // Create mock LDAP provider, simulating the work of LdapUserPlugin.
-        AbstractLdapProvider mockprovider = mock(LdapFacade.class);
+        AbstractLdapProvider mockProvider = mock(LdapFacade.class);
         Map<String, Set<String>> attrs = new HashMap<>();
         attrs.put(attr_to_get, Collections.singleton(mail_attr_value));
         final String dn = "cn=FOO_BAR,L=EMEA,DC=FOO,DC=COM";
@@ -178,7 +178,7 @@ public class LdapAttrPluginTest {
                 new AbstractLdapProvider.LdapSearchResult<>(dn, attrs);
         assertNotNull(result);
         // TODO use Mockito Argument captor ?
-        when(mockprovider.lookupLdapContent(anyString(), any(String[].class))).
+        when(mockProvider.lookupLdapContent(anyString(), any(String[].class))).
                 thenReturn(result);
 
         // Load the LdapAttrPlugin using the mock LDAP provider.
@@ -187,7 +187,7 @@ public class LdapAttrPluginTest {
         parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
         parameters.put(LdapAttrPlugin.ATTR_PARAM, attr_to_get);
         parameters.put(LdapAttrPlugin.INSTANCE_PARAM, instance_num);
-        plugin.load(parameters, mockprovider);
+        plugin.load(parameters, mockProvider);
 
         LdapUser ldapUser = new LdapUser(dn, null);
         HttpServletRequest request = new DummyHttpServletRequestLdap();
