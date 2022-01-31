@@ -189,7 +189,6 @@ public class LdapAttrPluginTest {
         parameters.put(LdapAttrPlugin.INSTANCE_PARAM, instance_num);
         plugin.load(parameters, mockprovider);
 
-        // TODO prepareRequest() ?
         LdapUser ldapUser = new LdapUser(dn, null);
         HttpServletRequest request = new DummyHttpServletRequestLdap();
         request.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR + instance_num, ldapUser);
