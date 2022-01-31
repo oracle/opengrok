@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.entity;
 
@@ -44,8 +44,8 @@ public class User {
      * @param id user ID
      */
     public User(String username, String id) {
-        this.id = id;
         this.username = username;
+        this.id = id;
     }
 
     /**
@@ -56,8 +56,7 @@ public class User {
      * @param timeouted is the user timed out
      */
     public User(String username, String id, Date cookieTimestamp, boolean timeouted) {
-        this.id = id;
-        this.username = username;
+        this(username, id);
         this.cookieTimestamp = cookieTimestamp;
         this.timeouted = timeouted;
     }
