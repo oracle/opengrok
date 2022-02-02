@@ -39,6 +39,7 @@ def call_finished(location_uri, headers, timeout):
     :param location_uri: URI to check the status of API call
     :param headers: HTTP headers
     :param timeout: connect timeout
+    :return indication and response tuple
     """
     logger = logging.getLogger(__name__)
 
@@ -49,9 +50,9 @@ def call_finished(location_uri, headers, timeout):
 
     response.raise_for_status()
     if response.status_code == 202:
-        return False
+        return False, response
     else:
-        return True
+        return True, response
 
 
 def wait_for_async_api(response, api_timeout=None, headers=None, timeout=None):
@@ -71,12 +72,14 @@ def wait_for_async_api(response, api_timeout=None, headers=None, timeout=None):
     start_time = time.time()
     if api_timeout is None:
         while True:
-            if call_finished(location_uri, headers, timeout):
+            done, response = call_finished(location_uri, headers, timeout)
+            if done:
                 break
             time.sleep(1)
     else:
         for _ in range(api_timeout):
-            if call_finished(location_uri, headers, timeout):
+            done, response = call_finished(location_uri, headers, timeout)
+            if done:
                 break
             time.sleep(1)
 
