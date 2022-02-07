@@ -22,6 +22,7 @@
 #
 
 import urllib.parse
+from requests.exceptions import RequestException
 from .webutil import get_uri
 from .restful import do_api_call
 
@@ -42,7 +43,7 @@ def get_repos(logger, project, uri, headers=None, timeout=None):
                                          urllib.parse.quote_plus(project),
                                          'repositories'),
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not get repositories for project '{}': {}".
                      format(project, exception))
         return None
@@ -64,7 +65,7 @@ def get_config_value(logger, name, uri, headers=None, timeout=None):
         res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
                                          urllib.parse.quote_plus(name)),
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("Cannot get the '{}' config value from the web "
                      "application: {}".format(name, exception))
         return None
@@ -90,7 +91,7 @@ def set_config_value(logger, name, value, uri, headers=None, timeout=None):
         local_headers['Content-type'] = 'application/text'
         do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration', name),
                     data=value, headers=local_headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("Cannot set the '{}' config field to '{}' in the web "
                      "application: {}".format(name, value, exception))
         return False
@@ -110,7 +111,7 @@ def get_repo_type(logger, repository, uri, headers=None, timeout=None):
         res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
                                          'property', 'type'), params=payload,
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not get repository type for '{}' from web"
                      "application: {}".format(repository, exception))
         return None
@@ -125,7 +126,7 @@ def get_configuration(logger, uri, headers=None, timeout=None):
     try:
         res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'),
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error('could not get configuration from web application: {}'.
                      format(exception))
         return None
@@ -140,7 +141,7 @@ def set_configuration(logger, configuration, uri, headers=None, timeout=None, ap
         if r is None or r.status_code != 201:
             logger.error('could not set configuration to web application')
             return False
-    except Exception as exception:
+    except RequestException as exception:
         logger.error('could not set configuration to web application: {}'.
                      format(exception))
         return False
@@ -153,7 +154,7 @@ def list_projects(logger, uri, headers=None, timeout=None):
         res = do_api_call('GET',
                           get_uri(uri, 'api', 'v1', 'projects'),
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not list projects from web application: {}".
                      format(exception))
         return None
@@ -166,7 +167,7 @@ def list_indexed_projects(logger, uri, headers=None, timeout=None):
         res = do_api_call('GET',
                           get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
                           headers=headers, timeout=timeout)
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not list indexed projects from web application: {}".
                      format(exception))
         return None
@@ -181,7 +182,7 @@ def add_project(logger, project, uri, headers=None, timeout=None, api_timeout=No
         if r is None or r.status_code != 201:
             logger.error(f"could not add project '{project}' in web application")
             return False
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not add project '{}' to web application: {}".
                      format(project, exception))
         return False
@@ -197,7 +198,7 @@ def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout
         if r is None or r.status_code != 204:
             logger.error(f"could not delete project '{project}' in web application")
             return False
-    except Exception as exception:
+    except RequestException as exception:
         logger.error("could not delete project '{}' in web application: {}".
                      format(project, exception))
         return False
