@@ -29,7 +29,7 @@ import logging
 import urllib
 from tempfile import gettempdir
 
-from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
 
 from .exitvals import (
     FAILURE_EXITVAL,
@@ -297,7 +297,7 @@ def process_changes(repos, project_name, uri, headers=None):
         logger.error('Unable to parse project \'{}\' indexed flag: {}'
                      .format(project_name, e))
         return FAILURE_EXITVAL
-    except HTTPError as e:
+    except RequestException as e:
         logger.error('Unable to determine project \'{}\' indexed flag: {}'
                      .format(project_name, e))
         return FAILURE_EXITVAL
@@ -366,7 +366,7 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
             try:
                 call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
                               http_headers=headers, timeout=timeout)
-            except HTTPError as e:
+            except RequestException as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
                              format(project_name, e))

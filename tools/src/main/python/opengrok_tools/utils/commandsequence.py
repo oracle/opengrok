@@ -23,7 +23,7 @@
 
 import logging
 
-from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
 
 from .command import Command
 from .utils import is_web_uri
@@ -169,7 +169,7 @@ class CommandSequence(CommandSequenceBase):
                     call_rest_api(command, {PROJECT_SUBST: self.name,
                                             URL_SUBST: self.url},
                                   self.http_headers, self.api_timeout)
-                except HTTPError as e:
+                except RequestException as e:
                     self.logger.error("RESTful command {} failed: {}".
                                       format(command, e))
                     self.failed = True
@@ -227,7 +227,7 @@ class CommandSequence(CommandSequenceBase):
                     call_rest_api(cleanup_cmd, {PROJECT_SUBST: self.name,
                                                 URL_SUBST: self.url},
                                   self.http_headers, self.api_timeout)
-                except HTTPError as e:
+                except RequestException as e:
                     self.logger.error("RESTful command {} failed: {}".
                                       format(cleanup_cmd, e))
             else:
