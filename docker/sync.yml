@@ -6,7 +6,8 @@ commands:
     duration: PT1H
     tags: ['%PROJECT%']
     text: resync + reindex in progress
-- command: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml', -I, -U, '%URL%', '%PROJECT%']
+- command: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml',
+    --strip-outgoing, --check-changes, -U, '%URL%', '%PROJECT%']
 - command: [opengrok-reindex-project, --printoutput,
     --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
     -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
