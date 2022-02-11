@@ -190,10 +190,9 @@ def add_project(logger, project, uri, headers=None, timeout=None, api_timeout=No
     return True
 
 
-def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout=None):
+def _delete_project(logger, project, uri, headers=None, timeout=None, api_timeout=None):
     try:
-        r = do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
-                                          urllib.parse.quote_plus(project)),
+        r = do_api_call('DELETE', uri,
                         headers=headers, timeout=timeout, api_timeout=api_timeout)
         if r is None or r.status_code != 204:
             logger.error(f"could not delete project '{project}' in web application")
@@ -204,3 +203,17 @@ def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout
         return False
 
     return True
+
+
+def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout=None):
+    return _delete_project(logger, project, get_uri(uri, 'api', 'v1', 'projects',
+                                                    urllib.parse.quote_plus(project)),
+                           headers=headers,
+                           timeout=timeout, api_timeout=api_timeout)
+
+
+def delete_project_data(logger, project, uri, headers=None, timeout=None, api_timeout=None):
+    return _delete_project(logger, project, get_uri(uri, 'api', 'v1', 'projects',
+                                                    urllib.parse.quote_plus(project), 'data'),
+                           headers=headers,
+                           timeout=timeout, api_timeout=api_timeout)

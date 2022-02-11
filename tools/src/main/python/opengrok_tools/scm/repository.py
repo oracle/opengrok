@@ -105,12 +105,22 @@ class Repository:
     def incoming_check(self):
         """
         Check if there are any incoming changes.
-        Normally this method definition is overriden, unless the repository
+        Normally this method definition is overridden, unless the repository
         type has no way how to check for incoming changes.
 
-        Return True if so, False otherwise.
+        :return True if so, False otherwise.
         """
         return True
+
+    def strip_outgoing(self):
+        """
+        Strip any outgoing changes.
+        Normally this method definition is overridden, unless the repository
+        type has no way how to check for outgoing changes or cannot strip them.
+
+        :return True if any changes were stripped, False otherwise.
+        """
+        return False
 
     def _run_custom_sync_command(self, command):
         """
@@ -152,7 +162,7 @@ class Repository:
                                env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform command")
+            cmd.log_error("failed to perform command {}".format(command))
             status = cmd.getretcode()
             if status == 0 and cmd.getstate() != Command.FINISHED:
                 status = 1

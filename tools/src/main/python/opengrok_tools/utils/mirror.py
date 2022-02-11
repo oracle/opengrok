@@ -38,7 +38,7 @@ from .exitvals import (
 )
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
 from .utils import is_exe, check_create_dir, get_int, is_web_uri, get_bool
-from .opengrok import get_repos, get_repo_type, get_uri
+from .opengrok import get_repos, get_repo_type, get_uri, delete_project_data
 from .hook import run_hook
 from .command import Command
 from .restful import call_rest_api, do_api_call
@@ -64,6 +64,7 @@ PROJECTS_PROPERTY = 'projects'
 DISABLED_CMD_PROPERTY = 'disabled_command'
 HOOK_PRE_PROPERTY = "pre"
 HOOK_POST_PROPERTY = "post"
+STRIP_OUTGOING_PROPERTY = "strip_outgoing"
 
 
 def get_repos_for_project(project_name, uri, source_root,
@@ -177,6 +178,7 @@ def get_project_properties(project_config, project_name, hookdir):
     use_proxy = False
     ignored_repos = None
     check_changes = None
+    check_outgoing = None
     ignore_errors = None
 
     logger = logging.getLogger(__name__)
@@ -230,6 +232,12 @@ def get_project_properties(project_config, project_name, hookdir):
                                      project_config.get(INCOMING_PROPERTY))
             logger.debug("incoming check = {}".format(check_changes))
 
+        if project_config.get(STRIP_OUTGOING_PROPERTY) is not None:
+            check_outgoing = get_bool(logger, ("outgoing check for project {}".
+                                               format(project_name)),
+                                      project_config.get(STRIP_OUTGOING_PROPERTY))
+            logger.debug("outgoing check = {}".format(check_changes))
+
         if project_config.get(IGNORE_ERR_PROPERTY) is not None:
             ignore_errors = get_bool(logger, ("ignore errors for project {}".
                                               format(project_name)),
@@ -240,7 +248,7 @@ def get_project_properties(project_config, project_name, hookdir):
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos, check_changes, ignore_errors
+        use_proxy, ignored_repos, check_changes, check_outgoing, ignore_errors
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -342,7 +350,7 @@ def run_command(cmd, project_name):
 
 
 def handle_disabled_project(config, project_name, disabled_msg, headers=None,
-                            timeout=None):
+                            timeout=None, api_timeout=None):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
@@ -365,7 +373,7 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
 
             try:
                 call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
-                              http_headers=headers, timeout=timeout)
+                              http_headers=headers, timeout=timeout, api_timeout=api_timeout)
             except RequestException as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
@@ -393,18 +401,58 @@ def get_mirror_retcode(ignore_errors, value):
     return value
 
 
-def mirror_project(config, project_name, check_changes, uri,
-                   source_root, headers=None, timeout=None):
+def process_outgoing(repos, project_name):
+    """
+    Detect and strip any outgoing changes for the repositories.
+    :param repos: list of repository objects
+    :param project_name: name of the project
+    :return: if any of the repositories had to be reset
+    """
+
+    logger = logging.getLogger(__name__)
+
+    ret = False
+    for repo in repos:
+        if repo.strip_outgoing():
+            logger.debug('Repository {} in project {} had outgoing changes stripped'.
+                         format(repo, project_name))
+            ret = True
+
+    return ret
+
+
+def wipe_project_data(project_name, uri, headers=None, timeout=None, api_timeout=None):
+    """
+    Remove data for the project and mark it as not indexed.
+    :param project_name: name of the project
+    :param uri: URI of the webapp
+    :param headers: HTTP headers
+    :param timeout: connect timeout
+    :param api_timeout: asynchronous API timeout
+    """
+
+    logger = logging.getLogger(__name__)
+
+    logger.info("removing data for project {}".format(project_name))
+    delete_project_data(logger, project_name, uri,
+                        headers=headers, timeout=timeout, api_timeout=api_timeout)
+
+
+def mirror_project(config, project_name, check_changes, check_outgoing, uri,
+                   source_root, headers=None, timeout=None, api_timeout=None):
     """
     Mirror the repositories of single project.
     :param config global configuration dictionary
     :param project_name: name of the project
     :param check_changes: check for changes in the project or its repositories
      and terminate if no change is found
+    :param check_outgoing: check for outgoing changes in the repositories of the project,
+     strip the changes and wipe project data if such changes were found
     :param uri web application URI
     :param source_root source root
     :param headers: optional dictionary of HTTP headers
-    :param timeout: optional timeout in seconds for API call response
+    :param timeout: connect timeout
+    :param api_timeout: optional timeout in seconds for API call response
     :return exit code
     """
 
@@ -416,6 +464,7 @@ def mirror_project(config, project_name, check_changes, uri,
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
         ignored_repos, \
         check_changes_proj, \
+        check_outgoing_proj, \
         ignore_errors_proj = get_project_properties(project_config,
                                                     project_name,
                                                     config.
@@ -430,6 +479,11 @@ def mirror_project(config, project_name, check_changes, uri,
         check_changes_config = config.get(INCOMING_PROPERTY)
     else:
         check_changes_config = check_changes_proj
+
+    if check_outgoing_proj is None:
+        check_outgoing_config = config.get(STRIP_OUTGOING_PROPERTY)
+    else:
+        check_outgoing_config = check_outgoing_proj
 
     if ignore_errors_proj is None:
         ignore_errors = config.get(IGNORE_ERR_PROPERTY)
@@ -446,7 +500,8 @@ def mirror_project(config, project_name, check_changes, uri,
                                 project_config.
                                 get(DISABLED_REASON_PROPERTY),
                                 headers=headers,
-                                timeout=timeout)
+                                timeout=timeout,
+                                api_timeout=api_timeout)
         logger.info("Project '{}' disabled, exiting".
                     format(project_name))
         return CONTINUE_EXITVAL
@@ -472,6 +527,20 @@ def mirror_project(config, project_name, check_changes, uri,
 
     if check_changes_config is not None:
         check_changes = check_changes_config
+
+    if check_outgoing_config is not None:
+        check_outgoing = check_outgoing_config
+
+    if check_outgoing:
+        try:
+            r = process_outgoing(repos, project_name)
+        except RepositoryException as exc:
+            logger.error('Failed to handle outgoing changes for '
+                         'a repository in project {}: {}'.format(project_name, exc))
+            return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
+        if r:
+            wipe_project_data(project_name, uri, headers=headers,
+                              timeout=timeout, api_timeout=api_timeout)
 
     # Check if the project or any of its repositories have changed.
     if check_changes:
@@ -522,7 +591,7 @@ def check_project_configuration(multiple_project_config, hookdir=False,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
                               DISABLED_REASON_PROPERTY, INCOMING_PROPERTY,
-                              IGNORE_ERR_PROPERTY]
+                              IGNORE_ERR_PROPERTY, STRIP_OUTGOING_PROPERTY]
 
     if not multiple_project_config:
         return True
@@ -640,7 +709,7 @@ def check_configuration(config):
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY,
                        DISABLED_CMD_PROPERTY, INCOMING_PROPERTY,
-                       IGNORE_ERR_PROPERTY]
+                       IGNORE_ERR_PROPERTY, STRIP_OUTGOING_PROPERTY]
 
     diff = set(config.keys()).difference(global_tunables)
     if diff:
