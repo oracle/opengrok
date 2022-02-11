@@ -414,7 +414,7 @@ def process_outgoing(repos, project_name):
 
     ret = False
     for repo in repos:
-        logger.debug("Checking outgoing changes for repository {}", repo)
+        logger.debug("Checking outgoing changes for repository {}".format(repo))
         if repo.strip_outgoing():
             logger.debug('Repository {} in project {} had outgoing changes stripped'.
                          format(repo, project_name))
