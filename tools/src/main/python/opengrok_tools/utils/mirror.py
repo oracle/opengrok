@@ -410,32 +410,17 @@ def process_outgoing(repos, project_name):
     """
 
     logger = logging.getLogger(__name__)
+    logger.info("Checking outgoing changes for project {}".format(project_name))
 
     ret = False
     for repo in repos:
+        logger.debug("Checking outgoing changes for repository {}", repo)
         if repo.strip_outgoing():
             logger.debug('Repository {} in project {} had outgoing changes stripped'.
                          format(repo, project_name))
             ret = True
 
     return ret
-
-
-def wipe_project_data(project_name, uri, headers=None, timeout=None, api_timeout=None):
-    """
-    Remove data for the project and mark it as not indexed.
-    :param project_name: name of the project
-    :param uri: URI of the webapp
-    :param headers: HTTP headers
-    :param timeout: connect timeout
-    :param api_timeout: asynchronous API timeout
-    """
-
-    logger = logging.getLogger(__name__)
-
-    logger.info("removing data for project {}".format(project_name))
-    delete_project_data(logger, project_name, uri,
-                        headers=headers, timeout=timeout, api_timeout=api_timeout)
 
 
 def mirror_project(config, project_name, check_changes, check_outgoing, uri,
@@ -539,8 +524,11 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
                          'a repository in project {}: {}'.format(project_name, exc))
             return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
         if r:
-            wipe_project_data(project_name, uri, headers=headers,
-                              timeout=timeout, api_timeout=api_timeout)
+            logger.info("removing data for project {}".format(project_name))
+            r = delete_project_data(logger, project_name, uri,
+                                    headers=headers, timeout=timeout, api_timeout=api_timeout)
+            if not r:
+                return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
     # Check if the project or any of its repositories have changed.
     if check_changes:
