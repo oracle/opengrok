@@ -231,7 +231,8 @@ public class ProjectsController {
                         () -> {
                             deleteProjectDataWorkHorse(projectName);
                             return null;
-                        }));
+                        },
+                        Response.Status.NO_CONTENT));
     }
 
     private void deleteProjectDataWorkHorse(String projectName) {
