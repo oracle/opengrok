@@ -108,7 +108,7 @@ def main():
                              ' repositories,'
                              ' terminate the processing'
                              ' if no change is found.')
-    parser.add_argument('--strip_outgoing', type=bool, default=False,
+    parser.add_argument('--strip_outgoing', action='store_true', default=False,
                         help='check outgoing changes for each repository of a project,'
                         'strip any such changes and remove all project data so that'
                         'it can be reindexed from scratch')
