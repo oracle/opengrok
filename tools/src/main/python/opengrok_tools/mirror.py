@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -58,25 +58,26 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 OPENGROK_NO_MIRROR_ENV = "OPENGROK_NO_MIRROR"
 
 
 def worker(args):
-    project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
-        source_root, batch, headers, api_timeout = args
+    project_name, logdir, loglevel, backup_count, config, check_changes, check_outgoing, uri, \
+        source_root, batch, headers, timeout, api_timeout = args
 
     if batch:
         get_batch_logger(logdir, project_name,
                          loglevel,
-                         backupcount,
+                         backup_count,
                          get_class_basename())
 
     return mirror_project(config, project_name,
-                          check_changes,
+                          check_changes, check_outgoing,
                           uri, source_root, headers=headers,
-                          timeout=api_timeout)
+                          timeout=timeout,
+                          api_timeout=api_timeout)
 
 
 def main():
@@ -107,12 +108,18 @@ def main():
                              ' repositories,'
                              ' terminate the processing'
                              ' if no change is found.')
+    parser.add_argument('--strip_outgoing', type=bool, default=False,
+                        help='check outgoing changes for each repository of a project,'
+                        'strip any such changes and remove all project data so that'
+                        'it can be reindexed from scratch')
     parser.add_argument('-w', '--workers', default=cpu_count(), type=int,
                         help='Number of worker processes')
     add_http_headers(parser)
     parser.add_argument('--api_timeout', type=int, default=3,
                         help='Set response timeout in seconds '
                              'for RESTful API calls')
+    parser.add_argument('--async_api_timeout', type=int, default=300,
+                        help='Set timeout in seconds for asynchronous RESTful API calls')
 
     try:
         args = parser.parse_args()
@@ -209,9 +216,11 @@ def main():
                     worker_args.append([x, logdir, args.loglevel,
                                         args.backupcount, config,
                                         args.check_changes,
+                                        args.strip_outgoing,
                                         args.uri, source_root,
                                         args.batch, headers,
-                                        args.api_timeout])
+                                        args.api_timeout,
+                                        args.async_api_timeout])
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:

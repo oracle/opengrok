@@ -210,7 +210,7 @@ def test_disabled_command_api():
     Test that mirror_project() calls call_rest_api() if API
     call is specified in the configuration for disabled project.
     """
-    def mock_call_rest_api(command, b, http_headers=None, timeout=None):
+    def mock_call_rest_api(command, b, http_headers=None, timeout=None, api_timeout=None):
         return mock(spec=requests.Response)
 
     with patch(opengrok_tools.utils.mirror.call_rest_api,
@@ -227,12 +227,12 @@ def test_disabled_command_api():
             }
         }
 
-        assert mirror_project(config, project_name, False,
+        assert mirror_project(config, project_name, False, False,
                               None, None) == CONTINUE_EXITVAL
         verify(opengrok_tools.utils.mirror). \
             call_rest_api(config.get(DISABLED_CMD_PROPERTY),
                           {PROJECT_SUBST: project_name},
-                          http_headers=None, timeout=None)
+                          http_headers=None, timeout=None, api_timeout=None)
 
 
 def test_disabled_command_api_text_append(monkeypatch):
@@ -242,7 +242,7 @@ def test_disabled_command_api_text_append(monkeypatch):
 
     text_to_append = "foo bar"
 
-    def mock_call_rest_api(command, b, http_headers=None, timeout=None):
+    def mock_call_rest_api(command, b, http_headers=None, timeout=None, api_timeout=None):
         disabled_command = config.get(DISABLED_CMD_PROPERTY)
         assert disabled_command
         command_args = disabled_command.get(COMMAND_PROPERTY)
@@ -277,7 +277,7 @@ def test_disabled_command_api_text_append(monkeypatch):
             }
         }
 
-        mirror_project(config, project_name, False, None, None)
+        mirror_project(config, project_name, False, False, None, None)
 
 
 def test_disabled_command_run():
@@ -295,7 +295,7 @@ def test_disabled_command_run():
         }
     }
 
-    assert mirror_project(config, project_name, False,
+    assert mirror_project(config, project_name, False, False,
                           None, None) == CONTINUE_EXITVAL
     verify(opengrok_tools.utils.mirror).run_command(ANY, project_name)
 
@@ -330,7 +330,7 @@ def test_ignore_errors_sync(monkeypatch, per_project):
                   mock_get_repos)
 
         src_root = "srcroot"
-        assert mirror_project(config, project_name, False,
+        assert mirror_project(config, project_name, False, False,
                               None, src_root) == SUCCESS_EXITVAL
 
 
@@ -371,7 +371,7 @@ def test_ignore_errors_hooks(monkeypatch, hook_type, per_project):
                   mock_get_repos)
 
         src_root = "srcroot"
-        assert mirror_project(config, project_name, False,
+        assert mirror_project(config, project_name, False, False,
                               None, src_root) == SUCCESS_EXITVAL
         verify(opengrok_tools.utils.mirror).\
             process_hook(hook_type, os.path.join(hook_dir, hook_name),
@@ -419,7 +419,7 @@ def test_mirror_project_timeout(monkeypatch):
         return False
 
     def test_mirror_project(config):
-        retval = mirror_project(config, project_name, False,
+        retval = mirror_project(config, project_name, False, False,
                                 "http://localhost:8080/source", "srcroot")
         assert retval == FAILURE_EXITVAL
 

@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -54,3 +54,25 @@ class GitRepository(Repository):
     def incoming_check(self):
         self._configure_git_pull()
         return self._run_custom_incoming_command([self.command, 'pull', '--dry-run'])
+
+    def strip_outgoing(self):
+        self._configure_git_pull()
+        status, out = self._run_command([self.command, 'log',
+                                        '--pretty=tformat:%H', '--reverse', 'origin..'])
+        if status == 0:
+            cset = out.get(0)
+            if cset:
+                self.logger.debug("Resetting the repository {} to parent of changeset {}".
+                                  format(self, cset))
+                status, out = self._run_command([self.command, 'reset', '--hard',
+                                                 cset + '^'])
+                if status != 0:
+                    raise RepositoryException("failed to reset {} to parent of changeset {}: {}".
+                                              format(self, cset, out))
+                else:
+                    return True
+            else:
+                return False
+
+        raise RepositoryException("failed to check for outgoing changes in {}: {}".
+                                  format(self, status))
