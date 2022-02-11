@@ -516,6 +516,8 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
     if check_outgoing_config is not None:
         check_outgoing = check_outgoing_config
 
+    # Check outgoing changes first. If there are any, such changes will be stripped
+    # and the subsequent incoming check will do the right thing.
     if check_outgoing:
         try:
             r = process_outgoing(repos, project_name)
