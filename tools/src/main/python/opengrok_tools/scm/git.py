@@ -60,9 +60,13 @@ class GitRepository(Repository):
         status, out = self._run_command([self.command, 'log',
                                         '--pretty=tformat:%H', '--reverse', 'origin..'])
         if status == 0:
-            cset = out.get(0)
-            if cset:
-                self.logger.debug("Resetting the repository {} to parent of changeset {}".
+            lines = out.split('\n')
+            if len(lines) == 0:
+                return False
+
+            cset = lines[0]
+            if len(cset) > 0:
+                self.logger.debug("Resetting the repository {} to parent of changeset '{}'".
                                   format(self, cset))
                 status, out = self._run_command([self.command, 'reset', '--hard',
                                                  cset + '^'])
@@ -71,8 +75,8 @@ class GitRepository(Repository):
                                               format(self, cset, out))
                 else:
                     return True
-            else:
-                return False
+        else:
+            raise RepositoryException("failed to check for outgoing changes in {}: {}".
+                                      format(self, status))
 
-        raise RepositoryException("failed to check for outgoing changes in {}: {}".
-                                  format(self, status))
+        return False
