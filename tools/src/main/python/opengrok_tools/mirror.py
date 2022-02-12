@@ -111,7 +111,7 @@ def main():
     parser.add_argument('--strip-outgoing', action='store_true', default=False,
                         help='check outgoing changes for each repository of a project,'
                         'strip any such changes and remove all project data so that'
-                        'it can be reindexed from scratch')
+                        'it can be reindexed from scratch. Supported: Git')
     parser.add_argument('-w', '--workers', default=cpu_count(), type=int,
                         help='Number of worker processes')
     add_http_headers(parser)
