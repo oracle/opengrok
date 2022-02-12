@@ -728,18 +728,29 @@ public final class HistoryGuru {
     }
 
     /**
+     * wrapper for {@link #removeCache(Collection, boolean)} with the {@code removeRepositories}
+     * parameter set to true.
+     */
+    public void removeCache(Collection<String> repositories) {
+        removeCache(repositories, true);
+    }
+
+    /**
      * Remove history data for a list of repositories. Those that are
      * successfully cleared are removed from the internal list of repositories.
      *
      * @param repositories list of repository paths relative to source root
+     * @param removeRepositories set true to also remove the repositories from internal structures
      */
-    public void removeCache(Collection<String> repositories) {
+    public void removeCache(Collection<String> repositories, boolean removeRepositories) {
         if (!useCache()) {
             return;
         }
 
         List<String> repos = clearCache(repositories);
-        removeRepositories(repos);
+        if (removeRepositories) {
+            removeRepositories(repos);
+        }
     }
 
     /**
@@ -797,7 +808,7 @@ public final class HistoryGuru {
         ccopy.forEach(this::putRepository);
     }
 
-    /**set
+    /**
      * Set list of known repositories which match the list of directories.
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
