@@ -168,7 +168,7 @@ def get_project_properties(project_config, project_name, hookdir):
     :param project_name: name of the project
     :param hookdir: directory with hooks
     :return: list of properties: prehook, posthook, hook_timeout,
-    command_timeout, use_proxy, ignored_repos, check_changes, ignore_errors
+    command_timeout, use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors
     """
 
     prehook = None
@@ -178,7 +178,7 @@ def get_project_properties(project_config, project_name, hookdir):
     use_proxy = False
     ignored_repos = None
     check_changes = None
-    check_outgoing = None
+    strip_outgoing = None
     ignore_errors = None
 
     logger = logging.getLogger(__name__)
@@ -233,7 +233,7 @@ def get_project_properties(project_config, project_name, hookdir):
             logger.debug("incoming check = {}".format(check_changes))
 
         if project_config.get(STRIP_OUTGOING_PROPERTY) is not None:
-            check_outgoing = get_bool(logger, ("outgoing check for project {}".
+            strip_outgoing = get_bool(logger, ("outgoing check for project {}".
                                                format(project_name)),
                                       project_config.get(STRIP_OUTGOING_PROPERTY))
             logger.debug("outgoing check = {}".format(check_changes))
@@ -248,7 +248,7 @@ def get_project_properties(project_config, project_name, hookdir):
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos, check_changes, check_outgoing, ignore_errors
+        use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -423,7 +423,7 @@ def process_outgoing(repos, project_name):
     return ret
 
 
-def mirror_project(config, project_name, check_changes, check_outgoing, uri,
+def mirror_project(config, project_name, check_changes, strip_outgoing, uri,
                    source_root, headers=None, timeout=None, api_timeout=None):
     """
     Mirror the repositories of single project.
@@ -431,7 +431,7 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
     :param project_name: name of the project
     :param check_changes: check for changes in the project or its repositories
      and terminate if no change is found
-    :param check_outgoing: check for outgoing changes in the repositories of the project,
+    :param strip_outgoing: check for outgoing changes in the repositories of the project,
      strip the changes and wipe project data if such changes were found
     :param uri web application URI
     :param source_root source root
@@ -449,7 +449,7 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
         ignored_repos, \
         check_changes_proj, \
-        check_outgoing_proj, \
+        strip_outgoing_proj, \
         ignore_errors_proj = get_project_properties(project_config,
                                                     project_name,
                                                     config.
@@ -465,10 +465,10 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
     else:
         check_changes_config = check_changes_proj
 
-    if check_outgoing_proj is None:
-        check_outgoing_config = config.get(STRIP_OUTGOING_PROPERTY)
+    if strip_outgoing_proj is None:
+        strip_outgoing_config = config.get(STRIP_OUTGOING_PROPERTY)
     else:
-        check_outgoing_config = check_outgoing_proj
+        strip_outgoing_config = strip_outgoing_proj
 
     if ignore_errors_proj is None:
         ignore_errors = config.get(IGNORE_ERR_PROPERTY)
@@ -513,12 +513,12 @@ def mirror_project(config, project_name, check_changes, check_outgoing, uri,
     if check_changes_config is not None:
         check_changes = check_changes_config
 
-    if check_outgoing_config is not None:
-        check_outgoing = check_outgoing_config
+    if strip_outgoing_config is not None:
+        strip_outgoing = strip_outgoing_config
 
     # Check outgoing changes first. If there are any, such changes will be stripped
     # and the subsequent incoming check will do the right thing.
-    if check_outgoing:
+    if strip_outgoing:
         try:
             r = process_outgoing(repos, project_name)
         except RepositoryException as exc:

@@ -64,7 +64,7 @@ OPENGROK_NO_MIRROR_ENV = "OPENGROK_NO_MIRROR"
 
 
 def worker(args):
-    project_name, logdir, loglevel, backup_count, config, check_changes, check_outgoing, uri, \
+    project_name, logdir, loglevel, backup_count, config, check_changes, strip_outgoing, uri, \
         source_root, batch, headers, timeout, api_timeout = args
 
     if batch:
@@ -74,7 +74,7 @@ def worker(args):
                          get_class_basename())
 
     return mirror_project(config, project_name,
-                          check_changes, check_outgoing,
+                          check_changes, strip_outgoing,
                           uri, source_root, headers=headers,
                           timeout=timeout,
                           api_timeout=api_timeout)
