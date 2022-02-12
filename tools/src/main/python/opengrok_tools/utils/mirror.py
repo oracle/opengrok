@@ -526,7 +526,8 @@ def mirror_project(config, project_name, check_changes, strip_outgoing, uri,
                          'a repository in project {}: {}'.format(project_name, exc))
             return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
         if r:
-            logger.info("removing data for project {}".format(project_name))
+            logger.info("Found outgoing changesets, removing data for project {}".
+                        format(project_name))
             r = delete_project_data(logger, project_name, uri,
                                     headers=headers, timeout=timeout, api_timeout=api_timeout)
             if not r:
