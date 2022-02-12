@@ -194,7 +194,7 @@ public class ProjectsController {
 
     private void deleteProjectWorkHorse(String projectName, Project project) {
         // Delete index data associated with the project.
-        deleteProjectDataWorkHorse(projectName);
+        deleteProjectDataWorkHorse(projectName, true);
 
         // Remove the project from its groups.
         for (Group group : project.getGroups()) {
@@ -229,13 +229,13 @@ public class ProjectsController {
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
                         () -> {
-                            deleteProjectDataWorkHorse(projectName);
+                            deleteProjectDataWorkHorse(projectName, false);
                             return null;
                         },
                         Response.Status.NO_CONTENT));
     }
 
-    private void deleteProjectDataWorkHorse(String projectName) {
+    private void deleteProjectDataWorkHorse(String projectName, boolean clearHistoryGuru) {
         LOGGER.log(Level.INFO, "deleting data for project {0}", projectName);
 
         // Delete index and xrefs.
@@ -248,7 +248,7 @@ public class ProjectsController {
             }
         }
 
-        deleteHistoryCacheWorkHorse(projectName);
+        deleteHistoryCacheWorkHorse(projectName, clearHistoryGuru);
 
         // Delete suggester data.
         suggester.delete(projectName);
@@ -269,12 +269,12 @@ public class ProjectsController {
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
                         () -> {
-                            deleteHistoryCacheWorkHorse(projectName);
+                            deleteHistoryCacheWorkHorse(projectName, false);
                             return null;
                         }));
     }
 
-    private void deleteHistoryCacheWorkHorse(String projectName) {
+    private void deleteHistoryCacheWorkHorse(String projectName, boolean clearHistoryGuru) {
         Project project = disableProject(projectName);
 
         LOGGER.log(Level.INFO, "deleting history cache for project {0}", projectName);
@@ -301,7 +301,7 @@ public class ProjectsController {
                         // {@code removeCache()} will return nothing.
                         return "";
                     }
-                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
+                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()), clearHistoryGuru);
     }
 
     @PUT
