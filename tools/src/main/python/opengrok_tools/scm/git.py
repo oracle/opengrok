@@ -64,8 +64,18 @@ class GitRepository(Repository):
 
         return branch
 
+    def fetch(self):
+        status, out = self._run_command([self.command, 'fetch'])
+        if status != 0:
+            raise RepositoryException("cannot fetch {}: {}".format(self, out))
+
     def strip_outgoing(self):
+        """
+        Check for outgoing changes and if found, strip them.
+        :return: True if there were any changes stripped, False otherwise.
+        """
         self._configure_git_pull()
+        self.fetch()
         branch = self.get_branch()
         status, out = self._run_command([self.command, 'log',
                                         '--pretty=tformat:%H', '--reverse', 'origin/' + branch + '..'])
