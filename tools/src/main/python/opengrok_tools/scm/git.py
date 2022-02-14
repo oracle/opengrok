@@ -55,10 +55,20 @@ class GitRepository(Repository):
         self._configure_git_pull()
         return self._run_custom_incoming_command([self.command, 'pull', '--dry-run'])
 
+    def get_branch(self):
+        status, out = self._run_command([self.command, 'branch', '--show-current'])
+        if status != 0:
+            raise RepositoryException("cannot get branch of {}: {}".format(self, out))
+
+        branch = out.split('\n')[0]
+
+        return branch
+
     def strip_outgoing(self):
         self._configure_git_pull()
+        branch = self.get_branch()
         status, out = self._run_command([self.command, 'log',
-                                        '--pretty=tformat:%H', '--reverse', 'origin..'])
+                                        '--pretty=tformat:%H', '--reverse', 'origin/' + branch + '..'])
         if status == 0:
             lines = out.split('\n')
             if len(lines) == 0:
