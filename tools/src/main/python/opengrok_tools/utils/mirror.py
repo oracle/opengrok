@@ -420,6 +420,11 @@ def process_outgoing(repos, project_name):
                          format(repo, project_name))
             ret = True
 
+        if repo.top_level():
+            logger.debug('Repository {} is top level, finishing outgoing changeset handling'.
+                         format(repo))
+            break
+
     return ret
 
 
