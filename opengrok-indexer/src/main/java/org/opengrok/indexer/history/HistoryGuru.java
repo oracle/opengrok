@@ -729,7 +729,8 @@ public final class HistoryGuru {
 
     /**
      * Remove history data for a list of repositories. Those that are
-     * successfully cleared are removed from the internal list of repositories.
+     * successfully cleared may be removed from the internal list of repositories,
+     * depending on the {@code removeRepositories} parameter.
      *
      * @param repositories list of repository paths relative to source root
      * @param removeRepositories set true to also remove the repositories from internal structures
