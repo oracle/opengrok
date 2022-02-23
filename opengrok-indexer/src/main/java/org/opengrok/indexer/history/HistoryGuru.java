@@ -728,14 +728,6 @@ public final class HistoryGuru {
     }
 
     /**
-     * wrapper for {@link #removeCache(Collection, boolean)} with the {@code removeRepositories}
-     * parameter set to true.
-     */
-    public void removeCache(Collection<String> repositories) {
-        removeCache(repositories, true);
-    }
-
-    /**
      * Remove history data for a list of repositories. Those that are
      * successfully cleared are removed from the internal list of repositories.
      *
