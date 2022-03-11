@@ -332,6 +332,12 @@ public final class Indexer {
                 System.exit(1);
             }
 
+            if (!subFiles.isEmpty() && configFilename != null) {
+                LOGGER.log(Level.WARNING, "The collection of entries to process is non empty ({0}), seems like " +
+                        "the intention is to perform per project reindex, however the -W option is used. " +
+                        "This will likely not work.", subFiles);
+            }
+
             Metrics.updateSubFiles(subFiles);
 
             // If the webapp is running with a config that does not contain
