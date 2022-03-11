@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -1604,10 +1605,10 @@ public final class RuntimeEnvironment {
      * Sets the configuration and performs necessary actions.
      *
      * @param configuration new configuration
-     * @param subFileList   list of repositories
+     * @param subFileList   collection of repositories
      * @param cmdType       command timeout type
      */
-    public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, CommandTimeoutType cmdType) {
+    public synchronized void setConfiguration(Configuration configuration, Collection<String> subFileList, CommandTimeoutType cmdType) {
         try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
             //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
             assert resourceLock != null;

@@ -25,7 +25,7 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.index.SegmentInfos;
@@ -77,13 +77,12 @@ public class IndexCheck {
     /**
      * Check if version of index(es) matches major Lucene version.
      * @param configuration configuration based on which to perform the check
-     * @param subFilesList list of paths. If non-empty, only projects matching these paths will be checked.
+     * @param subFilesList collection of paths. If non-empty, only projects matching these paths will be checked.
      * @return true on success, false on failure
      */
-    public static boolean check(@NotNull Configuration configuration, List<String> subFilesList) {
+    public static boolean check(@NotNull Configuration configuration, Collection<String> subFilesList) {
         File indexRoot = new File(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
-        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
-                indexRoot);
+        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}", indexRoot);
         int ret = 0;
 
         if (!subFilesList.isEmpty()) {

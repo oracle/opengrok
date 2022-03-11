@@ -804,10 +804,10 @@ public final class HistoryGuru {
     /**
      * Set list of known repositories which match the list of directories.
      * @param repos list of repositories
-     * @param dirs list of directories that might correspond to the repositories
+     * @param dirs collection of directories that might correspond to the repositories
      * @param cmdType command timeout type
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, CommandTimeoutType cmdType) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, Collection<String> dirs, CommandTimeoutType cmdType) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
             List<RepositoryInfo> newrepos = new ArrayList<>();
             for (RepositoryInfo i : repos) {
