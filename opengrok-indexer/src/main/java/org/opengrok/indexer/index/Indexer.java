@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -164,7 +164,7 @@ public final class Indexer {
 
         Executor.registerErrorHandler();
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
-        ArrayList<String> subFilesList = new ArrayList<>();
+        Set<String> subFilesArgs = new HashSet<>();
 
         boolean createDict = false;
 
@@ -242,10 +242,11 @@ public final class Indexer {
             cfg.setCanonicalRoots(canonicalRoots);
 
             // Assemble the unprocessed command line arguments (possibly a list of paths).
-            // This will be used to perform more fine-grained checking in invalidateRepositories().
+            // This will be used to perform more fine-grained checking in invalidateRepositories()
+            // called from the setConfiguration() below.
             for (String arg : argv) {
                 String path = Paths.get(cfg.getSourceRoot(), arg).toString();
-                subFilesList.add(path);
+                subFilesArgs.add(path);
             }
 
             // If a user used customizations for projects he perhaps just
@@ -266,10 +267,10 @@ public final class Indexer {
                     System.exit(1);
                 }
 
-                if (!IndexCheck.check(cfg, subFilesList)) {
+                if (!IndexCheck.check(cfg, subFilesArgs)) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
-                            (!subFilesList.isEmpty() ? "data for projects " + String.join(",", subFilesList) :
+                            (!subFilesArgs.isEmpty() ? "data for projects " + String.join(",", subFilesArgs) :
                                     "all data") + " under the data root and reindex\n");
                     System.exit(1);
                 }
@@ -278,7 +279,7 @@ public final class Indexer {
             }
 
             // Set updated configuration in RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesList, CommandTimeoutType.INDEXER);
+            env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
@@ -299,7 +300,7 @@ public final class Indexer {
              * directory and not per project data root directory).
              * For the check we need to have 'env' already set.
              */
-            for (String path : subFilesList) {
+            for (String path : subFilesArgs) {
                 String srcPath = env.getSourceRootPath();
                 if (srcPath == null) {
                     System.err.println("Error getting source root from environment. Exiting.");
@@ -326,7 +327,7 @@ public final class Indexer {
                 }
             }
 
-            if (!subFilesList.isEmpty() && subFiles.isEmpty()) {
+            if (!subFilesArgs.isEmpty() && subFiles.isEmpty()) {
                 System.err.println("None of the paths were added, exiting");
                 System.exit(1);
             }
