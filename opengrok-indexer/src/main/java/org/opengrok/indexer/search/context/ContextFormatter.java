@@ -24,7 +24,9 @@ package org.opengrok.indexer.search.context;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,16 +61,19 @@ public class ContextFormatter extends PassageFormatter {
 
     private final PassageConverter cvt;
     private final List<String> marks = new ArrayList<>();
+    private final ContextArgs contextArgs;
+    private final HashSet<Integer> reportedScopes = new HashSet<>();
     private String url;
     private Definitions defs;
     private Scopes scopes;
+    private boolean showingContext;
+    private boolean showOverline;
 
     /**
-     * An optional URL for linking when the {@link #moreLimit} (if positive) is
+     * An optional URL for linking when the "moreLimit" (if positive) is
      * reached.
      */
     private String moreUrl;
-    private int moreLimit;
 
     /**
      * Cached splitter, keyed by {@link #originalText}.
@@ -82,6 +87,7 @@ public class ContextFormatter extends PassageFormatter {
      */
     public ContextFormatter(ContextArgs args) {
         this.cvt = new PassageConverter(args);
+        this.contextArgs = args;
     }
 
     /**
@@ -109,7 +115,7 @@ public class ContextFormatter extends PassageFormatter {
     }
 
     /**
-     * Gets the optional URL to use if {@link #getMoreLimit()} is reached.
+     * Gets the optional URL to use if the "more" limit is reached.
      * @return the URL or {@code null}
      */
     public String getMoreUrl() {
@@ -117,34 +123,11 @@ public class ContextFormatter extends PassageFormatter {
     }
 
     /**
-     * Sets the optional URL to use if {@link #getMoreLimit()} is reached.
+     * Sets the optional URL to use if the "more" limit is reached.
      * @param value the URL to use
      */
     public void setMoreUrl(String value) {
         this.moreUrl = value;
-    }
-
-    /**
-     * Gets the optional line limit to specify (if positive) a maximum number
-     * of lines to format and -- if {@link #getMoreUrl()} is defined -- a "more"
-     * link to display. Default is zero (i.e. inactive).
-     * @return the line limit value
-     */
-    public int getMoreLimit() {
-        return moreLimit;
-    }
-
-    /**
-     * Sets the optional line limit to specify (if positive) a maximum number
-     * of lines to format and -- if {@link #getMoreUrl()} is defined -- a "more"
-     * link to display.
-     * @param value the line limit
-     */
-    public void setMoreLimit(int value) {
-        if (value < 0) {
-            throw new IllegalArgumentException("value is negative");
-        }
-        this.moreLimit = value;
     }
 
     /**
@@ -205,21 +188,34 @@ public class ContextFormatter extends PassageFormatter {
 
         FormattedLines res = new FormattedLines();
         StringBuilder bld = new StringBuilder();
-        SortedMap<Integer, LineHighlight> lines = cvt.convert(passages,
-            splitter);
+        SortedMap<Integer, LineHighlight> lines = cvt.convert(passages, splitter);
         int numl = 0;
+        int contextLimit = calculateContextLimit(lines);
         boolean limited = false;
-        for (LineHighlight lhi : lines.values()) {
-            ++numl;
-            if (moreLimit > 0 && numl > moreLimit) {
+        int lastLineno = lines.isEmpty() ? 0 : lines.firstKey();
+        for (Map.Entry<Integer, LineHighlight> entry : lines.entrySet()) {
+            if (++numl > contextLimit) {
                 limited = true;
                 break;
             }
 
+            LineHighlight lhi = entry.getValue();
             String line = splitter.getLine(lhi.getLineno());
             Matcher eolMatcher = StringUtils.STANDARD_EOL.matcher(line);
             if (eolMatcher.find()) {
                 line = line.substring(0, eolMatcher.start());
+            }
+
+            /*
+             * When showing context, determine if the current line is non-
+             * consecutive in order to show an overline.
+             */
+            showingContext = cvt.getArgs().getContextSurround() > 0;
+            if (!showingContext) {
+                showOverline = false;
+            } else {
+                showOverline = lhi.getLineno() - lastLineno > 1;
+                lastLineno = lhi.getLineno();
             }
 
             try {
@@ -268,10 +264,8 @@ public class ContextFormatter extends PassageFormatter {
                     bld.append(HtmlConsts.ZB);
                 }
 
-                finishLine(bld, lhi.getLineno(), marks);
-                // Regardless of true EOL, write a <br/>.
-                bld.append(HtmlConsts.BR);
-                /**
+                finishLine(bld, lhi.getLineno(), lhi.countMarkups() > 0);
+                /*
                  * Appending a LF here would hurt the more.jsp view, while
                  * search.jsp (where getContext() does it) is indifferent -- so
                  * skip it.
@@ -299,8 +293,15 @@ public class ContextFormatter extends PassageFormatter {
         return res;
     }
 
-    private void startLine(Appendable dest, String lineUrl, int lineOffset)
-            throws IOException {
+    private void startLine(Appendable dest, String lineUrl, int lineOffset) throws IOException {
+        if (showingContext) {
+            if (showOverline) {
+                dest.append("<span class=\"ovl\">");
+                reportedScopes.clear();
+            } else {
+                dest.append("<span class=\"xovl\">");
+            }
+        }
         dest.append("<a class=\"s\" href=\"");
         dest.append(lineUrl);
         String num = String.valueOf(lineOffset + 1);
@@ -311,21 +312,28 @@ public class ContextFormatter extends PassageFormatter {
         dest.append("</span> ");
     }
 
-    private void finishLine(Appendable dest, int lineOffset, List<String> marks)
+    private void finishLine(Appendable dest, int lineOffset, boolean hasHighlights)
             throws IOException {
         dest.append("</a>");
-        writeScope(lineOffset, dest);
-        writeTag(lineOffset, dest, marks);
+        if (hasHighlights) {
+            writeTag(lineOffset, dest);
+            writeScope(lineOffset, dest);
+        }
+
+        // Regardless of true EOL, write a <br/>.
+        dest.append(HtmlConsts.BR);
+        if (showingContext) {
+            dest.append(HtmlConsts.ZSPAN);
+        }
     }
 
-    private void writeScope(int lineOffset, Appendable dest)
-            throws IOException {
+    private void writeScope(int lineOffset, Appendable dest) throws IOException {
         Scopes.Scope scope = null;
         if (scopes != null) {
             // N.b. use ctags 1-based indexing vs 0-based.
             scope = scopes.getScope(lineOffset + 1);
         }
-        if (scope != null && scope != scopes.getScope(-1)) {
+        if (scope != null && isOkToReportScope(scope)) {
             dest.append("  <a class=\"scope\" href=\"");
             dest.append(url);
             dest.append("#");
@@ -336,13 +344,25 @@ public class ContextFormatter extends PassageFormatter {
         }
     }
 
-    private void writeTag(int lineOffset, Appendable dest, List<String> marks)
-            throws IOException {
+    private boolean isOkToReportScope(Scopes.Scope scope) {
+        if (scope != scopes.getScope(-1)) {
+            if (!showingContext) {
+                return true;
+            }
+            if (!reportedScopes.contains(scope.getLineFrom())) {
+                reportedScopes.add(scope.getLineFrom());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void writeTag(int lineOffset, Appendable dest) throws IOException {
         if (defs != null) {
             // N.b. use ctags 1-based indexing vs 0-based.
             List<Tag> linetags =  defs.getTags(lineOffset + 1);
             if (linetags != null) {
-                Tag pickedTag = findTagForMark(linetags, marks);
+                Tag pickedTag = findTagForMark(linetags);
                 if (pickedTag != null) {
                     dest.append("  <i>");
                     Util.htmlize(pickedTag.type, dest);
@@ -358,7 +378,7 @@ public class ContextFormatter extends PassageFormatter {
      * character is a non-word ({@code (?U)\W}) character.
      * @return a defined instance or {@code null}
      */
-    private Tag findTagForMark(List<Tag> linetags, List<String> marks) {
+    private Tag findTagForMark(List<Tag> linetags) {
         for (Tag tag : linetags) {
             if (tag.type != null) {
                 for (String mark : marks) {
@@ -376,5 +396,53 @@ public class ContextFormatter extends PassageFormatter {
     private static boolean isNonWord(char c) {
         String cword = String.valueOf(c);
         return NONWORD_CHAR.matcher(cword).matches();
+    }
+
+    /**
+     * Calculates a context limit when surrounding context is enabled to
+     * possibly reduce below moreLimit so that dangling surrounding context is
+     * not displayed.
+     */
+    private int calculateContextLimit(SortedMap<Integer, LineHighlight> lines) {
+        int moreLimit = contextArgs.getContextLimit();
+        // If moreLimit is not applicable, then leave unbounded.
+        if (moreLimit < 1) {
+            return Integer.MAX_VALUE;
+        }
+        /*
+         * If no surrounding context is specified or if the lines are already
+         * within moreLimit, then just use moreLimit.
+         */
+        if (cvt.getArgs().getContextSurround() < 1 || lines.size() <= moreLimit) {
+            return moreLimit;
+        }
+        /*
+         * Walk back from moreLimit to ensure not to leave any dangling
+         * surrounding context by making sure there is a phrase highlight seen
+         * before a non-contiguous lineno.
+         */
+        LineHighlight[] lineHighlights = lines.values().toArray(new LineHighlight[0]);
+        int i = moreLimit - 1;
+        int lastLineno = lineHighlights[i].getLineno();
+        int newMoreLimit = moreLimit;
+        int trailingCount = 0;
+        for (; i >= 0; --i) {
+            LineHighlight lhi = lineHighlights[i];
+            if (lhi.countMarkups() > 0) {
+                break;
+            }
+            if (lastLineno - lhi.getLineno() > 1) {
+                // Found non-contiguity without having seen a highlight.
+                newMoreLimit = i + 1;
+                trailingCount = 1;
+            } else if (trailingCount + 1 > contextArgs.getContextSurround()) {
+                // Found superfluous surrounding context.
+                --newMoreLimit;
+            } else {
+                ++trailingCount;
+            }
+            lastLineno = lhi.getLineno();
+        }
+        return newMoreLimit;
     }
 }

@@ -141,13 +141,13 @@ public final class Results {
     /**
      * Prints out results in html form. The following search helper fields are
      * required to be properly initialized: <ul>
-     * <li>{@link SearchHelper#dataRoot}</li>
-     * <li>{@link SearchHelper#contextPath}</li>
-     * <li>{@link SearchHelper#searcher}</li> <li>{@link SearchHelper#hits}</li>
-     * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
-     * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
-     * <li>{@link SearchHelper#summarizer} (if sourceContext is not
-     * {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
+     * <li>{@link SearchHelper#getDataRoot()}</li>
+     * <li>{@link SearchHelper#getContextPath()}</li>
+     * <li>{@link SearchHelper#getSearcher()}</li> <li>{@link SearchHelper#getHits()}</li>
+     * <li>{@link SearchHelper#getHistoryContext()} (ignored if {@code null})</li>
+     * <li>{@link SearchHelper#getSourceContext()} (ignored if {@code null})</li>
+     * <li>{@link SearchHelper#getSummarizer()} (if sourceContext is not
+     * {@code null})</li> <li>{@link SearchHelper#getSourceRoot()} (if
      * sourceContext or historyContext is not {@code null})</li> </ul>
      *
      * @param out write destination
@@ -271,9 +271,9 @@ public final class Results {
 
         fargs.shelp.getSourceContext().toggleAlt();
 
-        boolean didPresentNew = fargs.shelp.getSourceContext().getContext2(fargs.env,
+        boolean didPresentNew = fargs.shelp.getSourceContext().getContext2(
             fargs.shelp.getSearcher(), docId, fargs.out, fargs.xrefPrefix,
-            fargs.morePrefix, true, fargs.tabSize);
+            fargs.morePrefix, fargs.shelp.getLimitedContextArgs(), fargs.tabSize);
 
         if (!didPresentNew) {
             /*

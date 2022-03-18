@@ -51,25 +51,25 @@ public class CustomAssertions {
     /**
      * Asserts the specified strings have equal contents, comparing line-wise
      * after splitting on LFs.
-     * @param messagePrefix a message prefixed to line-specific or length-
-     * specific errors
      * @param expected the expected content
      * @param actual the actual content
+     * @param messagePrefix a message prefixed to line-specific or length-
+     * specific errors
      */
-    public static void assertLinesEqual(String messagePrefix, String expected, String actual) {
+    public static void assertLinesEqual(String expected, String actual, String messagePrefix) {
         String[] expecteds = expected.split("\n");
         String[] gotten = actual.split("\n");
-        assertLinesEqual(messagePrefix, expecteds, gotten);
+        assertLinesEqual(expecteds, gotten, messagePrefix);
     }
 
     /**
      * Asserts the specified lines arrays have equal contents.
-     * @param messagePrefix a message prefixed to line-specific or length-
-     * specific errors
      * @param expecteds the expected content of lines
      * @param actuals the actual content of lines
+     * @param messagePrefix a message prefixed to line-specific or length-
+     * specific errors
      */
-    public static void assertLinesEqual(String messagePrefix, String[] expecteds, String[] actuals) {
+    public static void assertLinesEqual(String[] expecteds, String[] actuals, String messagePrefix) {
 
         List<Integer> diffLines = new ArrayList<>();
 
@@ -137,7 +137,7 @@ public class CustomAssertions {
 
         count = 0;
         for (String token : tokens) {
-            // 1-based offset to accord with line #
+            // 1-based index to accord with line #
             if (count >= expectedTokens.size()) {
                 printTokens(tokens);
                 assertTrue(count < expectedTokens.size(), "too many tokens at term" + (1 + count) + ": " + token);

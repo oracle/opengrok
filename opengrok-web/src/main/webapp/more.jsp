@@ -1,6 +1,4 @@
 <%--
-$Id$
-
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -84,14 +82,14 @@ file="mast.jsp"
         Query tquery = qbuilder.build();
         if (tquery != null) {
 %><p><span class="pagetitle">Lines Matching <span class="bold"><%= tquery %></span></span></p>
-<div id="more" style="line-height:1.5em;">
+<div id="more">
     <pre><%
             String xrefPrefix = request.getContextPath() + Prefix.XREF_P;
             boolean didPresentNew = false;
             if (docId >= 0) {
-                didPresentNew = searchHelper.getSourceContext().getContext2(env,
-                    searchHelper.getSearcher(), docId, out, xrefPrefix, null, false,
-                    tabSize);
+                didPresentNew = searchHelper.getSourceContext().getContext2(
+                        searchHelper.getSearcher(), docId, out, xrefPrefix, null,
+                        searchHelper.getUnlimitedContextArgs(), tabSize);
             }
             if (!didPresentNew) {
                 /**

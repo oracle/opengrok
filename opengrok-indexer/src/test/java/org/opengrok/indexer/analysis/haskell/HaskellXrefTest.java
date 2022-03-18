@@ -61,12 +61,10 @@ public class HaskellXrefTest {
         AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
         Xrefer xref = analyzer.writeXref(xargs);
-        assertLinesEqual("Haskell basicTest",
-            "<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
-            "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\"" +
-            " data-definition-place=\"undefined-in-file\">putStrLn</a>" +
-            " <span class=\"s\">&quot;Hello, world!&quot;</span>\n",
-                w.toString());
+        assertLinesEqual("<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
+                "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\"" +
+                " data-definition-place=\"undefined-in-file\">putStrLn</a>" +
+                " <span class=\"s\">&quot;Hello, world!&quot;</span>\n", w.toString(), "Haskell basicTest");
         assertEquals(1, xref.getLOC(), "Haskell LOC");
     }
 
@@ -125,7 +123,7 @@ public class HaskellXrefTest {
 
         String[] actual = new String(sampleOutputStream.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         String[] expected = new String(expectedOutputSteam.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
-        assertLinesEqual("Haskell sampleTest()", expected, actual);
+        assertLinesEqual(expected, actual, "Haskell sampleTest()");
         assertEquals(3, actLOC, "Haskell LOC");
     }
 
@@ -167,7 +165,7 @@ public class HaskellXrefTest {
         String estr = new String(expbytes, StandardCharsets.UTF_8);
         String[] expected = estr.split("\n");
 
-        assertLinesEqual("Haskell xref", expected, gotten);
+        assertLinesEqual(expected, gotten, "Haskell xref");
         assertEquals(expLOC, actLOC, "Haskell LOC");
     }
 

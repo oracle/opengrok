@@ -47,7 +47,10 @@ public class ContextFormatterTest {
             " Aenean dignissim ipsum eu rhoncus ultricies.\n" +
             "\n" +
             "    Fusce pretium hendrerit dictum. Pellentesque habitant\n" +
-            "morbi tristique senectus et netus.";
+            "morbi tristique senectus et netus.\n" +
+            "Nam scelerisque odio at justo fringilla, eu aliquet sem commodo.\n" +
+            "Duis aliquet non magna ac gravida. Aliquam erat volutpat. Proin\n" +
+            "nec iaculis mauris.";
 
     private static final String DOC2 = "abc\n" +
             "def\n" +
@@ -74,10 +77,10 @@ public class ContextFormatterTest {
 
         final String DOCCTX_0 =
                 "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
-                        "3</span> Mauris diam nisl, tincidunt nec <b>gravida</b> sit" +
-                        " amet, efficitur vitae</a><br/>\n";
+                "3</span> Mauris diam nisl, tincidunt nec <b>gravida</b> sit " +
+                "amet, efficitur vitae</a><br/>\n";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_0, ctx);
+        assertLinesEqual(DOCCTX_0, ctx, "format().toString()");
 
         // Second, test with contextCount==1
         args = new ContextArgs((short) 1, (short) 10);
@@ -86,16 +89,17 @@ public class ContextFormatterTest {
         res = fmt.format(new Passage[] {p}, DOC);
         assertNotNull(res, "format() result");
 
-        final String DOCCTX_1 = "<a class=\"s\" href=\"http://example.com#2\"><span class=\"l\">" +
+        final String DOCCTX_1 =
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#2\"><span class=\"l\">" +
                 "2</span> Mauris vel tortor vel nisl efficitur fermentum nec vel" +
-                " erat.</a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
+                " erat.</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
                 "3</span> Mauris diam nisl, tincidunt nec <b>gravida</b> sit" +
-                " amet, efficitur vitae</a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#4\"><span class=\"l\">" +
-                "4</span> est. Sed aliquam non mi vel mattis:</a><br/>";
+                " amet, efficitur vitae</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#4\"><span class=\"l\">" +
+                "4</span> est. Sed aliquam non mi vel mattis:</a><br/></span>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_1, ctx);
+        assertLinesEqual(DOCCTX_1, ctx, "format().toString()");
     }
 
     @Test
@@ -106,7 +110,7 @@ public class ContextFormatterTest {
         p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2), 1);
         assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
-        /**
+        /*
          * We're using the entire document, but see how it behaves with
          * contextCount==1
          */
@@ -117,14 +121,14 @@ public class ContextFormatterTest {
         assertNotNull(res, "format() result");
 
         final String DOC2CTX =
-                "<a class=\"s\" href=\"http://example.com#1\"><span class=\"l\">" +
-                        "1</span> <b>abc</b></a><br/>" +
-                        "<a class=\"s\" href=\"http://example.com#2\"><span class=\"l\">" +
-                        "2</span> <b>def</b></a><br/>" +
-                        "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
-                        "3</span> <b>ghi</b></a><br/>";
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#1\"><span class=\"l\">" +
+                "1</span> <b>abc</b></a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#2\"><span class=\"l\">" +
+                "2</span> <b>def</b></a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
+                "3</span> <b>ghi</b></a><br/></span>";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOC2CTX, ctx);
+        assertLinesEqual(DOC2CTX, ctx, "format().toString()");
     }
 
     @Test
@@ -151,7 +155,7 @@ public class ContextFormatterTest {
                 " non ornare egestas. Aenean <b>dignissim</b> ipsum eu" +
                 " rhoncus&hellip;</a><br/>\n";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_0, ctx);
+        assertLinesEqual(DOCCTX_0, ctx, "format().toString()");
 
         // Second, test with contextCount==1
         args = new ContextArgs((short) 1, (short) 10);
@@ -160,35 +164,36 @@ public class ContextFormatterTest {
         res = fmt.format(new Passage[] {p}, DOC);
         assertNotNull(res, "format() result");
 
-        final String DOCCTX_1 = "<a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
-                "5</span> </a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">" +
+        final String DOCCTX_1 =
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
+                "5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">" +
                 "6</span> &hellip;putate ipsum sed laoreet. Nam maximus libero" +
                 " non ornare egestas. Aenean <b>dignissim</b> ipsum eu" +
-                " rhoncus&hellip;</a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#7\"><span class=\"l\">" +
-                "7</span> </a><br/>";
+                " rhoncus&hellip;</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#7\"><span class=\"l\">" +
+                "7</span> </a><br/></span>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_1, ctx);
+        assertLinesEqual(DOCCTX_1, ctx, "format().toString()");
 
         // Third, test with contextCount==1 and a line limit
-        args = new ContextArgs((short) 1, (short) 10);
+        args = new ContextArgs((short) 1, (short) 2);
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
-        fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
         assertNotNull(res, "format() result");
 
-        final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
-                "5</span> </a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">" +
+        final String DOCCTX_2M =
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
+                "5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">" +
                 "6</span> &hellip;putate ipsum sed laoreet. Nam maximus libero" +
                 " non ornare egestas. Aenean <b>dignissim</b> ipsum eu" +
-                " rhoncus&hellip;</a><br/>" +
+                " rhoncus&hellip;</a><br/></span>" +
                 "<a href=\"http://example.com/more\">[all &hellip;]</a><br/>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_2M, ctx);
+        assertLinesEqual(DOCCTX_2M, ctx, "format().toString()");
     }
 
     @Test
@@ -212,12 +217,12 @@ public class ContextFormatterTest {
 
         final String DOCCTX_0 =
                 "<a class=\"s\" href=\"http://example.com#6\"><span " +
-                        "class=\"l\">6</span> &hellip;um sed laoreet. Nam " +
-                        "maximus libero non ornare egestas. Aenean " +
-                        "dignissim ipsum eu rhoncus <b>ultricies</b>.</a>" +
-                        "<br/>";
+                "class=\"l\">6</span> &hellip;um sed laoreet. Nam " +
+                "maximus libero non ornare egestas. Aenean " +
+                "dignissim ipsum eu rhoncus <b>ultricies</b>.</a>" +
+                "<br/>";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_0, ctx);
+        assertLinesEqual(DOCCTX_0, ctx, "format().toString()");
 
         // Second, test with contextCount==1
         args = new ContextArgs((short) 1, (short) 10);
@@ -227,37 +232,38 @@ public class ContextFormatterTest {
         assertNotNull(res, "format() result");
 
         final String DOCCTX_1 =
-                "<a class=\"s\" href=\"http://example.com#5\"><span " +
-                        "class=\"l\">5</span> </a><br/>" +
-                        "<a class=\"s\" href=\"http://example.com#6\"><span " +
-                        "class=\"l\">6</span> &hellip;um sed laoreet. Nam " +
-                        "maximus libero non ornare egestas. Aenean " +
-                        "dignissim ipsum eu rhoncus <b>ultricies</b>.</a>" +
-                        "<br/>" +
-                        "<a class=\"s\" href=\"http://example.com#7\"><span " +
-                        "class=\"l\">7</span> </a><br/>";
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\"><span " +
+                "class=\"l\">5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span " +
+                "class=\"l\">6</span> &hellip;um sed laoreet. Nam " +
+                "maximus libero non ornare egestas. Aenean " +
+                "dignissim ipsum eu rhoncus <b>ultricies</b>.</a>" +
+                "<br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#7\"><span " +
+                "class=\"l\">7</span> </a><br/></span>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_1, ctx);
+        assertLinesEqual(DOCCTX_1, ctx, "format().toString()");
 
         // Third, test with contextCount==1 and a line limit
-        args = new ContextArgs((short) 1, (short) 10);
+        args = new ContextArgs((short) 1, (short) 2);
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
-        fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
         assertNotNull(res, "format() result");
 
-        final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\">" +
-                "<span class=\"l\">5</span> </a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#6\"><span " +
+        final String DOCCTX_2M =
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\">" +
+                "<span class=\"l\">5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span " +
                 "class=\"l\">6</span> &hellip;um sed laoreet. Nam " +
                 "maximus libero non ornare egestas. Aenean " +
                 "dignissim ipsum eu rhoncus <b>ultricies</b>.</a>" +
-                "<br/><a href=\"http://example.com/more\">[all " +
+                "<br/></span>" +
+                "<a href=\"http://example.com/more\">[all " +
                 "&hellip;]</a><br/>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_2M, ctx);
+        assertLinesEqual(DOCCTX_2M, ctx, "format().toString()");
     }
 
     @Test
@@ -284,7 +290,7 @@ public class ContextFormatterTest {
                 "lacus velit varius vulputate ipsum sed laoreet. " +
                 "Nam maximus libero non ornare eg&hellip;</a><br/>";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_0, ctx);
+        assertLinesEqual(DOCCTX_0, ctx, "format().toString()");
 
         // Second, test with contextCount==1
         args = new ContextArgs((short) 1, (short) 10);
@@ -294,36 +300,36 @@ public class ContextFormatterTest {
         assertNotNull(res, "format() result");
 
         final String DOCCTX_1 =
-                "<a class=\"s\" href=\"http://example.com#5\"><span " +
-                        "class=\"l\">5</span> </a><br/>" +
-                        "<a class=\"s\" href=\"http://example.com#6\"><span " +
-                        "class=\"l\">6</span> ----<b>Maecenas</b> vitae " +
-                        "lacus velit varius vulputate ipsum sed laoreet. " +
-                        "Nam maximus libero non ornare eg&hellip;</a><br/>" +
-                        "<a class=\"s\" href=\"http://example.com#7\"><span " +
-                        "class=\"l\">7</span> </a><br/>";
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\"><span " +
+                "class=\"l\">5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span " +
+                "class=\"l\">6</span> ----<b>Maecenas</b> vitae " +
+                "lacus velit varius vulputate ipsum sed laoreet. " +
+                "Nam maximus libero non ornare eg&hellip;</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#7\"><span " +
+                "class=\"l\">7</span> </a><br/></span>";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_1, ctx);
+        assertLinesEqual(DOCCTX_1, ctx, "format().toString()");
 
         // Third, test with contextCount==1 and a line limit
-        args = new ContextArgs((short) 1, (short) 10);
+        args = new ContextArgs((short) 1, (short) 2);
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
-        fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
         assertNotNull(res, "format() result");
 
-        final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\"><span " +
-                "class=\"l\">5</span> </a><br/>" +
-                "<a class=\"s\" href=\"http://example.com#6\"><span " +
+        final String DOCCTX_2M =
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#5\"><span " +
+                "class=\"l\">5</span> </a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#6\"><span " +
                 "class=\"l\">6</span> ----<b>Maecenas</b> vitae " +
                 "lacus velit varius vulputate ipsum sed laoreet. " +
-                "Nam maximus libero non ornare eg&hellip;</a><br/>" +
+                "Nam maximus libero non ornare eg&hellip;</a><br/></span>" +
                 "<a href=\"http://example.com/more\">[all " +
                 "&hellip;]</a><br/>\n";
         ctx = res.toString();
-        assertLinesEqual("format().toString()", DOCCTX_2M, ctx);
+        assertLinesEqual(DOCCTX_2M, ctx, "format().toString()");
     }
 
     @Test
@@ -354,6 +360,61 @@ public class ContextFormatterTest {
                 "3</span> Mauris diam nisl, tincidunt nec gravida sit" +
                 " amet, <b>efficitur vitae</b></a><br/>\n";
         String ctx = res.toString();
-        assertLinesEqual("format().toString()", DOC_CTX_0, ctx);
+        assertLinesEqual(DOC_CTX_0, ctx, "format().toString()");
+    }
+
+    @Test
+    public void testRecalculatedContextLimit() {
+        final String PHRASE1 = "efficitur fermentum";
+        final String PHRASE2 = "varius vulputate";
+        final String PHRASE3 = "justo fringilla";
+
+        Passage passage1 = new Passage();
+        int phraseOff1 = DOC.indexOf(PHRASE1);
+        passage1.setStartOffset(phraseOff1);
+        passage1.setEndOffset(phraseOff1 + PHRASE1.length());
+        assertTrue(passage1.getStartOffset() >= 0 && passage1.getEndOffset() >
+                passage1.getStartOffset(), "passage1 offsets are positive");
+        passage1.addMatch(passage1.getStartOffset(), passage1.getEndOffset(), new BytesRef(PHRASE1), 1);
+
+        Passage passage2 = new Passage();
+        int phraseOff2 = DOC.indexOf(PHRASE2);
+        passage2.setStartOffset(phraseOff2);
+        passage2.setEndOffset(phraseOff2 + PHRASE2.length());
+        assertTrue(passage2.getStartOffset() >= 0 && passage2.getEndOffset() >
+                passage2.getStartOffset(), "passage2 offsets are positive");
+        passage2.addMatch(passage2.getStartOffset(), passage2.getEndOffset(), new BytesRef(PHRASE2), 1);
+
+        Passage passage3 = new Passage();
+        int phraseOff3 = DOC.indexOf(PHRASE3);
+        passage3.setStartOffset(phraseOff3);
+        passage3.setEndOffset(phraseOff3 + PHRASE3.length());
+        assertTrue(passage3.getStartOffset() >= 0 && passage3.getEndOffset() >
+                passage3.getStartOffset(), "passage3 offsets are positive");
+        passage3.addMatch(passage3.getStartOffset(), passage3.getEndOffset(), new BytesRef(PHRASE3), 1);
+
+        // Test with non-zero context limit.
+        ContextArgs args = new ContextArgs((short) 1, (short) 7);
+        ContextFormatter fmt = new ContextFormatter(args);
+        fmt.setUrl("http://example.com");
+        Object formatted = fmt.format(new Passage[] {passage1, passage2, passage3}, DOC);
+        assertNotNull(formatted, "format() result");
+
+        final String DOC_CTX_0 = "<span class=\"xovl\">" +
+                "<a class=\"s\" href=\"http://example.com#1\"><span class=\"l\">1</span>" +
+                "     Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#2\">" +
+                "<span class=\"l\">2</span> Mauris vel tortor vel nisl " +
+                "<b>efficitur fermentum</b> nec vel erat.</a><br/></span><span class=\"xovl\">" +
+                "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">3</span> " +
+                "Mauris diam nisl, tincidunt nec gravida sit amet, efficitur vitae</a><br/></span>" +
+                "<span class=\"ovl\"><a class=\"s\" href=\"http://example.com#5\">" +
+                "<span class=\"l\">5</span> </a><br/></span><span class=\"xovl\">" +
+                "<a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">6</span> " +
+                "----Maecenas vitae lacus velit <b>varius vulputate</b> ipsum sed laoreet. " +
+                "Nam maximus libero non ornare eg&hellip;</a><br/></span>" +
+                "<span class=\"xovl\"><a class=\"s\" href=\"http://example.com#7\">" +
+                "<span class=\"l\">7</span> </a><br/></span>";
+        assertLinesEqual(DOC_CTX_0, formatted.toString(), "format().toString()");
     }
 }
