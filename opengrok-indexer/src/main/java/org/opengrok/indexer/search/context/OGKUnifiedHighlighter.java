@@ -35,7 +35,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.uhighlight.UHComponents;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
@@ -75,8 +74,8 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * @throws IllegalArgumentException if any argument is null
      */
     public OGKUnifiedHighlighter(RuntimeEnvironment env,
-            IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
-        super(indexSearcher, indexAnalyzer);
+                                 UnifiedHighlighter.Builder uhBuilder) {
+        super(uhBuilder);
 
         if (env == null) {
             throw new IllegalArgumentException("env is null");

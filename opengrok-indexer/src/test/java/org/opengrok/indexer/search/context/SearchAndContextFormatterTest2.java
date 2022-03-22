@@ -39,6 +39,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -197,10 +198,14 @@ public class SearchAndContextFormatterTest2 {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
+        UnifiedHighlighter.Builder uhBuilder =  new UnifiedHighlighter.Builder(instance.getSearcher(), anz)
+//                .withMaxLength(maxDocCharsToAnalyze)
+//                .withHighlightPhrasesStrictly(true)
+//                .withHandleMultiTermQuery(true)
+                .withBreakIterator(StrictLineBreakIterator::new)
+                .withFormatter(formatter);
         OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-                instance.getSearcher(), anz);
-        uhi.setBreakIterator(StrictLineBreakIterator::new);
-        uhi.setFormatter(formatter);
+                uhBuilder);
         uhi.setTabSize(TABSIZE);
 
         ScoreDoc[] docs = instance.scoreDocs();

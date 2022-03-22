@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -124,9 +125,13 @@ class SearchAndContextFormatterTest {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, instance.getSearcher(), anz);
-        uhi.setBreakIterator(StrictLineBreakIterator::new);
-        uhi.setFormatter(formatter);
+        UnifiedHighlighter.Builder uhBuilder =  new UnifiedHighlighter.Builder(instance.getSearcher(), anz)
+//                .withMaxLength(maxDocCharsToAnalyze)
+//                .withHighlightPhrasesStrictly(true)
+//                .withHandleMultiTermQuery(true)
+                .withBreakIterator(StrictLineBreakIterator::new)
+                .withFormatter(formatter);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, uhBuilder);
 
         ScoreDoc[] docs = instance.scoreDocs();
         for (ScoreDoc scoreDoc : docs) {
