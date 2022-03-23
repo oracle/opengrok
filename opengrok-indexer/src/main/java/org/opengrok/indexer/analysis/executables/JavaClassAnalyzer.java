@@ -153,7 +153,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         if (jfbuilder == null) {
             String dstr = dout.toString();
-            doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.NO));
+            doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.YES));
 
             String rstr = rout.toString();
             doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.NO));
