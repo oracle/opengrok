@@ -77,6 +77,8 @@ class Command:
         if args_subst or args_append:
             self.fill_arg(args_append, args_subst)
 
+        self.out = None
+
     def __str__(self):
         return " ".join(self.cmd)
 
@@ -228,6 +230,8 @@ class Command:
 
         # If stderr redirection is off, setup a thread that will capture
         # stderr data.
+        stderr_thread = None
+        stderr_event = None
         if self.redirect_stderr:
             stderr_dest = subprocess.STDOUT
         else:
@@ -236,6 +240,7 @@ class Command:
                                          doprint=self.doprint)
             stderr_dest = stderr_thread
 
+        start_time = None
         try:
             start_time = time.time()
             try:
@@ -302,15 +307,16 @@ class Command:
             output_event.wait()
             self.out = output_thread.getoutput()
 
-            if not self.redirect_stderr:
+            if not self.redirect_stderr and stderr_thread and stderr_event:
                 stderr_thread.close()
                 self.logger.debug("Waiting on stderr thread to finish reading")
                 stderr_event.wait()
                 self.err = stderr_thread.getoutput()
 
-            elapsed_time = time.time() - start_time
-            self.logger.debug("Command '{}' took {} seconds".
-                              format(self, int(elapsed_time)))
+            if start_time:
+                elapsed_time = time.time() - start_time
+                self.logger.debug("Command '{}' took {} seconds".
+                                  format(self, int(elapsed_time)))
 
         if orig_work_dir:
             try:
