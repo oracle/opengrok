@@ -19,6 +19,7 @@ CDDL HEADER END
 Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2022, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="
@@ -213,10 +214,10 @@ Key "1" toggles <dfn>Intelligence Window</dfn>.  It gives the user many helper a
 
 <h5>Symbol Highlighting</h5>
 <p>
-Keys "2", "3", "4" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+Keys "2", "3", ..., "7" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
 <p>
-Key "5" toggles un-highlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+Key "8" toggles un-highlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
 <img src="<%= PageConfig.get(request).getCssDir() %>/img/symbol-highlighting.png" alt="symbol highlighting screenshot"/>
 
