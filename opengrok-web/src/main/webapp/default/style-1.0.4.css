@@ -876,7 +876,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     width: calc(
         100% /* whole window */
         - 20px /* padding-left + padding-right */
-        );
+    );
 }
 
 .intelli-window {
@@ -887,19 +887,31 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 .symbol-highlighted.hightlight-color-1 {
     /* yellow */
     background-color: #ffd700;
-    background-color: rgb(255, 215, 0);
 }
 
 .symbol-highlighted.hightlight-color-2 {
     /* green */
     background-color: #00ff00;
-    background-color: rgb(0, 255, 0);
 }
 
 .symbol-highlighted.hightlight-color-3 {
     /* blue */
     background-color: #00ccff;
-    background-color: rgb(0, 204, 255);
+}
+
+.symbol-highlighted.hightlight-color-4 {
+    /* purple */
+    background-color: #F653F8;
+}
+
+.symbol-highlighted.hightlight-color-5 {
+    /* orange */
+    background-color: rgb(242, 132, 34);
+}
+
+.symbol-highlighted.hightlight-color-6 {
+    /* light green */
+    background-color: #B6EBB5;
 }
 
 .messages-window {

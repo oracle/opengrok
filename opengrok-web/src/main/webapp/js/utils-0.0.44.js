@@ -875,6 +875,21 @@
                                 }
                                 break;
                             case 53: // 5
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                    that.highlight(that.symbol, 4);
+                                }
+                                break;
+                            case 54: // 6
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                    that.highlight(that.symbol, 5);
+                                }
+                                break;
+                            case 55: // 5
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                    that.highlight(that.symbol, 6);
+                                }
+                                break;
+                            case 56: // 7
                                 that.unhighlightAll();
                                 break;
                             case 110: // n
@@ -963,14 +978,18 @@
                     }
                     return this.getSymbols().filter(".symbol-highlighted").filter(function () {
                         return $(this).text() === symbol;
-                    }).removeClass('symbol-highlighted').
-                            removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
+                    }).removeClass('symbol-highlighted')
+                        .removeClass(function (index, className) {
+                            return (className.match(/(^|\s)hightlight-color-\S+/g) || []).join(' ');
+                        });
                 },
                 unhighlightAll: function () {
                     this.$last_highlighted_current = undefined;
                     return this.getSymbols().filter(".symbol-highlighted").
                             removeClass("symbol-highlighted").
-                            removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
+                            removeClass(function (index, className) {
+                                return (className.match (/(^|\s)hightlight-color-\S+/g) || []).join(' ');
+                            });
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {
