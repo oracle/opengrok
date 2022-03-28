@@ -885,12 +885,12 @@
                                     that.highlight(that.symbol, 5);
                                 }
                                 break;
-                            case 55: // 5
+                            case 55: // 7
                                 if (that.symbol && that.unhighlight(that.symbol).length === 0) {
                                     that.highlight(that.symbol, 6);
                                 }
                                 break;
-                            case 56: // 7
+                            case 56: // 8
                                 that.unhighlightAll();
                                 break;
                             case 110: // n
