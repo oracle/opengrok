@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -48,7 +48,7 @@ def fatal(msg, exit=True):
 def add_log_level_argument(parser):
     parser.add_argument('-l', '--loglevel', action=LogLevelAction,
                         help='Set log level (e.g. \"ERROR\")',
-                        default=logging.INFO)
+                        default="INFO")
 
 
 class LogLevelAction(argparse.Action):
