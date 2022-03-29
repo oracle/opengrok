@@ -78,6 +78,7 @@ def get_config_file(logger, uri, headers=None, timeout=None):
 def main():
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper '
                                                  'for indexing single project',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      parents=[get_java_parser()],
                                      prog=sys.argv[0])
     parser.add_argument('-t', '--template',

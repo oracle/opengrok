@@ -84,6 +84,7 @@ def main():
     ret = SUCCESS_EXITVAL
 
     parser = argparse.ArgumentParser(description='project mirroring',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      parents=[get_base_parser(
                                          tool_version=__version__)
                                      ])

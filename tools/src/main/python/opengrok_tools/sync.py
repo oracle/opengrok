@@ -122,6 +122,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
 
 def main():
     parser = argparse.ArgumentParser(description='Manage parallel workers.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      parents=[
                                          get_base_parser(
                                              tool_version=__version__)
