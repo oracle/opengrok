@@ -545,9 +545,11 @@ public final class HistoryGuru {
             try {
                 repoList.addAll(future.get());
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "failed to get results of repository scan");
+                LOGGER.log(Level.WARNING, "failed to get results of repository scan", e);
             }
         });
+
+        LOGGER.log(Level.FINER, "Discovered repositories: {0}", repoList);
 
         return repoList;
     }

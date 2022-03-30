@@ -1009,7 +1009,8 @@ public final class Indexer {
         }
 
         if (!searchPaths.isEmpty()) {
-            LOGGER.log(Level.INFO, "Scanning for repositories in {0}...", searchPaths);
+            LOGGER.log(Level.INFO, "Scanning for repositories in {0} (down to {1} levels below source root)",
+                    new Object[]{searchPaths, env.getScanningDepth()});
             Statistics stats = new Statistics();
             env.setRepositories(searchPaths.toArray(new String[0]));
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",

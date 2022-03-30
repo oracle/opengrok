@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -343,5 +343,10 @@ public class RepositoryInfo implements Serializable {
         int hash = 7;
         hash = 89 * hash + Objects.hashCode(this.directoryNameRelative);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return type + ":" + directoryNameRelative;
     }
 }
