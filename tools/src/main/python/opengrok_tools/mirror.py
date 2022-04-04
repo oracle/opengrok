@@ -121,7 +121,7 @@ def main():
                         help='Set response timeout in seconds '
                              'for RESTful API calls')
     parser.add_argument('--async_api_timeout', type=int, default=300,
-                        help='Set timeout in seconds for asynchronous RESTful API calls')
+                        help='Set timeout in seconds for asynchronous REST API calls')
 
     try:
         args = parser.parse_args()

@@ -72,7 +72,7 @@ class CommandSequenceBase:
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
                  driveon=False, url=None, env=None, http_headers=None,
-                 api_timeout=None):
+                 api_timeout=None, async_api_timeout=None):
         self.name = name
 
         if commands is None:
@@ -99,6 +99,7 @@ class CommandSequenceBase:
         self.env = env
         self.http_headers = http_headers
         self.api_timeout = api_timeout
+        self.async_api_timeout = async_api_timeout
 
         self.url = url
 
@@ -132,7 +133,8 @@ class CommandSequence(CommandSequenceBase):
                          cleanup=base.cleanup, driveon=base.driveon,
                          url=base.url, env=base.env,
                          http_headers=base.http_headers,
-                         api_timeout=base.api_timeout)
+                         api_timeout=base.api_timeout,
+                         async_api_timeout=base.async_api_timeout)
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
@@ -169,7 +171,9 @@ class CommandSequence(CommandSequenceBase):
                     call_rest_api(command.get(CALL_PROPERTY),
                                   {PROJECT_SUBST: self.name,
                                    URL_SUBST: self.url},
-                                  self.http_headers, self.api_timeout)
+                                  self.http_headers,
+                                  self.api_timeout,
+                                  self.async_api_timeout)
                 except RequestException as e:
                     self.logger.error("REST API call {} failed: {}".
                                       format(command, e))
@@ -229,7 +233,9 @@ class CommandSequence(CommandSequenceBase):
                     call_rest_api(cleanup_cmd.get(CALL_PROPERTY),
                                   {PROJECT_SUBST: self.name,
                                    URL_SUBST: self.url},
-                                  self.http_headers, self.api_timeout)
+                                  self.http_headers,
+                                  self.api_timeout,
+                                  self.async_api_timeout)
                 except RequestException as e:
                     self.logger.error("API call {} failed: {}".
                                       format(cleanup_cmd, e))
