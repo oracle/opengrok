@@ -189,8 +189,8 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
     :param substitutions: dictionary of pattern:value for command and/or
                           data substitution
     :param http_headers: optional dictionary of HTTP headers to be appended
-    :param timeout: optional timeout in seconds for API call response
-    :param api_timeout: optional timeout in seconds for asynchronous API call
+    :param timeout: optional connect/read timeout in seconds for API call
+    :param api_timeout: optional timeout in seconds for total duration of asynchronous API call
     :return value from given requests method
     """
 
@@ -208,9 +208,14 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
     uri = subst(uri, substitutions)
     logger.debug(f"URI after the substitutions: {uri}")
 
+    call_timeout = call.get("timeout")
+    if call_timeout:
+        logger.debug(f"Setting connect/read API timeout based on the call to {call_timeout}")
+        timeout = call_timeout
+
     call_api_timeout = call.get("api_timeout")
     if call_api_timeout:
-        logger.debug(f"Setting API timeout based on the call to {call_api_timeout}")
+        logger.debug(f"Setting async API timeout based on the call to {call_api_timeout}")
         api_timeout = call_api_timeout
 
     if data:
