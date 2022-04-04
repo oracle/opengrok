@@ -41,7 +41,8 @@ from .utils import is_exe, check_create_dir, get_int, get_bool
 from .opengrok import get_repos, get_repo_type, get_uri, delete_project_data
 from .hook import run_hook
 from .command import Command
-from .restful import call_rest_api, do_api_call, get_call_props
+from .commandsequence import ApiCall
+from .restful import call_rest_api, do_api_call
 
 from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
@@ -351,27 +352,29 @@ def run_command(cmd, project_name):
 
 def handle_disabled_project(config, project_name, disabled_msg, headers=None,
                             timeout=None, api_timeout=None):
+
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
 
         if disabled_command.get(CALL_PROPERTY):
             call = disabled_command.get(CALL_PROPERTY)
-            uri, _, data, _ = get_call_props(call)
-            text = None
+            api_call = ApiCall(call)
 
+            text = None
+            data = api_call.data
             if type(data) is dict:
                 text = data.get("text")
 
             # Is this perhaps OpenGrok API call to supply a Message for the UI ?
             # If so and there was a string supplied, append it to the message text.
-            if text and uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
+            if text and api_call.uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
                 logger.debug("Appending text to message: {}".
                              format(disabled_msg))
-                data["text"] = text + ": " + disabled_msg
+                api_call.data["text"] = text + ": " + disabled_msg
 
             try:
-                call_rest_api(call, {PROJECT_SUBST: project_name},
+                call_rest_api(api_call, {PROJECT_SUBST: project_name},
                               http_headers=headers, timeout=timeout, api_timeout=api_timeout)
             except RequestException as e:
                 logger.error("API call failed for disabled command of "

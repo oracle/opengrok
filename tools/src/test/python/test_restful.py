@@ -32,6 +32,7 @@ from mockito import verify, patch, mock
 
 from opengrok_tools.utils.restful import call_rest_api,\
     CONTENT_TYPE, APPLICATION_JSON, do_api_call
+from opengrok_tools.utils.commandsequence import ApiCall
 
 
 def test_replacement(monkeypatch):
@@ -64,7 +65,7 @@ def test_replacement(monkeypatch):
         with monkeypatch.context() as m:
             m.setattr("opengrok_tools.utils.restful.do_api_call",
                       mock_do_api_call)
-            assert call_rest_api(call, {pattern: value}). \
+            assert call_rest_api(ApiCall(call), {pattern: value}). \
                 status_code == okay_status
 
 
@@ -74,7 +75,7 @@ def test_unknown_method():
     pattern = "%FOO%"
     value = "BAR"
     with pytest.raises(Exception):
-        call_rest_api(call, {pattern: value})
+        call_rest_api(ApiCall(call), {pattern: value})
 
 
 def test_content_type(monkeypatch):
@@ -98,7 +99,7 @@ def test_content_type(monkeypatch):
             with monkeypatch.context() as m:
                 m.setattr("opengrok_tools.utils.restful.do_api_call",
                           mock_response)
-                call_rest_api(call)
+                call_rest_api(ApiCall(call))
 
 
 def test_headers_timeout(monkeypatch):
@@ -110,8 +111,8 @@ def test_headers_timeout(monkeypatch):
     headers = {'Tatsuo': 'Yasuko'}
     expected_timeout = 42
     expected_api_timeout = 24
-    command = {"uri": "http://localhost:8080/source/api/v1/bar",
-               "method": "GET", "data": "data", "headers": headers}
+    call = {"uri": "http://localhost:8080/source/api/v1/bar",
+            "method": "GET", "data": "data", "headers": headers}
     extra_headers = {'Mei': 'Totoro'}
 
     def mock_do_api_call(verb, uri, **kwargs):
@@ -124,7 +125,7 @@ def test_headers_timeout(monkeypatch):
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.restful.do_api_call",
                   mock_do_api_call)
-        call_rest_api(command,
+        call_rest_api(ApiCall(call),
                       http_headers=extra_headers,
                       timeout=expected_timeout,
                       api_timeout=expected_api_timeout)
@@ -171,7 +172,7 @@ def test_restful_fail(monkeypatch):
     with monkeypatch.context() as m:
         m.setattr("requests.put", mock_response)
         with pytest.raises(HTTPError):
-            call_rest_api({"uri": 'http://foo', "method": 'PUT', "data": 'data'})
+            call_rest_api(ApiCall({"uri": 'http://foo', "method": 'PUT', "data": 'data'}))
 
 
 def test_invalid_command_none():
@@ -181,14 +182,14 @@ def test_invalid_command_none():
 
 def test_invalid_command_uknown_key():
     with pytest.raises(Exception):
-        call_rest_api({"foo": "bar"})
+        call_rest_api(ApiCall({"foo": "bar"}))
 
 
 def test_invalid_command_list():
     with pytest.raises(Exception):
-        call_rest_api(["foo", "bar"])
+        call_rest_api(ApiCall(["foo", "bar"]))
 
 
 def test_invalid_command_bad_uri():
     with pytest.raises(Exception):
-        call_rest_api({"uri": "foo", "method": "PUT", "data": "data", "headers": "headers"})
+        call_rest_api(ApiCall({"uri": "foo", "method": "PUT", "data": "data", "headers": "headers"}))
