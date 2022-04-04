@@ -1,8 +1,9 @@
 commands:
-- command:
-  - '%URL%api/v1/messages'
-  - POST
-  - messageLevel: warning
+- call:
+  uri: '%URL%api/v1/messages'
+  method: POST
+  data:
+    messageLevel: warning
     duration: PT1H
     tags: ['%PROJECT%']
     text: resync + reindex in progress
@@ -12,14 +13,16 @@ commands:
     -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
     -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
   limits: {RLIMIT_NOFILE: 1024}
-- command:
-  - '%URL%api/v1/messages?tag=%PROJECT%'
-  - DELETE
-  - 'resync + reindex in progress'
-  - 'Content-type': 'text/plain'
+- call:
+  uri: '%URL%api/v1/messages?tag=%PROJECT%'
+  method: DELETE
+  data: 'resync + reindex in progress'
+  headers:
+    'Content-type': 'text/plain'
 cleanup:
-- command:
-  - '%URL%api/v1/messages?tag=%PROJECT%'
-  - DELETE
-  - 'resync + reindex in progress'
-  - 'Content-type': 'text/plain'
+- call:
+  uri: '%URL%api/v1/messages?tag=%PROJECT%'
+  method: DELETE
+  data: 'resync + reindex in progress'
+  headers:
+    'Content-type': 'text/plain'
