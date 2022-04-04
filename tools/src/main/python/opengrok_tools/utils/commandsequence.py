@@ -26,14 +26,13 @@ import logging
 from requests.exceptions import RequestException
 
 from .command import Command
-from .utils import is_web_uri
 from .exitvals import (
     CONTINUE_EXITVAL,
     SUCCESS_EXITVAL,
     FAILURE_EXITVAL
 )
 from .restful import call_rest_api
-from .patterns import PROJECT_SUBST, COMMAND_PROPERTY, URL_SUBST
+from .patterns import PROJECT_SUBST, COMMAND_PROPERTY, CALL_PROPERTY, URL_SUBST
 import re
 
 
@@ -51,13 +50,16 @@ def check_command_property(command):
         raise CommandConfigurationException("command '{}' is not a dictionary".format(command))
 
     command_value = command.get(COMMAND_PROPERTY)
-    if command_value is None:
-        raise CommandConfigurationException("command dictionary has no '{}' key: {}".
-                                            format(COMMAND_PROPERTY, command))
+    call_value = command.get(CALL_PROPERTY)
+    if command_value is None and call_value is None:
+        raise CommandConfigurationException(f"command dictionary has unknown key: {command}")
 
-    if not isinstance(command_value, list):
+    if command_value and not isinstance(command_value, list):
         raise CommandConfigurationException("command value not a list: {}".
                                             format(command_value))
+    if call_value and not isinstance(call_value, dict):
+        raise CommandConfigurationException("call value not a dictionary: {}".
+                                            format(call_value))
 
 
 class CommandSequenceBase:
@@ -123,7 +125,6 @@ class CommandSequenceBase:
 
 
 class CommandSequence(CommandSequenceBase):
-
     re_program = re.compile('ERROR[:]*\\s+')
 
     def __init__(self, base):
@@ -163,20 +164,20 @@ class CommandSequence(CommandSequenceBase):
         """
 
         for command in self.commands:
-            cmd_value = command.get(COMMAND_PROPERTY)[0]
-            if cmd_value.startswith(URL_SUBST) or is_web_uri(cmd_value):
+            if command.get(CALL_PROPERTY):
                 try:
-                    call_rest_api(command, {PROJECT_SUBST: self.name,
-                                            URL_SUBST: self.url},
+                    call_rest_api(command.get(CALL_PROPERTY),
+                                  {PROJECT_SUBST: self.name,
+                                   URL_SUBST: self.url},
                                   self.http_headers, self.api_timeout)
                 except RequestException as e:
-                    self.logger.error("RESTful command {} failed: {}".
+                    self.logger.error("REST API call {} failed: {}".
                                       format(command, e))
                     self.failed = True
                     self.retcodes[str(command)] = FAILURE_EXITVAL
 
                     break
-            else:
+            elif command.get(COMMAND_PROPERTY):
                 command_args = command.get(COMMAND_PROPERTY)
                 command = Command(command_args,
                                   env_vars=command.get("env"),
@@ -185,12 +186,12 @@ class CommandSequence(CommandSequenceBase):
                                   args_subst={PROJECT_SUBST: self.name,
                                               URL_SUBST: self.url},
                                   args_append=[self.name], excl_subst=True)
-                retcode = self.run_command(command)
+                ret_code = self.run_command(command)
 
                 # If a command exits with non-zero return code,
                 # terminate the sequence of commands.
-                if retcode != SUCCESS_EXITVAL:
-                    if retcode == CONTINUE_EXITVAL:
+                if ret_code != SUCCESS_EXITVAL:
+                    if ret_code == CONTINUE_EXITVAL:
                         if not self.driveon:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break".
@@ -206,11 +207,13 @@ class CommandSequence(CommandSequenceBase):
                     else:
                         self.logger.error("command '{}' for project {} failed "
                                           "with code {}, breaking".
-                                          format(command, self.name, retcode))
+                                          format(command, self.name, ret_code))
                         self.failed = True
                         self.run_cleanup()
 
                     break
+            else:
+                raise Exception(f"unknown command: {command}")
 
     def run_cleanup(self):
         """
@@ -221,16 +224,16 @@ class CommandSequence(CommandSequenceBase):
             return
 
         for cleanup_cmd in self.cleanup:
-            arg0 = cleanup_cmd.get(COMMAND_PROPERTY)[0]
-            if arg0.startswith(URL_SUBST) or is_web_uri(arg0):
+            if cleanup_cmd.get(CALL_PROPERTY):
                 try:
-                    call_rest_api(cleanup_cmd, {PROJECT_SUBST: self.name,
-                                                URL_SUBST: self.url},
+                    call_rest_api(cleanup_cmd.get(CALL_PROPERTY),
+                                  {PROJECT_SUBST: self.name,
+                                   URL_SUBST: self.url},
                                   self.http_headers, self.api_timeout)
                 except RequestException as e:
-                    self.logger.error("RESTful command {} failed: {}".
+                    self.logger.error("API call {} failed: {}".
                                       format(cleanup_cmd, e))
-            else:
+            elif cleanup_cmd.get(COMMAND_PROPERTY):
                 command_args = cleanup_cmd.get(COMMAND_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
@@ -245,6 +248,8 @@ class CommandSequence(CommandSequenceBase):
                                       "code {}".
                                       format(cmd.cmd, cmd.getretcode()))
                     self.logger.info('output: {}'.format(cmd.getoutputstr()))
+            else:
+                raise Exception(f"unknown type of action: {cleanup_cmd}")
 
     def print_outputs(self, logger, loglevel=logging.INFO, lines=False):
         """

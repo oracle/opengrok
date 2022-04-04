@@ -41,7 +41,7 @@ from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
-from .utils.utils import is_web_uri
+from .utils.webutil import is_web_uri
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.3"
+__version__ = "1.4"
 
 
 def worker(base):

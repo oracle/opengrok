@@ -33,7 +33,7 @@ from requests.exceptions import HTTPError
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
     CommandSequenceBase, CommandConfigurationException
-from opengrok_tools.utils.patterns import PROJECT_SUBST, COMMAND_PROPERTY
+from opengrok_tools.utils.patterns import PROJECT_SUBST, CALL_PROPERTY
 
 
 def test_str():
@@ -62,8 +62,7 @@ def test_invalid_configuration_commands_no_command():
         CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
                                                     {"foo": "bar"}]))
 
-    assert str(exc_info.value).startswith("command dictionary has no '{}' key".
-                                          format(COMMAND_PROPERTY))
+    assert str(exc_info.value).startswith("command dictionary has unknown key")
 
 
 def test_invalid_configuration_commands_no_list():
@@ -212,7 +211,7 @@ def test_restful_fail(monkeypatch):
 
     commands = CommandSequence(
         CommandSequenceBase("test-cleanup-list",
-                            [{'command': ['http://foo', 'PUT', 'data']}]))
+                            [{CALL_PROPERTY: {"uri": 'http://foo', "method": 'PUT', "data": 'data'}}]))
     assert commands is not None
     with monkeypatch.context() as m:
         m.setattr("requests.put", mock_response)
@@ -225,13 +224,15 @@ def test_headers_init():
 
     # First verify that header parameter of a command does not impact class member.
     commands = CommandSequence(CommandSequenceBase("opengrok-master",
-                                                   [{'command': ['http://foo', 'PUT', 'data', headers]}]))
+                                                   [{CALL_PROPERTY: {"uri": 'http://foo', "method": 'PUT',
+                                                                     "data": 'data', "headers": headers}}]))
 
     assert commands.http_headers is None
 
     # Second, verify that init function propagates the headers.
     commands = CommandSequence(CommandSequenceBase("opengrok-master",
-                                                   [{'command': ['http://foo', 'PUT', 'data']}],
+                                                   [{CALL_PROPERTY: {"uri": 'http://foo',
+                                                                     "method": 'PUT', "data": 'data'}}],
                                                    http_headers=headers))
 
     assert commands.http_headers == headers

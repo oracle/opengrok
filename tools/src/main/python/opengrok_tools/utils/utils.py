@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -26,7 +26,6 @@ from shutil import which
 from logging import log
 import logging
 import sys
-from urllib.parse import urlparse
 from distutils import util
 from .exitvals import (
     FAILURE_EXITVAL,
@@ -114,11 +113,3 @@ def get_bool(logger, name, value):
     except ValueError:
         logger.error("'{}' is not a number: {}".format(name, value))
         return None
-
-
-def is_web_uri(url):
-    """
-    Check if given string is web URL.
-    """
-    o = urlparse(url)
-    return o.scheme in ['http', 'https']

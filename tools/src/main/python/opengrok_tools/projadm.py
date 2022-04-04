@@ -42,7 +42,8 @@ from .utils.log import get_console_logger, get_class_basename, \
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value, get_repos
 from .utils.parsers import get_base_parser, get_headers, add_http_headers
-from .utils.utils import get_command, is_web_uri
+from .utils.utils import get_command
+from .utils.webutil import is_web_uri
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL

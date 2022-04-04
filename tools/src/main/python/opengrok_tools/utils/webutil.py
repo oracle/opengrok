@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018-2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 from urllib.parse import urlparse
@@ -45,3 +45,11 @@ def get_proxies(url):
         return {'http': None, 'https': None}
     else:
         return None
+
+
+def is_web_uri(url):
+    """
+    Check if given string is web URL.
+    """
+    o = urlparse(url)
+    return o.scheme in ['http', 'https']

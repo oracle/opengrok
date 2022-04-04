@@ -49,7 +49,8 @@ from .utils.log import get_console_logger, get_class_basename, \
 from .utils.opengrok import get_config_value, list_indexed_projects
 from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
-from .utils.utils import get_int, is_web_uri
+from .utils.utils import get_int
+from .utils.webutil import is_web_uri
 from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
     mirror_project, HOOKDIR_PROPERTY, CMD_TIMEOUT_PROPERTY, \
     HOOK_TIMEOUT_PROPERTY
@@ -58,7 +59,7 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 OPENGROK_NO_MIRROR_ENV = "OPENGROK_NO_MIRROR"
 
