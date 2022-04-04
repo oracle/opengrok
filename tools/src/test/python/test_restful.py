@@ -131,6 +131,30 @@ def test_headers_timeout(monkeypatch):
                       api_timeout=expected_api_timeout)
 
 
+def test_api_call_timeout_override(monkeypatch):
+    """
+    Test that ApiCall object timeouts override timeouts passed as call_rest_api() arguments.
+    """
+    expected_timeout = 42
+    expected_api_timeout = 24
+
+    call = {"uri": "http://localhost:8080/source/api/v1/bar",
+            "method": "POST", "data": "data",
+            "api_timeout": expected_timeout,
+            "async_api_timeout": expected_api_timeout}
+
+    def mock_do_api_call(verb, uri, **kwargs):
+        assert kwargs['timeout'] == expected_timeout
+        assert kwargs['api_timeout'] == expected_api_timeout
+
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.restful.do_api_call",
+                  mock_do_api_call)
+        call_rest_api(ApiCall(call),
+                      timeout=expected_timeout + 1,
+                      api_timeout=expected_api_timeout + 1)
+
+
 def test_headers_timeout_requests():
     """
     Test that headers and timeout parameters from do_call_api() are passed
