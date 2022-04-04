@@ -230,7 +230,7 @@ def test_disabled_command_api():
         assert mirror_project(config, project_name, False, False,
                               None, None) == CONTINUE_EXITVAL
         verify(opengrok_tools.utils.mirror). \
-            call_rest_api(config.get(DISABLED_CMD_PROPERTY).get(CALL_PROPERTY),
+            call_rest_api(ANY,
                           {PROJECT_SUBST: project_name},
                           http_headers=None, timeout=None, api_timeout=None)
 
@@ -242,14 +242,10 @@ def test_disabled_command_api_text_append(monkeypatch):
 
     text_to_append = "foo bar"
 
-    def mock_call_rest_api(command, b, http_headers=None, timeout=None, api_timeout=None):
-        disabled_command = config.get(DISABLED_CMD_PROPERTY)
-        assert disabled_command
-        command_args = disabled_command.get(COMMAND_PROPERTY)
-        assert command_args
-        data = command_args[2]
+    def mock_call_rest_api(call, b, http_headers=None, timeout=None, api_timeout=None):
+        call_data = call.data
         assert data
-        text = data.get("text")
+        text = call_data.get("text")
         assert text
         assert text.find(text_to_append)
 
@@ -265,9 +261,9 @@ def test_disabled_command_api_text_append(monkeypatch):
                 'text': 'disabled project'}
         config = {
             DISABLED_CMD_PROPERTY: {
-                COMMAND_PROPERTY: [
-                    "http://localhost:8080/source/api/v1/foo",
-                    "POST", data]
+                CALL_PROPERTY: {
+                    "uri": "http://localhost:8080/source/api/v1/foo",
+                    "method": "POST", "data": data}
             },
             PROJECTS_PROPERTY: {
                 project_name: {

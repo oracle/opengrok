@@ -36,8 +36,50 @@ from .patterns import PROJECT_SUBST, COMMAND_PROPERTY, CALL_PROPERTY, URL_SUBST
 import re
 
 
+API_TIMEOUT_PROPERTY = "api_timeout"
+ASYNC_API_TIMEOUT_PROPERTY = "async_api_timeout"
+HEADERS_PROPERTY = "headers"
+METHOD_PROPERTY = "method"
+URI_PROPERTY = "uri"
+
+
 class CommandConfigurationException(Exception):
     pass
+
+
+def check_call_config(call):
+    """
+    :param call: dictionary with API call configuration
+    """
+    if not isinstance(call, dict):
+        raise CommandConfigurationException("call value not a dictionary: {}".
+                                            format(call))
+
+    uri = call.get(URI_PROPERTY)
+    if not uri:
+        raise CommandConfigurationException(f"no '{URI_PROPERTY}' key present in {call}")
+
+    method = call.get(METHOD_PROPERTY)
+    if method and method.upper() not in ['GET', 'POST', 'PUT', 'DELETE']:
+        raise CommandConfigurationException(f"invalid HTTP method: {method}")
+
+    headers = call.get(HEADERS_PROPERTY)
+    if headers and not isinstance(headers, dict):
+        raise CommandConfigurationException("headers must be a dictionary")
+
+    call_timeout = call.get(API_TIMEOUT_PROPERTY)
+    if call_timeout:
+        try:
+            int(call_timeout)
+        except ValueError as exc:
+            raise CommandConfigurationException(f"{API_TIMEOUT_PROPERTY} not an integer", exc)
+
+    call_api_timeout = call.get(ASYNC_API_TIMEOUT_PROPERTY)
+    if call_api_timeout:
+        try:
+            int(call_api_timeout)
+        except ValueError as exc:
+            raise CommandConfigurationException(f"{ASYNC_API_TIMEOUT_PROPERTY} not an integer", exc)
 
 
 def check_command_property(command):
@@ -46,6 +88,7 @@ def check_command_property(command):
     w.r.t. individual commands.
     :param command: command element
     """
+
     if not isinstance(command, dict):
         raise CommandConfigurationException("command '{}' is not a dictionary".format(command))
 
@@ -57,9 +100,42 @@ def check_command_property(command):
     if command_value and not isinstance(command_value, list):
         raise CommandConfigurationException("command value not a list: {}".
                                             format(command_value))
-    if call_value and not isinstance(call_value, dict):
-        raise CommandConfigurationException("call value not a dictionary: {}".
-                                            format(call_value))
+    if call_value:
+        check_call_config(call_value)
+
+
+class ApiCall:
+    """
+    Container class to store properties of API call.
+    """
+    def __init__(self, call_dict):
+        """
+        Initialize the object from a dictionary.
+        :param call_dict: dictionary
+        """
+        if not isinstance(call_dict, dict):
+            raise CommandConfigurationException(f"not a dictionary: {call_dict}")
+
+        self.uri = call_dict.get(URI_PROPERTY)
+        self.method = call_dict.get(METHOD_PROPERTY)
+        if not self.method:
+            self.method = "GET"
+
+        self.data = call_dict.get("data")
+
+        self.headers = call_dict.get(HEADERS_PROPERTY)
+        if not self.headers:
+            self.headers = {}
+
+        self.api_timeout = None
+        call_timeout = call_dict.get(API_TIMEOUT_PROPERTY)
+        if call_timeout:
+            self.api_timeout = call_timeout
+
+        self.async_api_timeout = None
+        call_api_timeout = call_dict.get(ASYNC_API_TIMEOUT_PROPERTY)
+        if call_api_timeout:
+            self.async_api_timeout = call_api_timeout
 
 
 class CommandSequenceBase:
@@ -168,7 +244,7 @@ class CommandSequence(CommandSequenceBase):
         for command in self.commands:
             if command.get(CALL_PROPERTY):
                 try:
-                    call_rest_api(command.get(CALL_PROPERTY),
+                    call_rest_api(ApiCall(command.get(CALL_PROPERTY)),
                                   {PROJECT_SUBST: self.name,
                                    URL_SUBST: self.url},
                                   self.http_headers,
@@ -230,7 +306,7 @@ class CommandSequence(CommandSequenceBase):
         for cleanup_cmd in self.cleanup:
             if cleanup_cmd.get(CALL_PROPERTY):
                 try:
-                    call_rest_api(cleanup_cmd.get(CALL_PROPERTY),
+                    call_rest_api(ApiCall(cleanup_cmd.get(CALL_PROPERTY)),
                                   {PROJECT_SUBST: self.name,
                                    URL_SUBST: self.url},
                                   self.http_headers,

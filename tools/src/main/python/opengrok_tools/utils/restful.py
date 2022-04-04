@@ -143,41 +143,6 @@ def subst(src, substitutions):
     return src
 
 
-def get_call_props(call):
-    """
-    Retrieve the basic properties of a call.
-    :param call: dictionary
-    :return: URI, HTTP method, data, headers
-    """
-
-    logger = logging.getLogger(__name__)
-
-    uri = call.get("uri")
-    if not uri:
-        raise Exception(f"no 'uri' key present in {call}")
-    if not is_web_uri(uri):
-        raise Exception(f"not a valid URI: {uri}")
-
-    method = call.get("method")
-    if not method:
-        logger.debug(f"no 'method' key in {call}, using GET")
-        method = "GET"
-
-    data = call.get("data")
-
-    try:
-        headers = call.get("headers")
-        if headers and not isinstance(headers, dict):
-            raise Exception("headers must be a dictionary")
-    except IndexError:
-        headers = {}
-
-    if headers is None:
-        headers = {}
-
-    return uri, method, data, headers
-
-
 def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api_timeout=None):
     """
     Make REST API call. Occurrence of the pattern in the URI
@@ -185,7 +150,7 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
 
     Default content type is application/json.
 
-    :param call: dictionary describing the properties of the API call
+    :param call: ApiCall object
     :param substitutions: dictionary of pattern:value for command and/or
                           data substitution
     :param http_headers: optional dictionary of HTTP headers to be appended
@@ -196,28 +161,31 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
 
     logger = logging.getLogger(__name__)
 
-    uri, verb, data, headers = get_call_props(call)
-
-    logger.debug(f"Headers from the call structure: {headers}")
+    logger.debug(f"Headers from the ApiCall object: {call.headers}")
+    headers = call.headers
     if http_headers:
-        logger.debug("Updating HTTP headers for call {} with {}".
+        logger.debug("Updating HTTP headers for API call {} with {}".
                      format(call, http_headers))
         headers.update(http_headers)
 
     logger.debug("Performing URI substitutions")
-    uri = subst(uri, substitutions)
+    uri = subst(call.uri, substitutions)
     logger.debug(f"URI after the substitutions: {uri}")
 
-    call_timeout = call.get("api_timeout")
+    if not is_web_uri(uri):
+        raise Exception(f"not a valid URI: {uri}")
+
+    call_timeout = call.api_timeout
     if call_timeout:
         logger.debug(f"Setting connect/read API timeout based on the call to {call_timeout}")
         timeout = call_timeout
 
-    call_api_timeout = call.get("async_api_timeout")
+    call_api_timeout = call.async_api_timeout
     if call_api_timeout:
         logger.debug(f"Setting async API timeout based on the call to {call_api_timeout}")
         api_timeout = call_api_timeout
 
+    data = call.data
     if data:
         header_names = [x.lower() for x in headers.keys()]
         if CONTENT_TYPE.lower() not in header_names:
@@ -235,4 +203,4 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
         data = subst(data, substitutions)
         logger.debug("entity data: {}".format(data))
 
-    return do_api_call(verb, uri, headers=headers, data=data, timeout=timeout, api_timeout=api_timeout)
+    return do_api_call(call.method, uri, headers=headers, data=data, timeout=timeout, api_timeout=api_timeout)
