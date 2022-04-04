@@ -27,8 +27,7 @@ import time
 
 import requests
 
-from .patterns import COMMAND_PROPERTY
-from .webutil import get_proxies
+from .webutil import get_proxies, is_web_uri
 
 CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
@@ -94,10 +93,10 @@ def wait_for_async_api(response, api_timeout=None, headers=None, timeout=None):
     return response
 
 
-def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, api_timeout=None):
+def do_api_call(method, uri, params=None, headers=None, data=None, timeout=None, api_timeout=None):
     """
     Perform an API call. Will raise an exception if the request fails.
-    :param verb: string holding HTTP verb
+    :param method: string holding HTTP verb
     :param uri: URI string
     :param params: request parameters
     :param headers: HTTP headers dictionary
@@ -109,12 +108,12 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, a
     """
     logger = logging.getLogger(__name__)
 
-    handler = getattr(requests, verb.lower())
+    handler = getattr(requests, method.lower())
     if handler is None or not callable(handler):
-        raise Exception('Unknown HTTP verb: {}'.format(verb))
+        raise Exception('Unknown HTTP method: {}'.format(method))
 
     logger.debug("{} API call: {} with data '{}', connect timeout {} seconds, API timeout {} seconds and headers: {}".
-                 format(verb, uri, data, timeout, api_timeout, headers))
+                 format(method, uri, data, timeout, api_timeout, headers))
     r = handler(
         uri,
         data=data,
@@ -144,15 +143,49 @@ def subst(src, substitutions):
     return src
 
 
-def call_rest_api(command, substitutions=None, http_headers=None, timeout=None, api_timeout=None):
+def get_call_props(call):
     """
-    Make RESTful API call. Occurrence of the pattern in the URI
+    Retrieve the basic properties of a call.
+    :param call: dictionary
+    :return: URI, HTTP method, data, headers
+    """
+
+    logger = logging.getLogger(__name__)
+
+    uri = call.get("uri")
+    if not uri:
+        raise Exception(f"no 'uri' key present in {call}")
+    if not is_web_uri(uri):
+        raise Exception(f"not a valid URI: {uri}")
+
+    method = call.get("method")
+    if not method:
+        logger.debug(f"no 'method' key in {call}, using GET")
+        method = "GET"
+
+    data = call.get("data")
+
+    try:
+        headers = call.get("headers")
+        if headers and not isinstance(headers, dict):
+            raise Exception("headers must be a dictionary")
+    except IndexError:
+        headers = {}
+
+    if headers is None:
+        headers = {}
+
+    return uri, method, data, headers
+
+
+def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api_timeout=None):
+    """
+    Make REST API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
 
     Default content type is application/json.
 
-    :param command: command (list of URI, HTTP verb, data payload,
-                             HTTP header dictionary)
+    :param call: dictionary describing the properties of the API call
     :param substitutions: dictionary of pattern:value for command and/or
                           data substitution
     :param http_headers: optional dictionary of HTTP headers to be appended
@@ -163,34 +196,27 @@ def call_rest_api(command, substitutions=None, http_headers=None, timeout=None, 
 
     logger = logging.getLogger(__name__)
 
-    if not isinstance(command, dict) or command.get(COMMAND_PROPERTY) is None:
-        raise Exception("invalid command")
+    uri, verb, data, headers = get_call_props(call)
 
-    command = command[COMMAND_PROPERTY]
-
-    uri, verb, data, *_ = command
-    try:
-        headers = command[3]
-        if headers and not isinstance(headers, dict):
-            raise Exception("headers must be a dictionary")
-    except IndexError:
-        headers = {}
-
-    if headers is None:
-        headers = {}
-
-    logger.debug("Headers from the command: {}".format(headers))
+    logger.debug(f"Headers from the call structure: {headers}")
     if http_headers:
-        logger.debug("Updating HTTP headers for command {} with {}".
-                     format(command, http_headers))
+        logger.debug("Updating HTTP headers for call {} with {}".
+                     format(call, http_headers))
         headers.update(http_headers)
 
+    logger.debug("Performing URI substitutions")
     uri = subst(uri, substitutions)
-    header_names = [x.lower() for x in headers.keys()]
+    logger.debug(f"URI after the substitutions: {uri}")
+
+    call_api_timeout = call.get("api_timeout")
+    if call_api_timeout:
+        logger.debug(f"Setting API timeout based on the call to {call_api_timeout}")
+        api_timeout = call_api_timeout
 
     if data:
+        header_names = [x.lower() for x in headers.keys()]
         if CONTENT_TYPE.lower() not in header_names:
-            logger.debug("Adding header: {} = {}".
+            logger.debug("Adding HTTP header: {} = {}".
                          format(CONTENT_TYPE, APPLICATION_JSON))
             headers[CONTENT_TYPE] = APPLICATION_JSON
 

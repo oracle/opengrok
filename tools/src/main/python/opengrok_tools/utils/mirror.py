@@ -36,12 +36,12 @@ from .exitvals import (
     CONTINUE_EXITVAL,
     SUCCESS_EXITVAL
 )
-from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
-from .utils import is_exe, check_create_dir, get_int, is_web_uri, get_bool
+from .patterns import PROJECT_SUBST, COMMAND_PROPERTY, CALL_PROPERTY
+from .utils import is_exe, check_create_dir, get_int, get_bool
 from .opengrok import get_repos, get_repo_type, get_uri, delete_project_data
 from .hook import run_hook
 from .command import Command
-from .restful import call_rest_api, do_api_call
+from .restful import call_rest_api, do_api_call, get_call_props
 
 from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
@@ -355,30 +355,30 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
     if disabled_command:
         logger = logging.getLogger(__name__)
 
-        logger.debug("Calling disabled command: {}".format(disabled_command))
-        command_args = disabled_command.get(COMMAND_PROPERTY)
-        uri = command_args[0]
-        if is_web_uri(uri):
-            # Is this perhaps OpenGrok API call to supply a Message ?
-            # If so and there was a string supplied, append it
-            # to the message text.
-            data = command_args[2]
+        if disabled_command.get(CALL_PROPERTY):
+            call = disabled_command.get(CALL_PROPERTY)
+            uri, _, data, _ = get_call_props(call)
             text = None
+
             if type(data) is dict:
                 text = data.get("text")
+
+            # Is this perhaps OpenGrok API call to supply a Message for the UI ?
+            # If so and there was a string supplied, append it to the message text.
             if text and uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
                 logger.debug("Appending text to message: {}".
                              format(disabled_msg))
-                command_args[2]["text"] = text + ": " + disabled_msg
+                data["text"] = text + ": " + disabled_msg
 
             try:
-                call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
+                call_rest_api(call, {PROJECT_SUBST: project_name},
                               http_headers=headers, timeout=timeout, api_timeout=api_timeout)
             except RequestException as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
                              format(project_name, e))
-        else:
+        elif disabled_command.get(COMMAND_PROPERTY):
+            command_args = disabled_command.get(COMMAND_PROPERTY)
             args = [project_name]
             if disabled_msg and type(disabled_msg) is str:
                 args.append(disabled_command)
@@ -389,6 +389,8 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
                           args_subst={PROJECT_SUBST: project_name},
                           args_append=args, excl_subst=True)
             run_command(cmd, project_name)
+        else:
+            raise Exception(f"unknown disabled action: {disabled_command}")
 
 
 def get_mirror_retcode(ignore_errors, value):

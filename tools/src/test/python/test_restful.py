@@ -32,7 +32,6 @@ from mockito import verify, patch, mock
 
 from opengrok_tools.utils.restful import call_rest_api,\
     CONTENT_TYPE, APPLICATION_JSON, do_api_call
-from opengrok_tools.utils.patterns import COMMAND_PROPERTY
 
 
 def test_replacement(monkeypatch):
@@ -58,35 +57,35 @@ def test_replacement(monkeypatch):
         return MockResponse()
 
     for verb in ["PUT", "POST", "DELETE"]:
-        command = {"command": ["http://localhost:8080/source/api/v1/%FOO%",
-                               verb, "foo%FOO%bar"]}
+        call = {"uri": "http://localhost:8080/source/api/v1/%FOO%",
+                "method": verb, "data": "foo%FOO%bar"}
         pattern = "%FOO%"
         value = "BAR"
         with monkeypatch.context() as m:
             m.setattr("opengrok_tools.utils.restful.do_api_call",
                       mock_do_api_call)
-            assert call_rest_api(command, {pattern: value}). \
+            assert call_rest_api(call, {pattern: value}). \
                 status_code == okay_status
 
 
-def test_unknown_verb():
-    command = {"command": ["http://localhost:8080/source/api/v1/foo",
-                           "FOOBAR", "data"]}
+def test_unknown_method():
+    call = {"uri": "http://localhost:8080/source/api/v1/foo",
+            "method": "FOOBAR", "data": "data"}
     pattern = "%FOO%"
     value = "BAR"
     with pytest.raises(Exception):
-        call_rest_api(command, {pattern: value})
+        call_rest_api(call, {pattern: value})
 
 
 def test_content_type(monkeypatch):
     """
     Test HTTP Content-type header handling.
     """
-    for verb in ["PUT", "POST", "DELETE"]:
+    for method in ["PUT", "POST", "DELETE"]:
         text_plain_header = {CONTENT_TYPE: 'text/plain'}
         for header_arg in [text_plain_header, None]:
-            command = {"command": ["http://localhost:8080/source/api/v1/foo",
-                                   verb, "data", header_arg]}
+            call = {"uri": "http://localhost:8080/source/api/v1/foo",
+                    "method": method, "data": "data", "headers": header_arg}
 
             def mock_response(verb, uri, **kwargs):
                 headers = kwargs['headers']
@@ -99,7 +98,7 @@ def test_content_type(monkeypatch):
             with monkeypatch.context() as m:
                 m.setattr("opengrok_tools.utils.restful.do_api_call",
                           mock_response)
-                call_rest_api(command)
+                call_rest_api(call)
 
 
 def test_headers_timeout(monkeypatch):
@@ -111,8 +110,8 @@ def test_headers_timeout(monkeypatch):
     headers = {'Tatsuo': 'Yasuko'}
     expected_timeout = 42
     expected_api_timeout = 24
-    command = {"command": ["http://localhost:8080/source/api/v1/bar",
-                           'GET', "data", headers]}
+    command = {"uri": "http://localhost:8080/source/api/v1/bar",
+               "method": "GET", "data": "data", "headers": headers}
     extra_headers = {'Mei': 'Totoro'}
 
     def mock_do_api_call(verb, uri, **kwargs):
@@ -172,18 +171,24 @@ def test_restful_fail(monkeypatch):
     with monkeypatch.context() as m:
         m.setattr("requests.put", mock_response)
         with pytest.raises(HTTPError):
-            call_rest_api({'command': ['http://foo', 'PUT', 'data']})
+            call_rest_api({"uri": 'http://foo', "method": 'PUT', "data": 'data'})
 
 
-def test_invalid_command_negative():
+def test_invalid_command_none():
     with pytest.raises(Exception):
         call_rest_api(None)
 
+
+def test_invalid_command_uknown_key():
     with pytest.raises(Exception):
         call_rest_api({"foo": "bar"})
 
+
+def test_invalid_command_list():
     with pytest.raises(Exception):
         call_rest_api(["foo", "bar"])
 
+
+def test_invalid_command_bad_uri():
     with pytest.raises(Exception):
-        call_rest_api({COMMAND_PROPERTY: ["foo", "PUT", "data", "headers"]})
+        call_rest_api({"uri": "foo", "method": "PUT", "data": "data", "headers": "headers"})

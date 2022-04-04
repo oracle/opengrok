@@ -49,7 +49,7 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
     INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, \
     HOOKDIR_PROPERTY, HOOK_POST_PROPERTY, COMMANDS_PROPERTY
-from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
+from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST, CALL_PROPERTY
 
 
 def test_empty_project_configuration():
@@ -218,9 +218,9 @@ def test_disabled_command_api():
         project_name = "foo"
         config = {
             DISABLED_CMD_PROPERTY: {
-                COMMAND_PROPERTY: [
-                    "http://localhost:8080/source/api/v1/foo",
-                    "POST", "data"]
+                CALL_PROPERTY: {
+                    "uri": "http://localhost:8080/source/api/v1/foo",
+                    "method": "POST", "data": "data"}
             },
             PROJECTS_PROPERTY: {
                 project_name: {DISABLED_PROPERTY: True}
@@ -230,7 +230,7 @@ def test_disabled_command_api():
         assert mirror_project(config, project_name, False, False,
                               None, None) == CONTINUE_EXITVAL
         verify(opengrok_tools.utils.mirror). \
-            call_rest_api(config.get(DISABLED_CMD_PROPERTY),
+            call_rest_api(config.get(DISABLED_CMD_PROPERTY).get(CALL_PROPERTY),
                           {PROJECT_SUBST: project_name},
                           http_headers=None, timeout=None, api_timeout=None)
 
