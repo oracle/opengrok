@@ -159,7 +159,7 @@ class CommandSequence(CommandSequenceBase):
         by project name, otherwise project name will be appended to the
         argument list of the command.
 
-        Any command entry that is a URI, will be used to submit RESTful API
+        Any command entry that is a URI, will be used to submit REST API
         request.
         """
 

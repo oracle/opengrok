@@ -208,12 +208,12 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
     uri = subst(uri, substitutions)
     logger.debug(f"URI after the substitutions: {uri}")
 
-    call_timeout = call.get("timeout")
+    call_timeout = call.get("api_timeout")
     if call_timeout:
         logger.debug(f"Setting connect/read API timeout based on the call to {call_timeout}")
         timeout = call_timeout
 
-    call_api_timeout = call.get("api_timeout")
+    call_api_timeout = call.get("async_api_timeout")
     if call_api_timeout:
         logger.debug(f"Setting async API timeout based on the call to {call_api_timeout}")
         api_timeout = call_api_timeout
