@@ -81,6 +81,20 @@ def test_invalid_configuration_commands_no_dict():
     assert str(exc_info.value).find("is not a dictionary") != -1
 
 
+def test_timeout_propagation():
+    """
+    Make sure the timeouts propagate from CommandSequenceBase to CommandSequence.
+    """
+    expected_timeout = 11
+    expected_api_timeout = 22
+    cmd_seq_base = CommandSequenceBase("foo", [{"command": ['foo']}],
+                                       api_timeout=expected_timeout,
+                                       async_api_timeout=expected_api_timeout)
+    cmd_seq = CommandSequence(cmd_seq_base)
+    assert cmd_seq.api_timeout == expected_timeout
+    assert cmd_seq.async_api_timeout == expected_api_timeout
+
+
 @pytest.mark.skipif(not os.path.exists('/bin/sh')
                     or not os.path.exists('/bin/echo'),
                     reason="requires Unix")
