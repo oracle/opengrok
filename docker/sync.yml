@@ -1,12 +1,12 @@
 commands:
 - call:
-  uri: '%URL%api/v1/messages'
-  method: POST
-  data:
-    messageLevel: warning
-    duration: PT1H
-    tags: ['%PROJECT%']
-    text: resync + reindex in progress
+    uri: '%URL%api/v1/messages'
+    method: POST
+    data:
+      messageLevel: warning
+      duration: PT1H
+      tags: ['%PROJECT%']
+      text: resync + reindex in progress
 - command: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml', -I, -U, '%URL%', '%PROJECT%']
 - command: [opengrok-reindex-project, --printoutput,
     --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
@@ -14,15 +14,15 @@ commands:
     -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
   limits: {RLIMIT_NOFILE: 1024}
 - call:
-  uri: '%URL%api/v1/messages?tag=%PROJECT%'
-  method: DELETE
-  data: 'resync + reindex in progress'
-  headers:
-    'Content-type': 'text/plain'
+    uri: '%URL%api/v1/messages?tag=%PROJECT%'
+    method: DELETE
+    data: 'resync + reindex in progress'
+    headers:
+      'Content-type': 'text/plain'
 cleanup:
 - call:
-  uri: '%URL%api/v1/messages?tag=%PROJECT%'
-  method: DELETE
-  data: 'resync + reindex in progress'
-  headers:
-    'Content-type': 'text/plain'
+    uri: '%URL%api/v1/messages?tag=%PROJECT%'
+    method: DELETE
+    data: 'resync + reindex in progress'
+    headers:
+      'Content-type': 'text/plain'
