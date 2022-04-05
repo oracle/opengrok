@@ -122,6 +122,7 @@ def do_api_call(method, uri, params=None, headers=None, data=None, timeout=None,
         proxies=get_proxies(uri),
         timeout=timeout
     )
+    logger.debug(f"API call result: {r}")
 
     if r is None:
         raise Exception("API call failed")
