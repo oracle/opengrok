@@ -96,7 +96,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
                                        cleanup=cleanup,
                                        driveon=driveon, url=uri,
                                        http_headers=http_headers,
-                                       api_timeout=timeout)
+                                       api_timeout=timeout,
+                                       async_api_timeout=api_timeout)
         cmds_base.append(cmd_base)
 
     # Map the commands into pool of workers, so they can be processed.
