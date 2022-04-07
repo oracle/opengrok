@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -33,6 +33,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import io.github.g00fy2.versioncompare.Version;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -182,7 +184,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         // so they need to be sorted according to revision.
         if (cvsrepo.getBranch() != null && !cvsrepo.getBranch().isEmpty()) {
             List<HistoryEntry> entries = history.getHistoryEntries();
-            entries.sort((o1, o2) -> o2.getRevision().compareTo(o1.getRevision()));
+            entries.sort((o1, o2) -> new Version(o2.getRevision()).compareTo(new Version(o1.getRevision())));
             history.setHistoryEntries(entries);
         }
 
