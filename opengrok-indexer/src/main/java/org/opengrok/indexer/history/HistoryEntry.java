@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -87,6 +88,12 @@ public class HistoryEntry implements Serializable {
                         String message, boolean active, Collection<String> files) {
         this(revision, date, author, message, active);
         this.files.addAll(files);
+    }
+
+    @VisibleForTesting
+    HistoryEntry(String revision) {
+        this();
+        this.revision = revision;
     }
 
     public String getLine() {
