@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.github.g00fy2.versioncompare.Version;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -158,6 +159,17 @@ class CVSHistoryParser implements Executor.StreamHandler {
     }
 
     /**
+     * Sort history entries in the object according to semantic ordering of the revision string.
+     * @param history {@link History} object
+     */
+    @VisibleForTesting
+    static void sortHistoryEntries(History history) {
+        List<HistoryEntry> entries = history.getHistoryEntries();
+        entries.sort((h1, h2) -> new Version(h2.getRevision()).compareTo(new Version(h1.getRevision())));
+        history.setHistoryEntries(entries);
+    }
+
+    /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
@@ -183,9 +195,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         // unsorted order (as a result of using '-r1.1:branch' for 'cvs log')
         // so they need to be sorted according to revision.
         if (cvsrepo.getBranch() != null && !cvsrepo.getBranch().isEmpty()) {
-            List<HistoryEntry> entries = history.getHistoryEntries();
-            entries.sort((o1, o2) -> new Version(o2.getRevision()).compareTo(new Version(o1.getRevision())));
-            history.setHistoryEntries(entries);
+            sortHistoryEntries(history);
         }
 
         return history;

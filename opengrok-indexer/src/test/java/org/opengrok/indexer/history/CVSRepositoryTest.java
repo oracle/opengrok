@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -31,8 +31,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,12 +115,10 @@ public class CVSRepositoryTest {
     }
 
     /**
-     * Get the CVS repository, test that getBranch() returns null if there is
-     * no branch.
-     * @throws Exception
+     * Get the CVS repository, test that getBranch() returns null if there is no branch.
      */
     @Test
-    public void testGetBranchNoBranch() throws Exception {
+    void testGetBranchNoBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
         CVSRepository cvsrepo = (CVSRepository) RepositoryFactory.getRepository(root);
@@ -131,10 +131,9 @@ public class CVSRepositoryTest {
      * with branch revision numbers.
      * Last, check that history entries of the file follow through before the
      * branch was created.
-     * @throws Exception
      */
     @Test
-    public void testNewBranch() throws Exception {
+    void testNewBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
 
@@ -145,8 +144,7 @@ public class CVSRepositoryTest {
 
         // Now the repository object can be instantiated so that determineBranch()
         // will be called.
-        CVSRepository cvsrepo
-            = (CVSRepository) RepositoryFactory.getRepository(root);
+        CVSRepository cvsrepo = (CVSRepository) RepositoryFactory.getRepository(root);
 
         assertEquals("mybranch", cvsrepo.getBranch());
 
@@ -172,10 +170,34 @@ public class CVSRepositoryTest {
     }
 
     /**
+     * Assert that revision strings in history entries are sorted semantically.
+     * This is necessary for displaying revisions on a branch in correct order.
+     */
+    @Test
+    void testRevisionSorting() {
+        HistoryEntry[] entries = {
+                                    new HistoryEntry("1.1"),
+                                    new HistoryEntry("1.12.200.2.2.3.50.2"),
+                                    new HistoryEntry("1.9"),
+                                    new HistoryEntry("1.12.200.2.2.3"),
+                                    new HistoryEntry("1.2"),
+                                    new HistoryEntry("1.12.200.1"),
+                                    new HistoryEntry("1.12.200.2.2.2"),
+                                 };
+        History history = new History(Arrays.stream(entries).collect(Collectors.toList()));
+        CVSHistoryParser.sortHistoryEntries(history);
+        List<String> revisionsActual = history.getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).collect(Collectors.toList());
+        List<String> revisionsExpected = List.of("1.12.200.2.2.3.50.2",
+                "1.12.200.2.2.3", "1.12.200.2.2.2", "1.12.200.1", "1.9", "1.2", "1.1");
+        assertEquals(revisionsExpected, revisionsActual);
+    }
+
+    /**
      * Test of fileHasAnnotation method, of class CVSRepository.
      */
     @Test
-    public void testFileHasAnnotation() {
+    void testFileHasAnnotation() {
         boolean result = instance.fileHasAnnotation(null);
         assertTrue(result);
     }
@@ -184,17 +206,16 @@ public class CVSRepositoryTest {
      * Test of fileHasHistory method, of class CVSRepository.
      */
     @Test
-    public void testFileHasHistory() {
+    void testFileHasHistory() {
         boolean result = instance.fileHasHistory(null);
         assertTrue(result);
     }
 
     /**
      * Test of parseAnnotation method, of class CVSRepository.
-     * @throws java.lang.Exception
      */
     @Test
-    public void testParseAnnotation() throws Exception {
+    void testParseAnnotation() throws Exception {
         String revId1 = "1.1";
         String revId2 = "1.2.3";
         String revId3 = "1.0";
@@ -226,5 +247,4 @@ public class CVSRepositoryTest {
         assertEquals(revId2.length(), result.getWidestRevision());
         assertEquals(fileName, result.getFilename());
     }
-
 }
