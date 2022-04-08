@@ -62,6 +62,7 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -306,5 +307,19 @@ class SuggesterTest {
         Suggester.NamedIndexDir namedIndexDir1 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
         Suggester.NamedIndexDir namedIndexDir2 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
         assertEquals(namedIndexDir1, namedIndexDir2);
+    }
+
+    @Test
+    void testNamedIndexDirNotEqualsName() {
+        Suggester.NamedIndexDir namedIndexDir1 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
+        Suggester.NamedIndexDir namedIndexDir2 = new Suggester.NamedIndexDir("bar", Path.of("/foo"));
+        assertNotEquals(namedIndexDir1, namedIndexDir2);
+    }
+
+    @Test
+    void testNamedIndexDirNotEqualsPath() {
+        Suggester.NamedIndexDir namedIndexDir1 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
+        Suggester.NamedIndexDir namedIndexDir2 = new Suggester.NamedIndexDir("foo", Path.of("/bar"));
+        assertNotEquals(namedIndexDir1, namedIndexDir2);
     }
 }
