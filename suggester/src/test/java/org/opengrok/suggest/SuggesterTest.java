@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -60,11 +60,12 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SuggesterTest {
+class SuggesterTest {
 
     private final MeterRegistry registry = new SimpleMeterRegistry();
 
@@ -101,13 +102,13 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testNullSuggesterDir() {
+    void testNullSuggesterDir() {
         assertThrows(IllegalArgumentException.class,
                 () -> new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE, 1, registry));
     }
 
     @Test
-    public void testNullDuration() {
+    void testNullDuration() {
         assertThrows(IllegalArgumentException.class, () -> {
             Path tempFile = Files.createTempFile("opengrok", "test");
             try {
@@ -119,7 +120,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testNegativeDuration() {
+    void testNegativeDuration() {
         assertThrows(IllegalArgumentException.class, () -> {
             Path tempFile = Files.createTempFile("opengrok", "test");
             try {
@@ -172,7 +173,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testSimpleSuggestions() throws IOException {
+    void testSimpleSuggestions() throws IOException {
         SuggesterTestData t = initSuggester();
 
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
@@ -187,7 +188,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testRefresh() throws IOException {
+    void testRefresh() throws IOException {
         SuggesterTestData t = initSuggester();
 
         addText(t.getIndexDirectory(), "a1 a2");
@@ -206,7 +207,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testIndexChangedWhileOffline() throws IOException {
+    void testIndexChangedWhileOffline() throws IOException {
         SuggesterTestData t = initSuggester();
 
         t.s.close();
@@ -233,7 +234,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testRemove() throws IOException {
+    void testRemove() throws IOException {
         SuggesterTestData t = initSuggester();
 
         t.s.remove(Collections.singleton("test"));
@@ -245,7 +246,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testComplexQuerySearch() throws IOException {
+    void testComplexQuerySearch() throws IOException {
         SuggesterTestData t = initSuggester();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(t.getNamedIndexReader()),
@@ -259,7 +260,7 @@ public class SuggesterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    public void testOnSearch() throws IOException {
+    void testOnSearch() throws IOException {
         SuggesterTestData t = initSuggester();
 
         Query q = new BooleanQuery.Builder()
@@ -278,7 +279,7 @@ public class SuggesterTest {
     }
 
     @Test
-    public void testGetSearchCountsForUnknown() throws IOException {
+    void testGetSearchCountsForUnknown() throws IOException {
         SuggesterTestData t = initSuggester();
 
         assertTrue(t.s.getSearchCounts("unknown", "unknown", 0, 10).isEmpty());
@@ -288,7 +289,7 @@ public class SuggesterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    public void testIncreaseSearchCount() throws IOException {
+    void testIncreaseSearchCount() throws IOException {
         SuggesterTestData t = initSuggester();
 
         t.s.increaseSearchCount("test", new Term("test", "term2"), 100, true);
@@ -300,4 +301,10 @@ public class SuggesterTest {
         t.close();
     }
 
+    @Test
+    void testNamedIndexDirEquals() {
+        Suggester.NamedIndexDir namedIndexDir1 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
+        Suggester.NamedIndexDir namedIndexDir2 = new Suggester.NamedIndexDir("foo", Path.of("/foo"));
+        assertEquals(namedIndexDir1, namedIndexDir2);
+    }
 }
