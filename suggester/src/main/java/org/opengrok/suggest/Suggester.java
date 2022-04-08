@@ -35,7 +35,6 @@ import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -764,7 +763,7 @@ public final class Suggester implements Closeable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.name, this,path);
+            return Objects.hash(this.name, this.path);
         }
     }
 
