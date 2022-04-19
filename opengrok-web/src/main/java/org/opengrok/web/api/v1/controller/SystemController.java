@@ -59,14 +59,6 @@ public class SystemController {
     private SuggesterService suggester;
 
     @PUT
-    @Path("/refresh")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public void refresh(final String project) {
-        env.maybeRefreshIndexSearchers(Collections.singleton(project));
-        CompletableFuture.runAsync(() -> suggester.rebuild(project));
-    }
-
-    @PUT
     @Path("/includes/reload")
     public void reloadIncludes() {
         env.getIncludeFiles().reloadIncludeFiles();
