@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 import jakarta.inject.Inject;
@@ -41,10 +41,8 @@ import org.opengrok.indexer.web.PathDescription;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
