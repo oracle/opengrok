@@ -103,6 +103,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
         cmds_base.append(cmd_base)
 
     if check_config:
+        if not logger:
+            logger = logging.getLogger(__name__)
         logger.info("Configuration check passed")
         return SUCCESS_EXITVAL
 
