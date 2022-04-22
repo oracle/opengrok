@@ -31,7 +31,8 @@ from multiprocessing import pool
 from mockito import verify, ANY, patch
 
 from opengrok_tools.sync import do_sync
-from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL, FAILURE_EXITVAL
+from opengrok_tools.utils.commandsequence import CommandConfigurationException
+from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 
 
 @pytest.mark.parametrize(['check_config', 'expected_times'], [(True, 0), (False, 1)])
@@ -41,3 +42,10 @@ def test_dosync_check_config_empty(check_config, expected_times):
         assert do_sync(logging.INFO, commands, None, ["foo", "bar"], [],
                        "http://localhost:8080/source", 42, check_config=check_config) == SUCCESS_EXITVAL
         verify(pool.Pool, times=expected_times).map(ANY, ANY, ANY)
+
+
+def test_dosync_check_config_invalid():
+    commands = ["foo"]
+    with pytest.raises(CommandConfigurationException):
+        do_sync(logging.INFO, commands, None, ["foo", "bar"], [],
+                "http://localhost:8080/source", 42, check_config=True)
