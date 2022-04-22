@@ -1486,34 +1486,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Send message to webapp to refresh SearcherManagers for given projects.
-     * This is used for partial reindex.
-     *
-     * @param subFiles list of directories to refresh corresponding SearcherManagers
-     * @param host the host address to receive the configuration
-     */
-    public void signalTorefreshSearcherManagers(List<String> subFiles, String host) {
-        // subFile entries start with path separator so get basename
-        // to convert them to project names.
-
-        subFiles.stream().map(proj -> new File(proj).getName()).forEach(project -> {
-            Response r = ClientBuilder.newClient()
-                    .target(host)
-                    .path("api")
-                    .path("v1")
-                    .path("system")
-                    .path("refresh")
-                    .request()
-                    .headers(getWebAppHeaders())
-                    .put(Entity.text(project));
-
-            if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                LOGGER.log(Level.WARNING, "Could not refresh search manager for {0}", project);
-            }
-        });
-    }
-
-    /**
      * Generate a TreeMap of projects with corresponding repository information.
      * <p>
      * Project with some repository information is considered as a repository
