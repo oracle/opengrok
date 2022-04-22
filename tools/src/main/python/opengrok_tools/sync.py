@@ -69,7 +69,7 @@ def worker(base):
 
 def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
             uri, numworkers, driveon=False, print_output=False, logger=None,
-            http_headers=None, timeout=None, api_timeout=None):
+            http_headers=None, timeout=None, api_timeout=None, check_config=False):
     """
     Process the list of directories in parallel.
     :param logger: logger to be used in this function
@@ -87,6 +87,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     :param http_headers: optional dictionary of HTTP headers
     :param timeout: optional timeout in seconds for API call response
     :param api_timeout: optional timeout in seconds for async API call duration
+    :param check_config: check configuration and return
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
@@ -99,6 +100,9 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
                                        api_timeout=timeout,
                                        async_api_timeout=api_timeout)
         cmds_base.append(cmd_base)
+
+    if check_config:
+        return SUCCESS_EXITVAL
 
     # Map the commands into pool of workers, so they can be processed.
     retval = SUCCESS_EXITVAL
@@ -160,6 +164,8 @@ def main():
                         'for RESTful API calls')
     parser.add_argument('--async_api_timeout', type=int, default=300,
                         help='Set timeout in seconds for asynchronous REST API calls')
+    parser.add_argument('--check_config', action='store_true',
+                        help='check configuration and exit')
     add_http_headers(parser)
 
     try:
@@ -280,7 +286,8 @@ def main():
                         ignore_errors, uri, args.workers,
                         driveon=args.driveon, http_headers=headers,
                         timeout=args.api_timeout,
-                        api_timeout=args.async_api_timeout)
+                        api_timeout=args.async_api_timeout,
+                        check_config=args.check_config)
         except CommandConfigurationException as exc:
             logger.error("Invalid configuration: {}".format(exc))
             return FAILURE_EXITVAL
@@ -295,7 +302,8 @@ def main():
                                 ignore_errors, uri, args.workers,
                                 driveon=args.driveon, http_headers=headers,
                                 timeout=args.api_timeout,
-                                api_timeout=args.async_api_timeout)
+                                api_timeout=args.async_api_timeout,
+                                check_config=args.check_config)
                 except CommandConfigurationException as exc:
                     logger.error("Invalid configuration: {}".format(exc))
                     return FAILURE_EXITVAL
