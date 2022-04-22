@@ -143,7 +143,7 @@ def main():
         return 1
 
     if args.check_config:
-        logger.debug("Configuration check passed, exiting")
+        logger.info("Configuration check passed, exiting")
         return 0
 
     nomirror = os.environ.get(OPENGROK_NO_MIRROR_ENV)

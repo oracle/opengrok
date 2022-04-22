@@ -27,6 +27,7 @@
 """
 
 import argparse
+import logging
 import multiprocessing
 import os
 import sys
@@ -91,6 +92,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
+    logger = logging.getLogger(__name__)
+
     cmds_base = []
     for directory in dirs_to_process:
         cmd_base = CommandSequenceBase(directory, commands, loglevel=loglevel,
@@ -102,6 +105,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
         cmds_base.append(cmd_base)
 
     if check_config:
+        logger.info("Configuration check passed")
         return SUCCESS_EXITVAL
 
     # Map the commands into pool of workers, so they can be processed.
