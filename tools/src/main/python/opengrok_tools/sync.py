@@ -92,8 +92,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     """
 
     cmds_base = []
-    for dir in dirs_to_process:
-        cmd_base = CommandSequenceBase(dir, commands, loglevel=loglevel,
+    for directory in dirs_to_process:
+        cmd_base = CommandSequenceBase(directory, commands, loglevel=loglevel,
                                        cleanup=cleanup,
                                        driveon=driveon, url=uri,
                                        http_headers=http_headers,
