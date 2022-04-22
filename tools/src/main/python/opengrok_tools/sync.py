@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.4"
+__version__ = "1.5"
 
 
 def worker(base):
