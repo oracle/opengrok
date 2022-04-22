@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.provider.service.impl;
 
@@ -331,7 +331,7 @@ public class SuggesterServiceImpl implements SuggesterService {
             return env.getProjectList().stream()
                     .filter(Project::isIndexed)
                     .map(this::getNamedIndexDir)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
         } else {
             Path indexDir = Paths.get(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
             return Collections.singleton(new NamedIndexDir("", indexDir));

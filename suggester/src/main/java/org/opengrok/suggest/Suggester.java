@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -744,6 +745,25 @@ public final class Suggester implements Closeable {
         @Override
         public String toString() {
             return name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+
+            if (!(obj instanceof NamedIndexDir)) {
+                return false;
+            }
+
+            NamedIndexDir that = (NamedIndexDir) obj;
+            return (this.name.equals(that.name) && this.path.equals(that.path));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.path);
         }
     }
 
