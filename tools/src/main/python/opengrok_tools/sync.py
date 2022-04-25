@@ -27,6 +27,7 @@
 """
 
 import argparse
+import logging
 import multiprocessing
 import os
 import sys
@@ -52,7 +53,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.4"
+__version__ = "1.5"
 
 
 def worker(base):
@@ -69,7 +70,7 @@ def worker(base):
 
 def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
             uri, numworkers, driveon=False, print_output=False, logger=None,
-            http_headers=None, timeout=None, api_timeout=None):
+            http_headers=None, timeout=None, api_timeout=None, check_config=False):
     """
     Process the list of directories in parallel.
     :param logger: logger to be used in this function
@@ -87,18 +88,25 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     :param http_headers: optional dictionary of HTTP headers
     :param timeout: optional timeout in seconds for API call response
     :param api_timeout: optional timeout in seconds for async API call duration
+    :param check_config: check configuration and return
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
     cmds_base = []
-    for dir in dirs_to_process:
-        cmd_base = CommandSequenceBase(dir, commands, loglevel=loglevel,
+    for directory in dirs_to_process:
+        cmd_base = CommandSequenceBase(directory, commands, loglevel=loglevel,
                                        cleanup=cleanup,
                                        driveon=driveon, url=uri,
                                        http_headers=http_headers,
                                        api_timeout=timeout,
                                        async_api_timeout=api_timeout)
         cmds_base.append(cmd_base)
+
+    if check_config:
+        if not logger:
+            logger = logging.getLogger(__name__)
+        logger.info("Configuration check passed")
+        return SUCCESS_EXITVAL
 
     # Map the commands into pool of workers, so they can be processed.
     retval = SUCCESS_EXITVAL
@@ -160,6 +168,8 @@ def main():
                         'for RESTful API calls')
     parser.add_argument('--async_api_timeout', type=int, default=300,
                         help='Set timeout in seconds for asynchronous REST API calls')
+    parser.add_argument('--check_config', action='store_true',
+                        help='check configuration and exit')
     add_http_headers(parser)
 
     try:
@@ -280,7 +290,8 @@ def main():
                         ignore_errors, uri, args.workers,
                         driveon=args.driveon, http_headers=headers,
                         timeout=args.api_timeout,
-                        api_timeout=args.async_api_timeout)
+                        api_timeout=args.async_api_timeout,
+                        check_config=args.check_config)
         except CommandConfigurationException as exc:
             logger.error("Invalid configuration: {}".format(exc))
             return FAILURE_EXITVAL
@@ -295,7 +306,8 @@ def main():
                                 ignore_errors, uri, args.workers,
                                 driveon=args.driveon, http_headers=headers,
                                 timeout=args.api_timeout,
-                                api_timeout=args.async_api_timeout)
+                                api_timeout=args.async_api_timeout,
+                                check_config=args.check_config)
                 except CommandConfigurationException as exc:
                     logger.error("Invalid configuration: {}".format(exc))
                     return FAILURE_EXITVAL
