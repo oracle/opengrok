@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +66,7 @@ public class CVSRepository extends RCSRepository {
          * that this repository is always marked as working even though it does
          * not have the binary available on the system.
          *
-         * Setting this to null does restores the default behavior (as java
+         * Setting this to null restores the default behavior (as java
          * default for reference is null) for this repository - detecting the
          * binary and act upon that.
          *
@@ -194,14 +195,12 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
-
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
         String revision = rev;
-
         if (rev.indexOf(':') != -1) {
             revision = rev.substring(0, rev.indexOf(':'));
         }
+
         try {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {RepoCommand, "up", "-p", "-r", revision, basename};
@@ -209,7 +208,6 @@ public class CVSRepository extends RCSRepository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             executor.exec();
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
             try (InputStream in = executor.getOutputStream()) {
                 int len;
@@ -220,13 +218,12 @@ public class CVSRepository extends RCSRepository {
                     }
                 }
             }
-
-            ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
             LOGGER.log(Level.WARNING, "Failed to get history", exp);
+            return false;
         }
 
-        return ret;
+        return true;
     }
 
     @Override
