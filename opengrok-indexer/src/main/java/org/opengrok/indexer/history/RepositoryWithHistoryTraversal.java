@@ -16,10 +16,10 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.Nullable;
@@ -72,7 +72,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
      * @param file File object
      * @param sinceRevision start revision (non-inclusive)
      * @param tillRevision end revision (inclusive)
-     * @param numCommits maximum number of commits to traverse (use 0 as unlimited)
+     * @param numCommits maximum number of commits to traverse (use {@code null} as unlimited)
      * @param visitor visitor method
      * @param getAll include merge commits (even if not set to be handled)
      * @throws HistoryException on error

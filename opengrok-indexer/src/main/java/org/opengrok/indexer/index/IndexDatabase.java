@@ -1499,7 +1499,7 @@ public class IndexDatabase {
                             boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
                                     checkSettings(file, path);
                             if (!matchOK) {
-                                removeFile(null,false);
+                                removeFile(null, false);
                             }
 
                             BytesRef next = uidIter.next();

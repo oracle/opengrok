@@ -112,24 +112,24 @@ interface HistoryCache {
     boolean hasCacheForFile(File file) throws HistoryException;
 
     /**
-     * Get the revision identifier for the latest cached revision in a
-     * repository.
+     * Get the revision identifier for the latest cached revision in a repository.
      *
      * @param repository the repository whose latest revision to return
-     * @return a string representing the latest revision in the cache, or
-     * {@code null} if it is unknown
+     * @return a string representing the latest revision in the cache,
+     * or {@code null} if it is unknown
+     * @throws HistoryException on error
      */
-    String getLatestCachedRevision(Repository repository)
-            throws HistoryException;
+    String getLatestCachedRevision(Repository repository) throws HistoryException;
 
     /**
-     * TODO: document
-     * @param repository
-     * @return
-     * @throws HistoryException
+     * Get the revision identifier for the latest cached revision in a repository.
+     *
+     * @param repository Repository object
+     * @return a string representing the previous revision (prior to the current indexer run),
+     * or {@code null} if it is unknown
+     * @throws HistoryException on error
      */
-    String getPreviousCachedRevision(Repository repository)
-            throws HistoryException;
+    String getPreviousCachedRevision(Repository repository) throws HistoryException;
 
     /**
      * Get the last modified times for all files and subdirectories in the
