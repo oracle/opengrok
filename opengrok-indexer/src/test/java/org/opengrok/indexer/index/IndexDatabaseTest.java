@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -81,6 +81,7 @@ public class IndexDatabaseTest {
                 env, true, true,
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
+        env.generateProjectRepositoriesMap();
         indexer.doIndexerExecution(true, null, null);
     }
 
@@ -90,7 +91,7 @@ public class IndexDatabaseTest {
     }
 
     @Test
-    public void testGetDefinitions() throws Exception {
+    void testGetDefinitions() throws Exception {
         // Test that we can get definitions for one of the files in the
         // repository.
         File f1 = new File(repository.getSourceRoot() + "/git/main.c");
@@ -137,7 +138,7 @@ public class IndexDatabaseTest {
      * file has been removed from a repository.
      */
     @Test
-    public void testCleanupAfterIndexRemoval() throws Exception {
+    void testCleanupAfterIndexRemoval() throws Exception {
         final int origNumFiles;
 
         String projectName = "git";
@@ -146,7 +147,7 @@ public class IndexDatabaseTest {
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
 
-        // Note that the file to remove has to be different than the one used
+        // Note that the file to remove has to be different from the one used
         // in {@code testGetDefinitions} because it shares the same index
         // and this test is going to remove the file and therefore related
         // definitions.
@@ -180,7 +181,7 @@ public class IndexDatabaseTest {
      * however it lacks the pre-requisite indexing phase.
      */
     @Test
-    public void testIndexPath() throws IOException {
+    void testIndexPath() throws IOException {
         SearchEngine instance = new SearchEngine();
         // Use as broad search as possible.
         instance.setFile("c");
@@ -195,7 +196,7 @@ public class IndexDatabaseTest {
     }
 
     @Test
-    public void testGetLastRev() throws IOException, ParseException {
+    void testGetLastRev() throws IOException, ParseException {
         Document doc = IndexDatabase.getDocument(Paths.get(repository.getSourceRoot(),
                 "git", "main.c").toFile());
         assertNotNull(doc);

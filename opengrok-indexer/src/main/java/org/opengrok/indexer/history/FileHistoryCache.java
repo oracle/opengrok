@@ -43,6 +43,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import java.util.zip.GZIPOutputStream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -739,38 +741,56 @@ class FileHistoryCache implements HistoryCache {
         return histDir + File.separatorChar + LATEST_REV_FILE_NAME;
     }
 
+    private String getRepositoryPreviousCachedRevPath(Repository repository) {
+        String histDir = getRepositoryHistDataDirname(repository);
+        if (histDir == null) {
+            return null;
+        }
+        return histDir + File.separatorChar + LATEST_REV_FILE_NAME + ".prev";
+    }
+
     /**
      * Store latest indexed revision for the repository under data directory.
      * @param repository repository
      * @param rev latest revision which has been just indexed
      */
     private void storeLatestCachedRevision(Repository repository, String rev) {
-        Writer writer = null;
-
+        // Save the file so that it can be used by truly incremental reindex via getPreviousCachedRevision().
+        Path newPath = Path.of(getRepositoryCachedRevPath(repository));
+        Path oldPath = Path.of(getRepositoryPreviousCachedRevPath(repository));
         try {
-            writer = new BufferedWriter(new OutputStreamWriter(
-                  new FileOutputStream(getRepositoryCachedRevPath(repository))));
+            if (newPath.toFile().exists()) {
+                Files.move(newPath, oldPath);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("cannot move %s to %s", newPath, oldPath), e);
+        }
+
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newPath.toFile())))) {
             writer.write(rev);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
                     String.format("Cannot write latest cached revision to file for repository %s", repository), ex);
-        } finally {
-           try {
-               if (writer != null) {
-                   writer.close();
-               }
-           } catch (IOException ex) {
-               LOGGER.log(Level.WARNING, "Cannot close file", ex);
-           }
         }
     }
 
     @Override
+    @Nullable
     public String getLatestCachedRevision(Repository repository) {
+        return getCachedRevision(repository, getRepositoryCachedRevPath(repository));
+    }
+
+    @Override
+    @Nullable
+    public String getPreviousCachedRevision(Repository repository) {
+        return getCachedRevision(repository, getRepositoryPreviousCachedRevPath(repository));
+    }
+
+    @Nullable
+    private String getCachedRevision(Repository repository, String revPath) {
         String rev;
         BufferedReader input;
 
-        String revPath = getRepositoryCachedRevPath(repository);
         if (revPath == null) {
             LOGGER.log(Level.WARNING, "no rev path for repository {0}", repository);
             return null;

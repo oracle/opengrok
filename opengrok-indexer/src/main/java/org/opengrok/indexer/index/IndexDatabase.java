@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -439,10 +438,20 @@ public class IndexDatabase {
         if (project == null) {
             throw new IllegalArgumentException("null project");
         }
+
+        // History needs to be enabled for the history cache to work (see the comment below).
         if (!project.isHistoryEnabled()) {
             return false;
         }
-        if (!RuntimeEnvironment.getInstance().isHistoryCache()) {
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        // History cache is necessary to get the last indexed revision for given repository.
+        if (!env.isHistoryCache()) {
+            return false;
+        }
+
+        // So far the truly incremental reindex does not work without projects.
+        if (!env.hasProjects()) {
             return false;
         }
 
@@ -464,10 +473,14 @@ public class IndexDatabase {
 
             /*
              * This check means that this method will return false in the case of initial reindex.
-             * In such case the traversal of all changesets would most likely be counterproductive.
+             * In such case the traversal of all changesets would most likely be counterproductive,
+             * assuming traversal of directory tree is cheaper than reading files from SCM history
+             * in such case.
              */
             try {
-                HistoryGuru.getInstance().getLatestCachedRevision(repository);
+                if (HistoryGuru.getInstance().getPreviousCachedRevision(repository) == null) {
+                    return false;
+                }
             } catch (HistoryException ex) {
                 LOGGER.log(Level.FINE, String.format("cannot load latest cached revision for history cache " +
                                 "for repository %s, the project will be indexed using directory traversal.",
@@ -707,36 +720,9 @@ public class IndexDatabase {
         //      it will be also useful for testing
         // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
         //      so perhaps it should be used in such case.
-        // TODO: what about setup without projects ?
         if (isReadyForTrulyIncrementalReindex(project)) {
             LOGGER.log(Level.INFO, "Starting file collection using history cache in directory {0}", dir);
-            for (Repository repository : getRepositoriesForProject(project)) {
-                // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
-                FileCollector fileCollector = new FileCollector();
-                // Get the list of files starting with the latest changeset in the history cache
-                // and ending with the newest changeset of the repository.
-                ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
-                        HistoryGuru.getInstance().getLatestCachedRevision(repository),
-                        null, null, fileCollector::visit, true);
-
-                for (String path : fileCollector.files) {
-                    File file = new File(sourceRoot, path);
-
-                    // Check that each file is present on file system to avoid problems in indexParallel().
-                    if (file.exists()) {
-                        AcceptSymlinkRet ret = new AcceptSymlinkRet();
-                        if (!accept(file.getParentFile(), file, ret)) {
-                            handleSymlink(path, ret);
-                        } else {
-                            removeFile(path, false);
-                            args.works.add(new IndexFileWork(file, path));
-                            args.curCount++;
-                        }
-                    } else {
-                        removeFile(path, true);
-                    }
-                }
-            }
+            getIndexDownArgsTrulyIncrementally(sourceRoot, args);
             elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
@@ -750,6 +736,36 @@ public class IndexDatabase {
         showFileCount(dir, args);
 
         return indexDownPerformed;
+    }
+
+    private void getIndexDownArgsTrulyIncrementally(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+        for (Repository repository : getRepositoriesForProject(project)) {
+            // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
+            FileCollector fileCollector = new FileCollector();
+            // Get the list of files starting with the latest changeset in the history cache
+            // and ending with the newest changeset of the repository.
+            ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
+                    HistoryGuru.getInstance().getPreviousCachedRevision(repository),
+                    null, null, fileCollector::visit, true);
+
+            for (String path : fileCollector.files) {
+                File file = new File(sourceRoot, path);
+
+                // Check that each file is present on file system to avoid problems in indexParallel().
+                if (file.exists()) {
+                    AcceptSymlinkRet ret = new AcceptSymlinkRet();
+                    if (!accept(file.getParentFile(), file, ret)) {
+                        handleSymlink(path, ret);
+                    } else {
+                        removeFile(path, false);
+                        args.works.add(new IndexFileWork(file, path));
+                        args.curCount++;
+                    }
+                } else {
+                    removeFile(path, true);
+                }
+            }
+        }
     }
 
     /**
@@ -900,7 +916,7 @@ public class IndexDatabase {
      */
     private void removeFile(@Nullable String path, boolean removeHistory) throws IOException {
         if (path == null) { // indexDown()
-            removeFileDocUid();
+            path = removeFileDocUid();
         } else {
             for (IndexChangedListener listener : listeners) {
                 listener.fileRemove(path);
@@ -934,7 +950,7 @@ public class IndexDatabase {
         }
     }
 
-    private void removeFileDocUid() throws IOException {
+    private String removeFileDocUid() throws IOException {
         String path = Util.uid2url(uidIter.term().utf8ToString());
 
         for (IndexChangedListener listener : listeners) {
@@ -955,6 +971,8 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
+
+        return path;
     }
 
     private void decrementLOCforDoc(String path, Document doc) {
@@ -1843,7 +1861,7 @@ public class IndexDatabase {
     }
 
     /**
-     * @param file File object of a file under source root
+     * @param file File object for a file under source root
      * @return Document object for the file or {@code null}
      * @throws IOException on I/O error
      * @throws ParseException on problem with building Query

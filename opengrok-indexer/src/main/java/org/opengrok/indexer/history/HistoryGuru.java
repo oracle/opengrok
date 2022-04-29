@@ -434,12 +434,12 @@ public final class HistoryGuru {
      * @return
      * @throws HistoryException
      */
-    public String getLatestCachedRevision(Repository repository) throws HistoryException {
+    public String getPreviousCachedRevision(Repository repository) throws HistoryException {
         if (repository != null && useCache()) {
-            return historyCache.getLatestCachedRevision(repository);
+            return historyCache.getPreviousCachedRevision(repository);
         }
 
-        throw new HistoryException(String.format("cannot get latest cached revision for %s", repository));
+        throw new HistoryException(String.format("cannot get previous cached revision for %s", repository));
     }
 
     /**

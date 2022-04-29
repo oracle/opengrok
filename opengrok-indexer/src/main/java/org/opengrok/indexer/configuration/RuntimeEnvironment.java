@@ -62,6 +62,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.NamedThreadFactory;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -1491,7 +1492,8 @@ public final class RuntimeEnvironment {
      * Project with some repository information is considered as a repository
      * otherwise it is just a simple project.
      */
-    private void generateProjectRepositoriesMap() throws IOException {
+    @VisibleForTesting
+    public void generateProjectRepositoriesMap() throws IOException {
         repository_map.clear();
         for (RepositoryInfo r : getRepositories()) {
             Project proj;
