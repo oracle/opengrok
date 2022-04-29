@@ -466,7 +466,7 @@ public final class RuntimeEnvironment {
     /**
      * Get project map.
      *
-     * @return a Map with all of the projects
+     * @return a Map with all the projects
      */
     public Map<String, Project> getProjects() {
         return syncReadConfiguration(Configuration::getProjects);

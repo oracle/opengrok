@@ -420,10 +420,12 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<RepositoryInfo> repositoryInfoList = env.getProjectRepositoriesMap().get(project);
 
-        for (RepositoryInfo repositoryInfo : repositoryInfoList) {
-            Repository repository = HistoryGuru.getInstance().getRepository(new File(repositoryInfo.getDirectoryName()));
-            if (repository != null) {
-               repositoryList.add(repository);
+        if (repositoryInfoList != null) {
+            for (RepositoryInfo repositoryInfo : repositoryInfoList) {
+                Repository repository = HistoryGuru.getInstance().getRepository(new File(repositoryInfo.getDirectoryName()));
+                if (repository != null) {
+                    repositoryList.add(repository);
+                }
             }
         }
 
