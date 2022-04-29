@@ -128,10 +128,9 @@ public final class HistoryGuru {
     }
 
     /**
-     * Return whether or not a cache should be used for the history log.
+     * Return whether cache should be used for the history log.
      *
-     * @return {@code true} if the history cache has been enabled and
-     * initialized, {@code false} otherwise
+     * @return {@code true} if the history cache has been enabled and initialized, {@code false} otherwise
      */
     private boolean useCache() {
         return historyCache != null;
@@ -427,6 +426,20 @@ public final class HistoryGuru {
         }
 
         return Collections.emptyMap();
+    }
+
+    /**
+     * TODO: document
+     * @param repository
+     * @return
+     * @throws HistoryException
+     */
+    public String getLatestCachedRevision(Repository repository) throws HistoryException {
+        if (repository != null && useCache()) {
+            return historyCache.getLatestCachedRevision(repository);
+        }
+
+        throw new HistoryException(String.format("cannot get latest cached revision for %s", repository));
     }
 
     /**

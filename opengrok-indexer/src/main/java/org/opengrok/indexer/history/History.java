@@ -75,11 +75,6 @@ public class History implements Serializable {
         this.renamedFiles = renamed;
     }
 
-    History(List<HistoryEntry> entries, Set<String> renamed, Set<String> deletedFiles) {
-        this.entries = entries;
-        this.renamedFiles = renamed;
-    }
-
     // Needed for serialization.
     public Map<String, String> getTags() {
         return tags;

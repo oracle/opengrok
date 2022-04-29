@@ -89,6 +89,7 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -187,8 +188,7 @@ public class IndexDatabase {
      * Create a new instance of an Index Database for a given project.
      *
      * @param project the project to create the database for
-     * @throws java.io.IOException if an error occurs while creating
-     * directories
+     * @throws java.io.IOException if an error occurs while creating directories
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
@@ -208,13 +208,13 @@ public class IndexDatabase {
     }
 
     /**
-     * Update the index database for all of the projects.
+     * Update the index database for all the projects.
      *
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static CountDownLatch updateAll(IndexChangedListener listener)
-            throws IOException {
+    static CountDownLatch updateAll(IndexChangedListener listener) throws IOException {
+
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -361,7 +361,7 @@ public class IndexDatabase {
     private void showFileCount(String dir, IndexDownArgs args) {
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
             LOGGER.log(Level.INFO, String.format("Need to process: %d files for %s",
-                    args.cur_count, dir));
+                    args.curCount, dir));
         }
     }
 
@@ -431,10 +431,13 @@ public class IndexDatabase {
         return repositoryList;
     }
 
-    // TODO: find a better name for the method
-    private static boolean isAllRepositoriesSupportDeletedFiles(Project project) {
+    /**
+     * @param project project
+     * @return whether the repositories of given project are ready for truly incremental reindex
+     */
+    private static boolean isReadyForTrulyIncrementalReindex(Project project) {
         if (project == null) {
-            return false;
+            throw new IllegalArgumentException("null project");
         }
         if (!project.isHistoryEnabled()) {
             return false;
@@ -446,39 +449,60 @@ public class IndexDatabase {
         List<Repository> repositories = getRepositoriesForProject(project);
         // Projects without repositories have to be indexed using indexDown().
         if (repositories.isEmpty()) {
+            LOGGER.log(Level.FINEST, "project {0} has no repositories, will be indexed by directory traversal.",
+                    project);
             return false;
         }
+
         for (Repository repository : repositories) {
             if (!(repository instanceof RepositoryWithHistoryTraversal)) {
-                // TODO: log
+                LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
+                                "the project will be indexed using directory traversal.",
+                        new Object[]{project, repository});
+                return false;
+            }
+
+            /*
+             * This check means that this method will return false in the case of initial reindex.
+             * In such case the traversal of all changesets would most likely be counterproductive.
+             */
+            try {
+                HistoryGuru.getInstance().getLatestCachedRevision(repository);
+            } catch (HistoryException ex) {
+                LOGGER.log(Level.FINE, String.format("cannot load latest cached revision for history cache " +
+                                "for repository %s, the project will be indexed using directory traversal.",
+                        repository), ex);
                 return false;
             }
         }
 
-        // Here it is assumed there are no files untracked by the repositories.
+        // Here it is assumed there are no files untracked by the repositories of this project.
         return true;
     }
 
+    /**
+     * This class is meant to collect files that were touched in some way by SCM update.
+     * The visitor argument contains the files separated based on the type of modification performed,
+     * however the consumer of this class is not interested in this classification.
+     * This is because when incrementally indexing a bunch of changesets,
+     * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
+     */
     private static class FileCollector {
-        SortedSet<String> files;
-        Set<String> renamedFiles;
-        Set<String> deletedFiles;
+        Set<String> files;
 
         FileCollector() {
             files = new TreeSet<>();
-            renamedFiles = new HashSet<>();
-            deletedFiles = new HashSet<>();
         }
 
         public void visit(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
             if (changesetInfo.renamedFiles != null) {
-                renamedFiles.addAll(changesetInfo.renamedFiles);
+                files.addAll(changesetInfo.renamedFiles);
             }
             if (changesetInfo.files != null) {
                 files.addAll(changesetInfo.files);
             }
             if (changesetInfo.deletedFiles != null) {
-                deletedFiles.addAll(changesetInfo.deletedFiles);
+                files.addAll(changesetInfo.deletedFiles);
             }
         }
     }
@@ -574,49 +598,12 @@ public class IndexDatabase {
                         }
                     }
 
-                    // The actual indexing happens in indexParallel(). Here we merely collect the items
+                    // The actual indexing happens in indexParallel(). Here we merely collect the files
                     // that need to be indexed.
                     IndexDownArgs args = new IndexDownArgs();
-                    // Only do this if all repositories for given project support file gathering via history traversal.
-                    // TODO: add tunable for this (in case there are untracked files)
-                    boolean indexDownPerformed = false;
-                    if (isAllRepositoriesSupportDeletedFiles(project)) {
-                        // TODO: do this for the initial index ? might not be worth it.
-                        for (Repository repository : getRepositoriesForProject(project)) {
-                            // TODO: need to get the changeset of the previous index run
-                            // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
-                            if (repository instanceof RepositoryWithHistoryTraversal) {
-                                FileCollector fileCollector = new FileCollector();
-                                ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
-                                        "from", "till", null, fileCollector::visit);
+                    boolean indexDownPerformed = getIndexDownArgs(dir, sourceRoot, args);
 
-                                for (String path : fileCollector.files) {
-                                    File file = new File(sourceRoot, path);
-                                    // Check that each file is present on file system to avoid problems
-                                    // in indexParallel().
-                                    // TODO: what about deleted files ?
-                                    if (file.exists()) {
-                                        // TODO: call accept() to see if the file can be added (symlinks !)
-                                        args.works.add(new IndexFileWork(file, path));
-                                    }
-                                }
-                                for (String path : fileCollector.deletedFiles) {
-                                    // TODO: removeFile()
-                                }
-                            }
-                        }
-                    } else {
-                        Statistics elapsed = new Statistics();
-                        LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
-                        indexDown(sourceRoot, dir, args);
-                        indexDownPerformed = true;
-                        elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
-                                "indexer.db.directory.traversal");
-                    }
-
-                    showFileCount(dir, args);
-
-                    args.cur_count = 0;
+                    args.curCount = 0;
                     Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
@@ -624,13 +611,13 @@ public class IndexDatabase {
                             "indexer.db.directory.index");
 
                     // Remove data for the trailing terms that indexDown()
-                    // did not traverse. These correspond to files that have been
+                    // did not traverse. These correspond to the files that have been
                     // removed and have higher ordering than any present files.
                     if (indexDownPerformed) {
                         while (uidIter != null && uidIter.term() != null
                                 && uidIter.term().utf8ToString().startsWith(startuid)) {
 
-                            removeFile(true);
+                            removeFile(null, true);
                             BytesRef next = uidIter.next();
                             if (next == null) {
                                 uidIter = null;
@@ -708,6 +695,61 @@ public class IndexDatabase {
             }
             env.setIndexTimestamp();
         }
+    }
+
+    private boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+
+        boolean indexDownPerformed = false;
+        Statistics elapsed = new Statistics();
+
+        // Only do this if all repositories for given project support file gathering via history traversal.
+        // TODO: introduce per project tunable for this (in case there are untracked files)
+        //      it will be also useful for testing
+        // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
+        //      so perhaps it should be used in such case.
+        // TODO: what about setup without projects ?
+        if (isReadyForTrulyIncrementalReindex(project)) {
+            LOGGER.log(Level.INFO, "Starting file collection using history cache in directory {0}", dir);
+            for (Repository repository : getRepositoriesForProject(project)) {
+                // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
+                FileCollector fileCollector = new FileCollector();
+                // Get the list of files starting with the latest changeset in the history cache
+                // and ending with the newest changeset of the repository.
+                ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
+                        HistoryGuru.getInstance().getLatestCachedRevision(repository),
+                        null, null, fileCollector::visit, true);
+
+                for (String path : fileCollector.files) {
+                    File file = new File(sourceRoot, path);
+
+                    // Check that each file is present on file system to avoid problems in indexParallel().
+                    if (file.exists()) {
+                        AcceptSymlinkRet ret = new AcceptSymlinkRet();
+                        if (!accept(file.getParentFile(), file, ret)) {
+                            handleSymlink(path, ret);
+                        } else {
+                            removeFile(path, false);
+                            args.works.add(new IndexFileWork(file, path));
+                            args.curCount++;
+                        }
+                    } else {
+                        removeFile(path, true);
+                    }
+                }
+            }
+            elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
+                    "indexer.db.directory.collection");
+        } else {
+            LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
+            indexDown(sourceRoot, dir, args);
+            indexDownPerformed = true;
+            elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
+                    "indexer.db.directory.traversal");
+        }
+
+        showFileCount(dir, args);
+
+        return indexDownPerformed;
     }
 
     /**
@@ -850,13 +892,49 @@ public class IndexDatabase {
     }
 
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database and
-     * history cache, and queue the removal of xref.
+     * Remove a stale file from the index database and potentially also from history cache,
+     * and queue the removal of the associated xref file.
      *
      * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
      */
-    private void removeFile(boolean removeHistory) throws IOException {
+    private void removeFile(@Nullable String path, boolean removeHistory) throws IOException {
+        if (path == null) { // indexDown()
+            removeFileDocUid();
+        } else {
+            for (IndexChangedListener listener : listeners) {
+                listener.fileRemove(path);
+            }
+
+            Document doc = null;
+            try {
+                doc = getDocument(path, reader);
+            } catch (ParseException e) {
+                LOGGER.log(Level.WARNING, String.format("could not find document for %s, " +
+                        "the index might contain stale data as a result", path), e);
+            }
+            if (doc != null) {
+                decrementLOCforDoc(path, doc);
+
+                String storedU = doc.get(QueryBuilder.U);
+                writer.deleteDocuments(new Term(QueryBuilder.U, storedU));
+            }
+        }
+
+        removeXrefFile(path);
+
+        if (removeHistory) {
+            removeHistoryFile(path);
+        }
+
+        setDirty();
+
+        for (IndexChangedListener listener : listeners) {
+            listener.fileRemoved(path);
+        }
+    }
+
+    private void removeFileDocUid() throws IOException {
         String path = Util.uid2url(uidIter.term().utf8ToString());
 
         for (IndexChangedListener listener : listeners) {
@@ -870,28 +948,22 @@ public class IndexDatabase {
                 // Read a limited-fields version of the document.
                 Document doc = reader.document(postsIter.docID(), REVERT_COUNTS_FIELDS);
                 if (doc != null) {
-                    NullableNumLinesLOC nullableCounts = NumLinesLOCUtil.read(doc);
-                    if (nullableCounts.getNumLines() != null && nullableCounts.getLOC() != null) {
-                        NumLinesLOC counts = new NumLinesLOC(path,
-                                -nullableCounts.getNumLines(),
-                                -nullableCounts.getLOC());
-                        countsAggregator.register(counts);
-                    }
+                    decrementLOCforDoc(path, doc);
                     break;
                 }
             }
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
+    }
 
-        removeXrefFile(path);
-        if (removeHistory) {
-            removeHistoryFile(path);
-        }
-
-        setDirty();
-        for (IndexChangedListener listener : listeners) {
-            listener.fileRemoved(path);
+    private void decrementLOCforDoc(String path, Document doc) {
+        NullableNumLinesLOC nullableCounts = NumLinesLOCUtil.read(doc);
+        if (nullableCounts.getNumLines() != null && nullableCounts.getLOC() != null) {
+            NumLinesLOC counts = new NumLinesLOC(path,
+                    -nullableCounts.getNumLines(),
+                    -nullableCounts.getLOC());
+            countsAggregator.register(counts);
         }
     }
 
@@ -979,6 +1051,7 @@ public class IndexDatabase {
         }
 
         setDirty();
+
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());
         }
@@ -1315,19 +1388,32 @@ public class IndexDatabase {
         return false;
     }
 
+    private void handleSymlink(String path, AcceptSymlinkRet ret) {
+        /*
+         * If ret.localRelPath is defined, then a symlink was detected but
+         * not "accepted" to avoid redundancy with an already-accepted
+         * canonical target. Set up for a deferred creation of a symlink
+         * within xref/.
+         */
+        if (ret.localRelPath != null) {
+            File xrefPath = new File(xrefDir, path);
+            PendingSymlinkage psym = new PendingSymlinkage(xrefPath.getAbsolutePath(), ret.localRelPath);
+            completer.add(psym);
+        }
+    }
+
     /**
      * Executes the first, serial stage of indexing, recursively.
      * <p>Files at least are counted, and any deleted or updated files (based on
      * comparison to the Lucene index) are passed to
-     * {@link #removeFile(boolean)}. New or updated files are noted for
+     * {@link #removeFile(String, boolean)}. New or updated files are noted for
      * indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of
      * files for indexing
      */
-    private void indexDown(File dir, String parent, IndexDownArgs args)
-            throws IOException {
+    private void indexDown(File dir, String parent, IndexDownArgs args) throws IOException {
 
         if (isInterrupted()) {
             return;
@@ -1335,18 +1421,7 @@ public class IndexDatabase {
 
         AcceptSymlinkRet ret = new AcceptSymlinkRet();
         if (!accept(dir, ret)) {
-            /*
-             * If ret.localRelPath is defined, then a symlink was detected but
-             * not "accepted" to avoid redundancy with an already-accepted
-             * canonical target. Set up for a deferred creation of a symlink
-             * within xref/.
-             */
-            if (ret.localRelPath != null) {
-                File xrefPath = new File(xrefDir, parent);
-                PendingSymlinkage psym = new PendingSymlinkage(
-                        xrefPath.getAbsolutePath(), ret.localRelPath);
-                completer.add(psym);
-            }
+            handleSymlink(parent, ret);
             return;
         }
 
@@ -1361,18 +1436,12 @@ public class IndexDatabase {
         for (File file : files) {
             String path = parent + File.separator + file.getName();
             if (!accept(dir, file, ret)) {
-                if (ret.localRelPath != null) {
-                    // See note above about ret.localRelPath.
-                    File xrefPath = new File(xrefDir, path);
-                    PendingSymlinkage psym = new PendingSymlinkage(
-                            xrefPath.getAbsolutePath(), ret.localRelPath);
-                    completer.add(psym);
-                }
+                handleSymlink(path, ret);
             } else {
                 if (file.isDirectory()) {
                     indexDown(file, path, args);
                 } else {
-                    args.cur_count++;
+                    args.curCount++;
 
                     if (uidIter != null) {
                         path = Util.fixPathIfWindows(path);
@@ -1394,7 +1463,7 @@ public class IndexDatabase {
                             // cache for the file so that incremental history cache
                             // generation works.
                             String termPath = Util.uid2url(uidIter.term().utf8ToString());
-                            removeFile(!termPath.equals(path));
+                            removeFile(null, !termPath.equals(path));
 
                             BytesRef next = uidIter.next();
                             if (next == null) {
@@ -1412,7 +1481,7 @@ public class IndexDatabase {
                             boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
                                     checkSettings(file, path);
                             if (!matchOK) {
-                                removeFile(false);
+                                removeFile(null,false);
                             }
 
                             BytesRef next = uidIter.next();
@@ -1510,7 +1579,7 @@ public class IndexDatabase {
             LOGGER.log(Level.SEVERE, exmsg, e);
         }
 
-        args.cur_count = currentCounter.intValue();
+        args.curCount = currentCounter.intValue();
 
         // Start with failureCount=worksCount, and then subtract successes.
         int failureCount = worksCount;
@@ -1791,34 +1860,39 @@ public class IndexDatabase {
         // Sanitize Windows path delimiters in order not to conflict with Lucene escape character.
         path = path.replace("\\", "/");
 
-        try (IndexReader ireader = getIndexReader(path)) {
-            if (ireader == null) {
-                // No index, no document..
-                return null;
-            }
-
-            Document doc;
-            Query q = new QueryBuilder().setPath(path).build();
-            IndexSearcher searcher = new IndexSearcher(ireader);
-            Statistics stat = new Statistics();
-            TopDocs top = searcher.search(q, 1);
-            stat.report(LOGGER, Level.FINEST, "search via getDocument done",
-                    "search.latency", new String[]{"category", "getdocument",
-                            "outcome", top.totalHits.value == 0 ? "empty" : "success"});
-            if (top.totalHits.value == 0) {
-                // No hits, no document...
-                return null;
-            }
-            doc = searcher.doc(top.scoreDocs[0].doc);
-            String foundPath = doc.get(QueryBuilder.PATH);
-
-            // Only use the document if we found an exact match.
-            if (!path.equals(foundPath)) {
-                return null;
-            }
-
-            return doc;
+        try (IndexReader indexReader = getIndexReader(path)) {
+            return getDocument(path, indexReader);
         }
+    }
+
+    @Nullable
+    private static Document getDocument(String path, IndexReader indexReader) throws ParseException, IOException {
+        if (indexReader == null) {
+            // No index, no document..
+            return null;
+        }
+
+        Document doc;
+        Query q = new QueryBuilder().setPath(path).build();
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        Statistics stat = new Statistics();
+        TopDocs top = searcher.search(q, 1);
+        stat.report(LOGGER, Level.FINEST, "search via getDocument() done",
+                "search.latency", new String[]{"category", "getdocument",
+                        "outcome", top.totalHits.value == 0 ? "empty" : "success"});
+        if (top.totalHits.value == 0) {
+            // No hits, no document...
+            return null;
+        }
+        doc = searcher.doc(top.scoreDocs[0].doc);
+        String foundPath = doc.get(QueryBuilder.PATH);
+
+        // Only use the document if we found an exact match.
+        if (!path.equals(foundPath)) {
+            return null;
+        }
+
+        return doc;
     }
 
     @Override
@@ -2077,7 +2151,7 @@ public class IndexDatabase {
     }
 
     private static class IndexDownArgs {
-        int cur_count;
+        int curCount;
         final List<IndexFileWork> works = new ArrayList<>();
     }
 

@@ -506,8 +506,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                               Integer numCommits) throws HistoryException {
 
         HistoryCollector historyCollector = new HistoryCollector();
-        traverseHistory(file, sinceRevision, tillRevision, numCommits, historyCollector::visit);
-
+        traverseHistory(file, sinceRevision, tillRevision, numCommits, historyCollector::visit, false);
         History result = new History(historyCollector.entries, historyCollector.renamedFiles);
 
         // Assign tags to changesets they represent
@@ -521,7 +520,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     }
 
     public void traverseHistory(File file, String sinceRevision, String tillRevision,
-                              Integer numCommits, Consumer<ChangesetInfo> visitor) throws HistoryException {
+                              Integer numCommits, Consumer<ChangesetInfo> visitor, boolean getAll) throws HistoryException {
 
         if (numCommits != null && numCommits <= 0) {
             throw new HistoryException("invalid number of commits to retrieve");
@@ -532,34 +531,13 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
-            if (sinceRevision != null) {
-                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
-            }
-
-            if (tillRevision != null) {
-                walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
-            } else {
-                walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
-            }
-
-            String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
-            if (!getDirectoryNameRelative().equals(relativePath)) {
-                if (isHandleRenamedFiles()) {
-                    Config config = repository.getConfig();
-                    config.setBoolean("diff", null, "renames", true);
-                    org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
-                    FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
-                    walk.setTreeFilter(followFilter);
-                } else {
-                    walk.setTreeFilter(AndTreeFilter.create(
-                            PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
-                            TreeFilter.ANY_DIFF));
-                }
-            }
+            setupWalk(file, sinceRevision, tillRevision, repository, walk);
 
             int num = 0;
             for (RevCommit commit : walk) {
-                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
+                // For truly incremental reindex merge commits have to be processed.
+                // TODO: maybe the same for renamed files - depends on what happens if renamed file detection is on
+                if (!getAll && commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                     continue;
                 }
 
@@ -585,10 +563,40 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         }
     }
 
+    private void setupWalk(File file, String sinceRevision, String tillRevision, Repository repository, RevWalk walk)
+            throws IOException, ForbiddenSymlinkException {
+
+        if (sinceRevision != null) {
+            walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+        }
+
+        if (tillRevision != null) {
+            walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
+        } else {
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+        }
+
+        String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
+        if (!getDirectoryNameRelative().equals(relativePath)) {
+            if (isHandleRenamedFiles()) {
+                Config config = repository.getConfig();
+                config.setBoolean("diff", null, "renames", true);
+                org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+                FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
+                walk.setTreeFilter(followFilter);
+            } else {
+                walk.setTreeFilter(AndTreeFilter.create(
+                        PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
+                        TreeFilter.ANY_DIFF));
+            }
+        }
+    }
+
     /**
-     * Accumulate list of changed files and renamed files (if enabled) for given commit.
-     * @param renamedFiles result containing the renamed files in this commit
-     * @param changedFiles result containing changed files in this commit
+     * Accumulate list of changed/deleted/renamed files for given commit.
+     * @param renamedFiles output: renamed files in this commit (if renamed file handling is enabled)
+     * @param changedFiles output: changed files in this commit
+     * @param deletedFiles output: deleted files in this commit
      * @param commit RevCommit object
      * @param repository repository object
      * @throws IOException on error traversing the commit tree
@@ -597,11 +605,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                                    RevCommit commit,
                                    Repository repository) throws IOException {
 
-        int numParents = commit.getParentCount();
-
-        if (numParents == 1) {
-            getFiles(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
-        } else if (numParents == 0) { // first commit
+        if (commit.getParentCount() == 0) { // first commit - add all files
             try (TreeWalk treeWalk = new TreeWalk(repository)) {
                 treeWalk.addTree(commit.getTree());
                 treeWalk.setRecursive(true);
@@ -612,7 +616,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 }
             }
         } else {
-            getFiles(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
+            getFilesBetweenCommits(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
         }
     }
 
@@ -625,7 +629,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     }
 
     /**
-     * Assemble list of changedFiles that changed between 2 commits.
+     * Assemble list of changed/deleted/renamed files between a commit and its parent.
      * @param repository repository object
      * @param oldCommit parent commit
      * @param newCommit new commit (the method assumes oldCommit is its parent)
@@ -634,9 +638,9 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
      * @param deletedFiles output: set of deleted files
      * @throws IOException on I/O problem
      */
-    private void getFiles(org.eclipse.jgit.lib.Repository repository,
-                          RevCommit oldCommit, RevCommit newCommit,
-                          Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles)
+    private void getFilesBetweenCommits(org.eclipse.jgit.lib.Repository repository,
+                                        RevCommit oldCommit, RevCommit newCommit,
+                                        Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles)
             throws IOException {
 
         OutputStream outputStream = NullOutputStream.INSTANCE;
@@ -654,6 +658,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         getNativePath(diff.getNewPath());
 
                 if (diff.getChangeType() != DiffEntry.ChangeType.DELETE && changedFiles != null) {
+                    // Added files (ChangeType.ADD) are treated as changed.
                     changedFiles.add(newPath);
                 } else if (deletedFiles != null) {
                     deletedFiles.add(newPath);
@@ -661,6 +666,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
                     renamedFiles.add(newPath);
+                    if (deletedFiles != null) {
+                        String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                                getNativePath(diff.getOldPath());
+                        deletedFiles.add(oldPath);
+                    }
                 }
             }
         }

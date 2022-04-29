@@ -23,6 +23,8 @@
 
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.util.Date;
 import java.util.Set;
@@ -66,6 +68,16 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         }
     }
 
-    public abstract void traverseHistory(File file, String sinceRevision, String tillRevision,
-                         Integer numCommits, Consumer<ChangesetInfo> visitor) throws HistoryException;
+    /**
+     * TODO: document
+     * @param file
+     * @param sinceRevision
+     * @param tillRevision
+     * @param numCommits
+     * @param visitor
+     * @param getAll
+     * @throws HistoryException
+     */
+    public abstract void traverseHistory(File file, String sinceRevision, @Nullable String tillRevision,
+                         Integer numCommits, Consumer<ChangesetInfo> visitor, boolean getAll) throws HistoryException;
 }
