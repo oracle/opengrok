@@ -436,7 +436,7 @@ public class IndexDatabase {
      */
     private static boolean isReadyForTrulyIncrementalReindex(Project project) {
         if (project == null) {
-            throw new IllegalArgumentException("null project");
+            return false;
         }
 
         // History needs to be enabled for the history cache to work (see the comment below).
