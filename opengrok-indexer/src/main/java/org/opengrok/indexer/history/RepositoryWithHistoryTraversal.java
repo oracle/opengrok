@@ -16,9 +16,8 @@
  *
  * CDDL HEADER END
  */
-
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.history;
@@ -69,14 +68,14 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
     }
 
     /**
-     * TODO: document
-     * @param file
-     * @param sinceRevision
-     * @param tillRevision
-     * @param numCommits
-     * @param visitor
-     * @param getAll
-     * @throws HistoryException
+     * Traverse history of given file/directory.
+     * @param file File object
+     * @param sinceRevision start revision (non-inclusive)
+     * @param tillRevision end revision (inclusive)
+     * @param numCommits maximum number of commits to traverse (use 0 as unlimited)
+     * @param visitor visitor method
+     * @param getAll include merge commits (even if not set to be handled)
+     * @throws HistoryException on error
      */
     public abstract void traverseHistory(File file, String sinceRevision, @Nullable String tillRevision,
                          Integer numCommits, Consumer<ChangesetInfo> visitor, boolean getAll) throws HistoryException;

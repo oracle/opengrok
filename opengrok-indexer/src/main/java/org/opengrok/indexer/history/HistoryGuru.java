@@ -429,10 +429,9 @@ public final class HistoryGuru {
     }
 
     /**
-     * TODO: document
-     * @param repository
-     * @return
-     * @throws HistoryException
+     * @param repository Repository object
+     * @return previously cached revision (before currently running reindex)
+     * @throws HistoryException on error
      */
     public String getPreviousCachedRevision(Repository repository) throws HistoryException {
         if (repository != null && useCache()) {
