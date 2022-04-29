@@ -488,7 +488,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         public void visit(ChangesetInfo changesetInfo) {
             RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
             HistoryEntry historyEntry = new HistoryEntry(commit.revision,
-                    commit.date,commit.authorName + " <" + commit.authorEmail + ">",
+                    commit.date, commit.authorName + " <" + commit.authorEmail + ">",
                     commit.message, true);
 
             if (changesetInfo.renamedFiles != null) {
