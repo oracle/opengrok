@@ -794,6 +794,13 @@ public final class Indexer {
                         }
                     });
 
+            parser.on("--trulyIncremental", "=on|off", ON_OFF, Boolean.class,
+                    "If truly incremental reindex is in effect, the set of files changed/deleted since the last ",
+                    "reindex is determined from history of the repositories. This needs history ",
+                    "and projects to be enabled. This should be much faster than the classic way of traversing ",
+                    "the directory structure. Currently works only for Git.").
+                    execute(v -> cfg.setTrulyIncrementalReindex((Boolean) v));
+
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
                 "Send the current configuration to the specified web application.").execute(webAddr -> {
                     webappURI = (String) webAddr;

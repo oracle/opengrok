@@ -300,6 +300,8 @@ public final class Configuration {
     private int connectTimeout = -1;    // connect timeout in seconds
     private int apiTimeout = -1;    // API timeout in seconds
 
+    private boolean trulyIncrementalReindex;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -576,6 +578,7 @@ public final class Configuration {
         setTagsEnabled(false);
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL unconditionally later.
+        setTrulyIncrementalReindex(true);
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
@@ -1410,6 +1413,14 @@ public final class Configuration {
             throw new IllegalArgumentException(String.format(NEGATIVE_NUMBER_ERROR, "apiTimeout", apiTimeout));
         }
         this.apiTimeout = apiTimeout;
+    }
+
+    public boolean isTrulyIncrementalReindex() {
+        return trulyIncrementalReindex;
+    }
+
+    public void setTrulyIncrementalReindex(boolean flag) {
+        trulyIncrementalReindex = flag;
     }
 
     /**

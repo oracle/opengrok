@@ -718,17 +718,18 @@ public class IndexDatabase {
         Statistics elapsed = new Statistics();
 
         // Only do this if all repositories for given project support file gathering via history traversal.
-        // TODO: introduce per project tunable for this (in case there are untracked files)
+        // TODO: introduce per project tunable for isTrulyIncrementalReindex
+        //      (in case there are untracked files)
         //      it will be also useful for testing
         // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
         //      so perhaps it should be used in such case.
-        if (isReadyForTrulyIncrementalReindex(project)) {
-            LOGGER.log(Level.INFO, "Starting file collection using history cache in directory {0}", dir);
+        if (RuntimeEnvironment.getInstance().isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
+            LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             getIndexDownArgsTrulyIncrementally(sourceRoot, args);
             elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
-            LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
+            LOGGER.log(Level.INFO, "Starting file collection using file-system traversal of directory {0}", dir);
             indexDown(sourceRoot, dir, args);
             indexDownPerformed = true;
             elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
@@ -740,7 +741,9 @@ public class IndexDatabase {
         return indexDownPerformed;
     }
 
-    private void getIndexDownArgsTrulyIncrementally(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+    private void getIndexDownArgsTrulyIncrementally(File sourceRoot, IndexDownArgs args)
+            throws HistoryException, IOException {
+
         for (Repository repository : getRepositoriesForProject(project)) {
             // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
             FileCollector fileCollector = new FileCollector();
@@ -750,6 +753,7 @@ public class IndexDatabase {
                     HistoryGuru.getInstance().getPreviousCachedRevision(repository),
                     null, null, fileCollector::visit, true);
 
+            // TODO: can this be parallelized ? (esp. w.r.t. removePath() - xref removal and empty dirs, setDirty(),  etc.)
             for (String path : fileCollector.files) {
                 File file = new File(sourceRoot, path);
 
@@ -900,8 +904,7 @@ public class IndexDatabase {
     private void removeXrefFile(String path) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File xrefFile = whatXrefFile(path, env.isCompressXref());
-        PendingFileDeletion pending = new PendingFileDeletion(
-            xrefFile.getAbsolutePath());
+        PendingFileDeletion pending = new PendingFileDeletion(xrefFile.getAbsolutePath());
         completer.add(pending);
     }
 

@@ -1418,6 +1418,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(connectTimeout, Configuration::setConnectTimeout);
     }
 
+    public boolean isTrulyIncrementalReindex() {
+        return syncReadConfiguration(Configuration::isTrulyIncrementalReindex);
+    }
+
+    public void setTrulyIncrementalReindex(boolean flag) {
+        syncWriteConfiguration(flag, Configuration::setTrulyIncrementalReindex);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
