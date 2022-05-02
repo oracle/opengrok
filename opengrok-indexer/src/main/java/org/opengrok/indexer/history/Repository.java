@@ -44,6 +44,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -153,7 +154,7 @@ public abstract class Repository extends RepositoryInfo {
         }
     }
 
-    public Repository() {
+    Repository() {
         super();
         ignoredFiles = new ArrayList<>();
         ignoredDirs = new ArrayList<>();
@@ -225,9 +226,8 @@ public abstract class Repository extends RepositoryInfo {
      * @param revision the revision we expect the oldest entry to have
      * @throws HistoryException if the oldest entry was not the one we expected
      */
-    void removeAndVerifyOldestChangeset(List<HistoryEntry> entries,
-            String revision)
-            throws HistoryException {
+    void removeAndVerifyOldestChangeset(List<HistoryEntry> entries, String revision) throws HistoryException {
+
         HistoryEntry entry = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
 
         // TODO We should check more thoroughly that the changeset is the one
@@ -244,7 +244,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Gets the contents of a specific version of a named file, and copies
-     * into the specified target.
+     * into the specified target file.
      *
      * @param target a required target file which will be overwritten
      * @param parent the name of the directory containing the file
@@ -267,6 +267,7 @@ public abstract class Repository extends RepositoryInfo {
      * @param rev the revision to get
      * @return a defined instance if contents were found; or else {@code null}
      */
+    @Nullable
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (getHistoryGet(out, parent, basename, rev)) {

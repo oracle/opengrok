@@ -319,7 +319,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * Gets a named revision of the specified file into the specified target.
+     * Gets a named revision of the specified file into the specified target file.
      *
      * @param target a require target file
      * @param parent The directory containing the file
@@ -328,12 +328,9 @@ public final class HistoryGuru {
      * @return {@code true} if content was found
      * @throws java.io.IOException if an I/O error occurs
      */
-    public boolean getRevision(File target, String parent, String basename,
-            String rev) throws IOException {
-
+    public boolean getRevision(File target, String parent, String basename, String rev) throws IOException {
         Repository repo = getRepository(new File(parent));
-        return repo != null && repo.getHistoryGet(target, parent,
-                basename, rev);
+        return repo != null && repo.getHistoryGet(target, parent, basename, rev);
     }
 
     /**

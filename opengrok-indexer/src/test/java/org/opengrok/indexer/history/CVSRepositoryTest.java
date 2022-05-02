@@ -30,6 +30,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 
 /**
- *
+ * Tests for {@link CVSRepository} functionality.
  * @author austvik
  */
 @EnabledForRepository(CVS)
@@ -120,7 +122,7 @@ public class CVSRepositoryTest {
     @Test
     void testGetBranchNoBranch() throws Exception {
         setUpTestRepository();
-        File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
+        File root = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo").toFile();
         CVSRepository cvsrepo = (CVSRepository) RepositoryFactory.getRepository(root);
         assertNull(cvsrepo.getBranch());
     }
@@ -135,27 +137,26 @@ public class CVSRepositoryTest {
     @Test
     void testNewBranch() throws Exception {
         setUpTestRepository();
-        File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
+        File root = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo").toFile();
 
         // Create new branch and switch to it.
         runCvsCommand(root, "tag", "-b", "mybranch");
         // Note that the 'update' command will change the entries in 'cvsroot' directory.
         runCvsCommand(root, "update", "-r", "mybranch");
 
-        // Now the repository object can be instantiated so that determineBranch()
-        // will be called.
+        // Now the repository object can be instantiated and determineBranch() will be called.
         CVSRepository cvsrepo = (CVSRepository) RepositoryFactory.getRepository(root);
 
         assertEquals("mybranch", cvsrepo.getBranch());
 
         // Change the content and commit.
         File mainC = new File(root, "main.c");
-        FileChannel outChan = new FileOutputStream(mainC, true).getChannel();
-        outChan.truncate(0);
-        outChan.close();
-        FileWriter fw = new FileWriter(mainC);
-        fw.write("#include <foo.h>\n");
-        fw.close();
+        try (FileChannel outChan = new FileOutputStream(mainC, true).getChannel()) {
+            outChan.truncate(0);
+        }
+        try (FileWriter fw = new FileWriter(mainC)) {
+            fw.write("#include <foo.h>\n");
+        }
         runCvsCommand(root, "commit", "-m", "change on a branch", "main.c");
 
         // Check that annotation for the changed line has branch revision.
@@ -167,6 +168,32 @@ public class CVSRepositoryTest {
         assertEquals("1.2.2.1", mainCHistory.getHistoryEntries().get(0).getRevision());
         assertEquals("1.2", mainCHistory.getHistoryEntries().get(1).getRevision());
         assertEquals("1.1", mainCHistory.getHistoryEntries().get(2).getRevision());
+    }
+
+    @Test
+    void testGetHistoryGet() throws Exception {
+        setUpTestRepository();
+        File root = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo").toFile();
+        CVSRepository cvsRepo = (CVSRepository) RepositoryFactory.getRepository(root);
+
+        Path repoRoot = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo");
+        assertTrue(repoRoot.toFile().exists());
+        String repoFile = "main.c";
+        String revision = "1.2";
+
+        File tmpFile = File.createTempFile("cvsGetHistoryGetTest", "");
+        assertTrue(tmpFile.exists());
+        try (FileOutputStream out = new FileOutputStream(tmpFile)) {
+            assertTrue(cvsRepo.getHistoryGet(out, repoRoot.toString(), repoFile, revision));
+        }
+
+        String revisionContents1 = new String(Files.readAllBytes(tmpFile.toPath()));
+        tmpFile.delete();
+        assertTrue(revisionContents1.length() > 0);
+
+        String revisionContents2 = new String(cvsRepo.getHistoryGet(repoRoot.toString(), repoFile, revision).
+                readAllBytes());
+        assertEquals(revisionContents1, revisionContents2);
     }
 
     /**
