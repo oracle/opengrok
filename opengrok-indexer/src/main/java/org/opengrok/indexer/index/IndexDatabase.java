@@ -466,6 +466,7 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
+            // Do this only if all repositories for given project support file gathering via history traversal.
             if (!(repository instanceof RepositoryWithHistoryTraversal)) {
                 LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
                                 "the project will be indexed using directory traversal.",
@@ -474,6 +475,7 @@ public class IndexDatabase {
             }
 
             /*
+             * Further, there needs to be history cache already present for the repositories.
              * This check means that this method will return false in the case of initial reindex.
              * In such case the traversal of all changesets would most likely be counterproductive,
              * assuming traversal of directory tree is cheaper than reading files from SCM history
@@ -717,7 +719,6 @@ public class IndexDatabase {
         boolean indexDownPerformed = false;
         Statistics elapsed = new Statistics();
 
-        // Only do this if all repositories for given project support file gathering via history traversal.
         // TODO: introduce per project tunable for isTrulyIncrementalReindex
         //      (in case there are untracked files)
         //      it will be also useful for testing
