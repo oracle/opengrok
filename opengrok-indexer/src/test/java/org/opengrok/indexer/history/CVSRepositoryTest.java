@@ -154,9 +154,9 @@ public class CVSRepositoryTest {
         try (FileChannel outChan = new FileOutputStream(mainC, true).getChannel()) {
             outChan.truncate(0);
         }
-        FileWriter fw = new FileWriter(mainC);
-        fw.write("#include <foo.h>\n");
-        fw.close();
+        try (FileWriter fw = new FileWriter(mainC)) {
+            fw.write("#include <foo.h>\n");
+        }
         runCvsCommand(root, "commit", "-m", "change on a branch", "main.c");
 
         // Check that annotation for the changed line has branch revision.
