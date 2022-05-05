@@ -200,8 +200,7 @@ public final class Indexer {
             env.setIndexer(true);
 
             // Complete the configuration of repository types.
-            List<Class<? extends Repository>> repositoryClasses
-                    = RepositoryFactory.getRepositoryClasses();
+            List<Class<? extends Repository>> repositoryClasses = RepositoryFactory.getRepositoryClasses();
             for (Class<? extends Repository> clazz : repositoryClasses) {
                 // Set external repository binaries from System properties.
                 try {
@@ -278,7 +277,8 @@ public final class Indexer {
                 System.exit(0);
             }
 
-            // Set updated configuration in RuntimeEnvironment.
+            // Set updated configuration in RuntimeEnvironment. This is called so that the tunables set
+            // via command line options are available.
             env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
@@ -287,6 +287,9 @@ public final class Indexer {
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (bareConfig) {
+                // Set updated configuration in RuntimeEnvironment.
+                env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
@@ -373,6 +376,10 @@ public final class Indexer {
             }
             getInstance().prepareIndexer(env, searchPaths, addProjects,
                     createDict, runIndex, subFiles, new ArrayList<>(repositories));
+
+            // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
+            // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
+            env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
 
             // prepareIndexer() populated the list of projects so now default projects can be set.
             env.setDefaultProjectsFromNames(defaultProjects);

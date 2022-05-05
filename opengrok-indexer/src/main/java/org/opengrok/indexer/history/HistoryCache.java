@@ -139,8 +139,7 @@ interface HistoryCache {
      * @param repository the repository in which the directory lives
      * @return a map from file names to modification times
      */
-    Map<String, Date> getLastModifiedTimes(
-            File directory, Repository repository)
+    Map<String, Date> getLastModifiedTimes(File directory, Repository repository)
         throws HistoryException;
 
     /**

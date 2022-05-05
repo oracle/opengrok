@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -359,8 +360,7 @@ public class IndexDatabase {
 
     private void showFileCount(String dir, IndexDownArgs args) {
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-            LOGGER.log(Level.INFO, String.format("Need to process: %d files for %s",
-                    args.curCount, dir));
+            LOGGER.log(Level.INFO, String.format("Need to process: %d files for %s", args.curCount, dir));
         }
     }
 
@@ -486,7 +486,7 @@ public class IndexDatabase {
                     return false;
                 }
             } catch (HistoryException ex) {
-                LOGGER.log(Level.FINE, String.format("cannot load latest cached revision for history cache " +
+                LOGGER.log(Level.FINE, String.format("cannot load previous cached revision for history cache " +
                                 "for repository %s, the project will be indexed using directory traversal.",
                         repository), ex);
                 return false;
@@ -719,14 +719,16 @@ public class IndexDatabase {
         boolean indexDownPerformed = false;
         Statistics elapsed = new Statistics();
 
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         // TODO: introduce per project tunable for isTrulyIncrementalReindex
         //      (in case there are untracked files)
         //      it will be also useful for testing
         // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
         //      so perhaps it should be used in such case.
-        if (RuntimeEnvironment.getInstance().isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
+        if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
-            getIndexDownArgsTrulyIncrementally(sourceRoot, args);
+            getIndexDownArgsTrulyIncrementally(env.getSourceRootFile(), args);
             elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
@@ -735,6 +737,11 @@ public class IndexDatabase {
             indexDownPerformed = true;
             elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
                     "indexer.db.directory.traversal");
+        }
+
+        // TODO debug only
+        try (FileWriter writer = new FileWriter("/tmp/args.txt")) {
+            writer.write(args.works.stream().map(v -> v.path).collect(Collectors.joining("\n")));
         }
 
         showFileCount(dir, args);
@@ -750,9 +757,12 @@ public class IndexDatabase {
             FileCollector fileCollector = new FileCollector();
             // Get the list of files starting with the latest changeset in the history cache
             // and ending with the newest changeset of the repository.
-            ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
-                    HistoryGuru.getInstance().getPreviousCachedRevision(repository),
-                    null, null, fileCollector::visit, true);
+            String previousRevision = HistoryGuru.getInstance().getPreviousCachedRevision(repository);
+            LOGGER.log(Level.FINE, "getting list of files for truly incremental reindex since revision {0}",
+                    previousRevision);
+            ((RepositoryWithHistoryTraversal) repository).traverseHistory(new File(sourceRoot, project.getPath()),
+                    previousRevision, null, null, fileCollector::visit, true);
+            LOGGER.log(Level.FINE, "Done getting list of files, got {0} files", fileCollector.files.size());
 
             // TODO: can this be parallelized ? (esp. w.r.t. removePath() - xref removal and empty dirs, setDirty(),  etc.)
             for (String path : fileCollector.files) {
@@ -1430,8 +1440,7 @@ public class IndexDatabase {
      * Executes the first, serial stage of indexing, recursively.
      * <p>Files at least are counted, and any deleted or updated files (based on
      * comparison to the Lucene index) are passed to
-     * {@link #removeFile(String, boolean)}. New or updated files are noted for
-     * indexing.
+     * {@link #removeFile(String, boolean)}. New or updated files are noted for indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of
@@ -1465,16 +1474,14 @@ public class IndexDatabase {
                 if (file.isDirectory()) {
                     indexDown(file, path, args);
                 } else {
-                    args.curCount++;
-
                     if (uidIter != null) {
                         path = Util.fixPathIfWindows(path);
                         String uid = Util.path2uid(path,
                             DateTools.timeToString(file.lastModified(),
                             DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         BytesRef buid = new BytesRef(uid);
-                        // Traverse terms that have smaller UID than the current
-                        // file, i.e. given the ordering they positioned before the file
+                        // Traverse terms that have smaller UID than the current file,
+                        // i.e. given the ordering they positioned before the file,
                         // or it is the file that has been modified.
                         while (uidIter != null && uidIter.term() != null
                                 && uidIter.term().compareTo(emptyBR) != 0
@@ -1496,8 +1503,7 @@ public class IndexDatabase {
                         }
 
                         // If the file was not modified, probably skip to the next one.
-                        if (uidIter != null && uidIter.term() != null &&
-                                uidIter.term().bytesEquals(buid)) {
+                        if (uidIter != null && uidIter.term() != null && uidIter.term().bytesEquals(buid)) {
 
                             /*
                              * Possibly short-circuit to force reindexing of prior-version indexes.
@@ -1519,6 +1525,7 @@ public class IndexDatabase {
                         }
                     }
 
+                    args.curCount++;
                     args.works.add(new IndexFileWork(file, path));
                 }
             }
@@ -1528,8 +1535,7 @@ public class IndexDatabase {
     /**
      * Executes the second, parallel stage of indexing.
      * @param dir the parent directory (when appended to SOURCE_ROOT)
-     * @param args contains a list of files to index, found during the earlier
-     * stage
+     * @param args contains a list of files to index, found during the earlier stage
      */
     private void indexParallel(String dir, IndexDownArgs args) {
 
@@ -2012,10 +2018,12 @@ public class IndexDatabase {
         try {
             writeAnalysisSettings();
 
+            LOGGER.log(Level.FINE, "preparing to commit changes to Lucene index"); // TODO add info about which database
             writer.prepareCommit();
             hasPendingCommit = true;
 
             int n = completer.complete();
+            // TODO: add elapsed
             LOGGER.log(Level.FINE, "completed {0} object(s)", n);
 
             // Just before commit(), reset the `hasPendingCommit' flag,
@@ -2040,8 +2048,7 @@ public class IndexDatabase {
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean checkSettings(File file,
-                                  String path) throws IOException {
+    private boolean checkSettings(File file, String path) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean outIsXrefWriter = false; // potential xref writer
@@ -2085,8 +2092,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                AnalyzerFactory fac =
-                        AnalyzerGuru.findByFileTypeName(fileTypeName);
+                AnalyzerFactory fac = AnalyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();
                 }
