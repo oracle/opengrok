@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -98,6 +98,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * failing.
      */
     private boolean indexed = false;
+
+    /**
+     * This flag sets per-project truly incremental reindex.
+     */
+    private Boolean trulyIncrementalReindex = null;
 
     /**
      * Set of groups which match this project.
@@ -290,6 +295,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project handles renamed files.
+     */
+    public boolean isTrulyIncrementalReindex() {
+        return trulyIncrementalReindex != null && trulyIncrementalReindex;
+    }
+
+    /**
+     * @param flag true if project should handle renamed files, false otherwise.
+     */
+    public void setTrulyIncrementalReindex(boolean flag) {
+        this.trulyIncrementalReindex = flag;
+    }
+
+    /**
      * Return groups where this project belongs.
      *
      * @return set of groups|empty if none
@@ -435,6 +454,10 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
         if (reviewPattern == null) {
             setReviewPattern(env.getReviewPattern());
+        }
+
+        if (trulyIncrementalReindex == null) {
+            setTrulyIncrementalReindex(env.isTrulyIncrementalReindex());
         }
     }
 

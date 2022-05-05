@@ -433,7 +433,7 @@ public class IndexDatabase {
     }
 
     /**
-     * @param project project
+     * @param project instance of {@link Project}
      * @return whether the repositories of given project are ready for truly incremental reindex
      */
     private static boolean isReadyForTrulyIncrementalReindex(Project project) {
@@ -456,6 +456,13 @@ public class IndexDatabase {
         if (!env.hasProjects()) {
             return false;
         }
+
+        if (!project.isTrulyIncrementalReindex()) {
+            return false;
+        }
+
+        // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
+        //      so perhaps it should be used in such case.
 
         List<Repository> repositories = getRepositoriesForProject(project);
         // Projects without repositories have to be indexed using indexDown().
@@ -721,11 +728,6 @@ public class IndexDatabase {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // TODO: introduce per project tunable for isTrulyIncrementalReindex
-        //      (in case there are untracked files)
-        //      it will be also useful for testing
-        // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
-        //      so perhaps it should be used in such case.
         if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             getIndexDownArgsTrulyIncrementally(env.getSourceRootFile(), args);
