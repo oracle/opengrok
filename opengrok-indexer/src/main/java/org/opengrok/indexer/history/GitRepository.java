@@ -657,27 +657,32 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 String newPath = getNativePath(getDirectoryNameRelative()) + File.separator +
                         getNativePath(diff.getNewPath());
 
-                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE && changedFiles != null) {
-                    // Added files (ChangeType.ADD) are treated as changed.
-                    changedFiles.add(newPath);
-                    continue;
-                }
-
-                if (diff.getChangeType() == DiffEntry.ChangeType.DELETE && deletedFiles != null) {
-                    // newPath would be "/dev/null"
-                    String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
-                            getNativePath(diff.getOldPath());
-                    deletedFiles.add(oldPath);
-                    continue;
-                }
-
-                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(newPath);
-                    if (deletedFiles != null) {
-                        String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
-                                getNativePath(diff.getOldPath());
-                        deletedFiles.add(oldPath);
-                    }
+                // TODO: refactor
+                switch (diff.getChangeType()) {
+                    case DELETE:
+                        if (deletedFiles != null) {
+                            // newPath would be "/dev/null"
+                            String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                                    getNativePath(diff.getOldPath());
+                            deletedFiles.add(oldPath);
+                        }
+                        break;
+                    case RENAME:
+                        if (isHandleRenamedFiles()) {
+                            renamedFiles.add(newPath);
+                            if (deletedFiles != null) {
+                                String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                                        getNativePath(diff.getOldPath());
+                                deletedFiles.add(oldPath);
+                            }
+                        }
+                        break;
+                    default:
+                        if (changedFiles != null) {
+                            // Added files (ChangeType.ADD) are treated as changed.
+                            changedFiles.add(newPath);
+                        }
+                        break;
                 }
             }
         }
