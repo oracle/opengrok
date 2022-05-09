@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -512,8 +513,11 @@ public class IndexDatabase {
      * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
      */
     private static class FileCollector {
-        Set<String> files;
+        SortedSet<String> files;
 
+        /**
+         * Assumes comparing in the same way as {@link #FILENAME_COMPARATOR}.
+         */
         FileCollector() {
             files = new TreeSet<>();
         }
@@ -582,7 +586,7 @@ public class IndexDatabase {
 
                 dir = Util.fixPathIfWindows(dir);
 
-                String startuid = Util.path2uid(dir, "");
+                String startUid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 countsAggregator = new NumLinesLOCAggregator();
                 settings = readAnalysisSettings();
@@ -613,19 +617,19 @@ public class IndexDatabase {
                 try {
                     if (terms != null) {
                         uidIter = terms.iterator();
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid)); //init uid
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
                                 "Couldn''t find a start term for {0}, empty u field?",
-                                startuid);
+                                startUid);
                         }
                     }
 
                     // The actual indexing happens in indexParallel(). Here we merely collect the files
-                    // that need to be indexed.
+                    // that need to be indexed and the files that should be removed.
                     IndexDownArgs args = new IndexDownArgs();
-                    boolean indexDownPerformed = getIndexDownArgs(dir, sourceRoot, args);
+                    getIndexDownArgs(dir, sourceRoot, args);
 
                     args.curCount = 0;
                     Statistics elapsed = new Statistics();
@@ -634,18 +638,17 @@ public class IndexDatabase {
                     elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
                             "indexer.db.directory.index");
 
-                    // Remove data for the trailing terms that indexDown()
+                    // Remove data for the trailing terms that getIndexDownArgs()
                     // did not traverse. These correspond to the files that have been
                     // removed and have higher ordering than any present files.
-                    if (indexDownPerformed) {
-                        while (uidIter != null && uidIter.term() != null
-                                && uidIter.term().utf8ToString().startsWith(startuid)) {
+                    // TODO: reintroduce truly incremental awareness
+                    while (uidIter != null && uidIter.term() != null
+                            && uidIter.term().utf8ToString().startsWith(startUid)) {
 
-                            removeFile(null, true);
-                            BytesRef next = uidIter.next();
-                            if (next == null) {
-                                uidIter = null;
-                            }
+                        removeFile(true);
+                        BytesRef next = uidIter.next();
+                        if (next == null) {
+                            uidIter = null;
                         }
                     }
 
@@ -721,22 +724,20 @@ public class IndexDatabase {
         }
     }
 
-    private boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+    private void getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
 
-        boolean indexDownPerformed = false;
         Statistics elapsed = new Statistics();
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
-            getIndexDownArgsTrulyIncrementally(env.getSourceRootFile(), args);
+            indexDownUsingHistory(env.getSourceRootFile(), args);
             elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
             LOGGER.log(Level.INFO, "Starting file collection using file-system traversal of directory {0}", dir);
             indexDown(sourceRoot, dir, args);
-            indexDownPerformed = true;
             elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
                     "indexer.db.directory.traversal");
         }
@@ -745,45 +746,41 @@ public class IndexDatabase {
         try (FileWriter writer = new FileWriter("/tmp/args.txt")) {
             writer.write(args.works.stream().map(v -> v.path).collect(Collectors.joining("\n")));
         }
+        try (FileWriter writer = new FileWriter("/tmp/removed.txt")) {
+            writer.write(String.join("\n", filesToRemove));
+        }
 
         showFileCount(dir, args);
-
-        return indexDownPerformed;
     }
 
-    private void getIndexDownArgsTrulyIncrementally(File sourceRoot, IndexDownArgs args)
-            throws HistoryException, IOException {
+    /**
+     * Executes the first, serial stage of indexing, by going through set of files assembled from history.
+     * @param sourceRoot path to the source root (same as {@link RuntimeEnvironment#getSourceRootPath()})
+     * @param args {@link IndexDownArgs} instance where the resulting files to be indexed will be stored
+     * @throws HistoryException TODO will be moved
+     * @throws IOException on error
+     */
+    private void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
 
+        FileCollector fileCollector = new FileCollector();
+
+        // TODO: get the list of files in the first stage to be more efficient
+        Statistics elapsed = new Statistics();
+        LOGGER.log(Level.FINE, "getting list of files for truly incremental reindex in {0}", sourceRoot);
         for (Repository repository : getRepositoriesForProject(project)) {
             // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
-            FileCollector fileCollector = new FileCollector();
             // Get the list of files starting with the latest changeset in the history cache
             // and ending with the newest changeset of the repository.
             String previousRevision = HistoryGuru.getInstance().getPreviousCachedRevision(repository);
-            LOGGER.log(Level.FINE, "getting list of files for truly incremental reindex since revision {0}",
-                    previousRevision);
             ((RepositoryWithHistoryTraversal) repository).traverseHistory(new File(sourceRoot, project.getPath()),
                     previousRevision, null, null, fileCollector::visit, true);
-            LOGGER.log(Level.FINE, "Done getting list of files, got {0} files", fileCollector.files.size());
+        }
+        elapsed.report(LOGGER, Level.FINE,
+                String.format("Done getting list of files, got %d files", fileCollector.files.size()));
 
-            // TODO: can this be parallelized ? (esp. w.r.t. removePath() - xref removal and empty dirs, setDirty(),  etc.)
-            for (String path : fileCollector.files) {
-                File file = new File(sourceRoot, path);
-
-                // Check that each file is present on file system to avoid problems in indexParallel().
-                if (file.exists()) {
-                    AcceptSymlinkRet ret = new AcceptSymlinkRet();
-                    if (!accept(file.getParentFile(), file, ret)) {
-                        handleSymlink(path, ret);
-                    } else {
-                        removeFile(path, false);
-                        args.works.add(new IndexFileWork(file, path));
-                        args.curCount++;
-                    }
-                } else {
-                    removeFile(path, true);
-                }
-            }
+        for (String path : fileCollector.files) {
+            File file = new File(sourceRoot, path);
+            processFileIncremental(args, file, path);
         }
     }
 
@@ -925,6 +922,8 @@ public class IndexDatabase {
         HistoryGuru.getInstance().clearCacheFile(path);
     }
 
+    private final Set<String> filesToRemove = new TreeSet<>();
+
     /**
      * Remove a stale file from the index database and potentially also from history cache,
      * and queue the removal of the associated xref file.
@@ -932,28 +931,17 @@ public class IndexDatabase {
      * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
      */
-    private void removeFile(@Nullable String path, boolean removeHistory) throws IOException {
-        if (path == null) { // indexDown()
-            path = removeFileDocUid();
-        } else {
-            for (IndexChangedListener listener : listeners) {
-                listener.fileRemove(path);
-            }
+    private void removeFile(boolean removeHistory) throws IOException {
+        String path = Util.uid2url(uidIter.term().utf8ToString());
 
-            Document doc = null;
-            try {
-                doc = getDocument(path, reader);
-            } catch (ParseException e) {
-                LOGGER.log(Level.WARNING, String.format("could not find document for %s, " +
-                        "the index might contain stale data as a result", path), e);
-            }
-            if (doc != null) {
-                decrementLOCforDoc(path, doc);
-
-                String storedU = doc.get(QueryBuilder.U);
-                writer.deleteDocuments(new Term(QueryBuilder.U, storedU));
-            }
+        for (IndexChangedListener listener : listeners) {
+            listener.fileRemove(path);
         }
+
+        // TODO: debug only
+        filesToRemove.add(path);
+
+        removeFileDocUid(path);
 
         removeXrefFile(path);
 
@@ -968,12 +956,7 @@ public class IndexDatabase {
         }
     }
 
-    private String removeFileDocUid() throws IOException {
-        String path = Util.uid2url(uidIter.term().utf8ToString());
-
-        for (IndexChangedListener listener : listeners) {
-            listener.fileRemove(path);
-        }
+    private void removeFileDocUid(String path) throws IOException {
 
         // Determine if a reversal of counts is necessary, and execute if so.
         if (isCountingDeltas) {
@@ -989,8 +972,6 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
-
-        return path;
     }
 
     private void decrementLOCforDoc(String path, Document doc) {
@@ -1012,8 +993,7 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs
      * @throws InterruptedException if a timeout occurs
      */
-    private void addFile(File file, String path, Ctags ctags)
-            throws IOException, InterruptedException {
+    private void addFile(File file, String path, Ctags ctags) throws IOException, InterruptedException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         AbstractAnalyzer fa = getAnalyzerFor(file, path);
@@ -1439,10 +1419,11 @@ public class IndexDatabase {
     }
 
     /**
-     * Executes the first, serial stage of indexing, recursively.
+     * Executes the first, serial stage of indexing, by recursively traversing the file system
+     * and index alongside.
      * <p>Files at least are counted, and any deleted or updated files (based on
      * comparison to the Lucene index) are passed to
-     * {@link #removeFile(String, boolean)}. New or updated files are noted for indexing.
+     * {@link #removeFile(boolean)}. New or updated files are noted for indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of
@@ -1476,62 +1457,142 @@ public class IndexDatabase {
                 if (file.isDirectory()) {
                     indexDown(file, path, args);
                 } else {
-                    if (uidIter != null) {
-                        path = Util.fixPathIfWindows(path);
-                        String uid = Util.path2uid(path,
-                            DateTools.timeToString(file.lastModified(),
-                            DateTools.Resolution.MILLISECOND)); // construct uid for doc
-                        BytesRef buid = new BytesRef(uid);
-                        // Traverse terms that have smaller UID than the current file,
-                        // i.e. given the ordering they positioned before the file,
-                        // or it is the file that has been modified.
-                        while (uidIter != null && uidIter.term() != null
-                                && uidIter.term().compareTo(emptyBR) != 0
-                                && uidIter.term().compareTo(buid) < 0) {
+                    processFile(args, file, path);
+                }
+            }
+        }
+    }
 
-                            // If the term's path matches path of currently processed file,
-                            // it is clear that the file has been modified and thus
-                            // removeFile() will be followed by call to addFile() in indexParallel().
-                            // In such case, instruct removeFile() not to remove history
-                            // cache for the file so that incremental history cache
-                            // generation works.
-                            String termPath = Util.uid2url(uidIter.term().utf8ToString());
-                            removeFile(null, !termPath.equals(path));
+    /**
+     * Compared with {@link #processFile(IndexDownArgs, File, String)}, this method's file/path arguments
+     * represent files that have actually changed in some way, while the other method's argument represent
+     * files present on disk.
+     * @param args {@link IndexDownArgs} instance
+     * @param file File object
+     * @param path path of the file argument relative to source root (with leading slash)
+     * @throws IOException on error
+     */
+    private void processFileIncremental(IndexDownArgs args, File file, String path) throws IOException {
+        if (uidIter != null) {
+            // Traverse terms until reaching one that matches the path of given file.
+            while (uidIter != null && uidIter.term() != null
+                    && uidIter.term().compareTo(emptyBR) != 0
+                    && Util.uid2url(uidIter.term().utf8ToString()).compareTo(path) < 0) {
 
-                            BytesRef next = uidIter.next();
-                            if (next == null) {
-                                uidIter = null;
-                            }
-                        }
+                // A file that was not changed.
+                /*
+                 * Possibly short-circuit to force reindexing of prior-version indexes.
+                 */
+                String termPath = Util.uid2url(uidIter.term().utf8ToString());
+                File termFile = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), termPath);
+                boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
+                        checkSettings(termFile, termPath);
+                if (!matchOK) {
+                    removeFile(false);
 
-                        // If the file was not modified, probably skip to the next one.
-                        if (uidIter != null && uidIter.term() != null && uidIter.term().bytesEquals(buid)) {
+                    args.curCount++;
+                    args.works.add(new IndexFileWork(termFile, termPath));
+                }
 
-                            /*
-                             * Possibly short-circuit to force reindexing of prior-version indexes.
-                             */
-                            boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
-                                    checkSettings(file, path);
-                            if (!matchOK) {
-                                removeFile(null, false);
-                            }
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+            }
 
-                            BytesRef next = uidIter.next();
-                            if (next == null) {
-                                uidIter = null;
-                            }
+            if (uidIter != null && uidIter.term() != null
+                    && Util.uid2url(uidIter.term().utf8ToString()).equals(path)) {
+                /*
+                 * At this point we know that the file has corresponding term in the index
+                 * and has changed in some way. Either it was deleted or it was changed.
+                 */
+                if (!file.exists()) {
+                    removeFile(true);
+                } else {
+                    removeFile(false);
 
-                            if (matchOK) {
-                                continue; // keep matching docs
-                            }
-                        }
-                    }
+                    args.curCount++;
+                    args.works.add(new IndexFileWork(file, path));
+                }
 
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+            } else {
+                // Potentially new file. A file might be added and then deleted,
+                // so it is necessary to check its existence.
+                if (file.exists()) {
                     args.curCount++;
                     args.works.add(new IndexFileWork(file, path));
                 }
             }
         }
+        // TODO: if uidIter is null the file should be added if exists ?
+        //  add a test for this first
+    }
+
+    /**
+     * Process a file on disk w.r.t. index.
+     * @param args {@link IndexDownArgs} instance
+     * @param file File object
+     * @param path path corresponding to the file parameter, relative to source root (with leading slash)
+     * @throws IOException on error
+     */
+    private void processFile(IndexDownArgs args, File file, String path) throws IOException {
+        if (uidIter != null) {
+            path = Util.fixPathIfWindows(path);
+            String uid = Util.path2uid(path,
+                DateTools.timeToString(file.lastModified(),
+                DateTools.Resolution.MILLISECOND)); // construct uid for doc
+            BytesRef buid = new BytesRef(uid);
+            // Traverse terms that have smaller UID than the current file,
+            // i.e. given the ordering they positioned before the file,
+            // or it is the file that has been modified.
+            while (uidIter != null && uidIter.term() != null
+                    && uidIter.term().compareTo(emptyBR) != 0
+                    && uidIter.term().compareTo(buid) < 0) {
+
+                // If the term's path matches path of currently processed file,
+                // it is clear that the file has been modified and thus
+                // removeFile() will be followed by call to addFile() in indexParallel().
+                // In such case, instruct removeFile() not to remove history
+                // cache for the file so that incremental history cache
+                // generation works.
+                String termPath = Util.uid2url(uidIter.term().utf8ToString());
+                removeFile(!termPath.equals(path));
+
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+            }
+
+            // If the file was not modified, probably skip to the next one.
+            if (uidIter != null && uidIter.term() != null && uidIter.term().bytesEquals(buid)) {
+
+                /*
+                 * Possibly short-circuit to force reindexing of prior-version indexes.
+                 */
+                boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
+                        checkSettings(file, path);
+                if (!matchOK) {
+                    removeFile(false);
+                }
+
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+
+                if (matchOK) {
+                    return;
+                }
+            }
+        }
+
+        args.curCount++;
+        args.works.add(new IndexFileWork(file, path));
     }
 
     /**
