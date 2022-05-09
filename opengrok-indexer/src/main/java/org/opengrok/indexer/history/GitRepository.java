@@ -660,8 +660,15 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 if (diff.getChangeType() != DiffEntry.ChangeType.DELETE && changedFiles != null) {
                     // Added files (ChangeType.ADD) are treated as changed.
                     changedFiles.add(newPath);
-                } else if (deletedFiles != null) {
-                    deletedFiles.add(newPath);
+                    continue;
+                }
+
+                if (diff.getChangeType() == DiffEntry.ChangeType.DELETE && deletedFiles != null) {
+                    // newPath would be "/dev/null"
+                    String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getOldPath());
+                    deletedFiles.add(oldPath);
+                    continue;
                 }
 
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
