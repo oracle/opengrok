@@ -742,14 +742,6 @@ public class IndexDatabase {
                     "indexer.db.directory.traversal");
         }
 
-        // TODO debug only
-        try (FileWriter writer = new FileWriter("/tmp/args.txt")) {
-            writer.write(args.works.stream().map(v -> v.path).collect(Collectors.joining("\n")));
-        }
-        try (FileWriter writer = new FileWriter("/tmp/removed.txt")) {
-            writer.write(String.join("\n", filesToRemove));
-        }
-
         showFileCount(dir, args);
     }
 
