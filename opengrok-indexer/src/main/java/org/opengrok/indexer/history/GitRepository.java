@@ -497,6 +497,10 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
             if (changesetInfo.files != null) {
                 historyEntry.setFiles(changesetInfo.files);
             }
+            if (changesetInfo.renamedFiles != null) {
+                // TODO: hack
+                historyEntry.getFiles().addAll(changesetInfo.renamedFiles);
+            }
 
             entries.add(historyEntry);
         }
