@@ -491,7 +491,7 @@ public class IndexDatabase {
     private static boolean isReadyForTrulyIncrementalReindex(Project project, Repository repository) {
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.FINE, "history is disabled for {0}, " +
-                    "the associated project {1} will be indexed using directory traversal", 
+                    "the associated project {1} will be indexed using directory traversal",
                     new Object[]{repository, project});
             return false;
         }
