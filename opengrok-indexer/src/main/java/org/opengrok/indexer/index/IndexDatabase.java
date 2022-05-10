@@ -473,41 +473,54 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
-            if (!repository.isHistoryEnabled()) {
-                LOGGER.log(Level.FINE, "history is disabled for {0}, " +
-                        "the associated project {1} will be indexed using directory traversal",
-                        new Object[]{repository, project});
-                return false;
-            }
-
-            // Do this only if all repositories for given project support file gathering via history traversal.
-            if (!(repository instanceof RepositoryWithHistoryTraversal)) {
-                LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
-                                "the project will be indexed using directory traversal.",
-                        new Object[]{project, repository});
-                return false;
-            }
-
-            /*
-             * Further, there needs to be history cache already present for the repositories.
-             * This check means that this method will return false in the case of initial reindex.
-             * In such case the traversal of all changesets would most likely be counterproductive,
-             * assuming traversal of directory tree is cheaper than reading files from SCM history
-             * in such case.
-             */
-            try {
-                if (HistoryGuru.getInstance().getPreviousCachedRevision(repository) == null) {
-                    return false;
-                }
-            } catch (HistoryException ex) {
-                LOGGER.log(Level.FINE, String.format("cannot load previous cached revision for history cache " +
-                                "for repository %s, the project will be indexed using directory traversal.",
-                        repository), ex);
+            if (isReadyForTrulyIncrementalReindex(project, repository)) {
                 return false;
             }
         }
 
         // Here it is assumed there are no files untracked by the repositories of this project.
+        return true;
+    }
+
+    /**
+     * @param project Project instance
+     * @param repository Repository instance
+     * @return true if the repository can be used for history based reindex
+     */
+    private static boolean isReadyForTrulyIncrementalReindex(Project project, Repository repository) {
+        if (!repository.isHistoryEnabled()) {
+            LOGGER.log(Level.FINE, "history is disabled for {0}, " +
+                    "the associated project {1} will be indexed using directory traversal", 
+                    new Object[]{repository, project});
+            return false;
+        }
+
+        // Do this only if all repositories for given project support file gathering via history traversal.
+        if (!(repository instanceof RepositoryWithHistoryTraversal)) {
+            LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
+                            "the project will be indexed using directory traversal.",
+                    new Object[]{project, repository});
+            return false;
+        }
+
+        /*
+         * Further, there needs to be history cache already present for the repositories.
+         * This check means that this method will return false in the case of initial reindex.
+         * In such case the traversal of all changesets would most likely be counterproductive,
+         * assuming traversal of directory tree is cheaper than reading files from SCM history
+         * in such case.
+         */
+        try {
+            if (HistoryGuru.getInstance().getPreviousCachedRevision(repository) == null) {
+                return false;
+            }
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.FINE, String.format("cannot load previous cached revision for history cache " +
+                            "for repository %s, the project %s will be indexed using directory traversal.",
+                    repository, project), ex);
+            return false;
+        }
+
         return true;
     }
 
