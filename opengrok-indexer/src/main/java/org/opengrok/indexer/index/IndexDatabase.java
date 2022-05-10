@@ -100,6 +100,7 @@ import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.ChangesetVisitor;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
@@ -473,7 +474,7 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
-            if (isReadyForTrulyIncrementalReindex(project, repository)) {
+            if (!isReadyForTrulyIncrementalReindex(project, repository)) {
                 return false;
             }
         }
@@ -531,17 +532,18 @@ public class IndexDatabase {
      * This is because when incrementally indexing a bunch of changesets,
      * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
      */
-    private static class FileCollector {
+    private static class FileCollector extends ChangesetVisitor {
         SortedSet<String> files;
 
         /**
          * Assumes comparing in the same way as {@link #FILENAME_COMPARATOR}.
          */
-        FileCollector() {
+        FileCollector(boolean consumeMergeChangesets) {
+            super(consumeMergeChangesets);
             files = new TreeSet<>();
         }
 
-        public void visit(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
+        public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
             if (changesetInfo.renamedFiles != null) {
                 files.addAll(changesetInfo.renamedFiles);
             }
@@ -803,7 +805,7 @@ public class IndexDatabase {
      */
     private void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
 
-        FileCollector fileCollector = new FileCollector();
+        FileCollector fileCollector = new FileCollector(true);
 
         // TODO: get the list of files in the first stage to be more efficient
         Statistics elapsed = new Statistics();
@@ -813,7 +815,7 @@ public class IndexDatabase {
             // and ending with the newest changeset of the repository.
             String previousRevision = HistoryGuru.getInstance().getPreviousCachedRevision(repository);
             ((RepositoryWithHistoryTraversal) repository).traverseHistory(new File(sourceRoot, project.getPath()),
-                    previousRevision, null, null, fileCollector::visit, true);
+                    previousRevision, null, null, List.of(fileCollector));
         }
         elapsed.report(LOGGER, Level.FINE,
                 String.format("Done getting list of files, got %d files", fileCollector.files.size()));

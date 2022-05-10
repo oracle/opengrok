@@ -476,16 +476,17 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
-    private static class HistoryCollector {
+    private static class HistoryCollector extends ChangesetVisitor {
         List<HistoryEntry> entries;
         Set<String> renamedFiles;
 
-        HistoryCollector() {
+        HistoryCollector(boolean consumeMergeChangesets) {
+            super(consumeMergeChangesets);
             entries = new ArrayList<>();
             renamedFiles = new HashSet<>();
         }
 
-        public void visit(ChangesetInfo changesetInfo) {
+        public void accept(ChangesetInfo changesetInfo) {
             RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
             HistoryEntry historyEntry = new HistoryEntry(commit.revision,
                     commit.date, commit.authorName + " <" + commit.authorEmail + ">",
@@ -509,8 +510,8 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
 
-        HistoryCollector historyCollector = new HistoryCollector();
-        traverseHistory(file, sinceRevision, tillRevision, numCommits, historyCollector::visit, false);
+        HistoryCollector historyCollector = new HistoryCollector(false);
+        traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
         History result = new History(historyCollector.entries, historyCollector.renamedFiles);
 
         // Assign tags to changesets they represent
@@ -524,7 +525,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     }
 
     public void traverseHistory(File file, String sinceRevision, String tillRevision,
-                              Integer numCommits, Consumer<ChangesetInfo> visitor, boolean getAll) throws HistoryException {
+                              Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException {
 
         if (numCommits != null && numCommits <= 0) {
             throw new HistoryException("invalid number of commits to retrieve");
@@ -539,23 +540,25 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
             int num = 0;
             for (RevCommit commit : walk) {
-                // For truly incremental reindex merge commits have to be processed.
-                // TODO: maybe the same for renamed files - depends on what happens if renamed file detection is on
-                if (!getAll && commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
-                    continue;
-                }
+                for (ChangesetVisitor visitor : visitors) {
+                    // For truly incremental reindex merge commits have to be processed.
+                    // TODO: maybe the same for renamed files - depends on what happens if renamed file detection is on
+                    if (!visitor.consumeMergeChangesets && commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
+                        continue;
+                    }
 
-                CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                        commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
-                        commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
-                if (isDirectory) {
-                    SortedSet<String> files = new TreeSet<>();
-                    final Set<String> renamedFiles = new HashSet<>();
-                    final Set<String> deletedFiles = new HashSet<>();
-                    getFilesForCommit(renamedFiles, files, deletedFiles, commit, repository);
-                    visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles));
-                } else {
-                    visitor.accept(new ChangesetInfo(commitInfo));
+                    CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                            commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
+                            commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
+                    if (isDirectory) {
+                        SortedSet<String> files = new TreeSet<>();
+                        final Set<String> renamedFiles = new HashSet<>();
+                        final Set<String> deletedFiles = new HashSet<>();
+                        getFilesForCommit(renamedFiles, files, deletedFiles, commit, repository);
+                        visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles));
+                    } else {
+                        visitor.accept(new ChangesetInfo(commitInfo));
+                    }
                 }
 
                 if (numCommits != null && ++num >= numCommits) {

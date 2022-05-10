@@ -26,9 +26,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Consumer;
 
 public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPartesHistory {
     private static final long serialVersionUID = -1L;
@@ -73,10 +73,9 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
      * @param sinceRevision start revision (non-inclusive)
      * @param tillRevision end revision (inclusive)
      * @param numCommits maximum number of commits to traverse (use {@code null} as unlimited)
-     * @param visitor visitor method
-     * @param getAll include merge commits (even if not set to be handled)
+     * @param visitors list of {@link ChangesetVisitor} objects
      * @throws HistoryException on error
      */
     public abstract void traverseHistory(File file, String sinceRevision, @Nullable String tillRevision,
-                         Integer numCommits, Consumer<ChangesetInfo> visitor, boolean getAll) throws HistoryException;
+                         Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException;
 }
