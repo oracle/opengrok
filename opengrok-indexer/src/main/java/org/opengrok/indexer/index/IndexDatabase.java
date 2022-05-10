@@ -473,6 +473,13 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
+            if (!repository.isHistoryEnabled()) {
+                LOGGER.log(Level.FINE, "history is disabled for {0}, " +
+                        "the associated project {1} will be indexed using directory traversal",
+                        new Object[]{repository, project});
+                return false;
+            }
+
             // Do this only if all repositories for given project support file gathering via history traversal.
             if (!(repository instanceof RepositoryWithHistoryTraversal)) {
                 LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
@@ -789,7 +796,6 @@ public class IndexDatabase {
         Statistics elapsed = new Statistics();
         LOGGER.log(Level.FINE, "getting list of files for truly incremental reindex in {0}", sourceRoot);
         for (Repository repository : getRepositoriesForProject(project)) {
-            // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
             // Get the list of files starting with the latest changeset in the history cache
             // and ending with the newest changeset of the repository.
             String previousRevision = HistoryGuru.getInstance().getPreviousCachedRevision(repository);
