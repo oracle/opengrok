@@ -628,7 +628,7 @@ public class IndexDatabase {
                     // The actual indexing happens in indexParallel(). Here we merely collect the files
                     // that need to be indexed and the files that should be removed.
                     IndexDownArgs args = new IndexDownArgs();
-                    getIndexDownArgs(dir, sourceRoot, args);
+                    boolean usedHistory = getIndexDownArgs(dir, sourceRoot, args);
 
                     args.curCount = 0;
                     Statistics elapsed = new Statistics();
@@ -637,19 +637,8 @@ public class IndexDatabase {
                     elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
                             "indexer.db.directory.index");
 
-                    // Remove data for the trailing terms that getIndexDownArgs()
-                    // did not traverse. These correspond to the files that have been
-                    // removed and have higher ordering than any present files.
-                    // TODO: reintroduce truly incremental awareness
-                    while (uidIter != null && uidIter.term() != null
-                            && uidIter.term().utf8ToString().startsWith(startUid)) {
-
-                        removeFile(true);
-                        BytesRef next = uidIter.next();
-                        if (next == null) {
-                            uidIter = null;
-                        }
-                    }
+                    // Traverse the trailing terms.
+                    processTrailingTerms(startUid, usedHistory);
 
                     /*
                      * As a signifier that #Lines/LOC are comprehensively
@@ -723,15 +712,54 @@ public class IndexDatabase {
         }
     }
 
-    private void getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+    private void processTrailingTerms(String startUid, boolean usedHistory) throws IOException {
+        while (uidIter != null && uidIter.term() != null
+                && uidIter.term().utf8ToString().startsWith(startUid)) {
+
+            if (usedHistory) {
+                // Allow for forced reindex. For history based reindex the trailing terms
+                // correspond to the files that have not changed. Such files might need to be re-indexed
+                // if the index format changed.
+                String termPath = Util.uid2url(uidIter.term().utf8ToString());
+                File termFile = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), termPath);
+                boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
+                        checkSettings(termFile, termPath);
+                if (!matchOK) {
+                    removeFile(true);
+                }
+            } else {
+                // Remove data for the trailing terms that getIndexDownArgs()
+                // did not traverse. These correspond to the files that have been
+                // removed and have higher ordering than any present files.
+                removeFile(true);
+            }
+
+            BytesRef next = uidIter.next();
+            if (next == null) {
+                uidIter = null;
+            }
+        }
+    }
+
+    /**
+     * @param dir directory path
+     * @param sourceRoot source root File object
+     * @param args {@link IndexDownArgs} instance (output)
+     * @return true if history was used to gather the {@code IndexDownArgs}
+     * @throws HistoryException TODO will be moved
+     * @throws IOException on error
+     */
+    private boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
 
         Statistics elapsed = new Statistics();
+        boolean usedHistory = false;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             indexDownUsingHistory(env.getSourceRootFile(), args);
+            usedHistory = true;
             elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
@@ -742,6 +770,8 @@ public class IndexDatabase {
         }
 
         showFileCount(dir, args);
+
+        return usedHistory;
     }
 
     /**
