@@ -540,6 +540,10 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
             int num = 0;
             for (RevCommit commit : walk) {
+                CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                        commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
+                        commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
+
                 for (ChangesetVisitor visitor : visitors) {
                     // For truly incremental reindex merge commits have to be processed.
                     // TODO: maybe the same for renamed files - depends on what happens if renamed file detection is on
@@ -547,9 +551,6 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         continue;
                     }
 
-                    CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                            commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
-                            commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
                     if (isDirectory) {
                         SortedSet<String> files = new TreeSet<>();
                         final Set<String> renamedFiles = new HashSet<>();
