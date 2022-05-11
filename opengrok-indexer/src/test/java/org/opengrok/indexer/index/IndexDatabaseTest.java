@@ -193,7 +193,7 @@ class IndexDatabaseTest {
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
-        file.delete();
+        assertTrue(file.delete());
         assertFalse(file.exists(), "file " + fileName + " not removed");
         idb.update();
 
