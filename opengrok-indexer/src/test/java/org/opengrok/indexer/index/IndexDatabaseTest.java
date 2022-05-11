@@ -48,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -159,13 +160,16 @@ class IndexDatabaseTest {
      * Test removal of IndexDatabase. xrefs and history index entries after
      * file has been removed from a repository.
      */
-    @Test
-    void testCleanupAfterIndexRemoval() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testCleanupAfterIndexRemoval(boolean historyBasedReindex) throws Exception {
         final int origNumFiles;
 
+        env.setHistoryBasedReindex(historyBasedReindex);
+
         String projectName = "git";
-        String ppath = "/" + projectName;
-        Project project = new Project(projectName, ppath);
+        Project project = env.getProjects().get(projectName);
+        assertNotNull(project);
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
 
