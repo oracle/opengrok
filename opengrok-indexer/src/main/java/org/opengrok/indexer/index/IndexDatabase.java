@@ -442,6 +442,7 @@ public class IndexDatabase {
 
     /**
      * @return whether the repositories of given project are ready for history based reindex
+     * TODO: move part of this to doCreateCache() (project specific and global checks)
      */
     private boolean isReadyForHistoryBasedReindex() {
         if (project == null) {

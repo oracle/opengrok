@@ -90,16 +90,24 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
     @Override
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
-        // TODO: file collector should not be used if configuration says so
-        FileCollector fileCollector = new FileCollector(true);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
+        FileCollector fileCollector = null;
+        if (env.isHistoryBasedReindex()) { // TODO: per project check
+            fileCollector = new FileCollector(true);
+        }
+
+        if (!env.isHistoryCachePerPartesEnabled()) {
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);
 
             HistoryCollector historyCollector = new HistoryCollector(false); // TODO: the flag should be based on configuration
-            traverseHistory(directory, sinceRevision, null, null,
-                    List.of(historyCollector, fileCollector));
+            List<ChangesetVisitor> visitors = new ArrayList<>();
+            visitors.add(historyCollector);
+            if (fileCollector != null) {
+                visitors.add(fileCollector);
+            }
+            traverseHistory(directory, sinceRevision, null, null, visitors);
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
             finishCreateCache(cache, history, null);
@@ -123,8 +131,12 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                     new Object[]{sinceRevision, tillRevision});
 
             HistoryCollector historyCollector = new HistoryCollector(false); // TODO: the flag should be based on configuration
-            traverseHistory(directory, sinceRevision, tillRevision, null,
-                    List.of(historyCollector, fileCollector));
+            List<ChangesetVisitor> visitors = new ArrayList<>();
+            visitors.add(historyCollector);
+            if (fileCollector != null) {
+                visitors.add(fileCollector);
+            }
+            traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
             // Assign tags to changesets they represent
