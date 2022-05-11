@@ -90,9 +90,9 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
             Statistics stat = new Statistics();
             LOGGER.log(Level.FINEST, "storing history cache for revision range ({0}, {1})",
                     new Object[]{sinceRevision, tillRevision});
-            finishCreateCache(cache, getHistory(directory, sinceRevision, tillRevision), tillRevision);
+            History history = getHistory(directory, sinceRevision, tillRevision);
+            finishCreateCache(cache, history, tillRevision);
             sinceRevision = tillRevision;
-
             stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
                     ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }

@@ -390,7 +390,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
-        finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+        History history = getHistory(directory, sinceRevision);
+        finishCreateCache(cache, history, null);
     }
 
     /**
