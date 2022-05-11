@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -46,7 +46,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class RepositoryWithPerPartesHistoryTest {
+class RepositoryWithPerPartesHistoryTest {
     private TestRepository repositories;
 
     private GitRepository gitRepository;
@@ -89,7 +89,8 @@ public class RepositoryWithPerPartesHistoryTest {
         Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(3);
         gitSpyRepository.createCache(cache, null);
         Mockito.verify(gitSpyRepository, times(3)).
-                getHistory(any(), stringArgumentCaptor1.capture(), stringArgumentCaptor2.capture());
+                traverseHistory(any(), stringArgumentCaptor1.capture(), stringArgumentCaptor2.capture(),
+                        isNull(), any());
 
         List<String> sinceRevisions = new ArrayList<>();
         sinceRevisions.add(null);
@@ -120,7 +121,7 @@ public class RepositoryWithPerPartesHistoryTest {
 
         gitSpyRepository.createCache(cache, historyEntries.get(1).getRevision());
         Mockito.verify(gitSpyRepository, times(1)).
-                getHistory(any(), anyString(), isNull());
+                traverseHistory(any(), anyString(), isNull(), isNull(), any());
         assertEquals(historyEntries.get(0).getRevision(), cache.getLatestCachedRevision(gitSpyRepository));
         History cachedHistory = cache.get(Paths.get(gitRepository.getDirectoryName(), "moved2", "renamed2.c").toFile(),
                 gitSpyRepository, false);

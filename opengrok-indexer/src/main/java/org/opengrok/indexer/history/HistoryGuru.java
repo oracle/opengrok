@@ -429,19 +429,6 @@ public final class HistoryGuru {
     }
 
     /**
-     * @param repository Repository object
-     * @return previously cached revision (before currently running reindex)
-     * @throws HistoryException on error
-     */
-    public String getPreviousCachedRevision(Repository repository) throws HistoryException {
-        if (repository != null && useCache()) {
-            return historyCache.getPreviousCachedRevision(repository);
-        }
-
-        throw new HistoryException(String.format("cannot get previous cached revision for %s", repository));
-    }
-
-    /**
      * recursively search for repositories with a depth limit, add those found
      * to the internally used map.
      *

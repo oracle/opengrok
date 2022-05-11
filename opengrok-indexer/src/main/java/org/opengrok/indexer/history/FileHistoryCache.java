@@ -741,31 +741,13 @@ class FileHistoryCache implements HistoryCache {
         return histDir + File.separatorChar + LATEST_REV_FILE_NAME;
     }
 
-    private String getRepositoryPreviousCachedRevPath(Repository repository) {
-        String histDir = getRepositoryHistDataDirname(repository);
-        if (histDir == null) {
-            return null;
-        }
-        return histDir + File.separatorChar + LATEST_REV_FILE_NAME + ".prev";
-    }
-
     /**
      * Store latest indexed revision for the repository under data directory.
      * @param repository repository
      * @param rev latest revision which has been just indexed
      */
     private void storeLatestCachedRevision(Repository repository, String rev) {
-        // Save the file so that it can be used by truly incremental reindex via getPreviousCachedRevision().
         Path newPath = Path.of(getRepositoryCachedRevPath(repository));
-        Path oldPath = Path.of(getRepositoryPreviousCachedRevPath(repository));
-        try {
-            if (newPath.toFile().exists()) {
-                Files.move(newPath, oldPath);
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("cannot move %s to %s", newPath, oldPath), e);
-        }
-
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newPath.toFile())))) {
             writer.write(rev);
         } catch (IOException ex) {
@@ -778,12 +760,6 @@ class FileHistoryCache implements HistoryCache {
     @Nullable
     public String getLatestCachedRevision(Repository repository) {
         return getCachedRevision(repository, getRepositoryCachedRevPath(repository));
-    }
-
-    @Override
-    @Nullable
-    public String getPreviousCachedRevision(Repository repository) {
-        return getCachedRevision(repository, getRepositoryPreviousCachedRevPath(repository));
     }
 
     @Nullable
