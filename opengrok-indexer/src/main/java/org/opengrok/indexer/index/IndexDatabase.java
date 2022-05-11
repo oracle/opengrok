@@ -787,7 +787,7 @@ public class IndexDatabase {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        if (env.isHistoryBasedReindex() && isReadyForHistoryBasedReindex()) {
+        if (isReadyForHistoryBasedReindex()) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             indexDownUsingHistory(env.getSourceRootFile(), args);
             usedHistory = true;
