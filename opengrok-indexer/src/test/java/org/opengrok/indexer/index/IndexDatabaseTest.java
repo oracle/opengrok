@@ -302,6 +302,7 @@ class IndexDatabaseTest {
     /**
      * Test specifically getIndexDownArgs() with IndexDatabase instance.
      * This test ensures that correct set of files is discovered.
+     * TODO: add param setHistoryCachePerPartesEnabled()
      */
     @ParameterizedTest
     @MethodSource("provideParamsFortestGetIndexDownArgs")

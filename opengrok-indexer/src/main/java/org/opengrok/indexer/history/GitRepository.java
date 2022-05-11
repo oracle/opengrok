@@ -476,52 +476,21 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
-    private static class HistoryCollector extends ChangesetVisitor {
-        List<HistoryEntry> entries;
-        Set<String> renamedFiles;
-
-        HistoryCollector(boolean consumeMergeChangesets) {
-            super(consumeMergeChangesets);
-            entries = new ArrayList<>();
-            renamedFiles = new HashSet<>();
-        }
-
-        public void accept(ChangesetInfo changesetInfo) {
-            RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
-            HistoryEntry historyEntry = new HistoryEntry(commit.revision,
-                    commit.date, commit.authorName + " <" + commit.authorEmail + ">",
-                    commit.message, true);
-
-            if (changesetInfo.renamedFiles != null) {
-                renamedFiles.addAll(changesetInfo.renamedFiles);
-            }
-            if (changesetInfo.files != null) {
-                historyEntry.setFiles(changesetInfo.files);
-            }
-            if (changesetInfo.renamedFiles != null) {
-                // TODO: hack
-                historyEntry.getFiles().addAll(changesetInfo.renamedFiles);
-            }
-
-            entries.add(historyEntry);
-        }
-    }
-
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
 
         HistoryCollector historyCollector = new HistoryCollector(false);
         traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
-        History result = new History(historyCollector.entries, historyCollector.renamedFiles);
+        History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
         if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
-            assignTagsInHistory(result);
+            assignTagsInHistory(history);
         }
 
-        return result;
+        return history;
     }
 
     public void traverseHistory(File file, String sinceRevision, String tillRevision,

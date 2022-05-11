@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ import org.apache.lucene.util.NamedThreadFactory;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
@@ -137,6 +139,12 @@ public final class RuntimeEnvironment {
     }
 
     private final List<String> subFiles = new ArrayList<>();
+
+    /**
+     * Maps project name to FileCollector object. This is used to pass the list of files acquired when
+     * generating history cache in the first phase of indexing to the second phase of indexing.
+     */
+    private final Map<String, FileCollector> fileCollectorMap = new HashMap<>();
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
@@ -1424,6 +1432,14 @@ public final class RuntimeEnvironment {
 
     public void setHistoryBasedReindex(boolean flag) {
         syncWriteConfiguration(flag, Configuration::setHistoryBasedReindex);
+    }
+
+    public FileCollector getFileCollector(String name) {
+        return fileCollectorMap.get(name);
+    }
+
+    public void setFileCollector(String name, FileCollector fileCollector) {
+        fileCollectorMap.put(name, fileCollector);
     }
 
     /**

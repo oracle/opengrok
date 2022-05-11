@@ -44,9 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -101,7 +99,7 @@ import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.ChangesetVisitor;
+import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
@@ -462,6 +460,11 @@ public class IndexDatabase {
             return false;
         }
 
+        // TODO: should be possible to do per project override
+        if (!env.isHistoryBasedReindex()) {
+            return false;
+        }
+
         // So far the history based reindex does not work without projects.
         if (!env.hasProjects()) {
             return false;
@@ -471,8 +474,9 @@ public class IndexDatabase {
             return false;
         }
 
-        // TODO: what if the index is without LOC counts ? indexDown() forces full reindex in such case
-        //      so perhaps it should be used in such case.
+        if (env.getFileCollector(project.getName()) == null) {
+            return false;
+        }
 
         List<Repository> repositories = getRepositoriesForProject(project);
         // Projects without repositories have to be indexed using indexDown().
@@ -513,56 +517,7 @@ public class IndexDatabase {
             return false;
         }
 
-        /*
-         * Further, there needs to be history cache already present for the repositories.
-         * This check means that this method will return false in the case of initial reindex.
-         * In such case the traversal of all changesets would most likely be counterproductive,
-         * assuming traversal of directory tree is cheaper than reading files from SCM history
-         * in such case.
-         */
-        try {
-            if (HistoryGuru.getInstance().getPreviousCachedRevision(repository) == null) {
-                return false;
-            }
-        } catch (HistoryException ex) {
-            LOGGER.log(Level.FINE, String.format("cannot load previous cached revision for history cache " +
-                            "for repository %s, the project %s will be indexed using directory traversal.",
-                    repository, project), ex);
-            return false;
-        }
-
         return true;
-    }
-
-    /**
-     * This class is meant to collect files that were touched in some way by SCM update.
-     * The visitor argument contains the files separated based on the type of modification performed,
-     * however the consumer of this class is not interested in this classification.
-     * This is because when incrementally indexing a bunch of changesets,
-     * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
-     */
-    private static class FileCollector extends ChangesetVisitor {
-        SortedSet<String> files;
-
-        /**
-         * Assumes comparing in the same way as {@link #FILENAME_COMPARATOR}.
-         */
-        FileCollector(boolean consumeMergeChangesets) {
-            super(consumeMergeChangesets);
-            files = new TreeSet<>();
-        }
-
-        public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
-            if (changesetInfo.renamedFiles != null) {
-                files.addAll(changesetInfo.renamedFiles);
-            }
-            if (changesetInfo.files != null) {
-                files.addAll(changesetInfo.files);
-            }
-            if (changesetInfo.deletedFiles != null) {
-                files.addAll(changesetInfo.deletedFiles);
-            }
-        }
     }
 
     /**
@@ -693,8 +648,6 @@ public class IndexDatabase {
                             isWithDirectoryCounts && isCountingDeltas);
 
                     markProjectIndexed(project);
-                } catch (HistoryException e) {
-                    // TODO
                 } finally {
                     reader.close();
                 }
@@ -777,11 +730,10 @@ public class IndexDatabase {
      * @param sourceRoot source root File object
      * @param args {@link IndexDownArgs} instance (output)
      * @return true if history was used to gather the {@code IndexDownArgs}
-     * @throws HistoryException TODO will be moved
      * @throws IOException on error
      */
     @VisibleForTesting
-    boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+    boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws IOException {
         Statistics elapsed = new Statistics();
         boolean usedHistory = false;
 
@@ -809,28 +761,14 @@ public class IndexDatabase {
      * Executes the first, serial stage of indexing, by going through set of files assembled from history.
      * @param sourceRoot path to the source root (same as {@link RuntimeEnvironment#getSourceRootPath()})
      * @param args {@link IndexDownArgs} instance where the resulting files to be indexed will be stored
-     * @throws HistoryException TODO will be moved
      * @throws IOException on error
      */
-     @VisibleForTesting
-     void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+    @VisibleForTesting
+    void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws IOException {
 
-        FileCollector fileCollector = new FileCollector(true);
+        FileCollector fileCollector = RuntimeEnvironment.getInstance().getFileCollector(project.getName());
 
-        // TODO: get the list of files in the first stage to be more efficient
-        Statistics elapsed = new Statistics();
-        LOGGER.log(Level.FINE, "getting list of files for history based reindex in {0}", sourceRoot);
-        for (Repository repository : getRepositoriesForProject(project)) {
-            // Get the list of files starting with the latest changeset in the history cache
-            // and ending with the newest changeset of the repository.
-            String previousRevision = HistoryGuru.getInstance().getPreviousCachedRevision(repository);
-            ((RepositoryWithHistoryTraversal) repository).traverseHistory(new File(sourceRoot, project.getPath()),
-                    previousRevision, null, null, List.of(fileCollector));
-        }
-        elapsed.report(LOGGER, Level.FINE,
-                String.format("Done getting list of files, got %d files", fileCollector.files.size()));
-
-        for (String path : fileCollector.files) {
+        for (String path : fileCollector.getFiles()) {
             File file = new File(sourceRoot, path);
             processFileIncremental(args, file, path);
         }
