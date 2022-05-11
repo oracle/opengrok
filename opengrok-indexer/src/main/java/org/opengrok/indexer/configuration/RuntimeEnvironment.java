@@ -1418,12 +1418,12 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(connectTimeout, Configuration::setConnectTimeout);
     }
 
-    public boolean isTrulyIncrementalReindex() {
-        return syncReadConfiguration(Configuration::isTrulyIncrementalReindex);
+    public boolean isHistoryBasedReindex() {
+        return syncReadConfiguration(Configuration::isHistoryBasedReindex);
     }
 
-    public void setTrulyIncrementalReindex(boolean flag) {
-        syncWriteConfiguration(flag, Configuration::setTrulyIncrementalReindex);
+    public void setHistoryBasedReindex(boolean flag) {
+        syncWriteConfiguration(flag, Configuration::setHistoryBasedReindex);
     }
 
     /**

@@ -88,7 +88,6 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
-import org.eclipse.jgit.util.IO;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -445,9 +444,9 @@ public class IndexDatabase {
     }
 
     /**
-     * @return whether the repositories of given project are ready for truly incremental reindex
+     * @return whether the repositories of given project are ready for history based reindex
      */
-    private boolean isReadyForTrulyIncrementalReindex() {
+    private boolean isReadyForHistoryBasedReindex() {
         if (project == null) {
             return false;
         }
@@ -463,12 +462,12 @@ public class IndexDatabase {
             return false;
         }
 
-        // So far the truly incremental reindex does not work without projects.
+        // So far the history based reindex does not work without projects.
         if (!env.hasProjects()) {
             return false;
         }
 
-        if (!project.isTrulyIncrementalReindex()) {
+        if (!project.isHistoryBasedReindex()) {
             return false;
         }
 
@@ -484,7 +483,7 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
-            if (!isReadyForTrulyIncrementalReindex(repository)) {
+            if (!isReadyForHistoryBasedReindex(repository)) {
                 return false;
             }
         }
@@ -498,7 +497,7 @@ public class IndexDatabase {
      * @return true if the repository can be used for history based reindex
      */
      @VisibleForTesting
-     boolean isReadyForTrulyIncrementalReindex(Repository repository) {
+     boolean isReadyForHistoryBasedReindex(Repository repository) {
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.FINE, "history is disabled for {0}, " +
                     "the associated project {1} will be indexed using directory traversal",
@@ -788,8 +787,7 @@ public class IndexDatabase {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // TODO: rename trulyIncrementalReindex -> historyBasedReindex
-        if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex()) {
+        if (env.isHistoryBasedReindex() && isReadyForHistoryBasedReindex()) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             indexDownUsingHistory(env.getSourceRootFile(), args);
             usedHistory = true;
@@ -821,7 +819,7 @@ public class IndexDatabase {
 
         // TODO: get the list of files in the first stage to be more efficient
         Statistics elapsed = new Statistics();
-        LOGGER.log(Level.FINE, "getting list of files for truly incremental reindex in {0}", sourceRoot);
+        LOGGER.log(Level.FINE, "getting list of files for history based reindex in {0}", sourceRoot);
         for (Repository repository : getRepositoriesForProject(project)) {
             // Get the list of files starting with the latest changeset in the history cache
             // and ending with the newest changeset of the repository.

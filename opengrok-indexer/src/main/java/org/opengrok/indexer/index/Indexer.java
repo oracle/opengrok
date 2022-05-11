@@ -807,7 +807,7 @@ public final class Indexer {
                     "and projects to be enabled. This should be much faster than the classic way of traversing ",
                     "the directory structure. The default is on. If you need to e.g. index files untracked by ",
                     "SCM, set this to off. Currently works only for Git.").
-                    execute(v -> cfg.setTrulyIncrementalReindex((Boolean) v));
+                    execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
 
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
                 "Send the current configuration to the specified web application.").execute(webAddr -> {

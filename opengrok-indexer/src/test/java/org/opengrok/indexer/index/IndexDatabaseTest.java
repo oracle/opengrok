@@ -308,7 +308,7 @@ class IndexDatabaseTest {
     void testGetIndexDownArgs(boolean mergeCommits, boolean renamedFiles, boolean historyBased) throws Exception {
         assertTrue(env.isHistoryEnabled());
 
-        env.setTrulyIncrementalReindex(historyBased);
+        env.setHistoryBasedReindex(historyBased);
         env.setHandleHistoryOfRenamedFiles(renamedFiles);
         env.setMergeCommitsEnabled(mergeCommits);
 

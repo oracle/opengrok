@@ -100,9 +100,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private boolean indexed = false;
 
     /**
-     * This flag sets per-project truly incremental reindex.
+     * This flag sets per-project reindex based on traversing SCM history.
      */
-    private Boolean trulyIncrementalReindex = null;
+    private Boolean historyBasedReindex = null;
 
     /**
      * Set of groups which match this project.
@@ -297,15 +297,15 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @return true if this project handles renamed files.
      */
-    public boolean isTrulyIncrementalReindex() {
-        return trulyIncrementalReindex != null && trulyIncrementalReindex;
+    public boolean isHistoryBasedReindex() {
+        return historyBasedReindex != null && historyBasedReindex;
     }
 
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
-    public void setTrulyIncrementalReindex(boolean flag) {
-        this.trulyIncrementalReindex = flag;
+    public void setHistoryBasedReindex(boolean flag) {
+        this.historyBasedReindex = flag;
     }
 
     /**
@@ -456,8 +456,8 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
             setReviewPattern(env.getReviewPattern());
         }
 
-        if (trulyIncrementalReindex == null) {
-            setTrulyIncrementalReindex(env.isTrulyIncrementalReindex());
+        if (historyBasedReindex == null) {
+            setHistoryBasedReindex(env.isHistoryBasedReindex());
         }
     }
 
