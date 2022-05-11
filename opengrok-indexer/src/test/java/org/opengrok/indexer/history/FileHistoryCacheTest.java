@@ -748,7 +748,7 @@ class FileHistoryCacheTest {
         assertEquals(0, svnCheckoutProcess.waitFor());
     }
 
-    private void changeFileAndCommit(Git git, File file, String comment) throws Exception {
+    static void changeFileAndCommit(Git git, File file, String comment) throws Exception {
         String authorName = "Foo Bar";
         String authorEmail = "foo@bar.com";
 

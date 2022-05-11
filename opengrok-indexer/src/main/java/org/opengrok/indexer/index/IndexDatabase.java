@@ -88,8 +88,10 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
+import org.eclipse.jgit.util.IO;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -175,6 +177,8 @@ public class IndexDatabase {
     public static final String XREF_DIR = "xref";
     public static final String SUGGESTER_DIR = "suggester";
 
+    private final IndexDownArgsFactory indexDownArgsFactory;
+
     /**
      * Create a new instance of the Index Database. Use this constructor if you
      * don't use any projects
@@ -189,12 +193,19 @@ public class IndexDatabase {
      * Create a new instance of an Index Database for a given project.
      *
      * @param project the project to create the database for
+     * @param factory {@link IndexDownArgsFactory} instance
      * @throws java.io.IOException if an error occurs while creating directories
      */
-    public IndexDatabase(Project project) throws IOException {
+    public IndexDatabase(Project project, IndexDownArgsFactory factory) throws IOException {
+        indexDownArgsFactory = factory;
         this.project = project;
         lockfact = NoLockFactory.INSTANCE;
         initialize();
+    }
+
+    @VisibleForTesting
+    IndexDatabase(Project project) throws IOException {
+        this(project, new IndexDownArgsFactory());
     }
 
     static {
@@ -434,10 +445,9 @@ public class IndexDatabase {
     }
 
     /**
-     * @param project instance of {@link Project}
      * @return whether the repositories of given project are ready for truly incremental reindex
      */
-    private static boolean isReadyForTrulyIncrementalReindex(Project project) {
+    private boolean isReadyForTrulyIncrementalReindex() {
         if (project == null) {
             return false;
         }
@@ -474,7 +484,7 @@ public class IndexDatabase {
         }
 
         for (Repository repository : repositories) {
-            if (!isReadyForTrulyIncrementalReindex(project, repository)) {
+            if (!isReadyForTrulyIncrementalReindex(repository)) {
                 return false;
             }
         }
@@ -484,11 +494,11 @@ public class IndexDatabase {
     }
 
     /**
-     * @param project Project instance
      * @param repository Repository instance
      * @return true if the repository can be used for history based reindex
      */
-    private static boolean isReadyForTrulyIncrementalReindex(Project project, Repository repository) {
+     @VisibleForTesting
+     boolean isReadyForTrulyIncrementalReindex(Repository repository) {
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.FINE, "history is disabled for {0}, " +
                     "the associated project {1} will be indexed using directory traversal",
@@ -649,7 +659,7 @@ public class IndexDatabase {
 
                     // The actual indexing happens in indexParallel(). Here we merely collect the files
                     // that need to be indexed and the files that should be removed.
-                    IndexDownArgs args = new IndexDownArgs();
+                    IndexDownArgs args = indexDownArgsFactory.getIndexDownArgs();
                     boolean usedHistory = getIndexDownArgs(dir, sourceRoot, args);
 
                     args.curCount = 0;
@@ -771,14 +781,15 @@ public class IndexDatabase {
      * @throws HistoryException TODO will be moved
      * @throws IOException on error
      */
-    private boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
-
+    @VisibleForTesting
+    boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
         Statistics elapsed = new Statistics();
         boolean usedHistory = false;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex(project)) {
+        // TODO: rename trulyIncrementalReindex -> historyBasedReindex
+        if (env.isTrulyIncrementalReindex() && isReadyForTrulyIncrementalReindex()) {
             LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
             indexDownUsingHistory(env.getSourceRootFile(), args);
             usedHistory = true;
@@ -803,7 +814,8 @@ public class IndexDatabase {
      * @throws HistoryException TODO will be moved
      * @throws IOException on error
      */
-    private void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
+     @VisibleForTesting
+     void indexDownUsingHistory(File sourceRoot, IndexDownArgs args) throws HistoryException, IOException {
 
         FileCollector fileCollector = new FileCollector(true);
 
@@ -964,8 +976,6 @@ public class IndexDatabase {
         HistoryGuru.getInstance().clearCacheFile(path);
     }
 
-    private final Set<String> filesToRemove = new TreeSet<>();
-
     /**
      * Remove a stale file from the index database and potentially also from history cache,
      * and queue the removal of the associated xref file.
@@ -979,9 +989,6 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileRemove(path);
         }
-
-        // TODO: debug only
-        filesToRemove.add(path);
 
         removeFileDocUid(path);
 
@@ -1471,7 +1478,8 @@ public class IndexDatabase {
      * @param args arguments to control execution and for collecting a list of
      * files for indexing
      */
-    private void indexDown(File dir, String parent, IndexDownArgs args) throws IOException {
+    @VisibleForTesting
+    void indexDown(File dir, String parent, IndexDownArgs args) throws IOException {
 
         if (isInterrupted()) {
             return;
@@ -1569,9 +1577,12 @@ public class IndexDatabase {
                     args.works.add(new IndexFileWork(file, path));
                 }
             }
+        } else {
+            if (file.exists()) {
+                args.curCount++;
+                args.works.add(new IndexFileWork(file, path));
+            }
         }
-        // TODO: if uidIter is null the file should be added if exists ?
-        //  add a test for this first
     }
 
     /**
@@ -2283,22 +2294,6 @@ public class IndexDatabase {
         }
 
         return true;
-    }
-
-    private static class IndexDownArgs {
-        int curCount;
-        final List<IndexFileWork> works = new ArrayList<>();
-    }
-
-    private static class IndexFileWork {
-        final File file;
-        final String path;
-        Exception exception;
-
-        IndexFileWork(File file, String path) {
-            this.file = file;
-            this.path = path;
-        }
     }
 
     private static class AcceptSymlinkRet {

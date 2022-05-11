@@ -112,7 +112,7 @@ public final class Indexer {
     private static final String HELP_OPT_2 = "-?";
     private static final String HELP_OPT_3 = "-h";
 
-    private static final Indexer index = new Indexer();
+    private static final Indexer indexer = new Indexer();
     private static Configuration cfg = null;
     private static boolean checkIndex = false;
     private static boolean runIndex = true;
@@ -149,7 +149,7 @@ public final class Indexer {
     private static final int WEBAPP_CONNECT_TIMEOUT = 1000;  // in milliseconds
 
     public static Indexer getInstance() {
-        return index;
+        return indexer;
     }
 
     /**
