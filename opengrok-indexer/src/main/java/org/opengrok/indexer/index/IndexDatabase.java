@@ -121,7 +121,7 @@ import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 import static org.opengrok.indexer.web.ApiUtils.waitForAsyncApi;
 
 /**
- * This class is used to create / update the index databases. Currently we use
+ * This class is used to create / update the index databases. Currently, we use
  * one index database per project.
  *
  * @author Trond Norbye
@@ -137,7 +137,7 @@ public class IndexDatabase {
 
     private static final Set<String> REVERT_COUNTS_FIELDS;
 
-    private final Object INSTANCE_LOCK = new Object();
+    private static final Object INSTANCE_LOCK = new Object();
 
     /**
      * Key is canonical path; Value is the first accepted, absolute path. Map
