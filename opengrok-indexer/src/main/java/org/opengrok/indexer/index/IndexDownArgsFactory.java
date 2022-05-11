@@ -23,7 +23,7 @@
 package org.opengrok.indexer.index;
 
 class IndexDownArgsFactory {
-    public IndexDownArgsFactory() {
+    IndexDownArgsFactory() {
     }
 
     public IndexDownArgs getIndexDownArgs() {
