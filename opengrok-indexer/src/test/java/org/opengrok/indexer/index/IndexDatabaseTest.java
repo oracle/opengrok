@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -372,10 +373,17 @@ class IndexDatabaseTest {
         // as it is reused in that stage of indexing.
         assertNotEquals(0, args.works.size());
         // The expected data has to match the work done in changeGitRepository().
-        assertEquals(Set.of("/git/Makefile.renamed", "/git/main.c", "/git/zzz.txt", "/git/zzzzzz.txt"),
-                args.works.stream().map(v -> v.path).collect(Collectors.toSet()));
+        assertEquals(Set.of(Path.of("/git/Makefile.renamed"),
+                        Path.of("/git/main.c"),
+                        Path.of("/git/zzz.txt"),
+                        Path.of("/git/zzzzzz.txt")),
+                args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
 
-        assertEquals(Set.of("/git/main.o", "/git/main.c", "/git/Makefile"), listener.getRemovedFiles());
+        assertEquals(Set.of(
+                Path.of("/git/main.o"),
+                Path.of("/git/main.c"),
+                Path.of("/git/Makefile")
+        ), listener.getRemovedFiles().stream().map(Path::of).collect(Collectors.toSet()));
 
         // Verify the assumption made above.
         verify(idb, times(1)).getIndexDownArgs(any(), any(), any());
