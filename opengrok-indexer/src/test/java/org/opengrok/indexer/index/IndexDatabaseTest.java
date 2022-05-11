@@ -398,4 +398,8 @@ class IndexDatabaseTest {
             verify(idb, atLeast(1)).indexDown(any(), any(), any());
         }
     }
+
+    // TODO: add test for project with multiple repositories
+
+    // TODO: add test for forced reindex - see if renamedFile() was called for all files
 }
