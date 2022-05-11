@@ -788,10 +788,10 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (isReadyForHistoryBasedReindex()) {
-            LOGGER.log(Level.INFO, "Starting file collection using history traversal in directory {0}", dir);
+            LOGGER.log(Level.INFO, "Starting file collection using history traversal for directory {0}", dir);
             indexDownUsingHistory(env.getSourceRootFile(), args);
             usedHistory = true;
-            elapsed.report(LOGGER, String.format("Done file collection of directory %s", dir),
+            elapsed.report(LOGGER, String.format("Done file collection for directory %s", dir),
                     "indexer.db.directory.collection");
         } else {
             LOGGER.log(Level.INFO, "Starting file collection using file-system traversal of directory {0}", dir);
