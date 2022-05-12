@@ -293,30 +293,40 @@ class IndexDatabaseTest {
 
     private static Stream<Arguments> provideParamsFortestGetIndexDownArgs() {
         return Stream.of(
-            Arguments.of(false, false, false),
-            Arguments.of(false, false, true),
-            Arguments.of(false, true, false),
-            Arguments.of(false, true, true),
-            Arguments.of(true, false, false),
-            Arguments.of(true, false, true),
-            Arguments.of(true, true, false),
-            Arguments.of(true, true, true)
+            Arguments.of(false, false, false, false),
+            Arguments.of(false, false, false, true),
+            Arguments.of(false, false, true, false),
+            Arguments.of(false, false, true, true),
+            Arguments.of(false, true, false, false),
+            Arguments.of(false, true, false, true),
+            Arguments.of(false, true, true, false),
+            Arguments.of(false, true, true, true),
+            Arguments.of(true, false, false, false),
+            Arguments.of(true, false, false, true),
+            Arguments.of(true, false, true, false),
+            Arguments.of(true, false, true, true),
+            Arguments.of(true, true, false, false),
+            Arguments.of(true, true, false, true),
+            Arguments.of(true, true, true, false),
+            Arguments.of(true, true, true, true)
         );
     }
 
     /**
      * Test specifically getIndexDownArgs() with IndexDatabase instance.
      * This test ensures that correct set of files is discovered.
-     * TODO: add param setHistoryCachePerPartesEnabled()
      */
     @ParameterizedTest
     @MethodSource("provideParamsFortestGetIndexDownArgs")
-    void testGetIndexDownArgs(boolean mergeCommits, boolean renamedFiles, boolean historyBased) throws Exception {
+    void testGetIndexDownArgs(boolean mergeCommits, boolean renamedFiles, boolean historyBased, boolean perPartes)
+            throws Exception {
+
         assertTrue(env.isHistoryEnabled());
 
         env.setHistoryBasedReindex(historyBased);
         env.setHandleHistoryOfRenamedFiles(renamedFiles);
         env.setMergeCommitsEnabled(mergeCommits);
+        env.setHistoryCachePerPartesEnabled(perPartes);
 
         IndexDownArgsFactory factory = new IndexDownArgsFactory();
         IndexDownArgsFactory spyFactory = spy(factory);
