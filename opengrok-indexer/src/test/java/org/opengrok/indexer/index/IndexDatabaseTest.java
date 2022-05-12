@@ -27,9 +27,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +58,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -67,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -105,6 +109,7 @@ class IndexDatabaseTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
         env.generateProjectRepositoriesMap();
+        // TODO: make sure the initial index is made using indexDown()
         indexer.doIndexerExecution(true, null, null);
     }
 
@@ -312,6 +317,43 @@ class IndexDatabaseTest {
         );
     }
 
+    static class AddRemoveFilesListener implements IndexChangedListener {
+        // The file sets need to be thread safe because the methods that modify them can be called in parallel.
+        private final Set<String> removedFiles = Collections.synchronizedSet(new HashSet<>());
+
+        private final Set<String> addedFiles = Collections.synchronizedSet(new HashSet<>());
+
+        @Override
+        public void fileAdd(String path, String analyzer) {
+            addedFiles.add(path);
+        }
+
+        @Override
+        public void fileAdded(String path, String analyzer) {
+        }
+
+        @Override
+        public void fileRemove(String path) {
+            removedFiles.add(path);
+        }
+
+        @Override
+        public void fileRemoved(String path) {
+        }
+
+        @Override
+        public void fileUpdate(String path) {
+        }
+
+        public Set<String> getRemovedFiles() {
+            return removedFiles;
+        }
+
+        public Set<String> getAddedFiles() {
+            return addedFiles;
+        }
+    };
+
     /**
      * Test specifically getIndexDownArgs() with IndexDatabase instance.
      * This test ensures that correct set of files is discovered.
@@ -350,35 +392,7 @@ class IndexDatabaseTest {
                 false, List.of("/git"), null);
 
         // Setup and use listener for the "removed" files.
-        class RemovedFilesListener implements IndexChangedListener {
-            private final Set<String> removedFiles = new HashSet<>();
-
-            @Override
-            public void fileAdd(String path, String analyzer) {
-            }
-
-            @Override
-            public void fileAdded(String path, String analyzer) {
-            }
-
-            @Override
-            public void fileRemove(String path) {
-                removedFiles.add(path);
-            }
-
-            @Override
-            public void fileRemoved(String path) {
-            }
-
-            @Override
-            public void fileUpdate(String path) {
-            }
-
-            public Set<String> getRemovedFiles() {
-                return removedFiles;
-            }
-        };
-        RemovedFilesListener listener = new RemovedFilesListener();
+        AddRemoveFilesListener listener = new AddRemoveFilesListener();
         idb.addIndexChangedListener(listener);
         idb.update();
 
@@ -402,8 +416,12 @@ class IndexDatabaseTest {
         // Verify the assumption made above.
         verify(idb, times(1)).getIndexDownArgs(any(), any(), any());
 
+        checkIndexDown(historyBased, idb);
+    }
+
+    private void checkIndexDown(boolean historyBased, IndexDatabase idb) throws IOException {
         // The initial index (done in setUpClass()) should use file based IndexWorkArgs discovery.
-        // Only the update() done here should lead to indexDownUsingHistory(),
+        // Only the update() done in the actual test should lead to indexDownUsingHistory(),
         // hence it should be called just once.
         if (historyBased) {
             verify(idb, times(1)).indexDownUsingHistory(any(), any());
@@ -415,5 +433,55 @@ class IndexDatabaseTest {
 
     // TODO: add test for project with multiple repositories
 
-    // TODO: add test for forced reindex - see if renamedFile() was called for all files
+    // TODO: add test for per project tunables
+
+    /**
+     * Test forced reindex - see if renamedFile() was called for all files in the repository
+     * even though there was no change.
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testForcedReindex(boolean historyBased) throws Exception {
+
+        env.setHistoryBasedReindex(historyBased);
+
+        Project gitProject = env.getProjects().get("git");
+        assertNotNull(gitProject);
+        IndexDatabase idbOrig = new IndexDatabase(gitProject);
+        assertNotNull(idbOrig);
+        IndexDatabase idb = spy(idbOrig);
+
+        // Re-generate the history cache so that the git repository is ready for history based re-index.
+        indexer.prepareIndexer(
+                env, true, true,
+                false, List.of("/git"), null);
+
+        // Emulate forcing reindex from scratch.
+        doReturn(false).when(idb).checkSettings(any(), any());
+
+        // Setup and use listener for the "removed" files.
+        AddRemoveFilesListener listener = new AddRemoveFilesListener();
+        idb.addIndexChangedListener(listener);
+        idb.update();
+
+        checkIndexDown(historyBased, idb);
+
+        // List the files in the /git directory tree and compare that to the IndexDatabase file sets.
+        Path repoRoot = Path.of(repository.getSourceRoot(), "git");
+        Set<Path> result;
+        try (Stream<Path> walk = Files.walk(repoRoot)) {
+            result = walk.filter(Files::isRegularFile).
+                    filter(p -> !p.toString().contains(".git")).
+                    collect(Collectors.toSet());
+        }
+        Set<Path> expectedFileSet = result.stream().map(f -> {
+                try {
+                    return Path.of(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(f.toFile()));
+                } catch (IOException|ForbiddenSymlinkException e) {
+                    return null;
+                }
+            }).collect(Collectors.toSet());
+        assertEquals(expectedFileSet, listener.getRemovedFiles().stream().map(Path::of).collect(Collectors.toSet()));
+        assertEquals(expectedFileSet, listener.getAddedFiles().stream().map(Path::of).collect(Collectors.toSet()));
+    }
 }

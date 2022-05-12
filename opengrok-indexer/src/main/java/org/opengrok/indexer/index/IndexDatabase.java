@@ -616,15 +616,16 @@ public class IndexDatabase {
                     IndexDownArgs args = indexDownArgsFactory.getIndexDownArgs();
                     boolean usedHistory = getIndexDownArgs(dir, sourceRoot, args);
 
+                    // Traverse the trailing terms. This needs to be done before indexParallel() because
+                    // in some cases it can add items to the args parameter.
+                    processTrailingTerms(startUid, usedHistory, args);
+
                     args.curCount = 0;
                     Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
                     elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
                             "indexer.db.directory.index");
-
-                    // Traverse the trailing terms.
-                    processTrailingTerms(startUid, usedHistory);
 
                     /*
                      * As a signifier that #Lines/LOC are comprehensively
@@ -696,7 +697,7 @@ public class IndexDatabase {
         }
     }
 
-    private void processTrailingTerms(String startUid, boolean usedHistory) throws IOException {
+    private void processTrailingTerms(String startUid, boolean usedHistory, IndexDownArgs args) throws IOException {
         while (uidIter != null && uidIter.term() != null
                 && uidIter.term().utf8ToString().startsWith(startUid)) {
 
@@ -709,7 +710,10 @@ public class IndexDatabase {
                 boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
                         checkSettings(termFile, termPath);
                 if (!matchOK) {
-                    removeFile(true);
+                    removeFile(false);
+
+                    args.curCount++;
+                    args.works.add(new IndexFileWork(termFile, termPath));
                 }
             } else {
                 // Remove data for the trailing terms that getIndexDownArgs()
@@ -2100,7 +2104,8 @@ public class IndexDatabase {
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean checkSettings(File file, String path) throws IOException {
+    @VisibleForTesting
+    boolean checkSettings(File file, String path) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean outIsXrefWriter = false; // potential xref writer
