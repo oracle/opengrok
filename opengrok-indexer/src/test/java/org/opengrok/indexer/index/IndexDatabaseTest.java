@@ -431,16 +431,16 @@ class IndexDatabaseTest {
         // hence it should be called just once.
         if (historyBased) {
             verify(idb, times(1)).indexDownUsingHistory(any(), any());
+            verify(idb, times(0)).indexDown(any(), any(), any());
         } else {
             // indexDown() is recursive, so it will be called more than once.
+            verify(idb, times(0)).indexDownUsingHistory(any(), any());
             verify(idb, atLeast(1)).indexDown(any(), any(), any());
         }
     }
 
-    // TODO: test project-less configuration
-
     /**
-     * Make sure that history based reindex is not performed only for projects
+     * Make sure that history based reindex is not performed for projects
      * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}.
      *
      * Instead of checking the result of the functions that make the decision, check the actual indexing.
@@ -450,22 +450,27 @@ class IndexDatabaseTest {
     void testHistoryBasedReindexVsProjectWithDiverseRepos() throws Exception {
         env.setHistoryBasedReindex(true);
 
+        // Make a change in the git repository.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        changeGitRepository(repositoryRoot);
+
         // Clone the Mercurial repository underneath the "git" project/repository.
         Path destinationPath = Path.of(repository.getSourceRoot(), "git", "mercurial");
         MercurialRepositoryTest.runHgCommand(new File(repository.getSourceRoot()),
-            "clone", Path.of(repository.getSourceRoot(), "mercurial").toString(),
-            destinationPath.toString());
+                "clone", Path.of(repository.getSourceRoot(), "mercurial").toString(),
+                destinationPath.toString());
         assertTrue(destinationPath.toFile().exists());
 
-        // rescan the repositories
+        // Once the Mercurial repository gets changed over to RepositoryWithHistoryTraversal,
+        // the test will have to start some other repository.
+        Repository mercurialRepo = RepositoryFactory.getRepository(destinationPath.toFile());
+        assertFalse(mercurialRepo instanceof RepositoryWithHistoryTraversal);
+
+        // Rescan the repositories.
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
-
-        // Once the Mercurial repository gets changed over to RepositoryWithHistoryTraversal,
-        // the test will have to start using something else.
-        Repository mercurialRepo = RepositoryFactory.getRepository(destinationPath.toFile());
-        assertFalse(mercurialRepo instanceof RepositoryWithHistoryTraversal);
 
         // assert the Mercurial repository was detected.
         Project gitProject = env.getProjects().get("git");
@@ -475,6 +480,33 @@ class IndexDatabaseTest {
         assertNotNull(gitProjectRepos);
         assertEquals(2, gitProjectRepos.size());
 
+        verifyIndexDown(gitProject);
+    }
+
+    /**
+     * The global history based tunable is tested in testGetIndexDownArgs().
+     */
+    @Test
+    void testHistoryBasedReindexProjectTunable() throws Exception {
+        // Make a change in the git repository.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        changeGitRepository(repositoryRoot);
+
+        // Toggle the tunable.
+        Project gitProject = env.getProjects().get("git");
+        gitProject.setHistoryBasedReindex(false);
+
+        indexer.prepareIndexer(
+                env, true, true,
+                false, List.of("/git"), null);
+
+        verifyIndexDown(gitProject);
+
+        gitProject.setHistoryBasedReindex(true);
+    }
+
+    private void verifyIndexDown(Project gitProject) throws Exception {
         // verify that indexer did not use history based reindex.
         IndexDatabase idbOrig = new IndexDatabase(gitProject);
         assertNotNull(idbOrig);
@@ -483,11 +515,10 @@ class IndexDatabaseTest {
         checkIndexDown(false, idb);
     }
 
-    // TODO: add test for the global tunable
-    // TODO: add test for per project tunables
+    // TODO: test project-less configuration
 
     /**
-     * Test forced reindex - see if renamedFile() was called for all files in the repository
+     * Test forced reindex - see if removeFile() was called for all files in the repository
      * even though there was no change.
      */
     @ParameterizedTest
