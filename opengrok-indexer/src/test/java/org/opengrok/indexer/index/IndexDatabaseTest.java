@@ -52,10 +52,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.MercurialRepositoryTest;
+import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.history.RepositoryWithHistoryTraversal;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -75,6 +80,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
@@ -386,7 +392,7 @@ class IndexDatabaseTest {
         assertTrue(repositoryRoot.isDirectory());
         changeGitRepository(repositoryRoot);
 
-        // Re-generate the history cache so that the git repository is ready for history based re-index.
+        // Re-generate the history cache so that the data is ready for history based re-index.
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
@@ -431,7 +437,51 @@ class IndexDatabaseTest {
         }
     }
 
-    // TODO: add test for project with multiple repositories
+    // TODO: test project-less configuration
+
+    /**
+     * Make sure that history based reindex is not performed only for projects
+     * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}.
+     *
+     * Instead of checking the result of the functions that make the decision, check the actual indexing.
+     */
+    @EnabledForRepository(MERCURIAL)
+    @Test
+    void testHistoryBasedReindexVsProjectWithDiverseRepos() throws Exception {
+        env.setHistoryBasedReindex(true);
+
+        // Clone the Mercurial repository underneath the "git" project/repository.
+        Path destinationPath = Path.of(repository.getSourceRoot(), "git", "mercurial");
+        MercurialRepositoryTest.runHgCommand(new File(repository.getSourceRoot()),
+            "clone", Path.of(repository.getSourceRoot(), "mercurial").toString(),
+            destinationPath.toString());
+        assertTrue(destinationPath.toFile().exists());
+
+        // rescan the repositories
+        indexer.prepareIndexer(
+                env, true, true,
+                false, List.of("/git"), null);
+
+        // Once the Mercurial repository gets changed over to RepositoryWithHistoryTraversal,
+        // the test will have to start using something else.
+        Repository mercurialRepo = RepositoryFactory.getRepository(destinationPath.toFile());
+        assertFalse(mercurialRepo instanceof RepositoryWithHistoryTraversal);
+
+        // assert the Mercurial repository was detected.
+        Project gitProject = env.getProjects().get("git");
+        assertNotNull(gitProject);
+        env.generateProjectRepositoriesMap();
+        List<RepositoryInfo> gitProjectRepos = env.getProjectRepositoriesMap().get(gitProject);
+        assertNotNull(gitProjectRepos);
+        assertEquals(2, gitProjectRepos.size());
+
+        // verify that indexer did not use history based reindex.
+        IndexDatabase idbOrig = new IndexDatabase(gitProject);
+        assertNotNull(idbOrig);
+        IndexDatabase idb = spy(idbOrig);
+        idb.update();
+        checkIndexDown(false, idb);
+    }
 
     // TODO: add test for per project tunables
 
