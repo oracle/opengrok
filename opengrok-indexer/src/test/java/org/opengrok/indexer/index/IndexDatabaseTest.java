@@ -483,6 +483,7 @@ class IndexDatabaseTest {
         checkIndexDown(false, idb);
     }
 
+    // TODO: add test for the global tunable
     // TODO: add test for per project tunables
 
     /**
@@ -527,7 +528,7 @@ class IndexDatabaseTest {
         Set<Path> expectedFileSet = result.stream().map(f -> {
                 try {
                     return Path.of(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(f.toFile()));
-                } catch (IOException|ForbiddenSymlinkException e) {
+                } catch (IOException | ForbiddenSymlinkException e) {
                     return null;
                 }
             }).collect(Collectors.toSet());
