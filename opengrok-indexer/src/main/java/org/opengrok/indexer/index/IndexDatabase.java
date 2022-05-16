@@ -446,35 +446,43 @@ public class IndexDatabase {
      */
     private boolean isReadyForHistoryBasedReindex() {
         if (project == null) {
+            LOGGER.log(Level.FINEST, "no project, will be indexed by directory traversal.");
             return false;
         }
 
         // History needs to be enabled for the history cache to work (see the comment below).
         if (!project.isHistoryEnabled()) {
+            LOGGER.log(Level.FINEST, "history is disabled, will be indexed by directory traversal.");
             return false;
         }
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // History cache is necessary to get the last indexed revision for given repository.
         if (!env.isHistoryCache()) {
+            LOGGER.log(Level.FINEST, "history cache is disabled, will be indexed by directory traversal.");
             return false;
         }
 
         // TODO: should be possible to do per project override
         if (!env.isHistoryBasedReindex()) {
+            LOGGER.log(Level.FINEST, "history-based reindex is disabled, will be indexed by directory traversal.");
             return false;
         }
 
         // So far the history based reindex does not work without projects.
         if (!env.hasProjects()) {
+            LOGGER.log(Level.FINEST, "projects are disabled, will be indexed by directory traversal.");
             return false;
         }
 
         if (!project.isHistoryBasedReindex()) {
+            LOGGER.log(Level.FINEST, "history based reindex is turned off for project {0}", project);
             return false;
         }
 
         if (env.getFileCollector(project.getName()) == null) {
+            LOGGER.log(Level.FINEST, "no collected files for project {0}, will be indexed by directory traversal.",
+                    project);
             return false;
         }
 
