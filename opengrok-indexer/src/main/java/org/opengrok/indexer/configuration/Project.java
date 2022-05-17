@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -308,6 +309,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         this.historyBasedReindex = flag;
     }
 
+    @VisibleForTesting
+    public void setHistoryBasedReindexToNull() {
+        this.historyBasedReindex = null;
+    }
+
     /**
      * Return groups where this project belongs.
      *
@@ -499,8 +505,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Get the project for a specific file.
      *
      * @param file the file to lookup
-     * @return the project that this file belongs to (or null if the file
-     * doesn't belong to a project)
+     * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
      */
     public static Project getProject(File file) {
         Project ret = null;

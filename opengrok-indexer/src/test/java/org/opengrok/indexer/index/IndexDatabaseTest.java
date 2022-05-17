@@ -121,6 +121,12 @@ class IndexDatabaseTest {
                 env, true, true,
                 false, null, null);
 
+        // Reset the state of the git project w.r.t. history based reindex.
+        // It is the responsibility of each test that relies on the per project tunable
+        // to call gitProject.completeWithDefaults() or gitProject.setHistoryBasedReindex().
+        Project gitProject = env.getProjects().get("git");
+        gitProject.setHistoryBasedReindexToNull();
+
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
 
         indexer.doIndexerExecution(true, null, null);
@@ -391,6 +397,7 @@ class IndexDatabaseTest {
 
         Project gitProject = env.getProjects().get("git");
         assertNotNull(gitProject);
+        gitProject.completeWithDefaults();
         IndexDatabase idbOrig = new IndexDatabase(gitProject, spyFactory);
         assertNotNull(idbOrig);
         IndexDatabase idb = spy(idbOrig);
@@ -487,41 +494,59 @@ class IndexDatabaseTest {
         assertNotNull(gitProjectRepos);
         assertEquals(2, gitProjectRepos.size());
 
-        verifyIndexDown(gitProject);
+        verifyIndexDown(gitProject, false);
     }
 
     /**
      * Verify project specific tunable has effect on how the indexing will be performed.
      * The global history based tunable is tested in testGetIndexDownArgs().
-     * TODO: verify per project override of the global tunable
      */
-    @Test
-    void testHistoryBasedReindexProjectTunable() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testHistoryBasedReindexProjectTunable(boolean historyBased) throws Exception {
+        env.setHistoryBasedReindex(!historyBased);
+
         // Make a change in the git repository.
         File repositoryRoot = new File(repository.getSourceRoot(), "git");
         assertTrue(repositoryRoot.isDirectory());
         changeGitRepository(repositoryRoot);
 
-        // Toggle the tunable.
+        // The per project tunable should override the global tunable.
         Project gitProject = env.getProjects().get("git");
-        gitProject.setHistoryBasedReindex(false);
+        gitProject.setHistoryBasedReindex(historyBased);
 
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
 
-        verifyIndexDown(gitProject);
+        verifyIndexDown(gitProject, historyBased);
 
         gitProject.setHistoryBasedReindex(true);
     }
 
-    private void verifyIndexDown(Project gitProject) throws Exception {
+    /**
+     * test history based reindex if there was no change to the repository
+     */
+    @Test
+    void testHistoryBasedReindexWithNoChange() throws Exception {
+        env.setHistoryBasedReindex(true);
+
+        Project gitProject = env.getProjects().get("git");
+
+        indexer.prepareIndexer(
+                env, true, true,
+                false, List.of("/git"), null);
+
+        verifyIndexDown(gitProject, true);
+    }
+
+    private void verifyIndexDown(Project gitProject, boolean historyBased) throws Exception {
         // verify that indexer did not use history based reindex.
         IndexDatabase idbOrig = new IndexDatabase(gitProject);
         assertNotNull(idbOrig);
         IndexDatabase idb = spy(idbOrig);
         idb.update();
-        checkIndexDown(false, idb);
+        checkIndexDown(historyBased, idb);
     }
 
     // TODO: test project-less configuration

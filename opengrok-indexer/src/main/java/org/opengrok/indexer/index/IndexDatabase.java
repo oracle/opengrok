@@ -445,6 +445,14 @@ public class IndexDatabase {
      * TODO: move part of this to doCreateCache() (project specific and global checks)
      */
     private boolean isReadyForHistoryBasedReindex() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // So far the history based reindex does not work without projects.
+        if (!env.hasProjects()) {
+            LOGGER.log(Level.FINEST, "projects are disabled, will be indexed by directory traversal.");
+            return false;
+        }
+
         if (project == null) {
             LOGGER.log(Level.FINEST, "no project, will be indexed by directory traversal.");
             return false;
@@ -456,22 +464,15 @@ public class IndexDatabase {
             return false;
         }
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // History cache is necessary to get the last indexed revision for given repository.
         if (!env.isHistoryCache()) {
             LOGGER.log(Level.FINEST, "history cache is disabled, will be indexed by directory traversal.");
             return false;
         }
 
-        // TODO: should be possible to do per project override
-        if (!env.isHistoryBasedReindex()) {
+        // Per project tunable can override the global tunable, therefore env.isHistoryBasedReindex() is not checked.
+        if (!project.isHistoryBasedReindex()) {
             LOGGER.log(Level.FINEST, "history-based reindex is disabled, will be indexed by directory traversal.");
-            return false;
-        }
-
-        // So far the history based reindex does not work without projects.
-        if (!env.hasProjects()) {
-            LOGGER.log(Level.FINEST, "projects are disabled, will be indexed by directory traversal.");
             return false;
         }
 
@@ -493,13 +494,12 @@ public class IndexDatabase {
             return false;
         }
 
-        if (!project.isHistoryBasedReindex()) {
-            LOGGER.log(Level.FINEST, "history based reindex is turned off for project {0}", project);
-            return false;
-        }
-
+        // If there was no change to any of the repositories of the project, a FileCollector instance will be returned
+        // however the list of files therein will be empty which is legitimate situation (no change of the project).
+        // Only in a case where getFileCollector() returns null (hinting at something went wrong),
+        // the file based traversal should be done.
         if (env.getFileCollector(project.getName()) == null) {
-            LOGGER.log(Level.FINEST, "no collected files for project {0}, will be indexed by directory traversal.",
+            LOGGER.log(Level.FINEST, "no file collector for project {0}, will be indexed by directory traversal.",
                     project);
             return false;
         }
