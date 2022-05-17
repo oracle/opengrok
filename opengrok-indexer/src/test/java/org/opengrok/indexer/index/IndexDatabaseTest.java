@@ -64,6 +64,7 @@ import org.opengrok.indexer.history.RepositoryWithHistoryTraversal;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -115,7 +116,6 @@ class IndexDatabaseTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
         env.generateProjectRepositoriesMap();
-        // TODO: make sure the initial index is made using indexDown()
         indexer.doIndexerExecution(true, null, null);
     }
 
@@ -484,7 +484,9 @@ class IndexDatabaseTest {
     }
 
     /**
+     * Verify project specific tunable has effect on how the indexing will be performed.
      * The global history based tunable is tested in testGetIndexDownArgs().
+     * TODO: verify per project override of the global tunable
      */
     @Test
     void testHistoryBasedReindexProjectTunable() throws Exception {
@@ -565,5 +567,32 @@ class IndexDatabaseTest {
             }).collect(Collectors.toSet());
         assertEquals(expectedFileSet, listener.getRemovedFiles().stream().map(Path::of).collect(Collectors.toSet()));
         assertEquals(expectedFileSet, listener.getAddedFiles().stream().map(Path::of).collect(Collectors.toSet()));
+    }
+
+    /**
+     * make sure the initial indexing is made using indexDown() even though history based reindex is possible.
+     */
+    @Test
+    void testInitialReindexWithHistoryBased() throws Exception {
+        env.setHistoryBasedReindex(true);
+
+        // Delete the index (and all data in fact).
+        assertFalse(repository.getDataRoot().isEmpty());
+        IOUtils.removeRecursive(Path.of(repository.getDataRoot()));
+        assertFalse(Path.of(repository.getDataRoot()).toFile().exists());
+
+        // Update the index of the project.
+        Project gitProject = env.getProjects().get("git");
+        assertNotNull(gitProject);
+        IndexDatabase idbOrig = new IndexDatabase(gitProject);
+        assertNotNull(idbOrig);
+        IndexDatabase idb = spy(idbOrig);
+        idb.update();
+
+        // Check that the index for the git project was created.
+        Document doc = IndexDatabase.getDocument(Path.of(repository.getSourceRoot(), "git", "main.c").toFile());
+        assertNotNull(doc);
+
+        checkIndexDown(false, idb);
     }
 }

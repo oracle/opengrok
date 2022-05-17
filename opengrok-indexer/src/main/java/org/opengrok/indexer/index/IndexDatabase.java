@@ -475,6 +475,24 @@ public class IndexDatabase {
             return false;
         }
 
+        /*
+         * Check that the index is present for this project.
+         * In such case the traversal of all changesets would most likely be counterproductive,
+         * assuming traversal of directory tree is cheaper than getting the files from SCM history
+         * in such case.
+         */
+        try {
+            if (getNumFiles() == 0) {
+                LOGGER.log(Level.FINEST, "zero number of documents for project {0}, " +
+                        "will be indexed by directory traversal.", project);
+                return false;
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINEST, "failed to get number of documents for project {0}," +
+                    "will be indexed by directory traversal.", project);
+            return false;
+        }
+
         if (!project.isHistoryBasedReindex()) {
             LOGGER.log(Level.FINEST, "history based reindex is turned off for project {0}", project);
             return false;
@@ -508,8 +526,8 @@ public class IndexDatabase {
      * @param repository Repository instance
      * @return true if the repository can be used for history based reindex
      */
-     @VisibleForTesting
-     boolean isReadyForHistoryBasedReindex(Repository repository) {
+    @VisibleForTesting
+    boolean isReadyForHistoryBasedReindex(Repository repository) {
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.FINE, "history is disabled for {0}, " +
                     "the associated project {1} will be indexed using directory traversal",
