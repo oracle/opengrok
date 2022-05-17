@@ -74,7 +74,8 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);
-            finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+            History history = getHistory(directory, sinceRevision);
+            finishCreateCache(cache, history, null);
             return;
         }
 
