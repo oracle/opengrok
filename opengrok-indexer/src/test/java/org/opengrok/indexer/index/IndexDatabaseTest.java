@@ -53,6 +53,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -110,12 +111,18 @@ class IndexDatabaseTest {
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
 
+        // Restore the repository information.
+        env.setRepositories(repository.getSourceRoot());
+        HistoryGuru.getInstance().invalidateRepositories(env.getRepositories(), CommandTimeoutType.INDEXER);
+        env.generateProjectRepositoriesMap();
+
         indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true,
                 false, null, null);
+
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
-        env.generateProjectRepositoriesMap();
+
         indexer.doIndexerExecution(true, null, null);
     }
 
