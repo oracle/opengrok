@@ -96,6 +96,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         FileCollector fileCollector = null;
         Project project = Project.getProject(directory);
         if (project != null && project.isHistoryBasedReindex()) {
+            // The fileCollector has to go through merge changesets no matter what the configuration says
+            // in order to detect the files that need to be indexed.
             fileCollector = new FileCollector(true);
         }
 
@@ -103,7 +105,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);
 
-            HistoryCollector historyCollector = new HistoryCollector(false); // TODO: the flag should be based on configuration
+            HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
             List<ChangesetVisitor> visitors = new ArrayList<>();
             visitors.add(historyCollector);
             if (fileCollector != null) {
@@ -132,7 +134,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             LOGGER.log(Level.FINEST, "storing history cache for revision range ({0}, {1})",
                     new Object[]{sinceRevision, tillRevision});
 
-            HistoryCollector historyCollector = new HistoryCollector(false); // TODO: the flag should be based on configuration
+            HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
             List<ChangesetVisitor> visitors = new ArrayList<>();
             visitors.add(historyCollector);
             if (fileCollector != null) {

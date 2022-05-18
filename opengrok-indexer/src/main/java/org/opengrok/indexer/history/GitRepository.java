@@ -478,7 +478,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
 
-        HistoryCollector historyCollector = new HistoryCollector(false);  // TODO: should be based on configuration
+        HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
         traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
         History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
@@ -513,8 +513,6 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 
                 for (ChangesetVisitor visitor : visitors) {
-                    // For truly incremental reindex merge commits have to be processed.
-                    // TODO: maybe the same for renamed files - depends on what happens if renamed file detection is on
                     if (!visitor.consumeMergeChangesets && commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                         continue;
                     }

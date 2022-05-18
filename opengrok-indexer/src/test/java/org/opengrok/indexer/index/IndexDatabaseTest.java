@@ -44,6 +44,11 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -276,8 +281,38 @@ class IndexDatabaseTest {
         git.commit().setMessage(message).setAuthor("foo bar", "foobar@example.com").setAll(true).call();
     }
 
+    private void addMergeCommit(Git git, File repositoryRoot) throws Exception {
+        // Create and checkout a branch.
+        final String branchName = "mybranch";
+        git.branchCreate().setName(branchName).call();
+        git.checkout().setName(branchName).call();
+
+        // Change a file on the branch.
+        addFileAndCommit(git, "new.txt", repositoryRoot, "new file on a branch");
+
+        // Checkout the master branch again.
+        git.checkout().setName("master").call();
+
+        // Retrieve the objectId of the latest commit on the branch.
+        ObjectId mergeBase = git.getRepository().resolve(branchName);
+
+        // Perform the actual merge without FastForward to see the
+        // actual merge-commit even though the merge is trivial.
+        git.merge().
+                include(mergeBase).
+                setCommit(false).
+                setFastForward(MergeCommand.FastForwardMode.NO_FF).
+                setMessage("merge commit").
+                call();
+
+        // Commit the merge separately so that the author can be set.
+        // (MergeCommand - a result of git.merge() - does not have the setAuthor() method)
+        git.commit().setAuthor("foo bar", "foobar@example.com").call();
+    }
+
     /**
-     * Add some commits to the Git repository.
+     * Add some commits to the Git repository - change/remove/add/rename a file in separate commits,
+     * also add a merge commit.
      * @param repositoryRoot Git repository root
      */
     private void changeGitRepository(File repositoryRoot) throws Exception {
@@ -312,6 +347,8 @@ class IndexDatabaseTest {
             git.add().addFilepattern("Makefile.renamed").call();
             git.rm().addFilepattern("Makefile").call();
             git.commit().setMessage("rename").setAuthor("foo", "foobar@example.com").setAll(true).call();
+
+            addMergeCommit(git, repositoryRoot);
         }
     }
 
@@ -411,6 +448,8 @@ class IndexDatabaseTest {
                 env, true, true,
                 false, List.of("/git"), null);
 
+        // TODO: check the history cache w.r.t. the merge changeset
+
         // Setup and use listener for the "removed" files.
         AddRemoveFilesListener listener = new AddRemoveFilesListener();
         idb.addIndexChangedListener(listener);
@@ -421,11 +460,13 @@ class IndexDatabaseTest {
         // as it is reused in that stage of indexing.
         assertNotEquals(0, args.works.size());
         // The expected data has to match the work done in changeGitRepository().
-        assertEquals(Set.of(Path.of("/git/Makefile.renamed"),
-                        Path.of("/git/main.c"),
-                        Path.of("/git/zzz.txt"),
-                        Path.of("/git/zzzzzz.txt")),
-                args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
+        Set<Path> expectedFileSet = new HashSet<>();
+        expectedFileSet.add(Path.of("/git/Makefile.renamed"));
+        expectedFileSet.add(Path.of("/git/main.c"));
+        expectedFileSet.add(Path.of("/git/zzz.txt"));
+        expectedFileSet.add(Path.of("/git/zzzzzz.txt"));
+        expectedFileSet.add(Path.of("/git/new.txt"));
+        assertEquals(expectedFileSet, args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
 
         assertEquals(Set.of(
                 Path.of("/git/main.o"),
@@ -500,6 +541,7 @@ class IndexDatabaseTest {
     /**
      * Verify project specific tunable has effect on how the indexing will be performed.
      * The global history based tunable is tested in testGetIndexDownArgs().
+     * TODO: standalone run of this test fails (for true)
      */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -548,8 +590,6 @@ class IndexDatabaseTest {
         idb.update();
         checkIndexDown(historyBased, idb);
     }
-
-    // TODO: test project-less configuration
 
     /**
      * Test forced reindex - see if removeFile() was called for all files in the repository
@@ -627,4 +667,6 @@ class IndexDatabaseTest {
 
         checkIndexDown(false, idb);
     }
+
+    // TODO: test project-less configuration with history based reindex
 }
