@@ -631,34 +631,39 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 String newPath = getNativePath(getDirectoryNameRelative()) + File.separator +
                         getNativePath(diff.getNewPath());
 
-                // TODO: refactor
-                switch (diff.getChangeType()) {
-                    case DELETE:
-                        if (deletedFiles != null) {
-                            // newPath would be "/dev/null"
-                            String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
-                                    getNativePath(diff.getOldPath());
-                            deletedFiles.add(oldPath);
-                        }
-                        break;
-                    case RENAME:
-                        if (isHandleRenamedFiles()) {
-                            renamedFiles.add(newPath);
-                            if (deletedFiles != null) {
-                                String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
-                                        getNativePath(diff.getOldPath());
-                                deletedFiles.add(oldPath);
-                            }
-                        }
-                        break;
-                    default:
-                        if (changedFiles != null) {
-                            // Added files (ChangeType.ADD) are treated as changed.
-                            changedFiles.add(newPath);
-                        }
-                        break;
-                }
+                handleDiff(changedFiles, renamedFiles, deletedFiles, diff, newPath);
             }
+        }
+    }
+
+    private void handleDiff(Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles,
+                            DiffEntry diff, String newPath) {
+
+        switch (diff.getChangeType()) {
+            case DELETE:
+                if (deletedFiles != null) {
+                    // newPath would be "/dev/null"
+                    String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getOldPath());
+                    deletedFiles.add(oldPath);
+                }
+                break;
+            case RENAME:
+                if (isHandleRenamedFiles()) {
+                    renamedFiles.add(newPath);
+                    if (deletedFiles != null) {
+                        String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                                getNativePath(diff.getOldPath());
+                        deletedFiles.add(oldPath);
+                    }
+                }
+                break;
+            default:
+                if (changedFiles != null) {
+                    // Added files (ChangeType.ADD) are treated as changed.
+                    changedFiles.add(newPath);
+                }
+                break;
         }
     }
 
