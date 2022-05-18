@@ -23,7 +23,6 @@
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.Nullable;
-import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
@@ -94,8 +93,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         FileCollector fileCollector = null;
-        Project project = Project.getProject(directory);
-        if (project != null && project.isHistoryBasedReindex()) {
+        if (isHistoryBasedReindex()) {
             // The fileCollector has to go through merge changesets no matter what the configuration says
             // in order to detect the files that need to be indexed.
             fileCollector = new FileCollector(true);

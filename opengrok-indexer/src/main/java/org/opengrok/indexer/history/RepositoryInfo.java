@@ -79,6 +79,8 @@ public class RepositoryInfo implements Serializable {
     private boolean historyEnabled;
     @DTOElement
     private boolean mergeCommitsEnabled;
+    @DTOElement
+    private boolean historyBasedReindex;
 
     /**
      * Empty constructor to support serialization.
@@ -99,6 +101,7 @@ public class RepositoryInfo implements Serializable {
         this.historyEnabled = orig.historyEnabled;
         this.handleRenamedFiles = orig.handleRenamedFiles;
         this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
+        this.historyBasedReindex = orig.historyBasedReindex;
     }
 
     /**
@@ -127,6 +130,20 @@ public class RepositoryInfo implements Serializable {
      */
     public void setMergeCommitsEnabled(boolean flag) {
         this.mergeCommitsEnabled = flag;
+    }
+
+    /**
+     * @return true if history based reindex is enabled for the repository, false otherwise
+     */
+    public boolean isHistoryBasedReindex() {
+        return this.historyBasedReindex;
+    }
+
+    /**
+     * @param flag if history based reindex should be enabled for the repository
+     */
+    public void setHistoryBasedReindex(boolean flag) {
+        this.historyBasedReindex = flag;
     }
 
     /**
@@ -313,12 +330,14 @@ public class RepositoryInfo implements Serializable {
             setHistoryEnabled(proj.isHistoryEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
+            setHistoryEnabled(proj.isHistoryBasedReindex());
         } else {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             setHistoryEnabled(env.isHistoryEnabled());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
+            setHistoryBasedReindex(env.isHistoryBasedReindex());
         }
     }
 
