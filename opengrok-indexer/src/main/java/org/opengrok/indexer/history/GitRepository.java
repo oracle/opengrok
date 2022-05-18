@@ -513,7 +513,9 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 
                 for (ChangesetVisitor visitor : visitors) {
-                    if (!visitor.consumeMergeChangesets && commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
+                    // Even though the repository itself is set (not) to consume the merge changesets,
+                    // it should be up to the visitor to have the say. This is because of the history based reindex.
+                    if (commit.getParentCount() > 1 && !visitor.consumeMergeChangesets) {
                         continue;
                     }
 
