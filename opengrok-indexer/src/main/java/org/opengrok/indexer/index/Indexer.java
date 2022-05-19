@@ -801,12 +801,16 @@ public final class Indexer {
                         }
                     });
 
-            parser.on("--trulyIncremental", "=on|off", ON_OFF, Boolean.class,
-                    "If truly incremental reindex is in effect, the set of files changed/deleted since the last ",
-                    "reindex is determined from history of the repositories. This needs history, history cache ",
-                    "and projects to be enabled. This should be much faster than the classic way of traversing ",
-                    "the directory structure. The default is on. If you need to e.g. index files untracked by ",
-                    "SCM, set this to off. Currently works only for Git.").
+            parser.on("--historyBased", "=on|off", ON_OFF, Boolean.class,
+                    "If history based reindex is in effect, the set of files ",
+                    "changed/deleted since the last reindex is determined from history ",
+                    "of the repositories. This needs history, history cache and ",
+                    "projects to be enabled. This should be much faster than the ",
+                    "classic way of traversing the directory structure. ",
+                    "The default is on. If you need to e.g. index files untracked by ",
+                    "SCM, set this to off. Currently works only for Git.",
+                    "All repositories in a project need to support this in order ",
+                    "to be indexed using history.").
                     execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
 
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
