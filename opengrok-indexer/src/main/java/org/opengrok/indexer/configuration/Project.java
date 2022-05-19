@@ -310,8 +310,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     @VisibleForTesting
-    public void setHistoryBasedReindexToNull() {
-        this.historyBasedReindex = null;
+    public void clearProperties() {
+        historyBasedReindex = null;
+        mergeCommitsEnabled = null;
+        historyEnabled = null;
+        handleRenamedFiles = null;
     }
 
     /**

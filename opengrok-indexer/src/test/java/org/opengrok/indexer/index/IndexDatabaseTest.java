@@ -60,6 +60,8 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.FileCollector;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.MercurialRepositoryTest;
 import org.opengrok.indexer.history.Repository;
@@ -129,9 +131,9 @@ class IndexDatabaseTest {
 
         // Reset the state of the git project w.r.t. history based reindex.
         // It is the responsibility of each test that relies on the per project tunable
-        // to call gitProject.completeWithDefaults() or gitProject.setHistoryBasedReindex().
+        // to call gitProject.completeWithDefaults().
         Project gitProject = env.getProjects().get("git");
-        gitProject.setHistoryBasedReindexToNull();
+        gitProject.clearProperties();
 
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
 
@@ -453,7 +455,18 @@ class IndexDatabaseTest {
                 false, List.of("/git"), null);
         env.generateProjectRepositoriesMap();
 
-        // TODO: check history cache w.r.t. the merge changeset
+        // Check history cache w.r.t. the merge changeset.
+        File mergeFile = new File(repositoryRoot, "new.txt");
+        History history = HistoryGuru.getInstance().getHistory(mergeFile, false, false,false);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        boolean containsMergeCommitMessage = history.getHistoryEntries().stream().
+                map(HistoryEntry::getMessage).collect(Collectors.toSet()).contains("merge commit");
+        if (mergeCommits) {
+            assertTrue(containsMergeCommitMessage);
+        } else {
+            assertFalse(containsMergeCommitMessage);
+        }
 
         // Setup and use listener for the "removed" files.
         AddRemoveFilesListener listener = new AddRemoveFilesListener();
