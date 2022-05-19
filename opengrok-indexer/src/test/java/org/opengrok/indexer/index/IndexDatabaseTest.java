@@ -601,7 +601,6 @@ class IndexDatabaseTest {
     /**
      * Verify project specific tunable has effect on how the indexing will be performed.
      * The global history based tunable is tested in testGetIndexDownArgs().
-     * TODO: standalone run of this test fails (for true)
      */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
