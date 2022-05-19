@@ -457,7 +457,7 @@ class IndexDatabaseTest {
 
         // Check history cache w.r.t. the merge changeset.
         File mergeFile = new File(repositoryRoot, "new.txt");
-        History history = HistoryGuru.getInstance().getHistory(mergeFile, false, false,false);
+        History history = HistoryGuru.getInstance().getHistory(mergeFile, false, false, false);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         boolean containsMergeCommitMessage = history.getHistoryEntries().stream().
@@ -630,7 +630,7 @@ class IndexDatabaseTest {
     }
 
     /**
-     * test history based reindex if there was no change to the repository
+     * Test history based reindex if there was no change to the repository.
      */
     @Test
     void testHistoryBasedReindexWithNoChange() throws Exception {
