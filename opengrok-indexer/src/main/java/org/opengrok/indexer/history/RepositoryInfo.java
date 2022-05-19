@@ -330,7 +330,7 @@ public class RepositoryInfo implements Serializable {
             setHistoryEnabled(proj.isHistoryEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
-            setHistoryEnabled(proj.isHistoryBasedReindex());
+            setHistoryBasedReindex(proj.isHistoryBasedReindex());
         } else {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

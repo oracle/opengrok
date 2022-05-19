@@ -30,8 +30,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,10 +47,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,6 +60,8 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.FileCollector;
+import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.MercurialRepositoryTest;
 import org.opengrok.indexer.history.Repository;
@@ -116,7 +117,9 @@ class IndexDatabaseTest {
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
 
-        // Restore the repository information.
+        // Restore the project and repository information.
+        env.setProjects(new HashMap<>());
+        HistoryGuru.getInstance().removeRepositories(List.of("/git"));
         env.setRepositories(repository.getSourceRoot());
         HistoryGuru.getInstance().invalidateRepositories(env.getRepositories(), CommandTimeoutType.INDEXER);
         env.generateProjectRepositoriesMap();
@@ -135,6 +138,8 @@ class IndexDatabaseTest {
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
 
         indexer.doIndexerExecution(true, null, null);
+
+        env.clearFileCollector();
     }
 
     @AfterEach
@@ -408,7 +413,7 @@ class IndexDatabaseTest {
         public Set<String> getAddedFiles() {
             return addedFiles;
         }
-    };
+    }
 
     /**
      * Test specifically getIndexDownArgs() with IndexDatabase instance.
@@ -444,11 +449,13 @@ class IndexDatabaseTest {
         changeGitRepository(repositoryRoot);
 
         // Re-generate the history cache so that the data is ready for history based re-index.
+        HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
 
-        // TODO: check the history cache w.r.t. the merge changeset
+        // TODO: check history cache w.r.t. the merge changeset
 
         // Setup and use listener for the "removed" files.
         AddRemoveFilesListener listener = new AddRemoveFilesListener();
@@ -539,6 +546,48 @@ class IndexDatabaseTest {
     }
 
     /**
+     * Make sure the files detected for a sub-repository are correctly stored in the appropriate
+     * {@code FileCollector} instance.
+     */
+    @Test
+    void testHistoryBasedReindexWithEligibleSubRepo() throws Exception {
+        env.setHistoryBasedReindex(true);
+
+        assertNull(env.getFileCollector("git"));
+
+        Project gitProject = env.getProjects().get("git");
+        assertNotNull(gitProject);
+        gitProject.completeWithDefaults();
+
+        // Create a Git repository underneath the existing git repository and make a change there.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        changeGitRepository(repositoryRoot);
+        String subRepoName = "subrepo";
+        File subRepositoryRoot = new File(repositoryRoot, subRepoName);
+        String changedFileName = "subfile.txt";
+        try (Git git = Git.init().setDirectory(subRepositoryRoot).call()) {
+            addFileAndCommit(git, changedFileName, subRepositoryRoot, "new file in subrepo");
+        }
+        assertTrue(new File(subRepositoryRoot, changedFileName).exists());
+
+        HistoryGuru.getInstance().clear();
+
+        // Rescan the repositories and refresh the history cache which should also collect the files
+        // for the 2nd stage of indexing.
+        indexer.prepareIndexer(
+                env, true, true,
+                false, List.of("/git"), null);
+
+        // Verify the collected files.
+        FileCollector fileCollector = env.getFileCollector("git");
+        assertNotNull(fileCollector);
+        assertTrue(fileCollector.getFiles().size() > 1);
+        assertTrue(fileCollector.getFiles().
+                contains("/" + gitProject.getName() + "/" + subRepoName + "/" + changedFileName));
+    }
+
+    /**
      * Verify project specific tunable has effect on how the indexing will be performed.
      * The global history based tunable is tested in testGetIndexDownArgs().
      * TODO: standalone run of this test fails (for true)
@@ -556,10 +605,13 @@ class IndexDatabaseTest {
         // The per project tunable should override the global tunable.
         Project gitProject = env.getProjects().get("git");
         gitProject.setHistoryBasedReindex(historyBased);
+        gitProject.completeWithDefaults();
 
+        HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
 
         verifyIndexDown(gitProject, historyBased);
 
@@ -574,10 +626,13 @@ class IndexDatabaseTest {
         env.setHistoryBasedReindex(true);
 
         Project gitProject = env.getProjects().get("git");
+        gitProject.completeWithDefaults();
 
+        HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
 
         verifyIndexDown(gitProject, true);
     }
@@ -603,6 +658,7 @@ class IndexDatabaseTest {
 
         Project gitProject = env.getProjects().get("git");
         assertNotNull(gitProject);
+        gitProject.completeWithDefaults();
         IndexDatabase idbOrig = new IndexDatabase(gitProject);
         assertNotNull(idbOrig);
         IndexDatabase idb = spy(idbOrig);
@@ -611,6 +667,7 @@ class IndexDatabaseTest {
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
 
         // Emulate forcing reindex from scratch.
         doReturn(false).when(idb).checkSettings(any(), any());

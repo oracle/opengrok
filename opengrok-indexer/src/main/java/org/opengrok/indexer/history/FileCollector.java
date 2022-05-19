@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.history;
 
+import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -33,7 +34,7 @@ import java.util.TreeSet;
  * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
  */
 public class FileCollector extends ChangesetVisitor {
-    private SortedSet<String> files;
+    private final SortedSet<String> files;
 
     /**
      * Assumes comparing in the same way as {@code org.opengrok.indexer.index.IndexDatabase#FILENAME_COMPARATOR}.
@@ -57,5 +58,9 @@ public class FileCollector extends ChangesetVisitor {
 
     public SortedSet<String> getFiles() {
         return files;
+    }
+
+    void addFiles(Collection<String> files) {
+        this.files.addAll(files);
     }
 }

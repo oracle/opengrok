@@ -23,6 +23,7 @@
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
@@ -93,7 +94,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         FileCollector fileCollector = null;
-        if (isHistoryBasedReindex()) {
+        Project project = Project.getProject(directory);
+        if (project != null && isHistoryBasedReindex()) {
             // The fileCollector has to go through merge changesets no matter what the configuration says
             // in order to detect the files that need to be indexed.
             fileCollector = new FileCollector(true);
@@ -112,9 +114,15 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             traverseHistory(directory, sinceRevision, null, null, visitors);
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
+            // Assign tags to changesets they represent.
+            // We don't need to check if this repository supports tags, because we know it :-)
+            if (env.isTagsEnabled()) {
+                assignTagsInHistory(history);
+            }
+
             finishCreateCache(cache, history, null);
 
-            RuntimeEnvironment.getInstance().setFileCollector(directory.getName(), fileCollector);
+            updateFileCollector(fileCollector, project);
 
             return;
         }
@@ -141,10 +149,9 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
-            // Assign tags to changesets they represent
-            // We don't need to check if this repository supports tags,
-            // because we know it :-)
-            if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
+            // Assign tags to changesets they represent.
+            // We don't need to check if this repository supports tags, because we know it :-)
+            if (env.isTagsEnabled()) {
                 assignTagsInHistory(history);
             }
 
@@ -154,6 +161,19 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                     ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }
 
-        RuntimeEnvironment.getInstance().setFileCollector(directory.getName(), fileCollector);
+        updateFileCollector(fileCollector, project);
+    }
+
+    private void updateFileCollector(FileCollector fileCollector, Project project) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        if (project != null && fileCollector != null) {
+            FileCollector fileCollectorEnv = env.getFileCollector(project.getName());
+            if (fileCollectorEnv == null) {
+                env.setFileCollector(project.getName(), fileCollector);
+            } else {
+                fileCollectorEnv.addFiles(fileCollector.getFiles());
+            }
+        }
     }
 }

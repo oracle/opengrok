@@ -535,7 +535,13 @@ public class IndexDatabase {
             return false;
         }
 
-        // Do this only if all repositories for given project support file gathering via history traversal.
+        if (!repository.isHistoryBasedReindex()) {
+            LOGGER.log(Level.FINE, "history based reindex is disabled for {0}, " +
+                            "the associated project {1} will be indexed using directory traversal",
+                    new Object[]{repository, project});
+            return false;
+        }
+
         if (!(repository instanceof RepositoryWithHistoryTraversal)) {
             LOGGER.log(Level.FINE, "project {0} has a repository {1} that does not support history traversal," +
                             "the project will be indexed using directory traversal.",

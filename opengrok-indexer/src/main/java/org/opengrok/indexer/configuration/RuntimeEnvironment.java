@@ -1442,6 +1442,11 @@ public final class RuntimeEnvironment {
         fileCollectorMap.put(name, fileCollector);
     }
 
+    @VisibleForTesting
+    public void clearFileCollector() {
+        fileCollectorMap.clear();
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *

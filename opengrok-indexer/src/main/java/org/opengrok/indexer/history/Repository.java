@@ -115,6 +115,9 @@ public abstract class Repository extends RepositoryInfo {
             stringBuilder.append(",");
             stringBuilder.append("merge=");
             stringBuilder.append(this.isMergeCommitsEnabled());
+            stringBuilder.append(",");
+            stringBuilder.append("historyBased=");
+            stringBuilder.append(this.isHistoryBasedReindex());
         }
         stringBuilder.append("}");
         return stringBuilder.toString();
