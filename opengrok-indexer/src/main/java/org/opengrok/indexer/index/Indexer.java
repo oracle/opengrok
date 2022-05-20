@@ -908,6 +908,14 @@ public final class Indexer {
         if (!new File(cfg.getDataRoot()).canWrite()) {
             die("Data root '" + cfg.getDataRoot() + "' must be writable");
         }
+
+        if (!cfg.isHistoryEnabled() && cfg.isHistoryBasedReindex()) {
+            die("History has to be enabled for history based reindex");
+        }
+
+        if (!cfg.isHistoryCache() && cfg.isHistoryBasedReindex()) {
+            die("History cache has to be enabled for history based reindex");
+        }
     }
 
     private static void die(String message) {
