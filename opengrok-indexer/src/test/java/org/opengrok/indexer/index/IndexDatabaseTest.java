@@ -735,5 +735,23 @@ class IndexDatabaseTest {
         checkIndexDown(false, idb);
     }
 
-    // TODO: test project-less configuration with history based reindex
+    /**
+     * project-less configuration should lead to file-system based reindex.
+     */
+    @Test
+    void testProjectLessReindexVsHistoryBased() throws Exception {
+        env.setProjectsEnabled(false);
+
+        // Make a change in the git repository.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        changeGitRepository(repositoryRoot);
+
+        IndexDatabase idbOrig = new IndexDatabase();
+        assertNotNull(idbOrig);
+        IndexDatabase idb = spy(idbOrig);
+        idb.update();
+
+        checkIndexDown(false, idb);
+    }
 }
