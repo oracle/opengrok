@@ -769,27 +769,26 @@ public class IndexDatabase {
      */
     @VisibleForTesting
     boolean getIndexDownArgs(String dir, File sourceRoot, IndexDownArgs args) throws IOException {
-        Statistics elapsed = new Statistics();
-        boolean usedHistory = false;
-
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean historyBased = isReadyForHistoryBasedReindex();
 
-        if (isReadyForHistoryBasedReindex()) {
-            LOGGER.log(Level.INFO, "Starting file collection using history traversal for directory {0}", dir);
-            indexDownUsingHistory(env.getSourceRootFile(), args);
-            usedHistory = true;
-            elapsed.report(LOGGER, String.format("Done file collection for directory %s", dir),
-                    "indexer.db.directory.collection");
-        } else {
-            LOGGER.log(Level.INFO, "Starting file collection using file-system traversal of directory {0}", dir);
-            indexDown(sourceRoot, dir, args);
-            elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
-                    "indexer.db.directory.traversal");
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, String.format("Starting file collection using %s traversal for directory '%s'",
+                    historyBased ? "history" : "file-system", dir));
         }
+        Statistics elapsed = new Statistics();
+        if (historyBased) {
+            indexDownUsingHistory(env.getSourceRootFile(), args);
+        } else {
+            indexDown(sourceRoot, dir, args);
+        }
+
+        elapsed.report(LOGGER, String.format("Done file collection for directory '%s'", dir),
+                "indexer.db.collection");
 
         showFileCount(dir, args);
 
-        return usedHistory;
+        return historyBased;
     }
 
     /**
