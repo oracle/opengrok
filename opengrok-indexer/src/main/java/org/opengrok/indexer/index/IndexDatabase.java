@@ -234,8 +234,7 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
-        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer();
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
