@@ -95,7 +95,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
         FileCollector fileCollector = null;
         Project project = Project.getProject(directory);
-        if (project != null && isHistoryBasedReindex()) {
+        if (project != null && isHistoryBasedReindex() && isHistoryEnabled()) {
             // The fileCollector has to go through merge changesets no matter what the configuration says
             // in order to detect the files that need to be indexed.
             fileCollector = new FileCollector(true);

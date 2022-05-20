@@ -442,7 +442,6 @@ public class IndexDatabase {
 
     /**
      * @return whether the repositories of given project are ready for history based reindex
-     * TODO: move part of this to doCreateCache() (project specific and global checks)
      */
     private boolean isReadyForHistoryBasedReindex() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -478,7 +477,7 @@ public class IndexDatabase {
 
         /*
          * Check that the index is present for this project.
-         * In such case the traversal of all changesets would most likely be counterproductive,
+         * In case of the initial indexing, the traversal of all changesets would most likely be counterproductive,
          * assuming traversal of directory tree is cheaper than getting the files from SCM history
          * in such case.
          */
