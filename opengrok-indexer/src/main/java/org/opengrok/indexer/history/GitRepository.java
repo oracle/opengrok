@@ -478,6 +478,10 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
 
+        if (numCommits != null && numCommits <= 0) {
+            return null;
+        }
+
         HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
         traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
         History history = new History(historyCollector.entries, historyCollector.renamedFiles);
