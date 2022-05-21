@@ -158,7 +158,7 @@ public abstract class Repository extends RepositoryInfo {
         }
     }
 
-    Repository() {
+    protected Repository() {
         super();
         ignoredFiles = new ArrayList<>();
         ignoredDirs = new ArrayList<>();
