@@ -97,6 +97,7 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract boolean hasHistoryForDirectories();
 
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("{");
