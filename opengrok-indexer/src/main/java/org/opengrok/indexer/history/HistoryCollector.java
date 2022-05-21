@@ -39,8 +39,17 @@ class HistoryCollector extends ChangesetVisitor {
 
     public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
         RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
+
+        // TODO: add a test for this
+        String author;
+        if (commit.authorEmail != null) {
+            author = commit.authorName + " <" + commit.authorEmail + ">";
+        } else {
+            author = commit.authorName;
+        }
+
         HistoryEntry historyEntry = new HistoryEntry(commit.revision,
-                commit.date, commit.authorName + " <" + commit.authorEmail + ">",
+                commit.date, author,
                 commit.message, true);
 
         if (changesetInfo.renamedFiles != null) {

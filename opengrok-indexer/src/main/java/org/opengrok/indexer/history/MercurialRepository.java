@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -52,7 +52,7 @@ import org.opengrok.indexer.util.LazilyInstantiate;
  * Access to a Mercurial repository.
  *
  */
-public class MercurialRepository extends RepositoryWithPerPartesHistory {
+public class MercurialRepository extends RepositoryWithHistoryTraversal {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MercurialRepository.class);
 
@@ -584,31 +584,12 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
-    History getHistory(File file, String sinceRevision, String tillRevision,
-                       Integer numCommits) throws HistoryException {
+    // TODO: add a test for this
+    public void traverseHistory(File file, String sinceRevision, String tillRevision,
+                                Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException {
 
-        if (numCommits != null && numCommits <= 0) {
-            return null;
-        }
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        // Note that the filtering of revisions based on sinceRevision is done
-        // in the history log executor by passing appropriate options to
-        // the 'hg' executable.
-        // This is done only for directories since if getHistory() is used
-        // for file, the file is renamed and its complete history is fetched
-        // so no sinceRevision filter is needed.
-        // See findOriginalName() code for more details.
-        History result = new MercurialHistoryParser(this).
+        new MercurialHistoryParser(this, visitors).
                 parse(file, sinceRevision, tillRevision, numCommits);
-
-        // Assign tags to changesets they represent.
-        // We don't need to check if this repository supports tags,
-        // because we know it :-)
-        if (env.isTagsEnabled()) {
-            assignTagsInHistory(result);
-        }
-        return result;
     }
 
     /**

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,11 +71,13 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.history.RepositoryWithHistoryTraversal;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -88,7 +91,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
@@ -512,48 +515,99 @@ class IndexDatabaseTest {
         }
     }
 
+    private static void copyDirectory(Path src, Path dest) throws IOException {
+        Files.walk(src).forEach(srcPath -> {
+            try {
+                Path destPath = dest.resolve(src.relativize(srcPath));
+                if (Files.isDirectory(srcPath)) {
+                    if(!Files.exists(destPath))
+                        Files.createDirectory(destPath);
+                    return;
+                }
+                Files.copy(srcPath, destPath);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     /**
      * Make sure that history based reindex is not performed for projects
-     * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}.
+     * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}
+     * or have the history based reindex explicitly disabled.
      *
      * Instead of checking the result of the functions that make the decision, check the actual indexing.
      */
-    @EnabledForRepository(MERCURIAL)
-    @Test
-    void testHistoryBasedReindexVsProjectWithDiverseRepos() throws Exception {
+    @EnabledForRepository(CVS)
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testHistoryBasedReindexVsProjectWithDiverseRepos(boolean useCvs) throws Exception {
         env.setHistoryBasedReindex(true);
 
-        // Make a change in the git repository.
-        File repositoryRoot = new File(repository.getSourceRoot(), "git");
-        assertTrue(repositoryRoot.isDirectory());
-        changeGitRepository(repositoryRoot);
+        // Create a new project with two repositories.
+        String projectName = "new";
+        Path projectPath = Path.of(repository.getSourceRoot(), projectName);
+        assertTrue(projectPath.toFile().mkdirs());
+        assertTrue(projectPath.toFile().isDirectory());
 
-        // Clone the Mercurial repository underneath the "git" project/repository.
-        Path destinationPath = Path.of(repository.getSourceRoot(), "git", "mercurial");
-        MercurialRepositoryTest.runHgCommand(new File(repository.getSourceRoot()),
-                "clone", Path.of(repository.getSourceRoot(), "mercurial").toString(),
-                destinationPath.toString());
-        assertTrue(destinationPath.toFile().exists());
+        String disabledGitRepoName = "git1";
 
-        // Once the Mercurial repository gets changed over to RepositoryWithHistoryTraversal,
-        // the test will have to start some other repository.
-        Repository mercurialRepo = RepositoryFactory.getRepository(destinationPath.toFile());
-        assertFalse(mercurialRepo instanceof RepositoryWithHistoryTraversal);
+        if (useCvs) {
+            // Copy CVS repository underneath the project.
+            String subrepoName = "cvssubrepo";
+            Path destinationPath = Path.of(repository.getSourceRoot(), projectName, subrepoName);
+            Path sourcePath = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo");
+            assertTrue(sourcePath.toFile().exists());
+            copyDirectory(sourcePath, destinationPath);
+            assertTrue(destinationPath.toFile().exists());
+
+            Repository subRepo = RepositoryFactory.getRepository(destinationPath.toFile());
+            assertFalse(subRepo instanceof RepositoryWithHistoryTraversal);
+        } else {
+            // Clone Git repository underneath the project.
+            String cloneUrl = Path.of(repository.getSourceRoot(), "git").toFile().toURI().toString();
+            Path repositoryRootPath = Path.of(repository.getSourceRoot(), projectName, disabledGitRepoName);
+            Git.cloneRepository()
+                    .setURI(cloneUrl)
+                    .setDirectory(repositoryRootPath.toFile())
+                    .call();
+            assertTrue(repositoryRootPath.toFile().isDirectory());
+        }
+
+        // Clone Git repository underneath the project and make a change there.
+        String cloneUrl = Path.of(repository.getSourceRoot(), "git").toFile().toURI().toString();
+        Path repositoryRootPath = Path.of(repository.getSourceRoot(), projectName, "git");
+        Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(repositoryRootPath.toFile())
+                .call();
+        assertTrue(repositoryRootPath.toFile().isDirectory());
+        changeGitRepository(repositoryRootPath.toFile());
 
         // Rescan the repositories.
+        HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
                 false, List.of("/git"), null);
-
-        // assert the Mercurial repository was detected.
-        Project gitProject = env.getProjects().get("git");
-        assertNotNull(gitProject);
+        env.setRepositories(new ArrayList<>(HistoryGuru.getInstance().getRepositories()));
         env.generateProjectRepositoriesMap();
-        List<RepositoryInfo> gitProjectRepos = env.getProjectRepositoriesMap().get(gitProject);
-        assertNotNull(gitProjectRepos);
-        assertEquals(2, gitProjectRepos.size());
 
-        verifyIndexDown(gitProject, false);
+        // Assert the repositories were detected.
+        Project project = env.getProjects().get(projectName);
+        assertNotNull(project);
+        List<RepositoryInfo> projectRepos = env.getProjectRepositoriesMap().get(project);
+        assertNotNull(projectRepos);
+        assertEquals(2, projectRepos.size());
+
+        if (!useCvs) {
+            for (RepositoryInfo repo : projectRepos) {
+                if (repo.getDirectoryNameRelative().equals(disabledGitRepoName)) {
+                    repo.setHistoryBasedReindex(false);
+                }
+            }
+        }
+
+        verifyIndexDown(project, false);
     }
 
     /**

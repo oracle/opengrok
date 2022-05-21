@@ -301,11 +301,9 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Returns if this repository tags only files changed in last commit, i.e.
-     * if we need to prepare list of repository-wide tags prior to creation of
-     * file history entries.
+     * if we need to prepare list of repository-wide tags prior to creation of file history entries.
      *
-     * @return True if we need tag list creation prior to file parsing, false by
-     * default.
+     * @return True if we need tag list creation prior to file parsing, false by default.
      */
     boolean hasFileBasedTags() {
         return false;

@@ -31,9 +31,11 @@ import org.opengrok.indexer.util.Statistics;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,6 +51,9 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         String authorName;
         String authorEmail;
         String message;
+
+        CommitInfo() {
+        }
 
         CommitInfo(String revision, Date date, String authorName, String authorEmail, String message) {
             this.revision = revision;
@@ -67,6 +72,9 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
         ChangesetInfo(CommitInfo commit) {
             this.commit = commit;
+            this.files = new TreeSet<>();
+            this.renamedFiles = new HashSet<>();
+            this.deletedFiles = new HashSet<>();
         }
 
         ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles) {
@@ -88,6 +96,25 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
      */
     public abstract void traverseHistory(File file, String sinceRevision, @Nullable String tillRevision,
                          Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException;
+
+    public History getHistory(File file, String sinceRevision, String tillRevision,
+                              Integer numCommits) throws HistoryException {
+
+        if (numCommits != null && numCommits <= 0) {
+            return null;
+        }
+
+        HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
+        traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
+        History history = new History(historyCollector.entries, historyCollector.renamedFiles);
+
+        // Assign tags to changesets they represent.
+        if (RuntimeEnvironment.getInstance().isTagsEnabled() && hasFileBasedTags()) {
+            assignTagsInHistory(history);
+        }
+
+        return history;
+    }
 
     @Override
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
@@ -115,8 +142,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
             // Assign tags to changesets they represent.
-            // We don't need to check if this repository supports tags, because we know it :-)
-            if (env.isTagsEnabled()) {
+            if (env.isTagsEnabled() && hasFileBasedTags()) {
                 assignTagsInHistory(history);
             }
 
@@ -150,8 +176,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             History history = new History(historyCollector.entries, historyCollector.renamedFiles);
 
             // Assign tags to changesets they represent.
-            // We don't need to check if this repository supports tags, because we know it :-)
-            if (env.isTagsEnabled()) {
+            if (env.isTagsEnabled() && hasFileBasedTags()) {
                 assignTagsInHistory(history);
             }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -33,10 +33,8 @@ import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -54,31 +52,30 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     /** Prefix which identifies lines with the description of a commit. */
     private static final String DESC_PREFIX = "description: ";
 
-    private List<HistoryEntry> entries = new ArrayList<>();
+    private List<RepositoryWithHistoryTraversal.ChangesetInfo> entries = new ArrayList<>();
     private final MercurialRepository repository;
     private final String mydir;
     private boolean isDir;
-    private final Set<String> renamedFiles = new HashSet<>();
+    private final List<ChangesetVisitor> visitors;
 
-    MercurialHistoryParser(MercurialRepository repository) {
+    MercurialHistoryParser(MercurialRepository repository, List<ChangesetVisitor> visitors) {
         this.repository = repository;
+        this.visitors = visitors;
         mydir = repository.getDirectoryName() + File.separator;
     }
 
     /**
      * Parse the history for the specified file or directory. If a changeset is
-     * specified, only return the history from the changeset right after the
-     * specified one.
+     * specified, only return the history from the changeset right after the specified one.
      *
      * @param file the file or directory to get history for
      * @param sinceRevision the changeset right before the first one to fetch, or
      * {@code null} if all changesets should be fetched
      * @param tillRevision end revision or {@code null}
      * @param numCommits number of revisions to get
-     * @return history for the specified file or directory
      * @throws HistoryException if an error happens when parsing the history
      */
-    History parse(File file, String sinceRevision, String tillRevision, Integer numCommits) throws HistoryException {
+    void parse(File file, String sinceRevision, String tillRevision, Integer numCommits) throws HistoryException {
         isDir = file.isDirectory();
         try {
             Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false,
@@ -86,21 +83,18 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             int status = executor.exec(true, this);
 
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \"" +
-                                           file.getAbsolutePath() +
+                throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() +
                                            "\" Exit code: " + status);
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \"" +
-                                       file.getAbsolutePath() + "\"", e);
+            throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() + "\"", e);
         }
 
-        // If a changeset to start from is specified, remove that changeset
-        // from the list, since only the ones following it should be returned.
-        // Also check that the specified changeset was found, otherwise throw
-        // an exception.
+        // If a changeset to start from is specified, remove that changeset from the list,
+        // since only the ones following it should be returned.
+        // Also check that the specified changeset was found, otherwise throw an exception.
         if (sinceRevision != null) {
-            repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
+            removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
         // See getHistoryLogExecutor() for explanation.
@@ -108,13 +102,44 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             removeChangesets(entries, tillRevision);
         }
 
-        return new History(entries, renamedFiles);
+        // The visitors are fed with the ChangesetInfo instances here (as opposed to in parse()),
+        // because of the above manipulations with the entries.
+        for (RepositoryWithHistoryTraversal.ChangesetInfo info : entries) {
+            for (ChangesetVisitor visitor : visitors) {
+                visitor.accept(info);
+            }
+        }
     }
 
-    private void removeChangesets(List<HistoryEntry> entries, String tillRevision) {
-        for (Iterator<HistoryEntry> iter = entries.listIterator(); iter.hasNext(); ) {
-            HistoryEntry entry = iter.next();
-            if (entry.getRevision().equals(tillRevision)) {
+    /**
+     * Remove the oldest changeset from a list (assuming sorted with most recent
+     * changeset first) and verify that it is the changeset expected to find there.
+     *
+     * @param entries a list of {@code HistoryEntry} objects
+     * @param revision the revision we expect the oldest entry to have
+     * @throws HistoryException if the oldest entry was not the one we expected
+     */
+    private void removeAndVerifyOldestChangeset(List<RepositoryWithHistoryTraversal.ChangesetInfo> entries, String revision)
+            throws HistoryException {
+
+        RepositoryWithHistoryTraversal.ChangesetInfo entry = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
+
+        // TODO We should check more thoroughly that the changeset is the one
+        // we expected it to be, since some SCMs may change the revision
+        // numbers so that identical revision numbers does not always mean
+        // identical changesets. We could for example get the cached changeset
+        // and compare more fields, like author and date.
+        if (entry == null || !revision.equals(entry.commit.revision)) {
+            throw new HistoryException("Cached revision '" + revision
+                    + "' not found in the repository "
+                    + repository.getDirectoryName());
+        }
+    }
+
+    private void removeChangesets(List<RepositoryWithHistoryTraversal.ChangesetInfo> entries, String tillRevision) {
+        for (Iterator<RepositoryWithHistoryTraversal.ChangesetInfo> iter = entries.listIterator(); iter.hasNext(); ) {
+            RepositoryWithHistoryTraversal.ChangesetInfo entry = iter.next();
+            if (entry.commit.revision.equals(tillRevision)) {
                 break;
             }
             iter.remove();
@@ -123,7 +148,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
 
     /**
      * Process the output from the {@code hg log} command and collect
-     * {@link HistoryEntry} elements.
+     * {@link org.opengrok.indexer.history.RepositoryWithHistoryTraversal.ChangesetInfo} elements.
      *
      * @param input The output from the process
      * @throws java.io.IOException If an error occurs while reading the stream
@@ -134,15 +159,14 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         entries = new ArrayList<>();
         String s;
-        HistoryEntry entry = null;
+        RepositoryWithHistoryTraversal.ChangesetInfo entry = null;
         while ((s = in.readLine()) != null) {
             if (s.startsWith(MercurialRepository.CHANGESET)) {
-                entry = new HistoryEntry();
+                entry = new RepositoryWithHistoryTraversal.ChangesetInfo(new RepositoryWithHistoryTraversal.CommitInfo());
                 entries.add(entry);
-                entry.setActive(true);
-                entry.setRevision(s.substring(MercurialRepository.CHANGESET.length()).trim());
+                entry.commit.revision = s.substring(MercurialRepository.CHANGESET.length()).trim();
             } else if (s.startsWith(MercurialRepository.USER) && entry != null) {
-                entry.setAuthor(s.substring(MercurialRepository.USER.length()).trim());
+                entry.commit.authorName = s.substring(MercurialRepository.USER.length()).trim();
             } else if (s.startsWith(MercurialRepository.DATE) && entry != null) {
                 Date date;
                 try {
@@ -154,7 +178,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                     //
                     throw new IOException("Could not parse date: " + s, pe);
                 }
-                entry.setDate(date);
+                entry.commit.date = date;
             } else if (s.startsWith(MercurialRepository.FILES) && entry != null) {
                 String[] strings = s.split(" ");
                 for (int ii = 1; ii < strings.length; ++ii) {
@@ -162,7 +186,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         File f = new File(mydir, strings[ii]);
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
-                            entry.addFile(path.intern());
+                            entry.files.add(path.intern());
                         } catch (ForbiddenSymlinkException e) {
                             LOGGER.log(Level.FINER, e.getMessage());
                             // ignore
@@ -189,11 +213,11 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
                      if (!move[0].isEmpty() && f.exists()) {
-                             renamedFiles.add(repository.getDirectoryNameRelative() + File.separator + move[0]);
+                             entry.renamedFiles.add(repository.getDirectoryNameRelative() + File.separator + move[0]);
                      }
                 }
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {
-                entry.setMessage(decodeDescription(s));
+                entry.commit.message = decodeDescription(s);
             } else if (s.equals(MercurialRepository.END_OF_ENTRY)
                 && entry != null) {
                     entry = null;

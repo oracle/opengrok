@@ -475,27 +475,6 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
-    public History getHistory(File file, String sinceRevision, String tillRevision,
-                              Integer numCommits) throws HistoryException {
-
-        if (numCommits != null && numCommits <= 0) {
-            return null;
-        }
-
-        HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
-        traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
-        History history = new History(historyCollector.entries, historyCollector.renamedFiles);
-
-        // Assign tags to changesets they represent
-        // We don't need to check if this repository supports tags,
-        // because we know it :-)
-        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
-            assignTagsInHistory(history);
-        }
-
-        return history;
-    }
-
     public void traverseHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException {
 
