@@ -517,8 +517,9 @@ class IndexDatabaseTest {
             try {
                 Path destPath = dest.resolve(src.relativize(srcPath));
                 if (Files.isDirectory(srcPath)) {
-                    if(!Files.exists(destPath))
+                    if (!Files.exists(destPath)) {
                         Files.createDirectory(destPath);
+                    }
                     return;
                 }
                 Files.copy(srcPath, destPath);
