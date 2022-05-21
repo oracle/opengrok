@@ -523,7 +523,7 @@ class IndexDatabaseTest {
                     return;
                 }
                 Files.copy(srcPath, destPath);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
