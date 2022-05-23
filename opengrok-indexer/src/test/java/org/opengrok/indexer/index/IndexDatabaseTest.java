@@ -111,6 +111,18 @@ class IndexDatabaseTest {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
 
+        // After copying the files from the archive, Git will consider the files to be changed,
+        // at least on Windows. This causes some tests, particularly testGetIndexDownArgs() to fail.
+        // To avoid this, clone the Git repository.
+        Path gitRepositoryRootPath = Path.of(repository.getSourceRoot(), "git");
+        Path gitCheckoutPath = Path.of(repository.getSourceRoot(), "gitcheckout");
+        Git.cloneRepository()
+                .setURI(gitRepositoryRootPath.toFile().toURI().toString())
+                .setDirectory(gitCheckoutPath.toFile())
+                .call();
+        IOUtils.removeRecursive(gitRepositoryRootPath);
+        Files.move(gitCheckoutPath, gitRepositoryRootPath);
+
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(true);
