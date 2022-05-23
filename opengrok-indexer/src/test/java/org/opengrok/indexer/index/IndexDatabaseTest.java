@@ -512,23 +512,6 @@ class IndexDatabaseTest {
         }
     }
 
-    private static void copyDirectory(Path src, Path dest) throws IOException {
-        Files.walk(src).forEach(srcPath -> {
-            try {
-                Path destPath = dest.resolve(src.relativize(srcPath));
-                if (Files.isDirectory(srcPath)) {
-                    if (!Files.exists(destPath)) {
-                        Files.createDirectory(destPath);
-                    }
-                    return;
-                }
-                Files.copy(srcPath, destPath);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
     /**
      * Make sure that history based reindex is not performed for projects
      * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}
@@ -556,7 +539,7 @@ class IndexDatabaseTest {
             Path destinationPath = Path.of(repository.getSourceRoot(), projectName, subrepoName);
             Path sourcePath = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo");
             assertTrue(sourcePath.toFile().exists());
-            copyDirectory(sourcePath, destinationPath);
+            repository.copyDirectory(sourcePath, destinationPath);
             assertTrue(destinationPath.toFile().exists());
 
             Repository subRepo = RepositoryFactory.getRepository(destinationPath.toFile());

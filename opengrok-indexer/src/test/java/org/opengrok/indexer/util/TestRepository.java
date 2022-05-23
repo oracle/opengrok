@@ -103,7 +103,7 @@ public class TestRepository {
         }
     }
 
-    private void copyDirectory(Path src, Path dest) throws IOException {
+    public void copyDirectory(Path src, Path dest) throws IOException {
         try (Stream<Path> stream = Files.walk(src)) {
             stream.forEach(sourceFile -> {
                 if (sourceFile.equals(src)) {
