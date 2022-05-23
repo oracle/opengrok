@@ -190,11 +190,7 @@ public final class Indexer {
                 exitWithHelp();
             }
 
-            try {
-                checkConfiguration();
-            } catch (ConfigurationException e) {
-                die(e.getMessage());
-            }
+            checkConfiguration();
 
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
@@ -416,6 +412,22 @@ public final class Indexer {
             System.exit(1);
         } finally {
             stats.report(LOGGER, "Indexer finished", "indexer.total");
+        }
+    }
+
+    private static void checkConfiguration() {
+        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+            die("Missing webappURI setting");
+        }
+
+        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
+            die("Repositories were specified; history is off however");
+        }
+
+        try {
+            cfg.checkConfiguration();
+        } catch (Configuration.ConfigurationException e) {
+            die(e.getMessage());
         }
     }
 
@@ -885,52 +897,6 @@ public final class Indexer {
         argv = optParser.parse(argv);
 
         return argv;
-    }
-
-    static class ConfigurationException extends Exception {
-        static final long serialVersionUID = -1;
-
-        public ConfigurationException(String message) {
-            super(message);
-        }
-    }
-
-    // TODO: move this Configuration
-    private static void checkConfiguration() throws ConfigurationException {
-        env = RuntimeEnvironment.getInstance();
-
-        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
-            throw new ConfigurationException("Missing webappURI setting");
-        }
-
-        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
-            throw new ConfigurationException("Repositories were specified; history is off however");
-        }
-
-        if (cfg.getSourceRoot() == null) {
-            throw new ConfigurationException("Please specify a SRC_ROOT with option -s !");
-        }
-        if (cfg.getDataRoot() == null) {
-            throw new ConfigurationException("Please specify a DATA ROOT path");
-        }
-
-        if (!new File(cfg.getSourceRoot()).canRead()) {
-            throw new ConfigurationException("Source root '" + cfg.getSourceRoot() + "' must be readable");
-        }
-
-        if (!new File(cfg.getDataRoot()).canWrite()) {
-            throw new ConfigurationException("Data root '" + cfg.getDataRoot() + "' must be writable");
-        }
-
-        if (!cfg.isHistoryEnabled() && cfg.isHistoryBasedReindex()) {
-            LOGGER.log(Level.INFO, "History based reindex is on, however history is off. " +
-                    "History has to be enabled for history based reindex.");
-        }
-
-        if (!cfg.isHistoryCache() && cfg.isHistoryBasedReindex()) {
-            LOGGER.log(Level.INFO, "History based reindex is on, however history cache is off. " +
-                    "History cache has to be enabled for history based reindex.");
-        }
     }
 
     private static void die(String message) {

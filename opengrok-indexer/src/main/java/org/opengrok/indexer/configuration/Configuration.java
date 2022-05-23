@@ -1535,4 +1535,45 @@ public final class Configuration {
 
         return conf;
     }
+
+    public static class ConfigurationException extends Exception {
+        static final long serialVersionUID = -1;
+
+        public ConfigurationException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Check if configuration is populated and self-consistent.
+     * @throws ConfigurationException on error
+     */
+    public void checkConfiguration() throws ConfigurationException {
+
+        if (getSourceRoot() == null) {
+            throw new ConfigurationException("Source root is not specified.");
+        }
+
+        if (getDataRoot() == null) {
+            throw new ConfigurationException("Data root is not specified.");
+        }
+
+        if (!new File(getSourceRoot()).canRead()) {
+            throw new ConfigurationException("Source root directory '" + getSourceRoot() + "' must be readable.");
+        }
+
+        if (!new File(getDataRoot()).canWrite()) {
+            throw new ConfigurationException("Data root directory '" + getDataRoot() + "' must be writable.");
+        }
+
+        if (!isHistoryEnabled() && isHistoryBasedReindex()) {
+            LOGGER.log(Level.INFO, "History based reindex is on, however history is off. " +
+                    "History has to be enabled for history based reindex.");
+        }
+
+        if (!isHistoryCache() && isHistoryBasedReindex()) {
+            LOGGER.log(Level.INFO, "History based reindex is on, however history cache is off. " +
+                    "History cache has to be enabled for history based reindex.");
+        }
+    }
 }
