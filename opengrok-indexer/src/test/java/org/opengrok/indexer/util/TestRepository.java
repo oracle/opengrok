@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -111,7 +112,8 @@ public class TestRepository {
                 }
                 try {
                     Path destRelativePath = getDestinationRelativePath(src, sourceFile);
-                    Files.copy(sourceFile, dest.resolve(destRelativePath.toString()), REPLACE_EXISTING);
+                    Files.copy(sourceFile, dest.resolve(destRelativePath.toString()),
+                            REPLACE_EXISTING, COPY_ATTRIBUTES);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
