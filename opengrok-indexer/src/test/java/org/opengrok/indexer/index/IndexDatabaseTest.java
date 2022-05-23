@@ -358,15 +358,20 @@ class IndexDatabaseTest {
             assertTrue(rmFile.exists());
             git.rm().addFilepattern("main.o").call();
             git.commit().setMessage("delete").setAuthor("foo", "foobar@example.com").setAll(true).call();
+            assertFalse(rmFile.exists());
 
             // Rename some file.
-            File fooFile = new File(repositoryRoot, "Makefile");
+            final String fooFileName = "Makefile";
+            final String barFileName = "Makefile.renamed";
+            File fooFile = new File(repositoryRoot, fooFileName);
             assertTrue(fooFile.exists());
-            File barFile = new File(repositoryRoot, "Makefile.renamed");
+            File barFile = new File(repositoryRoot, barFileName);
             assertTrue(fooFile.renameTo(barFile));
-            git.add().addFilepattern("Makefile.renamed").call();
-            git.rm().addFilepattern("Makefile").call();
+            git.add().addFilepattern(barFileName).call();
+            git.rm().addFilepattern(fooFileName).call();
             git.commit().setMessage("rename").setAuthor("foo", "foobar@example.com").setAll(true).call();
+            assertTrue(barFile.exists());
+            assertFalse(fooFile.exists());
 
             addMergeCommit(git, repositoryRoot);
         }
