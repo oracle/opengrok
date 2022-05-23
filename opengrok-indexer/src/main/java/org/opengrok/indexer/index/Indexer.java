@@ -190,7 +190,11 @@ public final class Indexer {
                 exitWithHelp();
             }
 
-            checkConfiguration();
+            try {
+                checkConfiguration();
+            } catch (ConfigurationException e) {
+                die(e.getMessage());
+            }
 
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
@@ -573,7 +577,20 @@ public final class Indexer {
                 "Assign commit tags to all entries in history for all repositories.").execute(v ->
                     cfg.setTagsEnabled(true));
 
-            parser.on("-H", "--history", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
+            // for backward compatibility
+            parser.on("-H", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
+
+            parser.on("--historyBased", "=on|off", ON_OFF, Boolean.class,
+                            "If history based reindex is in effect, the set of files ",
+                            "changed/deleted since the last reindex is determined from history ",
+                            "of the repositories. This needs history, history cache and ",
+                            "projects to be enabled. This should be much faster than the ",
+                            "classic way of traversing the directory structure. ",
+                            "The default is on. If you need to e.g. index files untracked by ",
+                            "SCM, set this to off. Currently works only for Git.",
+                            "All repositories in a project need to support this in order ",
+                            "to be indexed using history.").
+                    execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
 
             parser.on("--historyThreads", "=number", Integer.class,
                     "The number of threads to use for history cache generation on repository level. " +
@@ -801,18 +818,6 @@ public final class Indexer {
                         }
                     });
 
-            parser.on("--historyBased", "=on|off", ON_OFF, Boolean.class,
-                    "If history based reindex is in effect, the set of files ",
-                    "changed/deleted since the last reindex is determined from history ",
-                    "of the repositories. This needs history, history cache and ",
-                    "projects to be enabled. This should be much faster than the ",
-                    "classic way of traversing the directory structure. ",
-                    "The default is on. If you need to e.g. index files untracked by ",
-                    "SCM, set this to off. Currently works only for Git.",
-                    "All repositories in a project need to support this in order ",
-                    "to be indexed using history.").
-                    execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
-
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
                 "Send the current configuration to the specified web application.").execute(webAddr -> {
                     webappURI = (String) webAddr;
@@ -866,8 +871,7 @@ public final class Indexer {
                     execute(v -> cfg.setWebappCtags((Boolean) v));
         });
 
-        // Need to read the configuration file first
-        // so that options may be overwritten later.
+        // Need to read the configuration file first, so that options may be overwritten later.
         configure.parse(argv);
 
         LOGGER.log(Level.INFO, "Indexer options: {0}", Arrays.toString(argv));
@@ -883,38 +887,49 @@ public final class Indexer {
         return argv;
     }
 
-    private static void checkConfiguration() {
+    static class ConfigurationException extends Exception {
+        static final long serialVersionUID = -1;
+
+        public ConfigurationException(String message) {
+            super(message);
+        }
+    }
+
+    // TODO: move this Configuration
+    private static void checkConfiguration() throws ConfigurationException {
         env = RuntimeEnvironment.getInstance();
 
         if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
-            die("Missing webappURI setting");
+            throw new ConfigurationException("Missing webappURI setting");
         }
 
         if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
-            die("Repositories were specified; history is off however");
+            throw new ConfigurationException("Repositories were specified; history is off however");
         }
 
         if (cfg.getSourceRoot() == null) {
-            die("Please specify a SRC_ROOT with option -s !");
+            throw new ConfigurationException("Please specify a SRC_ROOT with option -s !");
         }
         if (cfg.getDataRoot() == null) {
-            die("Please specify a DATA ROOT path");
+            throw new ConfigurationException("Please specify a DATA ROOT path");
         }
 
         if (!new File(cfg.getSourceRoot()).canRead()) {
-            die("Source root '" + cfg.getSourceRoot() + "' must be readable");
+            throw new ConfigurationException("Source root '" + cfg.getSourceRoot() + "' must be readable");
         }
 
         if (!new File(cfg.getDataRoot()).canWrite()) {
-            die("Data root '" + cfg.getDataRoot() + "' must be writable");
+            throw new ConfigurationException("Data root '" + cfg.getDataRoot() + "' must be writable");
         }
 
         if (!cfg.isHistoryEnabled() && cfg.isHistoryBasedReindex()) {
-            die("History has to be enabled for history based reindex");
+            LOGGER.log(Level.INFO, "History based reindex is on, however history is off. " +
+                    "History has to be enabled for history based reindex.");
         }
 
         if (!cfg.isHistoryCache() && cfg.isHistoryBasedReindex()) {
-            die("History cache has to be enabled for history based reindex");
+            LOGGER.log(Level.INFO, "History based reindex is on, however history cache is off. " +
+                    "History cache has to be enabled for history based reindex.");
         }
     }
 
