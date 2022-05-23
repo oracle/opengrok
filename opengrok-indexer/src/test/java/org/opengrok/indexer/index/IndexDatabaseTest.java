@@ -116,10 +116,13 @@ class IndexDatabaseTest {
         // To avoid this, clone the Git repository.
         Path gitRepositoryRootPath = Path.of(repository.getSourceRoot(), "git");
         Path gitCheckoutPath = Path.of(repository.getSourceRoot(), "gitcheckout");
-        Git.cloneRepository()
+        Git git = Git.cloneRepository()
                 .setURI(gitRepositoryRootPath.toFile().toURI().toString())
                 .setDirectory(gitCheckoutPath.toFile())
                 .call();
+        // The Git object has to be closed, otherwise the move below would fail on Windows with
+        // AccessDeniedException due to the file handle still being open.
+        git.close();
         IOUtils.removeRecursive(gitRepositoryRootPath);
         Files.move(gitCheckoutPath, gitRepositoryRootPath);
 
