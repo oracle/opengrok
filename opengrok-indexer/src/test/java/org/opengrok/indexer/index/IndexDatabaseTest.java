@@ -568,20 +568,22 @@ class IndexDatabaseTest {
             // Clone Git repository underneath the project.
             String cloneUrl = Path.of(repository.getSourceRoot(), "git").toFile().toURI().toString();
             Path repositoryRootPath = Path.of(repository.getSourceRoot(), projectName, disabledGitRepoName);
-            Git.cloneRepository()
+            Git git = Git.cloneRepository()
                     .setURI(cloneUrl)
                     .setDirectory(repositoryRootPath.toFile())
                     .call();
+            git.close();
             assertTrue(repositoryRootPath.toFile().isDirectory());
         }
 
         // Clone Git repository underneath the project and make a change there.
         String cloneUrl = Path.of(repository.getSourceRoot(), "git").toFile().toURI().toString();
         Path repositoryRootPath = Path.of(repository.getSourceRoot(), projectName, "git");
-        Git.cloneRepository()
+        Git git = Git.cloneRepository()
                 .setURI(cloneUrl)
                 .setDirectory(repositoryRootPath.toFile())
                 .call();
+        git.close();
         assertTrue(repositoryRootPath.toFile().isDirectory());
         changeGitRepository(repositoryRootPath.toFile());
 
