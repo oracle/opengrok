@@ -222,10 +222,6 @@ class IndexDatabaseTest {
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
 
-        // Note that the file to remove has to be different from the one used
-        // in {@code testGetDefinitions} because it shares the same index
-        // and this test is going to remove the file and therefore related
-        // definitions.
         String fileName = "header.h";
         File gitRoot = new File(repository.getSourceRoot(), projectName);
         assertTrue(new File(gitRoot, fileName).exists());
