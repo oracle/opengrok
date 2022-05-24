@@ -1493,6 +1493,7 @@ public class IndexDatabase {
      */
     private void processFileIncremental(IndexDownArgs args, File file, String path) throws IOException {
         if (uidIter != null) {
+            path = Util.fixPathIfWindows(path);
             // Traverse terms until reaching one that matches the path of given file.
             while (uidIter != null && uidIter.term() != null
                     && uidIter.term().compareTo(emptyBR) != 0
