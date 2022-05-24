@@ -104,6 +104,12 @@ public class TestRepository {
         }
     }
 
+    /**
+     * Assumes the destination directory exists.
+     * @param src source directory
+     * @param dest destination directory
+     * @throws IOException on error
+     */
     public void copyDirectory(Path src, Path dest) throws IOException {
         try (Stream<Path> stream = Files.walk(src)) {
             stream.forEach(sourceFile -> {
@@ -112,8 +118,14 @@ public class TestRepository {
                 }
                 try {
                     Path destRelativePath = getDestinationRelativePath(src, sourceFile);
-                    Files.copy(sourceFile, dest.resolve(destRelativePath.toString()),
-                            REPLACE_EXISTING, COPY_ATTRIBUTES);
+                    Path destPath = dest.resolve(destRelativePath);
+                    if (Files.isDirectory(sourceFile)) {
+                        if (!Files.exists(destPath)) {
+                            Files.createDirectory(destPath);
+                        }
+                        return;
+                    }
+                    Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

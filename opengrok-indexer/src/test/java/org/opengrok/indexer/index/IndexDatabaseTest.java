@@ -559,6 +559,7 @@ class IndexDatabaseTest {
             Path destinationPath = Path.of(repository.getSourceRoot(), projectName, subrepoName);
             Path sourcePath = Path.of(repository.getSourceRoot(), "cvs_test", "cvsrepo");
             assertTrue(sourcePath.toFile().exists());
+            assertTrue(destinationPath.toFile().mkdirs());
             repository.copyDirectory(sourcePath, destinationPath);
             assertTrue(destinationPath.toFile().exists());
 
