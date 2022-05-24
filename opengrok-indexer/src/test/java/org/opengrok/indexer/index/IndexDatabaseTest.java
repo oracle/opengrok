@@ -350,9 +350,11 @@ class IndexDatabaseTest {
             assertTrue(mainFile.exists());
             changeFileAndCommit(git, mainFile, "new commit");
 
-            File rmFile = new File(repositoryRoot, "main.o");
+            // Delete a file.
+            final String deletedFileName = "header.h";
+            File rmFile = new File(repositoryRoot, deletedFileName);
             assertTrue(rmFile.exists());
-            git.rm().addFilepattern("main.o").call();
+            git.rm().addFilepattern(deletedFileName).call();
             git.commit().setMessage("delete").setAuthor("foo", "foobar@example.com").setAll(true).call();
             assertFalse(rmFile.exists());
 
@@ -503,7 +505,7 @@ class IndexDatabaseTest {
         assertEquals(expectedFileSet, args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
 
         assertEquals(Set.of(
-                Path.of("/git/main.o"),
+                Path.of("/git/header.h"),
                 Path.of("/git/main.c"),
                 Path.of("/git/Makefile")
         ), listener.getRemovedFiles().stream().map(Path::of).collect(Collectors.toSet()));
