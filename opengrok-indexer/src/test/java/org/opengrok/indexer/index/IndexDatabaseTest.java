@@ -651,7 +651,9 @@ class IndexDatabaseTest {
         assertNotNull(fileCollector);
         assertTrue(fileCollector.getFiles().size() > 1);
         assertTrue(fileCollector.getFiles().
-                contains("/" + gitProject.getName() + "/" + subRepoName + "/" + changedFileName));
+                contains(File.separator + gitProject.getName() +
+                        File.separator + subRepoName +
+                        File.separator + changedFileName));
     }
 
     /**
