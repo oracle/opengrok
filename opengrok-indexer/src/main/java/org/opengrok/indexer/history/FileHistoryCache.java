@@ -65,6 +65,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -89,20 +90,9 @@ class FileHistoryCache implements HistoryCache {
     private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
 
     private final PathAccepter pathAccepter = env.getPathAccepter();
-    private boolean historyIndexDone = false;
 
     private Counter fileHistoryCacheHits;
     private Counter fileHistoryCacheMisses;
-
-    @Override
-    public void setHistoryIndexDone() {
-        historyIndexDone = true;
-    }
-
-    @Override
-    public boolean isHistoryIndexDone() {
-        return historyIndexDone;
-    }
 
     /**
      * Generate history cache for single renamed file.
@@ -214,8 +204,7 @@ class FileHistoryCache implements HistoryCache {
             }
             sb.append(add);
         } catch (IOException e) {
-            throw new HistoryException("Failed to get path relative to " +
-                    "source root for " + file, e);
+            throw new HistoryException("Failed to get path relative to source root for " + file, e);
         }
 
         return new File(TandemPath.join(sb.toString(), ".gz"));
@@ -470,6 +459,11 @@ class FileHistoryCache implements HistoryCache {
      * stored under this hierarchy, each file containing history of
      * corresponding source file.
      *
+     * <p>
+     * <b>Note that the history object will be changed in the process of storing the history into cache.
+     * Namely the list of files from the history entries will be stripped.</b>
+     * </p>
+     *
      * @param history history object to process into per-file histories
      * @param repository repository object
      * @param tillRevision end revision (can be null)
@@ -641,13 +635,6 @@ class FileHistoryCache implements HistoryCache {
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
 
-        return get(file, repository, withFiles, env.isFetchHistoryWhenNotInCache());
-    }
-
-    @Override
-    public History get(File file, Repository repository, boolean withFiles, boolean fallback)
-            throws HistoryException, ForbiddenSymlinkException {
-
         File cacheFile = getCachedFile(file);
         if (isUpToDate(file, cacheFile)) {
             try {
@@ -664,32 +651,7 @@ class FileHistoryCache implements HistoryCache {
             fileHistoryCacheMisses.increment();
         }
 
-        /*
-         * Some mirrors of repositories which are capable of fetching history
-         * for directories may contain lots of files untracked by given SCM.
-         * For these it would be waste of time to get their history
-         * since the history of all files in this repository should have been
-         * fetched in the first phase of indexing.
-         */
-        if (isHistoryIndexDone() && repository.isHistoryEnabled() && repository.hasHistoryForDirectories() &&
-                !fallback) {
-            return null;
-        }
-
-        if (!pathAccepter.accept(file)) {
-            return null;
-        }
-
-        final History history;
-        try {
-            history = repository.getHistory(file);
-        } catch (UnsupportedOperationException e) {
-            // In this case, we've found a file for which the SCM has no history
-            // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
-            return null;
-        }
-
-        return history;
+        return null;
     }
 
     /**
@@ -714,7 +676,8 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
-    public String getRepositoryHistDataDirname(Repository repository) {
+    @VisibleForTesting
+    public static String getRepositoryHistDataDirname(Repository repository) {
         String repoDirBasename;
 
         try {

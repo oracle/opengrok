@@ -57,17 +57,9 @@ interface HistoryCache {
      * @param withFiles A flag saying whether the returned history should include a list of files
      *                  touched by each changeset. If false, the implementation is allowed to skip the file list,
      *                  but it doesn't have to.
-     * @param fallback whether to fall back to {@link Repository#getHistory(File)}
-     *                 if the history cannot be retrieved from the cache
      * @throws HistoryException if the history cannot be fetched
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters
      * an ineligible link
-     */
-    History get(File file, @Nullable Repository repository, boolean withFiles, boolean fallback)
-            throws HistoryException, ForbiddenSymlinkException;
-
-    /**
-     * Usually a wrapper of {@link HistoryCache#get(File, Repository, boolean, boolean)}.
      */
     History get(File file, @Nullable Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException;
@@ -153,8 +145,4 @@ interface HistoryCache {
      * @throws HistoryException if an error occurred while getting the info
      */
     String getInfo() throws HistoryException;
-
-    // Set and query if history index phase is done.
-    void setHistoryIndexDone();
-    boolean isHistoryIndexDone();
 }

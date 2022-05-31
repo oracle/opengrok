@@ -24,6 +24,7 @@
 package org.opengrok.indexer.history;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -36,6 +37,8 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -285,7 +288,7 @@ public class HistoryGuruTest {
     void testGetLastHistoryEntryNonexistent() throws HistoryException {
         HistoryGuru instance = HistoryGuru.getInstance();
         File file = new File("/nonexistent");
-        assertNull(instance.getLastHistoryEntry(file, true));
+        assertThrows(HistoryException.class, () -> instance.getLastHistoryEntry(file, true));
     }
 
     @ParameterizedTest
@@ -308,14 +311,27 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void testGetLastHistoryEntryRepoHistoryDisabled() throws HistoryException {
+    void testGetLastHistoryEntryRepoHistoryDisabled() throws Exception {
         File file = new File(repository.getSourceRoot(), "git");
         assertTrue(file.exists());
         HistoryGuru instance = HistoryGuru.getInstance();
         Repository repository = instance.getRepository(file);
+
+        // HistoryGuru is final class so cannot be reasonably mocked with Mockito.
+        // In order to avoid getting the history from the cache, move the cache away for a bit.
+        String dirName = FileHistoryCache.getRepositoryHistDataDirname(repository);
+        assertNotNull(dirName);
+        Path histPath = Path.of(dirName);
+        Path tmpHistPath = Path.of(dirName + ".disabled");
+        Files.move(histPath, tmpHistPath);
+        assertFalse(histPath.toFile().exists());
+
         assertNotNull(repository);
         repository.setHistoryEnabled(false);
         assertNull(instance.getLastHistoryEntry(file, false));
+
+        // cleanup
         repository.setHistoryEnabled(true);
+        Files.move(tmpHistPath, histPath);
     }
 }

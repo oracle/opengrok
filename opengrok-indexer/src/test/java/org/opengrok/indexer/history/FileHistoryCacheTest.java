@@ -26,7 +26,6 @@ package org.opengrok.indexer.history;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,6 +90,9 @@ class FileHistoryCacheTest {
     public void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
+
+        // Needed for HistoryGuru to operate normally.
+        env.setRepositories(repositories.getSourceRoot());
 
         cache = new FileHistoryCache();
         cache.initialize();
@@ -181,11 +183,6 @@ class FileHistoryCacheTest {
         FileTime fileTimeAfterImport = Files.getLastModifiedTime(file.toPath());
         assertTrue(fileTimeBeforeImport.compareTo(fileTimeAfterImport) < 0);
 
-        // This get() call basically mimics a request through the UI or API.
-        History historyAfterImport = cache.get(file, repo, false);
-        assertNotNull(historyAfterImport);
-        assertNotEquals(historyBeforeImport, historyAfterImport);
-
         // Simulates reindex, or at least its first part when history cache is updated.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
@@ -201,7 +198,6 @@ class FileHistoryCacheTest {
         History historyAfterReindex = cache.get(file, repo, false);
         double cacheHitsAfterGet = cache.getFileHistoryCacheHits();
         assertNotNull(historyAfterReindex);
-        assertEquals(historyAfterImport, historyAfterReindex);
         assertEquals(1, cacheHitsAfterGet - cacheHitsBeforeGet);
     }
 
@@ -258,10 +254,6 @@ class FileHistoryCacheTest {
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
-        // Check that the changesets were indeed applied and indexed.
-        History updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(15, updatedHistory.getHistoryEntries().size(), "Unexpected number of history entries");
-
         // Verify tags in fileHistory for main.c which is the most interesting
         // file from the repository from the perspective of tags.
         File main = new File(reposRoot, "main.c");
@@ -282,23 +274,16 @@ class FileHistoryCacheTest {
         assertNull(retrievedHistoryMainC.getTags().get(e2.getRevision()), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
-        File dir = new File(cache.getRepositoryHistDataDirname(repo));
+        String histCachePath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        assertNotNull(histCachePath);
+        File dir = new File(histCachePath);
         assertTrue(dir.isDirectory());
         cache.clear(repo);
-        // We cannot call cache.get() here since it would read the history anew.
-        // Instead check that the data directory does not exist anymore.
         assertFalse(dir.exists());
         History freshHistory = repo.getHistory(reposRoot);
         cache.store(freshHistory, repo);
-        History updatedHistoryFromScratch = cache.get(reposRoot, repo, true);
-        assertEquals(freshHistory.getHistoryEntries().size(),
-                updatedHistoryFromScratch.getHistoryEntries().size(),
-                "Unexpected number of history entries");
+        assertTrue(dir.exists());
 
-        // Verify that the result for the directory is the same as incremental reindex.
-        assertSameEntries(updatedHistory.getHistoryEntries(),
-                updatedHistoryFromScratch.getHistoryEntries(), true);
-        // Do the same for main.c.
         History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
         assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
                 retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
@@ -363,22 +348,15 @@ class FileHistoryCacheTest {
 
         assertEquals(6, entries.size(), "Unexpected number of entries");
 
-        // test get history for directory
-        // Need to refresh history to store since the file lists were stripped
-        // from it in the call to cache.store() above.
-        historyToStore = repo.getHistory(reposRoot);
-        History dirHistory = cache.get(reposRoot, repo, true);
-        assertSameEntries(
-                historyToStore.getHistoryEntries(),
-                dirHistory.getHistoryEntries(), true);
-
         // test incremental update
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export.txt").toURI()).toString());
 
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
-        History updatedHistory = cache.get(reposRoot, repo, true);
+        File mainC = new File(reposRoot, "main.c");
+        History updatedHistory = cache.get(mainC, repo, false);
+        assertNotNull(updatedHistory);
 
         HistoryEntry newEntry1 = new HistoryEntry(
                 "10:1e392ef0b0ed",
@@ -386,37 +364,29 @@ class FileHistoryCacheTest {
                 "xyz",
                 "Return failure when executed with no arguments",
                 true);
-        newEntry1.addFile("/mercurial/main.c");
         HistoryEntry newEntry2 = new HistoryEntry(
                 "11:bbb3ce75e1b8",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
                 "Do something else",
                 true);
-        newEntry2.addFile("/mercurial/main.c");
 
         LinkedList<HistoryEntry> updatedEntries = new LinkedList<>(
                 updatedHistory.getHistoryEntries());
-        // The history for retrieved for the whole directory so it will contain
-        // lists of files so we need to set isdir to true.
-        assertSameEntry(newEntry2, updatedEntries.removeFirst(), true);
-        assertSameEntry(newEntry1, updatedEntries.removeFirst(), true);
-        assertSameEntries(historyToStore.getHistoryEntries(), updatedEntries, true);
+        assertSameEntry(newEntry2, updatedEntries.removeFirst(), false);
+        assertSameEntry(newEntry1, updatedEntries.removeFirst(), false);
 
         // test clearing of cache
-        File dir = new File(cache.getRepositoryHistDataDirname(repo));
+        String dirPath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        assertNotNull(dirPath);
+        File dir = new File(dirPath);
         assertTrue(dir.isDirectory());
         cache.clear(repo);
-        // We cannot call cache.get() here since it would read the history anew.
-        // Instead check that the data directory does not exist anymore.
         assertFalse(dir.exists());
 
         cache.store(historyToStore, repo);
         // check that the data directory is non-empty
         assertTrue(dir.list().length > 0);
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertSameEntries(updatedHistory.getHistoryEntries(),
-                cache.get(reposRoot, repo, true).getHistoryEntries(), true);
     }
 
     /**
@@ -457,10 +427,6 @@ class FileHistoryCacheTest {
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
-
-        // Verify size of complete history for the directory.
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(14, updatedHistory.getHistoryEntries().size());
 
         // Check changesets for the renames and changes of single file.
         File main2File = new File(reposRoot.toString() + File.separatorChar + "main2.c");
@@ -584,20 +550,12 @@ class FileHistoryCacheTest {
         History historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
 
-        /* quick sanity check */
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(11, updatedHistory.getHistoryEntries().size());
-
         // Import changesets which rename the file in the new branch.
         runHgCommand(reposRoot, "import",
             Paths.get(getClass().getResource("/history/hg-export-renamed-branched.txt").toURI()).toString());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
-
-        /* overall history check */
-        updatedHistory = cache.get(reposRoot, repo, false);
-        assertEquals(12, updatedHistory.getHistoryEntries().size());
 
         // Check complete list of history entries for the renamed file.
         File testFile = new File(reposRoot.toString() + File.separatorChar + "blog.txt");
@@ -685,10 +643,6 @@ class FileHistoryCacheTest {
         Repository repo = RepositoryFactory.getRepository(reposRoot);
         History historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
-
-        /* quick sanity check */
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(10, updatedHistory.getHistoryEntries().size());
 
         // Check complete list of history entries for the renamed file.
         File testFile = new File(reposRoot.toString() + File.separatorChar + "FileZ.txt");
@@ -841,10 +795,6 @@ class FileHistoryCacheTest {
         History historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
 
-        /* quick sanity check */
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(10, updatedHistory.getHistoryEntries().size());
-
         // Check complete list of history entries for the renamed file.
         File testFile = new File(reposRoot.toString() + File.separatorChar
                             + "subfolder" + File.separatorChar + "TestFileRenamedAgain.txt");
@@ -898,7 +848,7 @@ class FileHistoryCacheTest {
 
         // Try to fetch the history for given file. With default setting of
         // FetchHistoryWhenNotInCache this should get the history even if not in cache.
-        History retrievedHistory = cache.get(repoFile, repo, true);
+        History retrievedHistory = HistoryGuru.getInstance().getHistory(repoFile, true);
         assertEquals(hasHistory, retrievedHistory != null);
     }
 
@@ -912,7 +862,7 @@ class FileHistoryCacheTest {
         env.setFetchHistoryWhenNotInCache(false);
 
         // Pretend we are done with first phase of indexing.
-        cache.setHistoryIndexDone();
+        HistoryGuru.getInstance().setHistoryIndexDone();
 
         // First try repo with ability to fetch history for directories.
         checkNoHistoryFetchRepo("mercurial", "main.c", false);
@@ -949,6 +899,8 @@ class FileHistoryCacheTest {
 
         // Gross that we can break encapsulation, but oh well.
         env.getIgnoredNames().clear();
+        // Need to refresh the history since it was changed in the cache.store().
+        historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
         retrievedHistory = cache.get(makefile, repo, true);
         assertNotNull(retrievedHistory, "history for Makefile should not be null");
