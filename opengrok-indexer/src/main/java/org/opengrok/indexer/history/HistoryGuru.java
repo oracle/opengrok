@@ -95,6 +95,16 @@ public final class HistoryGuru {
      */
     private final RepositoryLookup repositoryLookup;
 
+    private boolean historyIndexDone = false;
+
+    public void setHistoryIndexDone() {
+        historyIndexDone = true;
+    }
+
+    public boolean isHistoryIndexDone() {
+        return historyIndexDone;
+    }
+
     /**
      * Creates a new instance of HistoryGuru, and try to set the default source
      * control system.
@@ -230,6 +240,16 @@ public final class HistoryGuru {
         return getHistory(file, true, true);
     }
 
+    /**
+     * The idea is that some repositories require reaching out to remote server whenever
+     * a history operation is done. Sometimes this is unwanted and this method decides that.
+     * This should be consulted before the actual repository operation, i.e. not when fetching
+     * history from a cache since that is inherently local operation.
+     * @param repo repository
+     * @param file file to decide the operation for
+     * @param ui whether coming from UI
+     * @return whether to perform the history operation
+     */
     boolean isRepoHistoryEligible(Repository repo, File file, boolean ui) {
         RemoteSCM rscm = env.getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
@@ -241,17 +261,19 @@ public final class HistoryGuru {
     }
 
     @Nullable
-    private History getHistoryFromCache(File file, Repository repository, boolean withFiles, boolean fallback)
+    private History getHistoryFromCache(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
 
         if (useCache() && historyCache.supportsRepository(repository)) {
-            return historyCache.get(file, repository, withFiles, fallback);
+            return historyCache.get(file, repository, withFiles);
         }
 
         return null;
     }
 
     /**
+     * Get last {@link HistoryEntry} for a file. First, try to retrieve it from the cache.
+     * If that fails, fallback to the repository method.
      * @param file file to get the history entry for
      * @param ui is the request coming from the UI
      * @return last (newest) history entry for given file or {@code null}
@@ -264,15 +286,9 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
-        if (!isRepoHistoryEligible(repository, file, ui)) {
-            LOGGER.log(Level.FINER, "cannot retrieve the last history entry for ''{0}'' in {1} because of settings",
-                    new Object[]{file, repository});
-            return null;
-        }
-
         History history;
         try {
-            history = getHistoryFromCache(file, repository, false, false);
+            history = getHistoryFromCache(file, repository, false);
             if (history != null) {
                 HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
                 if (lastHistoryEntry != null) {
@@ -286,6 +302,13 @@ public final class HistoryGuru {
             return null;
         }
 
+        if (!isRepoHistoryEligible(repository, file, ui)) {
+            LOGGER.log(Level.FINER, "cannot retrieve the last history entry for ''{0}'' in {1} because of settings",
+                    new Object[]{file, repository});
+            return null;
+        }
+
+        // Fallback to the repository method.
         HistoryEntry lastHistoryEntry = repository.getLastHistoryEntry(file, ui);
         if (lastHistoryEntry != null) {
             LOGGER.log(Level.FINEST, "got latest history entry {0} for ''{1}'' using repository {2}",
@@ -293,7 +316,7 @@ public final class HistoryGuru {
         }
         statistics.report(LOGGER, Level.FINEST,
                 String.format("finished retrieval of last history entry for '%s' (%s)",
-                        file, lastHistoryEntry != null ? "success" : "fail"), "history.lasthistoryentry");
+                        file, lastHistoryEntry != null ? "success" : "fail"), "history.entry.latest");
         return lastHistoryEntry;
     }
 
@@ -318,22 +341,52 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
-        if (!isRepoHistoryEligible(repository, file, ui)) {
-            return null;
-        }
-
         History history;
         try {
-            history = getHistoryFromCache(file, repository, withFiles, fallback);
+            history = getHistoryFromCache(file, repository, withFiles);
             if (history != null) {
                 return history;
             }
+
+            return getHistoryFromRepository(file, repository, ui);
         } catch (ForbiddenSymlinkException e) {
             LOGGER.log(Level.FINER, e.getMessage());
             return null;
         }
+    }
 
-        return null;
+    @Nullable
+    private History getHistoryFromRepository(File file, Repository repository, boolean ui) throws HistoryException {
+        History history;
+
+        if (!isRepoHistoryEligible(repository, file, ui)) {
+            return null;
+        }
+
+        /*
+         * Some mirrors of repositories which are capable of fetching history
+         * for directories may contain lots of files untracked by given SCM.
+         * For these it would be waste of time to get their history
+         * since the history of all files in this repository should have been
+         * fetched in the first phase of indexing.
+         */
+        if (isHistoryIndexDone() && repository.isHistoryEnabled() && repository.hasHistoryForDirectories()) {
+            return null;
+        }
+
+        if (!env.getPathAccepter().accept(file)) {
+            return null;
+        }
+
+        try {
+            history = repository.getHistory(file);
+        } catch (UnsupportedOperationException e) {
+            // In this case, we've found a file for which the SCM has no history
+            // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
+            return null;
+        }
+
+        return history;
     }
 
     /**
@@ -684,7 +737,7 @@ public final class HistoryGuru {
                     "Failed optimizing the history cache database", he);
         }
         elapsed.report(LOGGER, "Done history cache for all repositories", "indexer.history.cache");
-        historyCache.setHistoryIndexDone();
+        setHistoryIndexDone();
     }
 
     /**
