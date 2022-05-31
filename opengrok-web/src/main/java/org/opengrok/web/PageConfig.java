@@ -1291,12 +1291,15 @@ public final class PageConfig {
     @Nullable
     public String getLatestRevision() {
         if (!getEnv().isHistoryEnabled()) {
+            LOGGER.log(Level.FINE, "will not get latest revision for ''{0}'' as history is disabled",
+                    getResourceFile());
             return null;
         }
 
         // Try getting the history revision from the index first.
         String lastRev = getLastRevFromIndex();
         if (lastRev != null) {
+            LOGGER.log(Level.FINEST, "got last revision of ''{0}'' from the index", getResourceFile());
             return lastRev;
         }
 
@@ -1305,7 +1308,7 @@ public final class PageConfig {
         try {
             return getLastRevFromHistory();
         } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "cannot get latest revision for {0}", getPath());
+            LOGGER.log(Level.WARNING, "cannot get latest revision for ''{0}'' using history", getPath());
             return null;
         }
     }

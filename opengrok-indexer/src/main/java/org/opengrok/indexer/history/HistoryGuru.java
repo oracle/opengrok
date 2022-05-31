@@ -254,15 +254,19 @@ public final class HistoryGuru {
     /**
      * @param file file to get the history entry for
      * @param ui is the request coming from the UI
-     * @return last (newest) history entry for given file or null
+     * @return last (newest) history entry for given file or {@code null}
      * @throws HistoryException if history retrieval failed
      */
     @Nullable
     public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        Statistics statistics = new Statistics();
+        LOGGER.log(Level.FINEST, "started retrieval of last history entry for ''{0}''", file);
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
+            LOGGER.log(Level.FINER, "cannot retrieve the last history entry for ''{0}'' in {1} because of settings",
+                    new Object[]{file, repository});
             return null;
         }
 
@@ -282,7 +286,15 @@ public final class HistoryGuru {
             return null;
         }
 
-        return repository.getLastHistoryEntry(file, ui);
+        HistoryEntry lastHistoryEntry = repository.getLastHistoryEntry(file, ui);
+        if (lastHistoryEntry != null) {
+            LOGGER.log(Level.FINEST, "got latest history entry {0} for ''{1}'' using repository {2}",
+                    new Object[]{lastHistoryEntry, file, repository});
+        }
+        statistics.report(LOGGER, Level.FINEST,
+                String.format("finished retrieval of last history entry for '%s' (%s)",
+                        file, lastHistoryEntry != null ? "success" : "fail"), "history.lasthistoryentry");
+        return lastHistoryEntry;
     }
 
     public History getHistory(File file, boolean withFiles, boolean ui) throws HistoryException {
