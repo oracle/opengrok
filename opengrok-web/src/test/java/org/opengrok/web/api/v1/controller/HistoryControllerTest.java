@@ -118,6 +118,9 @@ class HistoryControllerTest extends OGKJerseyTest {
         assertNotEquals(history1, history2);
     }
 
+    /**
+     * This test retrieves history for a directory, which means it will not go through history cache.
+     */
     @Test
     void testHistoryGet() throws Exception {
         final String path = "git";
