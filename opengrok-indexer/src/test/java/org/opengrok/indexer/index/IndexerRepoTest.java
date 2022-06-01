@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -43,6 +43,8 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -57,7 +59,7 @@ import org.opengrok.indexer.util.IOUtils;
  * Test indexer w.r.t. repositories.
  * @author Vladimir Kotal
  */
-public class IndexerRepoTest {
+class IndexerRepoTest {
 
     private TestRepository repository;
 
@@ -73,25 +75,10 @@ public class IndexerRepoTest {
         repository.destroy();
     }
 
-    /**
-     * Test it is possible to disable history per project.
-     */
-    @Test
     @EnabledForRepository(MERCURIAL)
-    public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
-        testPerProjectHistory(true);
-    }
-
-    /**
-     * Test it is possible to enable history per project.
-     */
-    @Test
-    @EnabledForRepository(MERCURIAL)
-    public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
-        testPerProjectHistory(false);
-    }
-
-    private void testPerProjectHistory(boolean globalOn) throws IndexerException, IOException, HistoryException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testPerProjectHistory(boolean globalOn) throws IndexerException, IOException, HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Make sure we start from scratch.
@@ -100,11 +87,15 @@ public class IndexerRepoTest {
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(globalOn);
 
+        // The projects have to be added first so that prepareIndexer() can use their configuration.
         Project proj = new Project("mercurial", "/mercurial");
         proj.setHistoryEnabled(!globalOn);
         env.getProjects().clear();
         env.getProjects().put("mercurial", proj);
+        proj = new Project("git", "/git");
+        env.getProjects().put("git", proj);
 
+        HistoryGuru.getInstance().clear();
         Indexer.getInstance().prepareIndexer(
                 env,
                 true, // search for repositories
@@ -112,7 +103,9 @@ public class IndexerRepoTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
+        env.generateProjectRepositoriesMap();
 
+        // The repositories of the git project should follow the global history setting.
         File repoRoot = new File(env.getSourceRootFile(), "git");
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -122,6 +115,7 @@ public class IndexerRepoTest {
             assertNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
 
+        // The repositories of the mercurial project should be opposite to the global history setting.
         repoRoot = new File(env.getSourceRootFile(), "mercurial");
         fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -140,7 +134,7 @@ public class IndexerRepoTest {
      */
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testSymlinks() throws IndexerException, IOException {
+    void testSymlinks() throws IndexerException, IOException {
 
         final String SYMLINK = "symlink";
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
