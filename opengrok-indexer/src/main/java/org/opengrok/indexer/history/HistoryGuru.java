@@ -673,7 +673,7 @@ public final class HistoryGuru {
             elapsed.report(LOGGER, "Done history cache for " + path);
         } else {
             LOGGER.log(Level.WARNING,
-                    "Skipping creation of historycache of {0} repository in {1}: Missing SCM dependencies?",
+                    "Skipping creation of history cache of {0} repository in {1}: Missing SCM dependencies?",
                     new Object[]{type, path});
         }
     }
