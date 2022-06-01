@@ -132,7 +132,8 @@ class HistoryControllerTest extends OGKJerseyTest {
                 .queryParam("start", start)
                 .request()
                 .get();
-        HistoryDTO history = response.readEntity(new GenericType<>() {});
+        HistoryDTO history = response.readEntity(new GenericType<>() {
+        });
         assertNotNull(history);
         assertEquals(size, history.getEntries().size());
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
