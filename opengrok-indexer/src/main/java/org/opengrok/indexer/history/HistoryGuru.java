@@ -679,6 +679,12 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
+        if (repositories.isEmpty()) {
+            LOGGER.log(Level.WARNING, "History cache is enabled however the list of repositories is empty. " +
+                    "Either specify the repositories in configuration or let the indexer scan them.");
+            return;
+        }
+
         Statistics elapsed = new Statistics();
         ExecutorService executor = env.getIndexerParallelizer().getHistoryExecutor();
         // Since we know each repository object from the repositories
