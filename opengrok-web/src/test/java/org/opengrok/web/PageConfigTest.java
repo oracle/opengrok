@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -50,6 +50,8 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
@@ -82,7 +84,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testRequestAttributes() {
+    void testRequestAttributes() {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
 
@@ -112,7 +114,7 @@ public class PageConfigTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void canProcessHistory() {
+    void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
         assertCanProcess("", "/source", "/history", "/mercurial/main.c");
@@ -131,7 +133,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void canProcessXref() {
+    void canProcessXref() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
         assertCanProcess("", "/source", "/xref", "/mercurial/main.c");
@@ -154,7 +156,7 @@ public class PageConfigTest {
      * Testing the root of /xref for authorization filtering.
      */
     @Test
-    public void testGetResourceFileList() {
+    void testGetResourceFileList() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // backup original values
@@ -177,7 +179,7 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req);
         List<String> allFiles = new ArrayList<>(cfg.getResourceFileList());
 
-        /**
+        /*
          * Check if there are some files (the "5" here is just a sufficient
          * value for now which won't break any future repository tests) without
          * any authorization.
@@ -186,7 +188,7 @@ public class PageConfigTest {
         assertTrue(allFiles.contains("git"));
         assertTrue(allFiles.contains("mercurial"));
 
-        /**
+        /*
          * Now set up the same projects with authorization plugin enabling only
          * some of them.
          * <pre>
@@ -266,7 +268,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetIntParam() {
+    void testGetIntParam() {
         String[] attrs = {"a", "b", "c", "d", "e", "f", "g", "h"};
         int[] values = {1, 100, -1, 2, 200, 3000, -200, 3000};
         DummyHttpServletRequest req = new DummyHttpServletRequest() {
@@ -302,7 +304,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetLatestRevisionValid() {
+    void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
             public String getPathInfo() {
@@ -317,7 +319,40 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetRevisionLocation() {
+    void testGetLatestRevisionViaIndex() throws Exception {
+        // Run the indexer.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        Indexer indexer = Indexer.getInstance();
+        indexer.prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                false, // don't create dictionary
+                null, // subFiles - needed when refreshing history partially
+                null); // repositories - needed when refreshing history partially
+        indexer.doIndexerExecution(true, null, null);
+
+        DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "/git/main.c";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req1);
+        String rev = cfg.getLastRevFromIndex();
+        assertNotNull(rev);
+        assertEquals("aa35c258", rev);
+    }
+
+    @Test
+    void testGetRevisionLocation() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
             public String getPathInfo() {
@@ -343,7 +378,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetRevisionLocationNullQuery() {
+    void testGetRevisionLocationNullQuery() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
             public String getPathInfo() {
@@ -369,7 +404,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetLatestRevisionNotValid() {
+    void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
             public String getPathInfo() {
@@ -383,7 +418,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetRequestedRevision() {
+    void testGetRequestedRevision() {
         final String[] revisions = {"6c5588de", "", "6c5588de", "6c5588de", "6c5588de"};
         for (int i = 0; i < revisions.length; i++) {
             final int index = i;
@@ -409,7 +444,7 @@ public class PageConfigTest {
     }
 
     @Test
-    public void testGetAnnotation() {
+    void testGetAnnotation() {
         final String[] revisions = {"aa35c258", "bb74b7e8"};
 
         for (int i = 0; i < revisions.length; i++) {
@@ -464,7 +499,7 @@ public class PageConfigTest {
      * Test the case when the source root is null.
      */
     @Test
-    public void testCheckSourceRootExistence1() {
+    void testCheckSourceRootExistence1() {
         assertThrows(FileNotFoundException.class, () -> {
             HttpServletRequest req = new DummyHttpServletRequest();
             PageConfig cfg = PageConfig.get(req);
@@ -484,7 +519,7 @@ public class PageConfigTest {
      * Test the case when source root is empty.
      */
     @Test
-    public void testCheckSourceRootExistence2() {
+    void testCheckSourceRootExistence2() {
         assertThrows(FileNotFoundException.class, () -> {
             HttpServletRequest req = new DummyHttpServletRequest();
             PageConfig cfg = PageConfig.get(req);
@@ -504,7 +539,7 @@ public class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testCheckSourceRootExistence3() throws IOException {
+    void testCheckSourceRootExistence3() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
@@ -523,7 +558,7 @@ public class PageConfigTest {
      */
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    public void testCheckSourceRootExistence4() throws IOException {
+    void testCheckSourceRootExistence4() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
@@ -546,7 +581,7 @@ public class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testCheckSourceRootExistence5() throws IOException {
+    void testCheckSourceRootExistence5() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();

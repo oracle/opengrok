@@ -1330,7 +1330,8 @@ public final class PageConfig {
      * w.r.t. last modified time of the file or the last commit ID is not stored in the document.
      */
     @Nullable
-    private String getLastRevFromIndex() {
+    @VisibleForTesting
+    String getLastRevFromIndex() {
         Document doc = null;
         try {
             doc = IndexDatabase.getDocument(getResourceFile());
