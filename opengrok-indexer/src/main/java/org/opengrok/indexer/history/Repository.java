@@ -97,33 +97,6 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract boolean hasHistoryForDirectories();
 
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("{");
-        stringBuilder.append("dir=");
-        stringBuilder.append(this.getDirectoryName());
-        stringBuilder.append(",");
-        stringBuilder.append("type=");
-        stringBuilder.append(getType());
-        stringBuilder.append(",");
-
-        if (!isHistoryEnabled()) {
-            stringBuilder.append("history=off");
-        } else {
-            stringBuilder.append("renamed=");
-            stringBuilder.append(this.isHandleRenamedFiles());
-            stringBuilder.append(",");
-            stringBuilder.append("merge=");
-            stringBuilder.append(this.isMergeCommitsEnabled());
-            stringBuilder.append(",");
-            stringBuilder.append("historyBased=");
-            stringBuilder.append(this.isHistoryBasedReindex());
-        }
-        stringBuilder.append("}");
-        return stringBuilder.toString();
-    }
-
     /**
      * Get the history for the specified file or directory.
      * It is expected that {@link History#getRenamedFiles()} and {@link HistoryEntry#getFiles()} are empty for files.
