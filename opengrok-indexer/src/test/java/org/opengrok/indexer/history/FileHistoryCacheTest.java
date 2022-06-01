@@ -840,7 +840,6 @@ class FileHistoryCacheTest {
     private void checkNoHistoryFetchRepo(String repoName, String filename, boolean hasHistory) throws Exception {
 
         File reposRoot = new File(repositories.getSourceRoot(), repoName);
-        Repository repo = RepositoryFactory.getRepository(reposRoot);
 
         // Make sure the file exists in the repository.
         File repoFile = new File(reposRoot, filename);
@@ -858,7 +857,6 @@ class FileHistoryCacheTest {
     @EnabledForRepository({MERCURIAL, SCCS})
     @Test
     void testNoHistoryFetch() throws Exception {
-        // Do not create history cache for files which do not have it cached.
         env.setFetchHistoryWhenNotInCache(false);
 
         // Pretend we are done with first phase of indexing.
