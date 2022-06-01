@@ -655,15 +655,12 @@ class FileHistoryCache implements HistoryCache {
     }
 
     /**
-     * Check if the cache is up to date for the specified file.
      * @param file the file to check
-     * @param cachedFile the file which contains the cached history for
-     * the file
-     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     * @param cachedFile the file which contains the cached history for the file
+     * @return {@code true} if the cache is up-to-date for the file, {@code false} otherwise
      */
     private boolean isUpToDate(File file, File cachedFile) {
-        return cachedFile != null && cachedFile.exists() &&
-                file.lastModified() <= cachedFile.lastModified();
+        return cachedFile != null && cachedFile.exists() && file.lastModified() <= cachedFile.lastModified();
     }
 
     @Override
