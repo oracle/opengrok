@@ -648,7 +648,7 @@ public final class HistoryGuru {
 
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.INFO,
-                    "Skipping history cache creation of {0} repository in {1} and its subdirectories",
+                    "Skipping history cache creation of {0} repository in ''{1}'' and its subdirectories",
                     new Object[]{type, path});
             return;
         }
@@ -700,7 +700,7 @@ public final class HistoryGuru {
             }
         }
 
-        LOGGER.log(Level.INFO, "Creating historycache for {0} repositories",
+        LOGGER.log(Level.INFO, "Creating history cache for {0} repositories",
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
         for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
