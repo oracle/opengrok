@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -49,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
-public class HistoryControllerTest extends OGKJerseyTest {
+class HistoryControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -96,7 +97,7 @@ public class HistoryControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testHistoryDTOEquals() {
+    void testHistoryDTOEquals() {
         HistoryEntry historyEntry = new HistoryEntry(
                 "1",
                 new Date(1245446973L / 60 * 60 * 1000),
@@ -117,7 +118,7 @@ public class HistoryControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testHistoryGet() throws Exception {
+    void testHistoryGet() throws Exception {
         final String path = "git";
         int size = 5;
         int start = 2;
