@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
 class HistoryControllerTest extends OGKJerseyTest {
@@ -130,6 +131,7 @@ class HistoryControllerTest extends OGKJerseyTest {
                 .get();
         HistoryDTO history = response.readEntity(new GenericType<>() {
         });
+        assertNotNull(history);
         assertEquals(size, history.getEntries().size());
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
 
