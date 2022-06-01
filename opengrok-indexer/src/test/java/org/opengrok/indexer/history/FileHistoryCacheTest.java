@@ -860,6 +860,7 @@ class FileHistoryCacheTest {
         env.setFetchHistoryWhenNotInCache(false);
 
         // Pretend we are done with first phase of indexing.
+        env.setIndexer(true);
         HistoryGuru.getInstance().setHistoryIndexDone();
 
         // First try repo with ability to fetch history for directories.
