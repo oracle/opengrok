@@ -581,4 +581,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
                 return true;
         }
     }
+
+    @Override
+    public String toString() {
+        return getName() + ":indexed=" + isIndexed() + ",history=" + isHistoryEnabled();
+    }
 }
