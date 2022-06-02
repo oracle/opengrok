@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author austvik
  */
-public class CVSHistoryParserTest {
+class CVSHistoryParserTest {
 
     CVSHistoryParser instance;
 
@@ -55,7 +55,7 @@ public class CVSHistoryParserTest {
      * @throws Exception exception
      */
     @Test
-    public void parseEmpty() throws Exception {
+    void parseEmpty() throws Exception {
         History result = instance.parse("");
         assertNotNull(result);
         assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
@@ -63,11 +63,9 @@ public class CVSHistoryParserTest {
 
     /**
      * Parse something that could come out from the W3C public CVS repository.
-     *
-     * @throws java.lang.Exception
      */
     @Test
-    public void parseALaW3C() throws Exception {
+    void parseALaW3C() throws Exception {
         String revId1 = "1.2";
         String revId2 = "1.2.4.5";
         String revId3 = "1.134";
@@ -104,7 +102,8 @@ public class CVSHistoryParserTest {
                 "date: " + date1 + ";  author: " + author1 +
                 ";  state: Exp;  lines: +6 -2;\n" +
                 "some comment that is\n" +
-                "spanning two lines\n" +
+                "--------\n" +
+                "spanning multiple lines\n" +
                 "==========================================================" +
                 "===================\n";
         History result = instance.parse(output);
@@ -123,7 +122,7 @@ public class CVSHistoryParserTest {
         assertEquals(author1, e2.getAuthor());
         assertEquals(0, e2.getFiles().size());
         assertTrue(e2.getMessage().contains("some"), "Should contain comment of both lines: line 1");
-        assertTrue(e2.getMessage().contains("two"), "Should contain comment of both lines: line 2");
+        assertTrue(e2.getMessage().contains("multiple"), "Should contain comment of both lines: line 2");
 
         assertEquals(Map.of(revId2, tag1), result.getTags());
     }
