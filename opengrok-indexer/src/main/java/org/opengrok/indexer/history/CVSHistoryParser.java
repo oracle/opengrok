@@ -48,7 +48,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
     }
 
     private History history;
-    private CVSRepository cvsrepo = new CVSRepository();
+    private CVSRepository cvsRepository = new CVSRepository();
 
    /**
      * Process the output from the log command and insert the HistoryEntries
@@ -132,7 +132,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
             if ("date".equals(key)) {
                 try {
                     val = val.replace('/', '-');
-                    entry.setDate(cvsrepo.parse(val));
+                    entry.setDate(cvsRepository.parse(val));
                 } catch (ParseException pe) {
                     //
                     // Overriding processStream() thus need to comply with the
@@ -181,13 +181,13 @@ class CVSHistoryParser implements Executor.StreamHandler {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionRepository
+     * @param repository Pointer to the SubversionRepository
      * @return object representing the file's history
      */
-    History parse(File file, Repository repos) throws HistoryException {
-        cvsrepo = (CVSRepository) repos;
+    History parse(File file, Repository repository) throws HistoryException {
+        cvsRepository = (CVSRepository) repository;
         try {
-            Executor executor = cvsrepo.getHistoryLogExecutor(file);
+            Executor executor = cvsRepository.getHistoryLogExecutor(file);
             int status = executor.exec(true, this);
 
             if (status != 0) {
@@ -202,7 +202,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         // In case there is a branch, the log entries can be returned in
         // unsorted order (as a result of using '-r1.1:branch' for 'cvs log')
         // so they need to be sorted according to revision.
-        if (cvsrepo.getBranch() != null && !cvsrepo.getBranch().isEmpty()) {
+        if (cvsRepository.getBranch() != null && !cvsRepository.getBranch().isEmpty()) {
             sortHistoryEntries(history);
         }
 
