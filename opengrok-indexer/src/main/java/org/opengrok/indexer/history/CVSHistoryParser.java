@@ -210,12 +210,13 @@ class CVSHistoryParser implements Executor.StreamHandler {
     }
 
     /**
-     * Parse the given string.
+     * Parse the given string. Used for testing.
      *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
+    @VisibleForTesting
     History parse(String buffer) throws IOException {
         processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return history;
