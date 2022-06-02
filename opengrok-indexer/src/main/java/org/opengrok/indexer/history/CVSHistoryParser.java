@@ -76,23 +76,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
             }
             if (state == ParseState.TAG) {
                 if (s.startsWith("\t")) {
-                    String[] pair = s.trim().split(": ");
-                    if (pair.length != 2) {
-                        //
-                        // Overriding processStream() thus need to comply with the
-                        // set of exceptions it can throw.
-                        //
-                        throw new IOException("Failed to parse tag: '" + s + "'");
-                    } else {
-                        if (tags.containsKey(pair[1])) {
-                            // Join multiple tags for one revision
-                            String oldtag = tags.get(pair[1]);
-                            tags.remove(pair[1]);
-                            tags.put(pair[1], oldtag + " " + pair[0]);
-                        } else {
-                            tags.put(pair[1], pair[0]);
-                        }
-                    }
+                    parseTag(tags, s);
                 } else {
                     state = ParseState.REVISION;
                     s = in.readLine();
@@ -156,6 +140,26 @@ class CVSHistoryParser implements Executor.StreamHandler {
         }
 
         history.setHistoryEntries(entries);
+    }
+
+    private void parseTag(HashMap<String, String> tags, String s) throws IOException {
+        String[] pair = s.trim().split(": ");
+        if (pair.length != 2) {
+            //
+            // Overriding processStream() thus need to comply with the
+            // set of exceptions it can throw.
+            //
+            throw new IOException("Failed to parse tag: '" + s + "'");
+        } else {
+            if (tags.containsKey(pair[1])) {
+                // Join multiple tags for one revision
+                String oldTag = tags.get(pair[1]);
+                tags.remove(pair[1]);
+                tags.put(pair[1], oldTag + " " + pair[0]);
+            } else {
+                tags.put(pair[1], pair[0]);
+            }
+        }
     }
 
     /**
