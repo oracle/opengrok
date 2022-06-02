@@ -156,7 +156,7 @@ public class OptionParser {
             valuePattern = Pattern.compile(pattern);
         }
 
-        public static final int MAX_DESCRIPTION_LINE_LENGTH = 72;
+        public static final int MAX_DESCRIPTION_LINE_LENGTH = 80;
 
         void addDescription(String description) {
             if (description.length() > MAX_DESCRIPTION_LINE_LENGTH) {

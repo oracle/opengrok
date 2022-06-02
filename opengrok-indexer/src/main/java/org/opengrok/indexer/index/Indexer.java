@@ -570,13 +570,14 @@ public final class Indexer {
             parser.on("-H", "--history", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
 
             parser.on("--historyThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation on repository level. " +
+                    "The number of threads to use for history cache generation on repository level. ",
                     "By default the number of threads will be set to the number of available CPUs.",
                     "Assumes -H/--history.").execute(threadCount ->
                     cfg.setHistoryParallelism((Integer) threadCount));
 
             parser.on("--historyFileThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation when dealing with individual files.",
+                    "The number of threads to use for history cache generation ",
+                    "when dealing with individual files.",
                     "By default the number of threads will be set to the number of available CPUs.",
                     "Assumes -H/--history.").execute(threadCount ->
                     cfg.setHistoryFileParallelism((Integer) threadCount));
