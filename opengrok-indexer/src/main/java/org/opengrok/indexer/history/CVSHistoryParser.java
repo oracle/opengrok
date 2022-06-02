@@ -51,8 +51,8 @@ class CVSHistoryParser implements Executor.StreamHandler {
     private CVSRepository cvsRepository = new CVSRepository();
 
    /**
-     * Process the output from the log command and insert the HistoryEntries
-     * into the history field.
+     * Process the output from the log command and insert the {@link HistoryEntry} objects created therein
+     * into the {@link #history} field.
      *
      * @param input The output from the process
      * @throws java.io.IOException If an error occurs while reading the stream
