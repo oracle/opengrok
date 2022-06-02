@@ -138,7 +138,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 s = in.readLine();
             }
             if (state == ParseState.COMMENT) {
-                if (s.startsWith("--------")) {
+                if (s.equals("----------------------------")) {
                     state = ParseState.REVISION;
                 } else if (s.startsWith("========")) {
                     state = ParseState.NAMES;
