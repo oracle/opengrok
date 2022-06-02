@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Steven Haehn.
  */
 package org.opengrok.indexer.util;
@@ -30,16 +31,18 @@ import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.index.Indexer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author shaehn
  */
-public class OptionParserTest {
+class OptionParserTest {
 
     int actionCounter;
 
@@ -50,7 +53,7 @@ public class OptionParserTest {
 
     // Scan parser should ignore all options it does not recognize.
     @Test
-    public void scanParserIgnoreUnrecognizableOptions() throws ParseException {
+    void scanParserIgnoreUnrecognizableOptions() throws ParseException {
 
         String configPath = "/the/config/path";
 
@@ -69,7 +72,7 @@ public class OptionParserTest {
     // Validate that option can have multiple names
     // with both short and long versions.
     @Test
-    public void optionNameAliases() throws ParseException {
+    void optionNameAliases() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -91,7 +94,7 @@ public class OptionParserTest {
     // Show that parser will throw exception
     // when option is not recognized.
     @Test
-    public void unrecognizedOption() {
+    void unrecognizedOption() {
 
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("-?", "--help").execute(v -> {
@@ -110,7 +113,7 @@ public class OptionParserTest {
 
     // Show that parser will throw exception when missing option value
     @Test
-    public void missingOptionValue() {
+    void missingOptionValue() {
 
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("-a=VALUE").execute(v -> {
@@ -131,7 +134,7 @@ public class OptionParserTest {
     // it is glued next to the option (eg. -xValue), or comes
     // as a following argument (eg. -x Value)
     @Test
-    public void shortOptionValue() throws ParseException {
+    void shortOptionValue() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("-a=VALUE").execute(v -> {
@@ -152,7 +155,7 @@ public class OptionParserTest {
     // Validate the ability of parser to convert
     // string option values into internal data types.
     @Test
-    public void testSupportedDataCoercion() throws ParseException {
+    void testSupportedDataCoercion() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -227,7 +230,7 @@ public class OptionParserTest {
     // Make sure that option can take specific addOption of values
     // and when an candidate values is seen, an exception is given.
     @Test
-    public void specificOptionValues() {
+    void specificOptionValues() {
 
         OptionParser opts = OptionParser.execute(parser -> {
             String[] onOff = {"on", "off"};
@@ -253,7 +256,7 @@ public class OptionParserTest {
 
     // See that option value matches a regular expression
     @Test
-    public void optionValuePatternMatch() {
+    void optionValuePatternMatch() {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -286,7 +289,7 @@ public class OptionParserTest {
 
     // Verify option may have non-required value
     @Test
-    public void missingValueOnOptionAllowed() throws ParseException {
+    void missingValueOnOptionAllowed() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -347,7 +350,7 @@ public class OptionParserTest {
 
     // Verify default option summary
     @Test
-    public void defaultOptionSummary() {
+    void defaultOptionSummary() {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help").execute(v -> {
                 String summary = parser.getUsage();
@@ -369,7 +372,7 @@ public class OptionParserTest {
     // Therefore, must be able to catch when option entry matches more
     // than one entry.
     @Test
-    public void catchAmbigousOptions() {
+    void catchAmbigousOptions() {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help");
             parser.on("--help-me-out");
@@ -386,7 +389,7 @@ public class OptionParserTest {
 
     // Allow user to enter an initial substring to long option names
     @Test
-    public void allowInitialSubstringOptionNames() throws ParseException {
+    void allowInitialSubstringOptionNames() throws ParseException {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help-me-out").execute(v -> actionCounter++);
         });
@@ -398,7 +401,7 @@ public class OptionParserTest {
 
     // Specific test to evalutate the internal option candidate method
     @Test
-    public void testInitialSubstringOptionNames() throws ParseException {
+    void testInitialSubstringOptionNames() throws ParseException {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help-me-out");
             parser.on("--longOption");
@@ -411,7 +414,7 @@ public class OptionParserTest {
 
     // Catch duplicate option names in parser construction.
     @Test
-    public void catchDuplicateOptionNames() {
+    void catchDuplicateOptionNames() {
         try {
             OptionParser.execute(parser -> {
                 parser.on("--duplicate");
@@ -425,7 +428,7 @@ public class OptionParserTest {
 
     // Catch single '-' in argument list
     @Test
-    public void catchNamelessOption() {
+    void catchNamelessOption() {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help-me-out");
         });
@@ -441,9 +444,9 @@ public class OptionParserTest {
 
     // Fail options put into Indexer.java that do not have a description.
     @Test
-    public void catchIndexerOptionsWithoutDescription() throws NoSuchFieldException, IllegalAccessException, ParseException {
+    void catchIndexerOptionsWithoutDescription() throws NoSuchFieldException, IllegalAccessException, ParseException {
         String[] argv = {"---unitTest"};
-        Indexer.parseOptions(argv);
+        assertDoesNotThrow(() -> Indexer.parseOptions(argv));
 
         // Use reflection to get the option parser from Indexer.
         Field f = Indexer.class.getDeclaredField("optParser");
@@ -464,5 +467,21 @@ public class OptionParserTest {
         for (OptionParser.Option o : op.getOptionList()) {
             assertNull(o.description);
         }
+    }
+
+    @Test
+    void testAddLongDescription() {
+        String longDescription = "A".repeat(OptionParser.Option.MAX_DESCRIPTION_LINE_LENGTH + 1);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            OptionParser.execute(parser -> {
+                parser.on("--foo", longDescription);
+            }));
+    }
+
+    @Test
+    void testParseOptions() {
+        String[] argv = {"---unitTest"};
+        assertDoesNotThrow(() -> Indexer.parseOptions(argv));
     }
 }

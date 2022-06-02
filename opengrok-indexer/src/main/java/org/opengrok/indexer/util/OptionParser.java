@@ -156,12 +156,19 @@ public class OptionParser {
             valuePattern = Pattern.compile(pattern);
         }
 
-        void addDescription(String descrip) {
-            if (description == null) {
-                description = new StringBuilder();
+        public static final int MAX_DESCRIPTION_LINE_LENGTH = 72;
+
+        void addDescription(String description) {
+            if (description.length() > MAX_DESCRIPTION_LINE_LENGTH) {
+                throw new IllegalArgumentException(String.format("description line longer than %d characters: '%s'",
+                        MAX_DESCRIPTION_LINE_LENGTH, description));
             }
-            description.append(descrip);
-            description.append("\n");
+
+            if (this.description == null) {
+                this.description = new StringBuilder();
+            }
+            this.description.append(description);
+            this.description.append("\n");
         }
 
         /**

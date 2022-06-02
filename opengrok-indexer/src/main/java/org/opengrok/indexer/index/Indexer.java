@@ -413,6 +413,9 @@ public final class Indexer {
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
      *
+     * Limit usage lines to {@link org.opengrok.indexer.util.OptionParser.Option#MAX_DESCRIPTION_LINE_LENGTH}
+     * characters for concise formatting.
+     *
      * @param argv the command line arguments
      * @return array of remaining non option arguments
      * @throws ParseException if parsing failed
@@ -446,8 +449,6 @@ public final class Indexer {
         }));
 
         searchPaths.clear();
-
-        // Limit usage lines to 72 characters for concise formatting.
 
         optParser = OptionParser.execute(parser -> {
             parser.setPrologue(String.format("%nUsage: java -jar %s [options] [subDir1 [...]]%n", OPENGROK_JAR));
@@ -1017,7 +1018,8 @@ public final class Indexer {
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: {0}",
                         String.join(",", repositories));
-                HistoryGuru.getInstance().createCache(repositories);
+                HistoryGuru.getInstance().
+                        createCache(repositories);
             } else {
                 LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
                 HistoryGuru.getInstance().createCache();
