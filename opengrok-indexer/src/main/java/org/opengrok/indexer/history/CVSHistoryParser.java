@@ -82,7 +82,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                     s = in.readLine();
                 }
             }
-            if (state == ParseState.REVISION && s.startsWith("revision")) {
+            if (state == ParseState.REVISION && s.startsWith("revision ")) {
                 if (entry != null) {
                     entries.add(entry);
                 }
@@ -96,7 +96,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 state = ParseState.METADATA;
                 s = in.readLine();
             }
-            if (state == ParseState.METADATA && s.startsWith("date:")) {
+            if (state == ParseState.METADATA && s.startsWith("date: ")) {
                 parseDateAuthor(entry, s);
 
                 state = ParseState.COMMENT;
