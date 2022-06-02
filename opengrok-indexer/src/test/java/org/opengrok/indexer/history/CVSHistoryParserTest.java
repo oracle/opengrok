@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -171,11 +173,30 @@ class CVSHistoryParserTest {
     void testHistoryForDirectory() throws Exception {
         File repoRoot = setUpTestRepository();
         assertTrue(repoRoot.exists());
+        assertTrue(repoRoot.isDirectory());
         CVSRepository repository = (CVSRepository) RepositoryFactory.getRepository(repoRoot);
         assertNotNull(repository);
         History history = repository.getHistory(repoRoot);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(3, history.getHistoryEntries().size());
+
+        List<HistoryEntry> entries = List.of(
+                new HistoryEntry("1.1.1.1", new Date(1220544581000L),
+                        "austvik",
+                        "Add files\n", true),
+                new HistoryEntry("1.2", new Date(1220544684000L),
+                        "austvik",
+                        "Added a comment\n", true),
+                new HistoryEntry("1.1", new Date(1220544581000L),
+                        "austvik",
+                        "branches:  1.1.1;\n" +
+                                "Initial revision\n", true)
+                );
+
+        assertEquals(entries.size(), history.getHistoryEntries().size());
+        History expectedHistory = new History(entries);
+        expectedHistory.setTags(Map.of("1.1.1.1", "start"));
+        assertEquals(expectedHistory, history);
     }
 }
