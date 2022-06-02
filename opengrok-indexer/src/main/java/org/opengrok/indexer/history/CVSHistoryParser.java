@@ -97,26 +97,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 s = in.readLine();
             }
             if (state == ParseState.METADATA && s.startsWith("date:")) {
-                for (String pair : s.split(";")) {
-                    String[] keyVal = pair.split(":", 2);
-                    String key = keyVal[0].trim();
-                    String val = keyVal[1].trim();
-
-                    if ("date".equals(key)) {
-                        try {
-                            val = val.replace('/', '-');
-                            entry.setDate(cvsrepo.parse(val));
-                        } catch (ParseException pe) {
-                            //
-                            // Overriding processStream() thus need to comply with the
-                            // set of exceptions it can throw.
-                            //
-                            throw new IOException("Failed to parse date: '" + val + "'", pe);
-                        }
-                    } else if ("author".equals(key)) {
-                        entry.setAuthor(val);
-                    }
-                }
+                parseDateAuthor(entry, s);
 
                 state = ParseState.COMMENT;
                 s = in.readLine();
@@ -140,6 +121,29 @@ class CVSHistoryParser implements Executor.StreamHandler {
         }
 
         history.setHistoryEntries(entries);
+    }
+
+    private void parseDateAuthor(HistoryEntry entry, String s) throws IOException {
+        for (String pair : s.split(";")) {
+            String[] keyVal = pair.split(":", 2);
+            String key = keyVal[0].trim();
+            String val = keyVal[1].trim();
+
+            if ("date".equals(key)) {
+                try {
+                    val = val.replace('/', '-');
+                    entry.setDate(cvsrepo.parse(val));
+                } catch (ParseException pe) {
+                    //
+                    // Overriding processStream() thus need to comply with the
+                    // set of exceptions it can throw.
+                    //
+                    throw new IOException("Failed to parse date: '" + val + "'", pe);
+                }
+            } else if ("author".equals(key)) {
+                entry.setAuthor(val);
+            }
+        }
     }
 
     private void parseTag(HashMap<String, String> tags, String s) throws IOException {
