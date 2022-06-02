@@ -25,20 +25,50 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TestRepository;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.history.CVSRepositoryTest.runCvsCommand;
 
 /**
- *
+ * Test {@code cvs log} output parsing in {@link CVSHistoryParser}.
  * @author austvik
  */
 class CVSHistoryParserTest {
 
     CVSHistoryParser instance;
+
+    private TestRepository repository;
+
+    /**
+     * Set up a test repository. Should be called by the tests that need it. The
+     * test repository will be destroyed automatically when the test finishes.
+     */
+    private File setUpTestRepository() throws IOException, URISyntaxException {
+        repository = new TestRepository();
+        repository.create(getClass().getResource("/repositories"));
+
+        // Checkout cvsrepo anew in order to get the CVS/Root files point to
+        // the temporary directory rather than the OpenGrok workspace directory
+        // it was created from. This is necessary for the 'cvs log' command to work correctly.
+        File root = new File(repository.getSourceRoot(), "cvs_test");
+        File cvsrepodir = new File(root, "cvsrepo");
+        IOUtils.removeRecursive(cvsrepodir.toPath());
+        File cvsroot = new File(root, "cvsroot");
+        runCvsCommand(root, "-d", cvsroot.getAbsolutePath(), "checkout", "cvsrepo");
+        return cvsrepodir;
+    }
 
     @BeforeEach
     public void setUp() {
@@ -48,6 +78,11 @@ class CVSHistoryParserTest {
     @AfterEach
     public void tearDown() {
         instance = null;
+
+        if (repository != null) {
+            repository.destroy();
+            repository = null;
+        }
     }
 
     /**
@@ -125,5 +160,22 @@ class CVSHistoryParserTest {
         assertTrue(e2.getMessage().contains("multiple"), "Should contain comment of both lines: line 2");
 
         assertEquals(Map.of(revId2, tag1), result.getTags());
+    }
+
+    /**
+     * Check that history can be retrieved for a directory. This is needed for the web application to operate
+     * correctly. Specifically, this tests the state transitions in {@link CVSHistoryParser#processStream(InputStream)}.
+     */
+    @EnabledForRepository(RepositoryInstalled.Type.CVS)
+    @Test
+    void testHistoryForDirectory() throws Exception {
+        File repoRoot = setUpTestRepository();
+        assertTrue(repoRoot.exists());
+        CVSRepository repository = (CVSRepository) RepositoryFactory.getRepository(repoRoot);
+        assertNotNull(repository);
+        History history = repository.getHistory(repoRoot);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(3, history.getHistoryEntries().size());
     }
 }
