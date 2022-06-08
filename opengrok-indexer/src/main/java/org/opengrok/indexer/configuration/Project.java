@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -98,6 +99,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * failing.
      */
     private boolean indexed = false;
+
+    /**
+     * This flag sets per-project reindex based on traversing SCM history.
+     */
+    private Boolean historyBasedReindex = null;
 
     /**
      * Set of groups which match this project.
@@ -290,6 +296,28 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project handles renamed files.
+     */
+    public boolean isHistoryBasedReindex() {
+        return historyBasedReindex != null && historyBasedReindex;
+    }
+
+    /**
+     * @param flag true if project should handle renamed files, false otherwise.
+     */
+    public void setHistoryBasedReindex(boolean flag) {
+        this.historyBasedReindex = flag;
+    }
+
+    @VisibleForTesting
+    public void clearProperties() {
+        historyBasedReindex = null;
+        mergeCommitsEnabled = null;
+        historyEnabled = null;
+        handleRenamedFiles = null;
+    }
+
+    /**
      * Return groups where this project belongs.
      *
      * @return set of groups|empty if none
@@ -436,6 +464,10 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         if (reviewPattern == null) {
             setReviewPattern(env.getReviewPattern());
         }
+
+        if (historyBasedReindex == null) {
+            setHistoryBasedReindex(env.isHistoryBasedReindex());
+        }
     }
 
     /**
@@ -476,8 +508,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Get the project for a specific file.
      *
      * @param file the file to lookup
-     * @return the project that this file belongs to (or null if the file
-     * doesn't belong to a project)
+     * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
      */
     public static Project getProject(File file) {
         Project ret = null;

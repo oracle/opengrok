@@ -112,7 +112,7 @@ public final class Indexer {
     private static final String HELP_OPT_2 = "-?";
     private static final String HELP_OPT_3 = "-h";
 
-    private static final Indexer index = new Indexer();
+    private static final Indexer indexer = new Indexer();
     private static Configuration cfg = null;
     private static boolean checkIndex = false;
     private static boolean runIndex = true;
@@ -149,7 +149,7 @@ public final class Indexer {
     private static final int WEBAPP_CONNECT_TIMEOUT = 1000;  // in milliseconds
 
     public static Indexer getInstance() {
-        return index;
+        return indexer;
     }
 
     /**
@@ -200,8 +200,7 @@ public final class Indexer {
             env.setIndexer(true);
 
             // Complete the configuration of repository types.
-            List<Class<? extends Repository>> repositoryClasses
-                    = RepositoryFactory.getRepositoryClasses();
+            List<Class<? extends Repository>> repositoryClasses = RepositoryFactory.getRepositoryClasses();
             for (Class<? extends Repository> clazz : repositoryClasses) {
                 // Set external repository binaries from System properties.
                 try {
@@ -278,7 +277,8 @@ public final class Indexer {
                 System.exit(0);
             }
 
-            // Set updated configuration in RuntimeEnvironment.
+            // Set updated configuration in RuntimeEnvironment. This is called so that the tunables set
+            // via command line options are available.
             env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
@@ -287,6 +287,9 @@ public final class Indexer {
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (bareConfig) {
+                // Set updated configuration in RuntimeEnvironment.
+                env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
@@ -374,6 +377,10 @@ public final class Indexer {
             getInstance().prepareIndexer(env, searchPaths, addProjects,
                     createDict, runIndex, subFiles, new ArrayList<>(repositories));
 
+            // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
+            // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
+            env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+
             // prepareIndexer() populated the list of projects so now default projects can be set.
             env.setDefaultProjectsFromNames(defaultProjects);
 
@@ -405,6 +412,22 @@ public final class Indexer {
             System.exit(1);
         } finally {
             stats.report(LOGGER, "Indexer finished", "indexer.total");
+        }
+    }
+
+    private static void checkConfiguration() {
+        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+            die("Missing webappURI setting");
+        }
+
+        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
+            die("Repositories were specified; history is off however");
+        }
+
+        try {
+            cfg.checkConfiguration();
+        } catch (Configuration.ConfigurationException e) {
+            die(e.getMessage());
         }
     }
 
@@ -567,7 +590,20 @@ public final class Indexer {
                 "Assign commit tags to all entries in history for all repositories.").execute(v ->
                     cfg.setTagsEnabled(true));
 
-            parser.on("-H", "--history", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
+            // for backward compatibility
+            parser.on("-H", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
+
+            parser.on("--historyBased", "=on|off", ON_OFF, Boolean.class,
+                            "If history based reindex is in effect, the set of files ",
+                            "changed/deleted since the last reindex is determined from history ",
+                            "of the repositories. This needs history, history cache and ",
+                            "projects to be enabled. This should be much faster than the ",
+                            "classic way of traversing the directory structure. ",
+                            "The default is on. If you need to e.g. index files untracked by ",
+                            "SCM, set this to off. Currently works only for Git.",
+                            "All repositories in a project need to support this in order ",
+                            "to be indexed using history.").
+                    execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
 
             parser.on("--historyThreads", "=number", Integer.class,
                     "The number of threads to use for history cache generation on repository level. ",
@@ -849,8 +885,7 @@ public final class Indexer {
                     execute(v -> cfg.setWebappCtags((Boolean) v));
         });
 
-        // Need to read the configuration file first
-        // so that options may be overwritten later.
+        // Need to read the configuration file first, so that options may be overwritten later.
         configure.parse(argv);
 
         LOGGER.log(Level.INFO, "Indexer options: {0}", Arrays.toString(argv));
@@ -864,33 +899,6 @@ public final class Indexer {
         argv = optParser.parse(argv);
 
         return argv;
-    }
-
-    private static void checkConfiguration() {
-        env = RuntimeEnvironment.getInstance();
-
-        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
-            die("Missing webappURI setting");
-        }
-
-        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
-            die("Repositories were specified; history is off however");
-        }
-
-        if (cfg.getSourceRoot() == null) {
-            die("Please specify a SRC_ROOT with option -s !");
-        }
-        if (cfg.getDataRoot() == null) {
-            die("Please specify a DATA ROOT path");
-        }
-
-        if (!new File(cfg.getSourceRoot()).canRead()) {
-            die("Source root '" + cfg.getSourceRoot() + "' must be readable");
-        }
-
-        if (!new File(cfg.getDataRoot()).canWrite()) {
-            die("Data root '" + cfg.getDataRoot() + "' must be writable");
-        }
     }
 
     private static void die(String message) {

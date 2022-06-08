@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
@@ -33,7 +33,6 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -92,7 +91,7 @@ import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
  * Access to a Git repository.
  *
  */
-public class GitRepository extends RepositoryWithPerPartesHistory {
+public class GitRepository extends RepositoryWithHistoryTraversal {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
@@ -476,65 +475,43 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
-    public History getHistory(File file, String sinceRevision, String tillRevision,
-                              Integer numCommits) throws HistoryException {
+    public void traverseHistory(File file, String sinceRevision, String tillRevision,
+                              Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException {
 
         if (numCommits != null && numCommits <= 0) {
-            return null;
+            throw new HistoryException("invalid number of commits to retrieve");
         }
-
-        final List<HistoryEntry> entries = new ArrayList<>();
-        final Set<String> renamedFiles = new HashSet<>();
 
         boolean isDirectory = file.isDirectory();
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
-            if (sinceRevision != null) {
-                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
-            }
-
-            if (tillRevision != null) {
-                walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
-            } else {
-                walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
-            }
-
-            String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
-            if (!getDirectoryNameRelative().equals(relativePath)) {
-                if (isHandleRenamedFiles()) {
-                    Config config = repository.getConfig();
-                    config.setBoolean("diff", null, "renames", true);
-                    org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
-                    FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
-                    walk.setTreeFilter(followFilter);
-                } else {
-                    walk.setTreeFilter(AndTreeFilter.create(
-                            PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
-                            TreeFilter.ANY_DIFF));
-                }
-            }
+            setupWalk(file, sinceRevision, tillRevision, repository, walk);
 
             int num = 0;
             for (RevCommit commit : walk) {
-                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
-                    continue;
+                CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                        commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
+                        commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
+
+                for (ChangesetVisitor visitor : visitors) {
+                    // Even though the repository itself is set (not) to consume the merge changesets,
+                    // it should be up to the visitor to have the say. This is because of the history based reindex.
+                    if (commit.getParentCount() > 1 && !visitor.consumeMergeChangesets) {
+                        continue;
+                    }
+
+                    if (isDirectory) {
+                        SortedSet<String> files = new TreeSet<>();
+                        final Set<String> renamedFiles = new HashSet<>();
+                        final Set<String> deletedFiles = new HashSet<>();
+                        getFilesForCommit(renamedFiles, files, deletedFiles, commit, repository);
+                        visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles));
+                    } else {
+                        visitor.accept(new ChangesetInfo(commitInfo));
+                    }
                 }
-
-                HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                        commit.getAuthorIdent().getWhen(),
-                        commit.getAuthorIdent().getName() +
-                                " <" + commit.getAuthorIdent().getEmailAddress() + ">",
-                        commit.getFullMessage(), true);
-
-                if (isDirectory) {
-                    SortedSet<String> files = new TreeSet<>();
-                    getFilesForCommit(renamedFiles, files, commit, repository);
-                    historyEntry.setFiles(files);
-                }
-
-                entries.add(historyEntry);
 
                 if (numCommits != null && ++num >= numCommits) {
                     break;
@@ -543,46 +520,62 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         } catch (IOException | ForbiddenSymlinkException e) {
             throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
         }
+    }
 
-        History result = new History(entries, renamedFiles);
+    private void setupWalk(File file, String sinceRevision, String tillRevision, Repository repository, RevWalk walk)
+            throws IOException, ForbiddenSymlinkException {
 
-        // Assign tags to changesets they represent
-        // We don't need to check if this repository supports tags,
-        // because we know it :-)
-        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
-            assignTagsInHistory(result);
+        if (sinceRevision != null) {
+            walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
         }
 
-        return result;
+        if (tillRevision != null) {
+            walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
+        } else {
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+        }
+
+        String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
+        if (!getDirectoryNameRelative().equals(relativePath)) {
+            if (isHandleRenamedFiles()) {
+                Config config = repository.getConfig();
+                config.setBoolean("diff", null, "renames", true);
+                org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+                FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
+                walk.setTreeFilter(followFilter);
+            } else {
+                walk.setTreeFilter(AndTreeFilter.create(
+                        PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
+                        TreeFilter.ANY_DIFF));
+            }
+        }
     }
 
     /**
-     * Accumulate list of changed files and renamed files (if enabled) for given commit.
-     * @param renamedFiles result containing the renamed files in this commit
-     * @param files result containing changed files in this commit
+     * Accumulate list of changed/deleted/renamed files for given commit.
+     * @param renamedFiles output: renamed files in this commit (if renamed file handling is enabled)
+     * @param changedFiles output: changed files in this commit
+     * @param deletedFiles output: deleted files in this commit
      * @param commit RevCommit object
      * @param repository repository object
      * @throws IOException on error traversing the commit tree
      */
-    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> files, RevCommit commit,
+    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> changedFiles, Set<String> deletedFiles,
+                                   RevCommit commit,
                                    Repository repository) throws IOException {
 
-        int numParents = commit.getParentCount();
-
-        if (numParents == 1) {
-            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
-        } else if (numParents == 0) { // first commit
+        if (commit.getParentCount() == 0) { // first commit - add all files
             try (TreeWalk treeWalk = new TreeWalk(repository)) {
                 treeWalk.addTree(commit.getTree());
                 treeWalk.setRecursive(true);
 
                 while (treeWalk.next()) {
-                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                    changedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
                             getNativePath(treeWalk.getPathString()));
                 }
             }
         } else {
-            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+            getFilesBetweenCommits(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
         }
     }
 
@@ -595,17 +588,18 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     /**
-     * Assemble list of files that changed between 2 commits.
+     * Assemble list of changed/deleted/renamed files between a commit and its parent.
      * @param repository repository object
      * @param oldCommit parent commit
-     * @param newCommit new commit (the mehotd assumes oldCommit is its parent)
-     * @param files set of files that changed (excludes renamed files)
-     * @param renamedFiles set of renamed files (if renamed handling is enabled)
+     * @param newCommit new commit (the method assumes oldCommit is its parent)
+     * @param changedFiles output: set of changedFiles that changed (excludes renamed changedFiles)
+     * @param renamedFiles output: set of renamed files (if renamed handling is enabled)
+     * @param deletedFiles output: set of deleted files
      * @throws IOException on I/O problem
      */
-    private void getFiles(org.eclipse.jgit.lib.Repository repository,
-                          RevCommit oldCommit, RevCommit newCommit,
-                          Set<String> files, Set<String> renamedFiles)
+    private void getFilesBetweenCommits(org.eclipse.jgit.lib.Repository repository,
+                                        RevCommit oldCommit, RevCommit newCommit,
+                                        Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles)
             throws IOException {
 
         OutputStream outputStream = NullOutputStream.INSTANCE;
@@ -619,18 +613,42 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     prepareTreeParser(repository, newCommit));
 
             for (DiffEntry diff : diffs) {
-                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
-                    if (files != null) {
-                        files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                                getNativePath(diff.getNewPath()));
+                String newPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                        getNativePath(diff.getNewPath());
+
+                handleDiff(changedFiles, renamedFiles, deletedFiles, diff, newPath);
+            }
+        }
+    }
+
+    private void handleDiff(Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles,
+                            DiffEntry diff, String newPath) {
+
+        switch (diff.getChangeType()) {
+            case DELETE:
+                if (deletedFiles != null) {
+                    // newPath would be "/dev/null"
+                    String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getOldPath());
+                    deletedFiles.add(oldPath);
+                }
+                break;
+            case RENAME:
+                if (isHandleRenamedFiles()) {
+                    renamedFiles.add(newPath);
+                    if (deletedFiles != null) {
+                        String oldPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                                getNativePath(diff.getOldPath());
+                        deletedFiles.add(oldPath);
                     }
                 }
-
-                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                            getNativePath(diff.getNewPath()));
+                break;
+            default:
+                if (changedFiles != null) {
+                    // Added files (ChangeType.ADD) are treated as changed.
+                    changedFiles.add(newPath);
                 }
-            }
+                break;
         }
     }
 

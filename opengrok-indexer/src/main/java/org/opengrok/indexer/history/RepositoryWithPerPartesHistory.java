@@ -74,7 +74,8 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);
-            finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+            History history = getHistory(directory, sinceRevision);
+            finishCreateCache(cache, history, null);
             return;
         }
 
@@ -90,9 +91,9 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
             Statistics stat = new Statistics();
             LOGGER.log(Level.FINEST, "storing history cache for revision range ({0}, {1})",
                     new Object[]{sinceRevision, tillRevision});
-            finishCreateCache(cache, getHistory(directory, sinceRevision, tillRevision), tillRevision);
+            History history = getHistory(directory, sinceRevision, tillRevision);
+            finishCreateCache(cache, history, tillRevision);
             sinceRevision = tillRevision;
-
             stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
                     ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }

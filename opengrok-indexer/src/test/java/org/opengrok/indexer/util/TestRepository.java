@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -103,7 +104,13 @@ public class TestRepository {
         }
     }
 
-    private void copyDirectory(Path src, Path dest) throws IOException {
+    /**
+     * Assumes the destination directory exists.
+     * @param src source directory
+     * @param dest destination directory
+     * @throws IOException on error
+     */
+    public void copyDirectory(Path src, Path dest) throws IOException {
         try (Stream<Path> stream = Files.walk(src)) {
             stream.forEach(sourceFile -> {
                 if (sourceFile.equals(src)) {
@@ -111,7 +118,14 @@ public class TestRepository {
                 }
                 try {
                     Path destRelativePath = getDestinationRelativePath(src, sourceFile);
-                    Files.copy(sourceFile, dest.resolve(destRelativePath.toString()), REPLACE_EXISTING);
+                    Path destPath = dest.resolve(destRelativePath);
+                    if (Files.isDirectory(sourceFile)) {
+                        if (!Files.exists(destPath)) {
+                            Files.createDirectory(destPath);
+                        }
+                        return;
+                    }
+                    Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

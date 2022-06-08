@@ -97,6 +97,7 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract boolean hasHistoryForDirectories();
 
+    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("{");
@@ -115,6 +116,9 @@ public abstract class Repository extends RepositoryInfo {
             stringBuilder.append(",");
             stringBuilder.append("merge=");
             stringBuilder.append(this.isMergeCommitsEnabled());
+            stringBuilder.append(",");
+            stringBuilder.append("historyBased=");
+            stringBuilder.append(this.isHistoryBasedReindex());
         }
         stringBuilder.append("}");
         return stringBuilder.toString();
@@ -154,7 +158,7 @@ public abstract class Repository extends RepositoryInfo {
         }
     }
 
-    Repository() {
+    protected Repository() {
         super();
         ignoredFiles = new ArrayList<>();
         ignoredDirs = new ArrayList<>();
@@ -298,11 +302,9 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Returns if this repository tags only files changed in last commit, i.e.
-     * if we need to prepare list of repository-wide tags prior to creation of
-     * file history entries.
+     * if we need to prepare list of repository-wide tags prior to creation of file history entries.
      *
-     * @return True if we need tag list creation prior to file parsing, false by
-     * default.
+     * @return True if we need tag list creation prior to file parsing, false by default.
      */
     boolean hasFileBasedTags() {
         return false;
@@ -390,7 +392,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
-        finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+        History history = getHistory(directory, sinceRevision);
+        finishCreateCache(cache, history, null);
     }
 
     /**

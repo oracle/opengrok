@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -128,10 +129,9 @@ public final class HistoryGuru {
     }
 
     /**
-     * Return whether or not a cache should be used for the history log.
+     * Return whether cache should be used for the history log.
      *
-     * @return {@code true} if the history cache has been enabled and
-     * initialized, {@code false} otherwise
+     * @return {@code true} if the history cache has been enabled and initialized, {@code false} otherwise
      */
     private boolean useCache() {
         return historyCache != null;
@@ -285,6 +285,10 @@ public final class HistoryGuru {
         return repository.getLastHistoryEntry(file, ui);
     }
 
+    public History getHistory(File file, boolean withFiles, boolean ui) throws HistoryException {
+        return getHistory(file, withFiles, ui, true);
+    }
+
     /**
      * Get the history for the specified file. The history cache is tried first, then the repository.
      *
@@ -292,10 +296,12 @@ public final class HistoryGuru {
      * @param withFiles whether the returned history should contain a
      * list of files touched by each changeset (the file list may be skipped if false, but it doesn't have to)
      * @param ui called from the webapp
+     * @param fallback fall back to fetching the history from the repository
+     *                 if it cannot be retrieved from history cache
      * @return history for the file
      * @throws HistoryException on error when accessing the history
      */
-    public History getHistory(File file, boolean withFiles, boolean ui) throws HistoryException {
+    public History getHistory(File file, boolean withFiles, boolean ui, boolean fallback) throws HistoryException {
 
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
@@ -306,7 +312,7 @@ public final class HistoryGuru {
 
         History history;
         try {
-            history = getHistoryFromCache(file, repository, withFiles, true);
+            history = getHistoryFromCache(file, repository, withFiles, fallback);
             if (history != null) {
                 return history;
             }
@@ -779,7 +785,7 @@ public final class HistoryGuru {
         return repos;
     }
 
-    Repository getRepository(File file) {
+    public Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);
     }
@@ -907,7 +913,8 @@ public final class HistoryGuru {
                 "history.repositories.invalidate");
     }
 
-    private void clear() {
+    @VisibleForTesting
+    public void clear() {
         repositoryRoots.clear();
         repositories.clear();
         repositoryLookup.clear();

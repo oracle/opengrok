@@ -43,6 +43,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import java.util.zip.GZIPOutputStream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -745,32 +747,26 @@ class FileHistoryCache implements HistoryCache {
      * @param rev latest revision which has been just indexed
      */
     private void storeLatestCachedRevision(Repository repository, String rev) {
-        Writer writer = null;
-
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(
-                  new FileOutputStream(getRepositoryCachedRevPath(repository))));
+        Path newPath = Path.of(getRepositoryCachedRevPath(repository));
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newPath.toFile())))) {
             writer.write(rev);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
                     String.format("Cannot write latest cached revision to file for repository %s", repository), ex);
-        } finally {
-           try {
-               if (writer != null) {
-                   writer.close();
-               }
-           } catch (IOException ex) {
-               LOGGER.log(Level.WARNING, "Cannot close file", ex);
-           }
         }
     }
 
     @Override
+    @Nullable
     public String getLatestCachedRevision(Repository repository) {
+        return getCachedRevision(repository, getRepositoryCachedRevPath(repository));
+    }
+
+    @Nullable
+    private String getCachedRevision(Repository repository, String revPath) {
         String rev;
         BufferedReader input;
 
-        String revPath = getRepositoryCachedRevPath(repository);
         if (revPath == null) {
             LOGGER.log(Level.WARNING, "no rev path for repository {0}", repository);
             return null;

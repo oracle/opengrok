@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2002, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -43,7 +43,7 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
         |Context\.java|HistoryContext\.java|Suggester\.java|
 	|ProjectHelperTestBase\.java|SearchHelper\.java" />
 
-    <suppress checks="FileLength" files="RuntimeEnvironment\.java" />
+    <suppress checks="FileLength" files="RuntimeEnvironment\.java|IndexDatabase\.java" />
 
     <suppress checks="MethodLength" files="Indexer\.java|IndexDatabase\.java|AuthorizationFrameworkTest\.java" />
 

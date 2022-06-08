@@ -360,7 +360,9 @@ public class IndexerTest {
         }
 
         // reindex
+        // TODO: add parameter for running the reindex with indexDown() and truly incremental (needs Git)
         idb.update();
+
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
@@ -424,7 +426,6 @@ public class IndexerTest {
 
     /**
      * Test IndexChangedListener behavior in repository with invalid files.
-     * @throws Exception
      */
     @Test
     void testIncrementalIndexAddRemoveFile() throws Exception {
@@ -432,8 +433,15 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
+        // Make the test consistent. If run in sequence with other tests, env.hasProjects() returns true.
+        // The same should work for standalone test run.
+        HashMap<String, Project> projects = new HashMap<>();
         String ppath = "/bug3430";
         Project project = new Project("bug3430", ppath);
+        projects.put("bug3430", project);
+        env.setProjectsEnabled(true);
+        env.setProjects(projects);
+
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
         MyIndexChangeListener listener = new MyIndexChangeListener();
