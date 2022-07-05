@@ -141,7 +141,7 @@ public class IndexCheck {
                 SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
                 segVersion = segInfos.getIndexCreatedVersionMajor();
             } catch (IndexNotFoundException e) {
-                LOGGER.log(Level.FINE, "empty data directory");
+                LOGGER.log(Level.FINE, "no index found in ''{0}''", indexDirectory);
                 return;
             }
         }
