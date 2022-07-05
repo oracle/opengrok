@@ -809,7 +809,7 @@ public class IndexDatabase {
      *
      * @throws IOException if an error occurs
      */
-    static void optimizeAll() throws IOException {
+    static void reduceSegmentCountAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
@@ -827,7 +827,7 @@ public class IndexDatabase {
             if (db.isDirty()) {
                 parallelizer.getFixedExecutor().submit(() -> {
                     try {
-                        db.optimize();
+                        db.reduceSegmentCount();
                     } catch (Throwable e) {
                         LOGGER.log(Level.SEVERE,
                             "Problem reducing segment count of Lucene index database: ", e);
@@ -848,13 +848,13 @@ public class IndexDatabase {
     }
 
     /**
-     * Optimize the index database.
+     * Reduce number of segments in the index database.
      * @throws IOException I/O exception
      */
-    public void optimize() throws IOException {
+    public void reduceSegmentCount() throws IOException {
         synchronized (lock) {
             if (running) {
-                LOGGER.warning("Optimize terminated... Someone else is updating / optimizing it!");
+                LOGGER.warning("Segment count reduction terminated... Someone else is running the operation!");
                 return;
             }
             running = true;
@@ -865,15 +865,15 @@ public class IndexDatabase {
         try {
             Statistics elapsed = new Statistics();
             String projectDetail = this.project != null ? " for project " + project.getName() : "";
-            LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
+            LOGGER.log(Level.INFO, "Reducing number of segments in the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
-            wrt.forceMerge(1); // this is deprecated and not needed anymore
-            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail),
-                    "indexer.db.optimize");
+            wrt.forceMerge(1);
+            elapsed.report(LOGGER, String.format("Done reducing number of segments in index%s", projectDetail),
+                    "indexer.db.reduceSegments");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
@@ -883,7 +883,7 @@ public class IndexDatabase {
             }
         } catch (IOException e) {
             writerException = e;
-            LOGGER.log(Level.SEVERE, "ERROR: optimizing index", e);
+            LOGGER.log(Level.SEVERE, "ERROR: reducing number of segments index", e);
         } finally {
             if (wrt != null) {
                 try {

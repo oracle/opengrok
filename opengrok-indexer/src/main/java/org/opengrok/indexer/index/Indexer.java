@@ -116,7 +116,7 @@ public final class Indexer {
     private static Configuration cfg = null;
     private static boolean checkIndex = false;
     private static boolean runIndex = true;
-    private static boolean optimize = false;
+    private static boolean reduceSegmentCount = false;
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean bareConfig = false;
@@ -390,8 +390,8 @@ public final class Indexer {
                 getInstance().doIndexerExecution(subFiles, progress);
             }
 
-            if (optimize) {
-                IndexDatabase.optimizeAll();
+            if (reduceSegmentCount) {
+                IndexDatabase.reduceSegmentCountAll();
             }
 
             writeConfigToFile(env, configFilename);
@@ -676,10 +676,10 @@ public final class Indexer {
                     "Maximum depth of nested repositories. Default is 1.").execute(v ->
                     cfg.setNestingMaximum((Integer) v));
 
-            parser.on("-O", "--optimize",
+            parser.on("--reduceSegmentCount",
                     "Reduce the number of segments in each index database. This might ",
                     "(or might not) bring some improved performance.").
-                    execute(v -> { optimize = true; }
+                    execute(v -> { reduceSegmentCount = true; }
             );
 
             parser.on("-o", "--ctagOpts", "=path",
