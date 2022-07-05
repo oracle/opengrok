@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -135,8 +137,13 @@ public class IndexCheck {
         int segVersion;
 
         try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockFactory)) {
-            SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
-            segVersion = segInfos.getIndexCreatedVersionMajor();
+            try {
+                SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
+                segVersion = segInfos.getIndexCreatedVersionMajor();
+            } catch (IndexNotFoundException e) {
+                LOGGER.log(Level.FINE, "empty data directory");
+                return;
+            }
         }
 
         if (segVersion != Version.LATEST.major) {

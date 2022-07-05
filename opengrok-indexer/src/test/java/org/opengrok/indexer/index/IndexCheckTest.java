@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -139,5 +141,11 @@ class IndexCheckTest {
         assertFalse(IndexCheck.check(configuration, new ArrayList<>()));
 
         assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexDir));
+    }
+
+    @Test
+    void testEmptyDir(@TempDir Path tempDir) throws Exception {
+        assertEquals(0, tempDir.toFile().list().length);
+        IndexCheck.checkDir(tempDir.toFile());
     }
 }
