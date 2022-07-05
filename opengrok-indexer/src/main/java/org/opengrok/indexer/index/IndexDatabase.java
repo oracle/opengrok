@@ -720,9 +720,6 @@ public class IndexDatabase {
         }
 
         if (!isInterrupted() && isDirty()) {
-            if (env.isOptimizeDatabase()) {
-                optimize();
-            }
             env.setIndexTimestamp();
         }
     }
@@ -808,11 +805,11 @@ public class IndexDatabase {
     }
 
     /**
-     * Optimize all index databases.
+     * Reduce segment counts of all index databases.
      *
      * @throws IOException if an error occurs
      */
-    static CountDownLatch optimizeAll() throws IOException {
+    static void optimizeAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
@@ -830,17 +827,24 @@ public class IndexDatabase {
             if (db.isDirty()) {
                 parallelizer.getFixedExecutor().submit(() -> {
                     try {
-                        db.update();
+                        db.optimize();
                     } catch (Throwable e) {
                         LOGGER.log(Level.SEVERE,
-                            "Problem updating lucene index database: ", e);
+                            "Problem reducing segment count of Lucene index database: ", e);
                     } finally {
                         latch.countDown();
                     }
                 });
             }
         }
-        return latch;
+
+        try {
+            LOGGER.info("Waiting for the Lucene segment count reduction to finish");
+            latch.await();
+        } catch (InterruptedException exp) {
+            LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
+                    " for index segment count reduction to finish", exp);
+        }
     }
 
     /**

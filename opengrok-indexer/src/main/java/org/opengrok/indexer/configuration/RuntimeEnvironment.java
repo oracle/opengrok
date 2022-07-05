@@ -1085,14 +1085,6 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(remoteScmSupported, Configuration::setRemoteScmSupported);
     }
 
-    public boolean isOptimizeDatabase() {
-        return syncReadConfiguration(Configuration::isOptimizeDatabase);
-    }
-
-    public void setOptimizeDatabase(boolean optimizeDatabase) {
-        syncWriteConfiguration(optimizeDatabase, Configuration::setOptimizeDatabase);
-    }
-
     public LuceneLockName getLuceneLocking() {
         return syncReadConfiguration(Configuration::getLuceneLocking);
     }

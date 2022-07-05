@@ -167,7 +167,6 @@ public final class Configuration {
     private String reviewPattern;
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
-    private boolean optimizeDatabase;
     private boolean quickContextScan;
 
     private LuceneLockName luceneLocking = LuceneLockName.OFF;
@@ -557,7 +556,6 @@ public final class Configuration {
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
         setNestingMaximum(1);
-        setOptimizeDatabase(true);
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
         setPrintProgress(false);
@@ -1086,14 +1084,6 @@ public final class Configuration {
 
     public void setRemoteScmSupported(RemoteSCM remoteScmSupported) {
         this.remoteScmSupported = remoteScmSupported;
-    }
-
-    public boolean isOptimizeDatabase() {
-        return optimizeDatabase;
-    }
-
-    public void setOptimizeDatabase(boolean optimizeDatabase) {
-        this.optimizeDatabase = optimizeDatabase;
     }
 
     public LuceneLockName getLuceneLocking() {

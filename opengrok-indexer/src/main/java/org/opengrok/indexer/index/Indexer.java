@@ -116,7 +116,7 @@ public final class Indexer {
     private static Configuration cfg = null;
     private static boolean checkIndex = false;
     private static boolean runIndex = true;
-    private static boolean optimizedChanged = false;
+    private static boolean optimize = false;
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean bareConfig = false;
@@ -385,9 +385,13 @@ public final class Indexer {
             env.setDefaultProjectsFromNames(defaultProjects);
 
             // And now index it all.
-            if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
+            if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(update, subFiles, progress);
+                getInstance().doIndexerExecution(subFiles, progress);
+            }
+
+            if (optimize) {
+                IndexDatabase.optimizeAll();
             }
 
             writeConfigToFile(env, configFilename);
@@ -672,16 +676,10 @@ public final class Indexer {
                     "Maximum depth of nested repositories. Default is 1.").execute(v ->
                     cfg.setNestingMaximum((Integer) v));
 
-            parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
-                    "Turn on/off the optimization of the index database as part of the",
-                    "indexing step. Default is on.").
-                execute(v -> {
-                    boolean oldval = cfg.isOptimizeDatabase();
-                    cfg.setOptimizeDatabase((Boolean) v);
-                    if (oldval != cfg.isOptimizeDatabase()) {
-                        optimizedChanged = true;
-                    }
-                }
+            parser.on("-O", "--optimize",
+                    "Reduce the number of segments in each index database. This might ",
+                    "(or might not) bring some improved performance.").
+                    execute(v -> { optimize = true; }
             );
 
             parser.on("-o", "--ctagOpts", "=path",
@@ -1075,17 +1073,13 @@ public final class Indexer {
     /**
      * This is the second phase of the indexer which generates Lucene index
      * by passing source code files through ctags, generating xrefs
-     * and storing data from the source files in the index (along with history,
-     * if any).
+     * and storing data from the source files in the index (along with history, if any).
      *
-     * @param update if set to true, index database is updated, otherwise optimized
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(final boolean update, List<String> subFiles,
-        IndexChangedListener progress)
-            throws IOException {
+    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
         Statistics elapsed = new Statistics();
         LOGGER.info("Starting indexing");
 
@@ -1093,13 +1087,7 @@ public final class Indexer {
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
-            if (update) {
-                latch = IndexDatabase.updateAll(progress);
-            } else if (env.isOptimizeDatabase()) {
-                latch = IndexDatabase.optimizeAll();
-            } else {
-                latch = new CountDownLatch(0);
-            }
+            latch = IndexDatabase.updateAll(progress);
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -1131,19 +1119,12 @@ public final class Indexer {
 
             latch = new CountDownLatch(dbs.size());
             for (final IndexDatabase db : dbs) {
-                final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
                 parallelizer.getFixedExecutor().submit(() -> {
                     try {
-                        if (update) {
-                            db.update();
-                        } else if (optimize) {
-                            db.optimize();
-                        }
+                        db.update();
                     } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "An error occurred while "
-                                + (update ? "updating" : "optimizing")
-                                + " index", e);
+                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                     } finally {
                         latch.countDown();
                     }

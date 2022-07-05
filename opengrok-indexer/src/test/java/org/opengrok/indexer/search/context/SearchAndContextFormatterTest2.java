@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -128,7 +128,7 @@ public class SearchAndContextFormatterTest2 {
         assertNotNull(proj1, "symlink1 project");
         proj1.setTabSize(TABSIZE);
 
-        Indexer.getInstance().doIndexerExecution(true, null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);

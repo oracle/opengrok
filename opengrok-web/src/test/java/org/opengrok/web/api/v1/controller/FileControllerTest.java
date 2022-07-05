@@ -73,7 +73,7 @@ public class FileControllerTest extends OGKJerseyTest {
                 false, // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
-        Indexer.getInstance().doIndexerExecution(true, Collections.singletonList("/git"), null);
+        Indexer.getInstance().doIndexerExecution(Collections.singletonList("/git"), null);
     }
 
     @AfterEach
