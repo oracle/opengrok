@@ -161,6 +161,7 @@ public class IndexDatabase {
     private File dirtyFile;
     private final Object lock = new Object();
     private boolean dirty;
+    private boolean clearDirtyOnUpdate;
     private boolean running;
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
@@ -720,6 +721,9 @@ public class IndexDatabase {
         }
 
         if (!isInterrupted() && isDirty()) {
+            if (clearDirtyOnUpdate) {
+                unsetDirty();
+            }
             env.setIndexTimestamp();
         }
     }
@@ -874,7 +878,9 @@ public class IndexDatabase {
             wrt.forceMerge(1);
             elapsed.report(LOGGER, String.format("Done reducing number of segments in index%s", projectDetail),
                     "indexer.db.reduceSegments");
-            unsetDirty();
+            if (isDirty()) {
+                unsetDirty();
+            }
         } catch (IOException e) {
             writerException = e;
             LOGGER.log(Level.SEVERE, "ERROR: reducing number of segments index", e);
@@ -930,6 +936,10 @@ public class IndexDatabase {
             }
             dirty = false;
         }
+    }
+
+    void setClearDirtyOnUpdate() {
+        clearDirtyOnUpdate = true;
     }
 
     private File whatXrefFile(String path, boolean compress) {

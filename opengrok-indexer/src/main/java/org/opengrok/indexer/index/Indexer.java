@@ -387,7 +387,7 @@ public final class Indexer {
             // And now index it all.
             if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(subFiles, progress);
+                getInstance().doIndexerExecution(!reduceSegmentCount, subFiles, progress);
             }
 
             if (reduceSegmentCount) {
@@ -1074,11 +1074,12 @@ public final class Indexer {
      * by passing source code files through ctags, generating xrefs
      * and storing data from the source files in the index (along with history, if any).
      *
+     * @param clearDirty clear dirty flag of index database(s) in the end
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
+    public void doIndexerExecution(boolean clearDirty, List<String> subFiles, IndexChangedListener progress) throws IOException {
         Statistics elapsed = new Statistics();
         LOGGER.info("Starting indexing");
 
@@ -1100,6 +1101,9 @@ public final class Indexer {
                         db = new IndexDatabase();
                     } else {
                         db = new IndexDatabase(project);
+                    }
+                    if (clearDirty) {
+                        db.setClearDirtyOnUpdate();
                     }
                     int idx = dbs.indexOf(db);
                     if (idx != -1) {

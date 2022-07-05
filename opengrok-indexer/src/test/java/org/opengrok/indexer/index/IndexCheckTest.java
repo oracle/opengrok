@@ -97,7 +97,7 @@ class IndexCheckTest {
         configuration.setProjectsEnabled(projectsEnabled);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
-        Indexer.getInstance().doIndexerExecution(null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         IndexCheck.check(configuration, subFiles);
     }

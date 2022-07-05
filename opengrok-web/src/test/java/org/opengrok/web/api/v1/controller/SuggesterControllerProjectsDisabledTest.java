@@ -70,7 +70,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
-        Indexer.getInstance().doIndexerExecution(null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         env.getSuggesterConfig().setRebuildCronConfig(null);
     }

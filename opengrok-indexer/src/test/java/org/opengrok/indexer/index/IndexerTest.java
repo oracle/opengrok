@@ -105,7 +105,7 @@ public class IndexerTest {
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
-        Indexer.getInstance().doIndexerExecution(null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         // There should be certain number of xref files produced.
         List<String> result = null;

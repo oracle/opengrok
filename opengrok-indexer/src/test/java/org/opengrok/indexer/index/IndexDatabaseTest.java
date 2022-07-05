@@ -152,7 +152,7 @@ class IndexDatabaseTest {
 
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
 
-        indexer.doIndexerExecution(null, null);
+        indexer.doIndexerExecution(true, null, null);
 
         env.clearFileCollector();
     }
