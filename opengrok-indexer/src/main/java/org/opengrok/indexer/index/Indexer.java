@@ -679,8 +679,7 @@ public final class Indexer {
             parser.on("--reduceSegmentCount",
                     "Reduce the number of segments in each index database. This might ",
                     "(or might not) bring some improved performance.").
-                    execute(v -> { reduceSegmentCount = true; }
-            );
+                    execute(v -> reduceSegmentCount = true);
 
             parser.on("-o", "--ctagOpts", "=path",
                 "File with extra command line options for ctags.").
