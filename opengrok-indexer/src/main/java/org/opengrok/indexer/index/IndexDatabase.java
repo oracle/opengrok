@@ -874,13 +874,7 @@ public class IndexDatabase {
             wrt.forceMerge(1);
             elapsed.report(LOGGER, String.format("Done reducing number of segments in index%s", projectDetail),
                     "indexer.db.reduceSegments");
-            synchronized (lock) {
-                if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
-                        dirtyFile.getAbsolutePath());
-                }
-                dirty = false;
-            }
+            unsetDirty();
         } catch (IOException e) {
             writerException = e;
             LOGGER.log(Level.SEVERE, "ERROR: reducing number of segments index", e);
@@ -926,6 +920,15 @@ public class IndexDatabase {
             } catch (IOException e) {
                 LOGGER.log(Level.FINE, "When creating dirty file: ", e);
             }
+        }
+    }
+
+    private void unsetDirty() {
+        synchronized (lock) {
+            if (dirtyFile.exists() && !dirtyFile.delete()) {
+                LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}", dirtyFile.getAbsolutePath());
+            }
+            dirty = false;
         }
     }
 
