@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -135,8 +137,13 @@ public class IndexCheck {
         int segVersion;
 
         try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockFactory)) {
-            SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
-            segVersion = segInfos.getIndexCreatedVersionMajor();
+            try {
+                SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
+                segVersion = segInfos.getIndexCreatedVersionMajor();
+            } catch (IndexNotFoundException e) {
+                LOGGER.log(Level.FINE, "no index found in ''{0}''", indexDirectory);
+                return;
+            }
         }
 
         if (segVersion != Version.LATEST.major) {
