@@ -1812,17 +1812,11 @@ public class IndexDatabase {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.U);
                 iter = terms.iterator(); // init uid iterator
             }
-            while (iter != null && iter.term() != null) {
-                String value = iter.term().utf8ToString();
-                if (value.isEmpty()) {
-                    iter.next();
-                    continue;
-                }
-
-                files.add(Util.uid2url(value));
-                BytesRef next = iter.next();
-                if (next == null) {
-                    iter = null;
+            BytesRef term;
+            while (iter != null && (term = iter.next()) != null) {
+                String value = term.utf8ToString();
+                if (!value.isEmpty()) {
+                    files.add(Util.uid2url(value));
                 }
             }
         } finally {
@@ -1897,17 +1891,13 @@ public class IndexDatabase {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
                 iter = terms.iterator(); // init uid iterator
             }
-            while (iter != null && iter.term() != null) {
-                if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
-                    LOGGER.warning(iter.term().utf8ToString());
-                }
-                BytesRef next = iter.next();
-                if (next == null) {
-                    iter = null;
+            BytesRef term;
+            while (iter != null && (term = iter.next()) != null) {
+                if (iter.docFreq() > 16 && term.utf8ToString().length() > freq) {
+                    LOGGER.log(Level.WARNING, "{0}", term.utf8ToString());
                 }
             }
         } finally {
-
             if (ireader != null) {
                 try {
                     ireader.close();
