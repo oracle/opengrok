@@ -46,7 +46,7 @@ setup(
         'pytest',
         'GitPython',
         'pytest-xdist',
-        'mockito==1.3.0',
+        'mockito>=1.3.3',
         'pytest-mockito',
     ],
     entry_points={
