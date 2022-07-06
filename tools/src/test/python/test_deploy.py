@@ -34,7 +34,7 @@ def test_deploy_dirs():
     logger = logging.getLogger(__name__)
 
     with tempfile.NamedTemporaryFile(suffix=".war", delete=False) as source_war_fp:
-        source_war_fp.write("foo")
+        source_war_fp.write(b"foo")
         source_war = source_war_fp.name
 
     with tempfile.TemporaryDirectory() as tmp_dir:
