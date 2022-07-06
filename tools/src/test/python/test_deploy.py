@@ -23,6 +23,7 @@
 # Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
+import filecmp
 import logging
 import os
 import tempfile
@@ -44,5 +45,6 @@ def test_deploy_dirs():
         deploy_war(logger, source_war, target_war)
         assert os.path.isdir(target_dir)
         assert os.path.isfile(target_war)
+        assert filecmp.cmp(source_war, target_war)
 
     os.unlink(source_war)
