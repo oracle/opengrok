@@ -832,18 +832,16 @@ public class IndexDatabase {
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
-            if (db.isDirty()) {
-                parallelizer.getFixedExecutor().submit(() -> {
-                    try {
-                        db.reduceSegmentCount();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE,
-                            "Problem reducing segment count of Lucene index database: ", e);
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-            }
+            parallelizer.getFixedExecutor().submit(() -> {
+                try {
+                    db.reduceSegmentCount();
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE,
+                        "Problem reducing segment count of Lucene index database: ", e);
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
 
         try {
