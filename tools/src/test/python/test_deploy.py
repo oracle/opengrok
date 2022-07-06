@@ -44,3 +44,5 @@ def test_deploy_dirs():
         deploy_war(logger, source_war, target_war)
         assert os.path.isdir(target_dir)
         assert os.path.isfile(target_war)
+
+    os.unlink(source_war)
