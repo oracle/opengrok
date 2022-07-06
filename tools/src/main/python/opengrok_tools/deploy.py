@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -116,7 +116,10 @@ def deploy_war(logger, source_war, target_war, config_file=None,
                        config_file, insert_path)
             source_war = tmp_war.name
 
-    logger.debug("Installing {} to {}".format(source_war, target_war))
+    logger.debug(f"Installing '{source_war}' to '{target_war}'")
+    target_dir = os.path.dirname(target_war)
+    if not os.path.isdir(target_dir):
+        os.makedirs(target_dir)
     copyfile(source_war, target_war)
 
     if tmp_war:
@@ -150,7 +153,7 @@ def main():
     try:
         deploy_war(logger, args.source_war[0], args.target_war[0], args.config,
                    args.insert)
-    except XMLProcessingException as e:
+    except (XMLProcessingException, OSError) as e:
         return fatal(e, exit=False)
 
 
