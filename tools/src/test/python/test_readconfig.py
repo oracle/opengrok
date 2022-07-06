@@ -34,7 +34,7 @@ def test_read_config_empty_yaml():
     tmpf = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
     tmpf.file.write('#foo\n')
     tmpf.close()
-    res = read_config(mock(spec=logging.Logger), tmpf.name)
+    res = read_config(mock(spec=logging.Logger, strict=False), tmpf.name)
     os.remove(tmpf.name)
     assert res is not None
     assert type(res) == dict

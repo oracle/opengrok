@@ -167,7 +167,7 @@ def test_headers_timeout_requests():
     timeout = 44
 
     def mock_requests_get(uri, **kwargs):
-        return mock(spec=requests.Response)
+        return mock({"status_code": 200}, spec=requests.Response, strict=False)
 
     with patch(requests.get, mock_requests_get):
         do_api_call("GET", uri, headers=headers, timeout=timeout)

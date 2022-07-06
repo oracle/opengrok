@@ -211,7 +211,7 @@ def test_disabled_command_api():
     call is specified in the configuration for disabled project.
     """
     def mock_call_rest_api(command, b, http_headers=None, timeout=None, api_timeout=None):
-        return mock(spec=requests.Response)
+        return mock({"status_code": 200}, spec=requests.Response, strict=False)
 
     with patch(opengrok_tools.utils.mirror.call_rest_api,
                mock_call_rest_api):
@@ -249,7 +249,7 @@ def test_disabled_command_api_text_append(monkeypatch):
         assert text
         assert text.find(text_to_append)
 
-        return mock(spec=requests.Response)
+        return mock({"status_code": 200}, spec=requests.Response, strict=False)
 
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.mirror.call_rest_api",
@@ -302,7 +302,7 @@ def test_ignore_errors_sync(monkeypatch, per_project):
     Test that ignore errors overrides failed repository sync().
     """
 
-    mock_repo = mock(spec=GitRepository)
+    mock_repo = mock({"path": "foo"}, spec=GitRepository, strict=False)
     when(mock_repo).sync().thenReturn(FAILURE_EXITVAL)
 
     def mock_get_repos(*args, **kwargs):
@@ -338,7 +338,7 @@ def test_ignore_errors_hooks(monkeypatch, hook_type, per_project):
     """
 
     def mock_get_repos(*args, **kwargs):
-        return [mock(spec=GitRepository)]
+        return [mock({"path": "foo"}, spec=GitRepository, strict=False)]
 
     spy2(opengrok_tools.utils.mirror.process_hook)
     project_name = "foo"
@@ -381,7 +381,7 @@ def test_disabled_command_run_args():
     """
     Make sure that run_command() calls Command.execute().
     """
-    cmd = mock(spec=Command)
+    cmd = mock(spec=Command, strict=False)
     project_name = "foo"
     run_command(cmd, project_name)
     verify(cmd).execute()
