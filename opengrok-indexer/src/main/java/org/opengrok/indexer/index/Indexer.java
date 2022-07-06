@@ -1087,7 +1087,7 @@ public final class Indexer {
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
-            latch = IndexDatabase.updateAll(progress);
+            latch = IndexDatabase.updateAll(clearDirty, progress);
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
 

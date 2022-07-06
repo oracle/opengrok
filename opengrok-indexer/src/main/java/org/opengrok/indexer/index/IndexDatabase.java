@@ -219,10 +219,11 @@ public class IndexDatabase {
     /**
      * Update the index database for all the projects.
      *
+     * @param clearDirty clear dirty flag of index database(s) in the end
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static CountDownLatch updateAll(IndexChangedListener listener) throws IOException {
+    static CountDownLatch updateAll(boolean clearDirty, IndexChangedListener listener) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
@@ -238,6 +239,9 @@ public class IndexDatabase {
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
+            if (clearDirty) {
+                d.setClearDirtyOnUpdate();
+            }
             final IndexDatabase db = d;
             if (listener != null) {
                 db.addIndexChangedListener(listener);
