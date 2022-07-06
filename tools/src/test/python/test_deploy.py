@@ -33,8 +33,11 @@ from opengrok_tools.deploy import deploy_war
 def test_deploy_dirs():
     logger = logging.getLogger(__name__)
 
-    with tempfile.NamedTemporaryFile(suffix=".war") as source_war_fp, tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.NamedTemporaryFile(suffix=".war", delete=False) as source_war_fp:
+        source_war_fp.write("foo")
         source_war = source_war_fp.name
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
         assert os.path.isfile(source_war)
         target_war = os.path.join(tmp_dir, "foo", "bar", "my.war")
         target_dir = os.path.dirname(target_war)
