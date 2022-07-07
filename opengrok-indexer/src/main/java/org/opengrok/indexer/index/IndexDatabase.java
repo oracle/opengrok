@@ -165,7 +165,7 @@ public class IndexDatabase {
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
     private List<String> directories;
-    private LockFactory lockfact;
+    private LockFactory lockFactory;
     private final BytesRef emptyBR = new BytesRef("");
 
     // Directory where we store indexes
@@ -195,7 +195,7 @@ public class IndexDatabase {
     public IndexDatabase(Project project, IndexDownArgsFactory factory) throws IOException {
         indexDownArgsFactory = factory;
         this.project = project;
-        lockfact = NoLockFactory.INSTANCE;
+        lockFactory = NoLockFactory.INSTANCE;
         initialize();
     }
 
@@ -329,8 +329,8 @@ public class IndexDatabase {
                 }
             }
 
-            lockfact = pickLockFactory(env);
-            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
+            lockFactory = pickLockFactory(env);
+            indexDirectory = FSDirectory.open(indexDir.toPath(), lockFactory);
             pathAccepter = env.getPathAccepter();
             analyzerGuru = new AnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
