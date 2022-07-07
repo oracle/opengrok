@@ -637,7 +637,10 @@ public class IndexDatabase {
                 try {
                     if (terms != null) {
                         uidIter = terms.iterator();
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid)); //init uid
+                        // The seekCeil() is pretty important because it makes uidIter.term() to become non-null.
+                        // Various indexer methods rely on this when working with the uidIter iterator - rather
+                        // than calling uidIter.next() first thing, they check uidIter.term().
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid));
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
