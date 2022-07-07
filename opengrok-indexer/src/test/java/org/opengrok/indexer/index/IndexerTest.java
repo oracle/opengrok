@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -104,7 +104,7 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, null);
+                null, null);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         // There should be certain number of xref files produced.
@@ -150,7 +150,7 @@ public class IndexerTest {
                 env,
                 false, // don't search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
 
@@ -337,7 +337,7 @@ public class IndexerTest {
 
         // Create history cache.
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, List.of("mercurial"));
+                null, List.of("mercurial"));
         File historyFile = new File(env.getDataRootPath(),
                 TandemPath.join("historycache" + path, ".gz"));
         assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
@@ -503,7 +503,7 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, null);
+                null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Collections.singletonList("c")),
@@ -528,7 +528,7 @@ public class IndexerTest {
         projectSet.add("/no-project-x32ds1");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, null);
+                null, null);
         env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList("lisp", "pascal", "perl", "data")),
@@ -552,7 +552,7 @@ public class IndexerTest {
         defaultProjects.add("/no-project-x32ds1");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, null);
+                null, null);
         env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());

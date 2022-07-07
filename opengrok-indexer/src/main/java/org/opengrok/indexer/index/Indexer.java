@@ -166,8 +166,6 @@ public final class Indexer {
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
         Set<String> subFilesArgs = new HashSet<>();
 
-        boolean createDict = false;
-
         try {
             argv = parseOptions(argv);
 
@@ -375,7 +373,7 @@ public final class Indexer {
                         collect(Collectors.toSet());
             }
             getInstance().prepareIndexer(env, searchPaths, addProjects,
-                    createDict, runIndex, subFiles, new ArrayList<>(repositories));
+                    runIndex, subFiles, new ArrayList<>(repositories));
 
             // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
             // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
@@ -964,13 +962,12 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,
-                               boolean createDict,
                                List<String> subFiles,
                                List<String> repositories) throws IndexerException, IOException {
 
         prepareIndexer(env,
                 searchRepositories ? Collections.singleton(env.getSourceRootPath()) : Collections.emptySet(),
-                addProjects, createDict, true, subFiles, repositories);
+                addProjects, true, subFiles, repositories);
     }
 
     /**
@@ -983,7 +980,6 @@ public final class Indexer {
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
-     * @param createDict if true, create dictionary
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
      * @param repositories list of repositories
@@ -991,12 +987,11 @@ public final class Indexer {
      * @throws IOException I/O exception
      */
     public void prepareIndexer(RuntimeEnvironment env,
-            Set<String> searchPaths,
-            boolean addProjects,
-            boolean createDict,
-            boolean createHistoryCache,
-            List<String> subFiles,
-            List<String> repositories) throws IndexerException, IOException {
+                               Set<String> searchPaths,
+                               boolean addProjects,
+                               boolean createHistoryCache,
+                               List<String> subFiles,
+                               List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Universal Ctags");
@@ -1032,10 +1027,6 @@ public final class Indexer {
                 HistoryGuru.getInstance().createCache();
             }
             LOGGER.info("Done generating history cache");
-        }
-
-        if (createDict) {
-            IndexDatabase.listFrequentTokens(subFiles);
         }
     }
 

@@ -1853,61 +1853,6 @@ public class IndexDatabase {
         }
     }
 
-    static void listFrequentTokens(List<String> subFiles) throws IOException {
-        final int limit = 4;
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.hasProjects()) {
-            if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjectList()) {
-                    IndexDatabase db = new IndexDatabase(project);
-                    db.listTokens(limit);
-                }
-            } else {
-                for (String path : subFiles) {
-                    Project project = Project.getProject(path);
-                    if (project == null) {
-                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
-                    } else {
-                        IndexDatabase db = new IndexDatabase(project);
-                        db.listTokens(limit);
-                    }
-                }
-            }
-        } else {
-            IndexDatabase db = new IndexDatabase();
-            db.listTokens(limit);
-        }
-    }
-
-    public void listTokens(int freq) throws IOException {
-        IndexReader ireader = null;
-        TermsEnum iter = null;
-        Terms terms;
-
-        try {
-            ireader = DirectoryReader.open(indexDirectory);
-            if (ireader.numDocs() > 0) {
-                terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
-                iter = terms.iterator(); // init uid iterator
-            }
-            BytesRef term;
-            while (iter != null && (term = iter.next()) != null) {
-                if (iter.docFreq() > 16 && term.utf8ToString().length() > freq) {
-                    LOGGER.log(Level.WARNING, "{0}", term.utf8ToString());
-                }
-            }
-        } finally {
-            if (ireader != null) {
-                try {
-                    ireader.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occurred while closing index reader", e);
-                }
-            }
-        }
-    }
-
     /**
      * Get an indexReader for the Index database where a given file.
      *

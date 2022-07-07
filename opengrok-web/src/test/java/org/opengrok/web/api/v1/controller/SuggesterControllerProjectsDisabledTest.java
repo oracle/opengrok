@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -68,7 +68,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
         env.setProjectsEnabled(false);
         env.setSourceRoot(repository.getSourceRoot() + File.separator + "java");
         Indexer.getInstance().prepareIndexer(env, true, true,
-                false, null, null);
+                null, null);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
         Indexer.getInstance().doIndexerExecution(true, null, null);
 

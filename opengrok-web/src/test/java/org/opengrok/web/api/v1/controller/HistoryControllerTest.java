@@ -79,7 +79,7 @@ class HistoryControllerTest extends OGKJerseyTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
     }

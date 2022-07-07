@@ -314,7 +314,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 env,
                 false, // don't search for repositories
                 false, // don't scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
                 repos); // repositories - needed when refreshing history partially
         Indexer.getInstance().doIndexerExecution(true, null, null);
@@ -585,7 +585,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 env,
                 false, // don't search for repositories
                 true, // add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 new ArrayList<>(), // subFiles - needed when refreshing history partially
                 new ArrayList<>()); // repositories - needed when refreshing history partially
         Indexer.getInstance().doIndexerExecution(true, null, null);

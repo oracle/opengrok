@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -72,7 +72,7 @@ class SearchHelperTest {
         System.out.println("Generating index by using the class methods");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-            false, null, null);
+                null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }

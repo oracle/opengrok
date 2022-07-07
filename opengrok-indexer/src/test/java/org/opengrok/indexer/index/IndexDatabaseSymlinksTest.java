@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -206,7 +206,7 @@ public class IndexDatabaseSymlinksTest {
 
     private static void runIndexer() throws IndexerException, IOException {
         Indexer indexer = Indexer.getInstance();
-        indexer.prepareIndexer(env, true, true, false, null, null);
+        indexer.prepareIndexer(env, true, true, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         indexer.doIndexerExecution(true, null, null);
     }
