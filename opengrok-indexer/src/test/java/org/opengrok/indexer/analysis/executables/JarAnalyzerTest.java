@@ -79,7 +79,7 @@ public class JarAnalyzerTest {
                 null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
 
-        Indexer.getInstance().doIndexerExecution(true, null, progress);
+        Indexer.getInstance().doIndexerExecution(null, progress);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);

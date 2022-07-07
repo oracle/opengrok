@@ -336,7 +336,7 @@ public class PageConfigTest {
                 // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
-        indexer.doIndexerExecution(true, null, null);
+        indexer.doIndexerExecution(null, null);
 
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override

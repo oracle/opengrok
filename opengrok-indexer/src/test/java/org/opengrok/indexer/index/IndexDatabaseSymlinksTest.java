@@ -208,7 +208,7 @@ public class IndexDatabaseSymlinksTest {
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(env, true, true, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
-        indexer.doIndexerExecution(true, null, null);
+        indexer.doIndexerExecution(null, null);
     }
 
     private void assertSymlinkAsExpected(String message, File expectedCanonical, Path symlink)

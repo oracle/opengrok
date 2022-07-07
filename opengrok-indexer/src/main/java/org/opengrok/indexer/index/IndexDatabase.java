@@ -161,7 +161,6 @@ public class IndexDatabase {
     private File dirtyFile;
     private final Object lock = new Object();
     private boolean dirty;
-    private boolean clearDirtyOnUpdate;
     private boolean running;
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
@@ -219,11 +218,10 @@ public class IndexDatabase {
     /**
      * Update the index database for all the projects.
      *
-     * @param clearDirty clear dirty flag of index database(s) in the end
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static CountDownLatch updateAll(boolean clearDirty, IndexChangedListener listener) throws IOException {
+    static CountDownLatch updateAll(IndexChangedListener listener) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
@@ -239,9 +237,6 @@ public class IndexDatabase {
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
-            if (clearDirty) {
-                d.setClearDirtyOnUpdate();
-            }
             final IndexDatabase db = d;
             if (listener != null) {
                 db.addIndexChangedListener(listener);
@@ -343,6 +338,11 @@ public class IndexDatabase {
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
             directories = new ArrayList<>();
+
+            if (dirty) {
+                LOGGER.log(Level.WARNING, "Index in ''{0}'' is dirty, the last indexing was likely interrupted." +
+                        " It might be worthwhile to reindex from scratch.", indexDir);
+            }
         }
     }
 
@@ -725,9 +725,7 @@ public class IndexDatabase {
         }
 
         if (!isInterrupted() && isDirty()) {
-            if (clearDirtyOnUpdate) {
-                unsetDirty();
-            }
+            unsetDirty();
             env.setIndexTimestamp();
         }
     }
@@ -880,9 +878,6 @@ public class IndexDatabase {
             wrt.forceMerge(1);
             elapsed.report(LOGGER, String.format("Done reducing number of segments in index%s", projectDetail),
                     "indexer.db.reduceSegments");
-            if (isDirty()) {
-                unsetDirty();
-            }
         } catch (IOException e) {
             writerException = e;
             LOGGER.log(Level.SEVERE, "ERROR: reducing number of segments index", e);
@@ -938,10 +933,6 @@ public class IndexDatabase {
             }
             dirty = false;
         }
-    }
-
-    void setClearDirtyOnUpdate() {
-        clearDirtyOnUpdate = true;
     }
 
     private File whatXrefFile(String path, boolean compress) {

@@ -109,7 +109,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, null);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
-        Indexer.getInstance().doIndexerExecution(true, null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
 
         env.getSuggesterConfig().setRebuildCronConfig(null);
     }

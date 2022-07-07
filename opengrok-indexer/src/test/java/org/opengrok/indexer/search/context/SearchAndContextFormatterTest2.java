@@ -128,7 +128,7 @@ public class SearchAndContextFormatterTest2 {
         assertNotNull(proj1, "symlink1 project");
         proj1.setTabSize(TABSIZE);
 
-        Indexer.getInstance().doIndexerExecution(true, null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);

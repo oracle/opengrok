@@ -69,7 +69,7 @@ public class SearchEngineTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
-        Indexer.getInstance().doIndexerExecution(true, null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
