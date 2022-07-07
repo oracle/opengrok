@@ -677,8 +677,9 @@ public final class Indexer {
                     cfg.setNestingMaximum((Integer) v));
 
             parser.on("--reduceSegmentCount",
-                    "Reduce the number of segments in each index database. This might ",
-                    "(or might not) bring some improved performance.").
+                    "Reduce the number of segments in each index database to 1. This might ",
+                    "(or might not) bring some improved performance. Anyhow, this operation",
+                    "takes non-trivial time to complete.").
                     execute(v -> reduceSegmentCount = true);
 
             parser.on("-o", "--ctagOpts", "=path",
