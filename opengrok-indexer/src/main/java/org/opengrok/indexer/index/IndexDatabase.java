@@ -160,7 +160,7 @@ public class IndexDatabase {
     private CopyOnWriteArrayList<IndexChangedListener> listeners;
     private File dirtyFile;
     private final Object lock = new Object();
-    private boolean dirty;
+    private boolean dirty;  // Whether the index was modified either by adding or removing a document.
     private boolean running;
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
@@ -1698,6 +1698,7 @@ public class IndexDatabase {
                     }
                 }))).get();
         } catch (InterruptedException | ExecutionException e) {
+            interrupted = true;
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
             String exmsg = String.format("%d successes (%.1f%%) after aborting parallel-indexing",
