@@ -24,19 +24,27 @@ package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.Laundromat;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Path(GroupsController.GROUPS_PATH)
 public final class GroupsController {
     public static final String GROUPS_PATH = "/groups";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupsController.class);
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -50,5 +58,23 @@ public final class GroupsController {
         }
     }
 
-    // TODO: add enpoint for matching project to group list
+    @GET
+    @Path("/{group}/allprojects")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllProjectsForGroup(@PathParam("group") String groupName) {
+        groupName = Laundromat.launderInput(groupName);
+        Group group;
+        group = Group.getByName(groupName);
+        if (group == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (group.getAllProjects().isEmpty()) {
+            return Response.ok().entity(Collections.emptyList()).build();
+        } else {
+            List<String> projectNameList = group.getAllProjects().stream().
+                    map(Project::getName).collect(Collectors.toList());
+            return Response.ok().entity(projectNameList).build();
+        }
+    }
 }

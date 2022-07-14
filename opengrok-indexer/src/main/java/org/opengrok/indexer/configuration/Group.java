@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.ClassUtil;
 
 /**
@@ -283,6 +285,7 @@ public class Group implements Comparable<Group>, Nameable {
      * @param name name of a group
      * @return group that fits the name
      */
+    @Nullable
     public static Group getByName(String name) {
         Group ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
