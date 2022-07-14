@@ -25,9 +25,7 @@ package org.opengrok.web.api.v1.controller;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.MediaType;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
@@ -51,4 +49,6 @@ public final class GroupsController {
             return Collections.emptyList();
         }
     }
+
+    // TODO: add enpoint for matching project to group list
 }
