@@ -44,8 +44,6 @@ import java.util.stream.Collectors;
 public final class GroupsController {
     public static final String GROUPS_PATH = "/groups";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupsController.class);
-
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @GET
