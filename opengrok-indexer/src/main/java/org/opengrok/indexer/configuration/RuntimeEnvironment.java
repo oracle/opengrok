@@ -63,6 +63,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.NamedThreadFactory;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
@@ -513,10 +514,11 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get all of the groups.
+     * Get all the groups.
      *
-     * @return a set containing all of the groups (may be null)
+     * @return a set containing all the groups (maybe {@code null})
      */
+    @Nullable
     public Set<Group> getGroups() {
         return syncReadConfiguration(Configuration::getGroups);
     }

@@ -12,6 +12,11 @@ Some of the APIs are asynchronous. They return status code 202 (Accepted) and a 
 for the status endpoint to check for the result of the API call. Once the status API returns result other than 202,
 the client should issue DELETE request to this URL to clean up server resources.
 
+For all entry points that modify web application configuration it is worth noting that
+the configuration has to be retrieved and stored on disk (using the configuration specific
+entry points) in order to be persistent (e.g. in case of application server restart or
+web application redeploy).
+
 ## Annotation [/annotation{?path}]
 
 ### Get annotation for a file [GET]
@@ -291,12 +296,16 @@ The paths are relative to source root, starting with /.
 
 + Response 204
 
-## Projects [/projects]
+## Groups [/groups]
 
-For all entry points that modify web application configuration it is worth noting that
-the configuration has to be retrieved and stored on disk (using the configuration specific
-entry points) in order to be persistent (e.g. in case of application server restart or
-web application redeploy).
+### returns a list of all groups [GET]
+
++ Response 200 (application/json)
+  + Body
+
+            ["foo","bar"]
+
+## Projects [/projects]
 
 ### returns a list of all projects [GET]
 
