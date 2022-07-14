@@ -31,13 +31,11 @@ import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Laundromat;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Path(GroupsController.GROUPS_PATH)
