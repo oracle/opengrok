@@ -357,9 +357,10 @@ public final class HistoryGuru {
 
     @Nullable
     private History getHistoryFromRepository(File file, Repository repository, boolean ui) throws HistoryException {
-        History history;
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
+            LOGGER.log(Level.FINEST, "''{0}'' in {1} is not eligible for history",
+                    new Object[]{file, repository});
             return null;
         }
 
@@ -379,14 +380,18 @@ public final class HistoryGuru {
         }
 
         if (!env.getPathAccepter().accept(file)) {
+            LOGGER.log(Level.FINEST, "file ''{0}'' not accepted", file);
             return null;
         }
 
+        History history;
         try {
             history = repository.getHistory(file);
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
+            LOGGER.log(Level.FINEST, "repository {0} does not have history for ''{1}''",
+                    new Object[]{repository, file});
             return null;
         }
 
@@ -416,33 +421,44 @@ public final class HistoryGuru {
      * @param rev The revision to get
      * @return An InputStream containing the named revision of the file.
      */
+    @Nullable
     public InputStream getRevision(String parent, String basename, String rev) {
-        InputStream ret = null;
-
         Repository repo = getRepository(new File(parent));
-        if (repo != null) {
-            ret = repo.getHistoryGet(parent, basename, rev);
+        if (repo == null) {
+            LOGGER.log(Level.FINEST, "cannot find repository for ''{0}'' to get revision", parent);
+            return null;
         }
-        return ret;
+
+        return repo.getHistoryGet(parent, basename, rev);
     }
 
     /**
-     * Does this directory contain files with source control information?
+     * Does this directory contain files with source control information ?
      *
-     * @param file The name of the directory
-     * @return true if the files in this directory have associated revision
-     * history
+     * @param file File object
+     * @return true if the files in this directory have associated revision history
      */
     public boolean hasHistory(File file) {
         Repository repo = getRepository(file);
-
         if (repo == null) {
+            LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to check history presence", file);
+            return false;
+        }
+
+        if (!repo.isWorking()) {
+            LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check history presence",
+                    new Object[]{repo, file});
+            return false;
+        }
+
+        if (!repo.fileHasHistory(file)) {
+            LOGGER.log(Level.FINEST, "''{0}'' in repository {1} does not have history to check history presence",
+                    new Object[]{file, repo});
             return false;
         }
 
         // This should return true for Annotate view.
-        return repo.isWorking() && repo.fileHasHistory(file)
-                && ((env.getRemoteScmSupported() == RemoteSCM.ON)
+        return ((env.getRemoteScmSupported() == RemoteSCM.ON)
                 || (env.getRemoteScmSupported() == RemoteSCM.UIONLY)
                 || (env.getRemoteScmSupported() == RemoteSCM.DIRBASED)
                 || !repo.isRemote());
@@ -455,12 +471,16 @@ public final class HistoryGuru {
      */
     public boolean hasCacheForFile(File file) {
         if (!useCache()) {
+            LOGGER.log(Level.FINEST, "history cache is off for ''{0}'' to check history cache presence", file);
             return false;
         }
 
         try {
             return historyCache.hasCacheForFile(file);
         } catch (HistoryException ex) {
+            LOGGER.log(Level.FINE,
+                    String.format("failed to get history cache for file '%s' to check history cache presence", file),
+                    ex);
             return false;
         }
     }
@@ -473,14 +493,24 @@ public final class HistoryGuru {
      * version control system supports annotation
      */
     public boolean hasAnnotation(File file) {
-        if (!file.isDirectory()) {
-            Repository repo = getRepository(file);
-            if (repo != null && repo.isWorking()) {
-                return repo.fileHasAnnotation(file);
-            }
+        if (file.isDirectory()) {
+            LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'') to check annotation presence",
+                    file);
+            return false;
         }
 
-        return false;
+        Repository repo = getRepository(file);
+        if (repo == null) {
+            LOGGER.log(Level.FINEST, "cannot find repository for ''{0}'' to check annotation presence", file);
+            return false;
+        }
+
+        if (!repo.isWorking()) {
+            LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check annotation presence",
+                    new Object[]{repo, file});
+        }
+
+        return repo.fileHasAnnotation(file);
     }
 
     /**
@@ -492,32 +522,34 @@ public final class HistoryGuru {
      * the history cache has information about
      * @throws org.opengrok.indexer.history.HistoryException if history cannot be retrieved
      */
-    public Map<String, Date> getLastModifiedTimes(File directory)
-            throws HistoryException {
+    public Map<String, Date> getLastModifiedTimes(File directory) throws HistoryException {
 
         Repository repository = getRepository(directory);
-
-        if (repository != null && useCache()) {
-            return historyCache.getLastModifiedTimes(directory, repository);
+        if (repository == null) {
+            LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to retrieve last modified times",
+                    directory);
+            return Collections.emptyMap();
         }
 
-        return Collections.emptyMap();
+        if (!useCache()) {
+            LOGGER.log(Level.FINEST, "history cache is disabled for ''{0}'' to retrieve last modified times",
+                    directory);
+            return Collections.emptyMap();
+        }
+
+        return historyCache.getLastModifiedTimes(directory, repository);
     }
 
     /**
-     * recursively search for repositories with a depth limit, add those found
-     * to the internally used map.
+     * recursively search for repositories with a depth limit, add those found to the internally used map.
      *
      * @param files list of files to check if they contain a repository
      * @param allowedNesting number of levels of nested repos to allow
-     * @param depth current depth - using global scanningDepth - one can limit
-     * this to improve scanning performance
-     * @param isNested a value indicating if a parent {@link Repository} was
-     * already found above the {@code files}
+     * @param depth current depth - using global scanningDepth - one can limit this to improve scanning performance
+     * @param isNested a value indicating if a parent {@link Repository} was already found above the {@code files}
      * @return collection of added repositories
      */
-    private Collection<RepositoryInfo> addRepositories(File[] files,
-            int allowedNesting, int depth, boolean isNested) {
+    private Collection<RepositoryInfo> addRepositories(File[] files, int allowedNesting, int depth, boolean isNested) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
         PathAccepter pathAccepter = env.getPathAccepter();

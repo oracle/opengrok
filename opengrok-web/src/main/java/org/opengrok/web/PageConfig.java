@@ -699,8 +699,7 @@ public final class PageConfig {
      */
     public String getRequestedRevision() {
         if (rev == null) {
-            String tmp = Laundromat.launderInput(
-                    req.getParameter(QueryParameters.REVISION_PARAM));
+            String tmp = Laundromat.launderInput(req.getParameter(QueryParameters.REVISION_PARAM));
             rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
@@ -726,8 +725,7 @@ public final class PageConfig {
      */
     public boolean hasAnnotations() {
         if (hasAnnotation == null) {
-            hasAnnotation = !isDir()
-                    && HistoryGuru.getInstance().hasHistory(getResourceFile());
+            hasAnnotation = !isDir() && HistoryGuru.getInstance().hasAnnotation(getResourceFile());
         }
         return hasAnnotation;
     }
@@ -739,8 +737,7 @@ public final class PageConfig {
      */
     public boolean annotate() {
         if (annotate == null) {
-            annotate = hasAnnotations()
-                    && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
+            annotate = hasAnnotations() && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
         }
         return annotate;
     }
