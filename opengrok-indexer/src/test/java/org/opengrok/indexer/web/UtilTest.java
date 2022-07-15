@@ -621,10 +621,10 @@ public class UtilTest {
     @Test
     void testWriteHADNegative() throws Exception {
         StringWriter writer = new StringWriter();
-        String filePath = "/git/nonexistent.c";
+        String filePath = "/nonexistent/file.c";
         Util.writeHAD(writer, "/source", filePath);
         String output = writer.toString();
-        assertEquals("<td class=\"q\"><a href=\"/source/download/git/nonexistent.c\" title=\"Download\">D</a></td>",
+        assertEquals("<td class=\"q\"><a href=\"/source/download/nonexistent/file.c\" title=\"Download\">D</a></td>",
                 output);
     }
 }
