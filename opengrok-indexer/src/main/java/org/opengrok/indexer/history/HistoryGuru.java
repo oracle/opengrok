@@ -514,6 +514,7 @@ public final class HistoryGuru {
         if (!repo.isWorking()) {
             LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check annotation presence",
                     new Object[]{repo, file});
+            return false;
         }
 
         return repo.fileHasAnnotation(file);
