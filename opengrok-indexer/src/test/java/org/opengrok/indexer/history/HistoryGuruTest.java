@@ -142,7 +142,7 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (instance.hasAnnotation(f)) {
-                instance.annotate(f, null);
+                assertNotNull(instance.annotate(f, null));
             }
         }
     }
