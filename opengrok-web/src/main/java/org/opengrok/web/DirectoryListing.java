@@ -152,7 +152,7 @@ public class DirectoryListing {
     }
 
     /**
-     * Write a HTML-ized listing of the given directory to the given destination.
+     * Write HTML-ized listing of the given directory to the given destination.
      *
      * @param contextPath path used for link prefixes
      * @param dir the directory to list
@@ -161,8 +161,7 @@ public class DirectoryListing {
      *  <var>dir</var> with the source root directory stripped off).
      * @param entries basenames of potential children of the directory to list,
      *  but filtered by {@link PathAccepter}.
-     * @return a possible empty list of README files included in the written
-     *  listing.
+     * @return a possible empty list of README files included in the written listing.
      * @throws IOException when cannot write to the {@code out} parameter
      * @throws HistoryException when failed to get last modified time for files in directory
      */
@@ -209,8 +208,7 @@ public class DirectoryListing {
             out.write("</tr>\n");
         }
 
-        Map<String, Date> modTimes =
-                HistoryGuru.getInstance().getLastModifiedTimes(dir);
+        Map<String, Date> modTimes = HistoryGuru.getInstance().getLastModifiedTimes(dir);
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
@@ -251,7 +249,7 @@ public class DirectoryListing {
                     out.write("</a>");
                 }
                 out.write("</td>");
-                Util.writeHAD(out, contextPath, path + filename, isDir);
+                Util.writeHAD(out, contextPath, path + filename);
                 printDateSize(out, child, modTimes.get(filename), dateFormatter);
                 printNumlines(out, entry, isDir);
                 printLoc(out, entry, isDir);

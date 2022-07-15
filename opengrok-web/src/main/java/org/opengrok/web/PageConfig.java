@@ -440,7 +440,7 @@ public final class PageConfig {
      * that directory, sorted alphabetically
      *
      * <p>
-     * For the root directory (/xref/) an authorization is performed for each
+     * For the root directory (/xref/), authorization check is performed for each
      * project in case that projects are used.
      *
      * @see #getResourceFile()
@@ -1091,8 +1091,7 @@ public final class PageConfig {
      * No check is made, whether the obtained path is really an accessible resource on disk.
      *
      * @see HttpServletRequest#getPathInfo()
-     * @return a possible empty String (denotes the source root directory) but
-     * not {@code null}.
+     * @return a possible empty String (denotes the source root directory) but not {@code null}.
      */
     public String getPath() {
         if (path == null) {
@@ -1113,15 +1112,14 @@ public final class PageConfig {
     }
 
     /**
-     * Get the on disk file for the given path.
+     * Get the file object for the given path.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
      * may finally point to a file outside the source root directory.
      *
      * @param path the path to the file relatively to the source root
      * @return null if the related file or directory is not
-     * available (can not be find below the source root directory), the readable
-     * file or directory otherwise.
+     * available (can not be found below the source root directory), the readable file or directory otherwise.
      * @see #getSourceRootPath()
      */
     public File getResourceFile(String path) {
