@@ -451,6 +451,12 @@ public final class HistoryGuru {
             return false;
         }
 
+        if (!repo.isHistoryEnabled()) {
+            LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' does not have history enabled " +
+                            "to check history presence", new Object[]{repo, file});
+            return false;
+        }
+
         if (!repo.fileHasHistory(file)) {
             LOGGER.log(Level.FINEST, "''{0}'' in repository {1} does not have history to check history presence",
                     new Object[]{file, repo});
