@@ -61,7 +61,7 @@ public class UtilTest {
 
     @BeforeAll
     public static void setUpClass() {
-        // Some of the methods have different results in different locales.
+        // Some methods have different results in different locales.
         // Set locale to en_US for these tests.
         savedLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
@@ -74,7 +74,7 @@ public class UtilTest {
     }
 
     @Test
-    public void htmlize() throws IOException {
+    void htmlize() throws IOException {
         String[][] input_output = {
                 {"This is a test", "This is a test"},
                 {"Newline\nshould become <br/>", "Newline<br/>should become &lt;br/&gt;"},
@@ -91,7 +91,7 @@ public class UtilTest {
     }
 
     @Test
-    public void breadcrumbPath() {
+    void breadcrumbPath() {
         assertNull(Util.breadcrumbPath("/root/", null));
 
         assertEquals("", Util.breadcrumbPath("/root/", ""));
@@ -129,7 +129,7 @@ public class UtilTest {
     }
 
     @Test
-    public void redableSize() {
+    void readableSize() {
         assertEquals("0 ", Util.readableSize(0));
         assertEquals("1 ", Util.readableSize(1));
         assertEquals("-1 ", Util.readableSize(-1));
@@ -143,7 +143,7 @@ public class UtilTest {
     }
 
     @Test
-    public void readableLine() throws Exception {
+    void readableLine() throws Exception {
         StringWriter out = new StringWriter();
         // hmmm - where do meaningful tests start?
         Util.readableLine(42, out, null, null, null, null);
@@ -157,7 +157,7 @@ public class UtilTest {
     }
 
     @Test
-    public void path2uid() {
+    void path2uid() {
         assertEquals("\u0000etc\u0000passwd\u0000date",
                 Util.path2uid("/etc/passwd", "date"));
     }
@@ -169,13 +169,13 @@ public class UtilTest {
     }
 
     @Test
-    public void uid2url() {
+    void uid2url() {
         assertEquals("/etc/passwd", Util.uid2url(
                 Util.path2uid("/etc/passwd", "date")));
     }
 
     @Test
-    public void testUriEncode() {
+    void testUriEncode() {
         assertEquals("", Util.uriEncode(""));
         assertEquals("a+b", Util.uriEncode("a b"));
         assertEquals("a%23b", Util.uriEncode("a#b"));
@@ -184,7 +184,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testUriEncodePath() {
+    void testUriEncodePath() {
         assertEquals("", Util.uriEncodePath(""));
         assertEquals("/", Util.uriEncodePath("/"));
         assertEquals("a", Util.uriEncodePath("a"));
@@ -200,7 +200,7 @@ public class UtilTest {
     }
 
     @Test
-    public void formQuoteEscape() {
+    void formQuoteEscape() {
         assertEquals("", Util.formQuoteEscape(null));
         assertEquals("abc", Util.formQuoteEscape("abc"));
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
@@ -208,7 +208,7 @@ public class UtilTest {
     }
 
     @Test
-    public void diffline() {
+    void diffline() {
         String[][] tests = {
                 {
                         "if (a < b && foo < bar && c > d)",
@@ -273,7 +273,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testEncode() {
+    void testEncode() {
         String[][] tests = new String[][] {
                 {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
                 {"ahoj", "ahoj"},
@@ -288,7 +288,7 @@ public class UtilTest {
     }
 
     @Test
-    public void dumpConfiguration() throws Exception {
+    void dumpConfiguration() throws Exception {
         StringBuilder out = new StringBuilder();
         Util.dumpConfiguration(out);
         String s = out.toString();
@@ -303,13 +303,13 @@ public class UtilTest {
     }
 
     @Test
-    public void jsStringLiteral() {
+    void jsStringLiteral() {
         assertEquals("\"abc\\n\\r\\\"\\\\\"",
                 Util.jsStringLiteral("abc\n\r\"\\"));
     }
 
     @Test
-    public void stripPathPrefix() {
+    void stripPathPrefix() {
         assertEquals("/", Util.stripPathPrefix("/", "/"));
         assertEquals("/abc", Util.stripPathPrefix("/abc", "/abc"));
         assertEquals("/abc/", Util.stripPathPrefix("/abc", "/abc/"));
@@ -326,7 +326,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testSlider() {
+    void testSlider() {
         /*
          * Test if contains all five pages for 55 results paginated by 10
          */
@@ -342,7 +342,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testIsUrl() {
+    void testIsUrl() {
         assertTrue(Util.isHttpUri("http://www.example.com"));
         assertTrue(Util.isHttpUri("http://example.com"));
         assertTrue(Util.isHttpUri("https://example.com"));
@@ -364,7 +364,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testRedactUrl() {
+    void testRedactUrl() {
         assertEquals("/foo/bar", Util.redactUrl("/foo/bar"));
         assertEquals("http://foo/bar?r=xxx", Util.redactUrl("http://foo/bar?r=xxx"));
         assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
@@ -374,7 +374,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testLinkify() throws URISyntaxException, MalformedURLException {
+    void testLinkify() throws URISyntaxException, MalformedURLException {
         assertTrue(Util.linkify("http://www.example.com")
                 .matches("<a.*?href=\"http://www\\.example\\.com\".*?>.*?</a>"));
         assertTrue(Util.linkify("https://example.com")
@@ -419,7 +419,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testBuildLink() throws URISyntaxException, MalformedURLException {
+    void testBuildLink() throws URISyntaxException, MalformedURLException {
         assertEquals("<a href=\"http://www.example.com\">link</a>", Util.buildLink("link", "http://www.example.com"));
         assertEquals("<a href=\"http://www.example.com?url=xasw&beta=gama\">link</a>",
                 Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama"));
@@ -444,17 +444,17 @@ public class UtilTest {
     }
 
     @Test
-    public void testBuildLinkInvalidUrl1() {
+    void testBuildLinkInvalidUrl1() {
         assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
     @Test
-    public void testBuildLinkInvalidUrl2() {
+    void testBuildLinkInvalidUrl2() {
         assertThrows(URISyntaxException.class, () -> Util.buildLink("link", "http://www.exa\"mp\"le.com")); // invalid authority
     }
 
     @Test
-    public void testLinkifyPattern() {
+    void testLinkifyPattern() {
         String text
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
@@ -499,7 +499,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testCompleteUrl() {
+    void testCompleteUrl() {
         HttpServletRequest req = new DummyHttpServletRequest() {
             @Override
             public int getServerPort() {
@@ -540,24 +540,24 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsNullTest() {
+    void getQueryParamsNullTest() {
         assertThrows(IllegalArgumentException.class, () -> Util.getQueryParams(null));
     }
 
     @Test
-    public void getQueryParamsEmptyTest() throws MalformedURLException {
+    void getQueryParamsEmptyTest() throws MalformedURLException {
         URL url = new URL("http://test.com/test");
         assertTrue(Util.getQueryParams(url).isEmpty());
     }
 
     @Test
-    public void getQueryParamsEmptyTest2() throws MalformedURLException {
+    void getQueryParamsEmptyTest2() throws MalformedURLException {
         URL url = new URL("http://test.com/test?");
         assertTrue(Util.getQueryParams(url).isEmpty());
     }
 
     @Test
-    public void getQueryParamsSingleTest() throws MalformedURLException {
+    void getQueryParamsSingleTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=value1");
         Map<String, List<String>> params = Util.getQueryParams(url);
 
@@ -567,7 +567,7 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsMultipleTest() throws MalformedURLException {
+    void getQueryParamsMultipleTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=value1&param2=value2");
         Map<String, List<String>> params = Util.getQueryParams(url);
 
@@ -578,7 +578,7 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsMultipleSameTest() throws MalformedURLException {
+    void getQueryParamsMultipleSameTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=value1&param1=value2");
         Map<String, List<String>> params = Util.getQueryParams(url);
 
@@ -588,7 +588,7 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsEncodedTest() throws MalformedURLException {
+    void getQueryParamsEncodedTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=%3Fvalue%3F");
         Map<String, List<String>> params = Util.getQueryParams(url);
 
@@ -598,7 +598,7 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsEmptyValueTest() throws MalformedURLException {
+    void getQueryParamsEmptyValueTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=");
 
         Map<String, List<String>> params = Util.getQueryParams(url);
@@ -607,7 +607,7 @@ public class UtilTest {
     }
 
     @Test
-    public void getQueryParamsEmptyAndNormalValuesCombinedTest() throws MalformedURLException {
+    void getQueryParamsEmptyAndNormalValuesCombinedTest() throws MalformedURLException {
         URL url = new URL("http://test.com?param1=value1&param2=&param3&param4=value4");
 
         Map<String, List<String>> params = Util.getQueryParams(url);
@@ -617,5 +617,4 @@ public class UtilTest {
         assertTrue(params.containsKey("param3"));
         assertThat(params.get("param4"), contains("value4"));
     }
-
 }
