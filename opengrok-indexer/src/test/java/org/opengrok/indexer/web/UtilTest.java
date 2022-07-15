@@ -26,6 +26,7 @@ package org.opengrok.indexer.web;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -618,6 +619,10 @@ public class UtilTest {
         assertThat(params.get("param4"), contains("value4"));
     }
 
+    /**
+     * Test {@link Util#writeHAD(Writer, String, String)} for a file path that does not map to any repository.
+     * @throws Exception on error
+     */
     @Test
     void testWriteHADNegative() throws Exception {
         StringWriter writer = new StringWriter();
