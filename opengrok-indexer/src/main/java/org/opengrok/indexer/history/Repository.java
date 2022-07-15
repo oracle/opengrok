@@ -566,11 +566,9 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Set the name of the external client command that should be used to access
      * the repository wrt. the given parameters. Does nothing, if this
-     * repository's <var>RepoCommand</var> has already been set (i.e. has a
-     * non-{@code null} value).
+     * repository's <var>RepoCommand</var> has already been set (i.e. has a non-{@code null} value).
      *
-     * @param propertyKey property key to lookup the corresponding system
-     * property.
+     * @param propertyKey property key to look up the corresponding system property.
      * @param fallbackCommand the command to use, if lookup fails.
      * @return the command to use.
      * @see #RepoCommand
