@@ -77,10 +77,10 @@ public final class Util {
 
     private static final int BOLD_COUNT_THRESHOLD = 1000;
 
-    private static final String anchorLinkStart = "<a href=\"";
-    private static final String anchorClassStart = "<a class=\"";
-    private static final String anchorEnd = "</a>";
-    private static final String closeQuotedTag = "\">";
+    private static final String ANCHOR_LINK_START = "<a href=\"";
+    private static final String ANCHOR_CLASS_START = "<a class=\"";
+    private static final String ANCHOR_END = "</a>";
+    private static final String CLOSE_QUOTED_TAG = "\">";
 
     private static final String RE_Q_ESC_AMP_AMP = "\\?|&amp;|&";
     private static final String RE_Q_E_A_A_COUNT_EQ_VAL = "(" + RE_Q_ESC_AMP_AMP + "|\\b)" +
@@ -441,9 +441,9 @@ public final class Util {
             if (isDir || i < pnames.length - 1) {
                 pwd.append(PATH_SEPARATOR);
             }
-            markup.append(anchorLinkStart).append(prefix).append(pwd)
-                    .append(postfix).append(closeQuotedTag).append(pnames[i])
-                    .append(anchorEnd);
+            markup.append(ANCHOR_LINK_START).append(prefix).append(pwd)
+                    .append(postfix).append(CLOSE_QUOTED_TAG).append(pnames[i])
+                    .append(ANCHOR_END);
             if (isDir || i < pnames.length - 1) {
                 markup.append(sep);
             }
@@ -712,15 +712,15 @@ public final class Util {
         if (num > 1 && !skipNewline) {
             out.write("\n");
         }
-        out.write(anchorClassStart);
+        out.write(ANCHOR_CLASS_START);
         out.write(num % 10 == 0 ? "hl" : "l");
         out.write("\" name=\"");
         out.write(snum);
         out.write("\" href=\"#");
         out.write(snum);
-        out.write(closeQuotedTag);
+        out.write(CLOSE_QUOTED_TAG);
         out.write(snum);
-        out.write(anchorEnd);
+        out.write(ANCHOR_END);
 
         if (annotation != null) {
             writeAnnotation(num, out, annotation, userPageLink, userPageSuffix, project);
@@ -733,7 +733,7 @@ public final class Util {
         boolean enabled = annotation.isEnabled(num);
         out.write("<span class=\"blame\">");
         if (enabled) {
-            out.write(anchorClassStart);
+            out.write(ANCHOR_CLASS_START);
             out.write("r");
             out.write("\" style=\"background-color: ");
             out.write(annotation.getColors().getOrDefault(r, "inherit"));
@@ -753,7 +753,7 @@ public final class Util {
                 out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
                         + annotation.getRevisions().size());
             }
-            out.write(closeQuotedTag);
+            out.write(CLOSE_QUOTED_TAG);
         }
         StringBuilder buf = new StringBuilder();
         final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
@@ -771,10 +771,10 @@ public final class Util {
         if (enabled) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-            out.write(anchorEnd);
+            out.write(ANCHOR_END);
 
             // Write link to search the revision in current project.
-            out.write(anchorClassStart);
+            out.write(ANCHOR_CLASS_START);
             out.write("search\" href=\"" + env.getUrlPrefix());
             out.write(QueryParameters.DEFS_SEARCH_PARAM_EQ);
             out.write("&amp;");
@@ -789,9 +789,9 @@ public final class Util {
             out.write("&quot;&amp;");
             out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
             out.write("\" title=\"Search history for this revision");
-            out.write(closeQuotedTag);
+            out.write(CLOSE_QUOTED_TAG);
             out.write("S");
-            out.write(anchorEnd);
+            out.write(ANCHOR_END);
         }
         String a = annotation.getAuthor(num);
         if (userPageLink == null) {
@@ -801,18 +801,18 @@ public final class Util {
             out.write(HtmlConsts.ZSPAN);
             buf.setLength(0);
         } else {
-            out.write(anchorClassStart);
+            out.write(ANCHOR_CLASS_START);
             out.write("a\" href=\"");
             out.write(userPageLink);
             out.write(uriEncode(a));
             if (userPageSuffix != null) {
                 out.write(userPageSuffix);
             }
-            out.write(closeQuotedTag);
+            out.write(CLOSE_QUOTED_TAG);
             htmlize(a, buf);
             out.write(buf.toString());
             buf.setLength(0);
-            out.write(anchorEnd);
+            out.write(ANCHOR_END);
         }
         out.write("</span>");
     }
@@ -877,7 +877,7 @@ public final class Util {
         if (HistoryGuru.getInstance().hasHistory(file)) {
             String histPrefixE = ctxE + Prefix.HIST_L;
 
-            out.write(anchorLinkStart);
+            out.write(ANCHOR_LINK_START);
             out.write(histPrefixE);
             if (!entry.startsWith("/")) {
                 entry = "/" + entry;
