@@ -31,6 +31,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,6 +46,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -52,6 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
@@ -630,6 +639,60 @@ public class UtilTest {
         Util.writeHAD(writer, "/source", filePath);
         String output = writer.toString();
         assertEquals("<td class=\"q\"><a href=\"/source/download/nonexistent/file.c\" title=\"Download\">D</a></td>",
+                output);
+    }
+
+    /**
+     * Test {@link Util#writeHAD(Writer, String, String)} for a file paths that correspond to a repository
+     * with history enabled and disabled.
+     * @throws Exception on error
+     */
+    @EnabledForRepository(MERCURIAL)
+    @Test
+    void testWriteHAD() throws Exception {
+        TestRepository repository = new TestRepository();
+        repository.create(UtilTest.class.getResource("/repositories"));
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
+
+        // The projects have to be added first so that prepareIndexer() can use their configuration.
+        Project proj = new Project("mercurial", "/mercurial");
+        proj.setHistoryEnabled(false);
+        env.getProjects().clear();
+        env.getProjects().put("mercurial", proj);
+        proj = new Project("git", "/git");
+        env.getProjects().put("git", proj);
+
+        HistoryGuru.getInstance().clear();
+        Indexer.getInstance().prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                false, // don't create dictionary
+                null, // subFiles - not needed since we don't list files
+                null); // repositories - not needed when not refreshing history
+        env.generateProjectRepositoriesMap();
+
+        StringWriter writer = new StringWriter();
+        String filePath = "/git/main.c";
+        Util.writeHAD(writer, "/source", filePath);
+        String output = writer.toString();
+        assertEquals("<td class=\"q\"><a href=\"/source/history/git/main.c\" title=\"History\">H</a> " +
+                        "<a href=\"/source/xref/git/main.c?a=true\" title=\"Annotate\">A</a> " +
+                        "<a href=\"/source/download/git/main.c\" title=\"Download\">D</a></td>",
+                output);
+
+        writer = new StringWriter();
+        filePath = "/mercurial/main.c";
+        Util.writeHAD(writer, "/source", filePath);
+        output = writer.toString();
+        assertEquals("<td class=\"q\"> <a href=\"/source/xref/mercurial/main.c?a=true\" title=\"Annotate\">A</a> " +
+                        "<a href=\"/source/download/mercurial/main.c\" title=\"Download\">D</a></td>",
                 output);
     }
 }
