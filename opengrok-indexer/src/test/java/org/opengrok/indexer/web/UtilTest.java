@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -616,5 +616,15 @@ public class UtilTest {
         assertThat(params.get("param2"), contains(""));
         assertTrue(params.containsKey("param3"));
         assertThat(params.get("param4"), contains("value4"));
+    }
+
+    @Test
+    void testWriteHADNegative() throws Exception {
+        StringWriter writer = new StringWriter();
+        String filePath = "/git/nonexistent.c";
+        Util.writeHAD(writer, "/source", filePath);
+        String output = writer.toString();
+        assertEquals("<td class=\"q\"><a href=\"/source/download/git/nonexistent.c\" title=\"Download\">D</a></td>",
+                output);
     }
 }
