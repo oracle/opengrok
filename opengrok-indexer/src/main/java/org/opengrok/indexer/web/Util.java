@@ -877,7 +877,7 @@ public final class Util {
         if (HistoryGuru.getInstance().hasHistory(file)) {
             String histPrefixE = ctxE + Prefix.HIST_L;
 
-            out.write("<a href=\"");
+            out.write(anchorLinkStart);
             out.write(histPrefixE);
             if (!entry.startsWith("/")) {
                 entry = "/" + entry;
