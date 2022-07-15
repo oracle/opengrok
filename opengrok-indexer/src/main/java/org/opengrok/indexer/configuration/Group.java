@@ -234,10 +234,20 @@ public class Group implements Comparable<Group>, Nameable {
      * Test group for a match.
      *
      * @param p project
-     * @return true if project's description matches the group pattern
+     * @return true if project's name matches the group pattern
      */
     public boolean match(Project p) {
-        return compiledPattern.matcher(p.getName()).matches();
+        return match(p.getName());
+    }
+
+    /**
+     * Test group for a match.
+     *
+     * @param name string to match
+     * @return true if given name matches the group pattern
+     */
+    public boolean match(String name) {
+        return compiledPattern.matcher(name).matches();
     }
 
     @Override
