@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +37,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.LazilyInstantiate;
 
 /**
  * Access to an RCS repository.
@@ -49,18 +51,36 @@ public class RCSRepository extends Repository {
     /**
      * This property name is used to obtain the command to get annotation for this repository.
      */
-    private static final String CMD_BLAME_PROPERTY_KEY
-            = "org.opengrok.indexer.history.RCS.blame";
+    private static final String CMD_BLAME_PROPERTY_KEY = "org.opengrok.indexer.history.RCS.blame";
     /**
      * The command to use to get annotation if none was given explicitly.
      */
     private static final String CMD_BLAME_FALLBACK = "blame";
 
+    /**
+     * This is a static replacement for 'working' field. Effectively, check if hg is working once in a JVM
+     * instead of calling it for every MercurialRepository instance.
+     */
+    private static final Supplier<Boolean> BLAME_IS_WORKING = LazilyInstantiate.using(RCSRepository::isBlameWorking);
+
     public RCSRepository() {
-        working = Boolean.TRUE;
         type = "RCS";
 
         ignoredDirs.add("RCS");
+    }
+
+    private static boolean isBlameWorking() {
+        String repoCommand = getCommand(MercurialRepository.class, CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
+        return checkCmd(repoCommand);
+    }
+
+    @Override
+    public boolean isWorking() {
+        if (working == null) {
+            working = BLAME_IS_WORKING.get();
+            ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
+        }
+        return working;
     }
 
     @Override
