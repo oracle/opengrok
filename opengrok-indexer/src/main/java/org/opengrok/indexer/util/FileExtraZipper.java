@@ -50,9 +50,7 @@ public class FileExtraZipper {
     public List<DirectoryEntry> zip(File dir, List<String> files, List<NullableNumLinesLOC> extras) {
 
         if (extras == null) {
-            return files.stream().map(f ->
-                new DirectoryEntry(new File(dir, f))).collect(
-                Collectors.toList());
+            return files.stream().map(f -> new DirectoryEntry(new File(dir, f))).collect(Collectors.toList());
         }
 
         Map<String, NullableNumLinesLOC> byName = indexExtraByName(extras);
