@@ -858,22 +858,23 @@ public final class Util {
     }
 
     /**
-     * Write the 'H A D' links. This is used for search results and directory
-     * listings.
+     * Write the 'H A D' links. This is used for search results and directory listings.
      *
-     * @param out writer for producing output
-     * @param ctxE URI encoded prefix
+     * @param out   writer for producing output
+     * @param ctxE  URI encoded prefix
      * @param entry file/directory name to write
-     * @param isDir is directory
      * @throws IOException depends on the destination (<var>out</var>).
      */
-    public static void writeHAD(Writer out, String ctxE, String entry, boolean isDir) throws IOException {
+    public static void writeHAD(Writer out, String ctxE, String entry) throws IOException {
 
         String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
 
         out.write("<td class=\"q\">");
-        if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+        File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), entry);
+
+        // Write the 'H' (History) link.
+        if (HistoryGuru.getInstance().hasHistory(file)) {
             String histPrefixE = ctxE + Prefix.HIST_L;
 
             out.write("<a href=\"");
@@ -885,13 +886,18 @@ public final class Util {
             out.write("\" title=\"History\">H</a>");
         }
 
-        if (!isDir) {
+        // Write the 'A' (Annotation) link.
+        if (HistoryGuru.getInstance().hasAnnotation(file)) {
             out.write(" <a href=\"");
             out.write(xrefPrefixE);
             out.write(entry);
             out.write("?");
             out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
             out.write("\" title=\"Annotate\">A</a> ");
+        }
+
+        // Write the 'D' (Download) link.
+        if (!file.isDirectory()) {
             out.write("<a href=\"");
             out.write(downloadPrefixE);
             out.write(entry);

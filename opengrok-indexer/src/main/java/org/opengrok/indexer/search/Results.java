@@ -212,7 +212,7 @@ public final class Results {
                     out.write("<tr>");
                 }
                 evenRow = !evenRow;
-                Util.writeHAD(out, sh.getContextPath(), rpathE, false);
+                Util.writeHAD(out, sh.getContextPath(), rpathE);
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
                 out.write(rpathE);
