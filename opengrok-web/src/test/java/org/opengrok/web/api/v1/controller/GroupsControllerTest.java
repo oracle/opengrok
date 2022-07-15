@@ -98,15 +98,20 @@ class GroupsControllerTest extends OGKJerseyTest {
                 .get(type);
     }
 
-    @Test
-    void testGetAllProjectsEmpty() {
+    private Group setGroup(String groupName, String pattern) {
         Set<Group> groups = new TreeSet<>();
         Group group;
-        String groupName = "group-foo";
-        group = new Group(groupName, "project-(1|2|3)");
+        group = new Group(groupName, pattern);
         groups.add(group);
         env.setGroups(groups);
         assertTrue(env.hasGroups());
+        return group;
+    }
+
+    @Test
+    void testGetAllProjectsEmpty() {
+        String groupName = "group-empty";
+        setGroup(groupName, "project-(1|2|3)");
 
         List<String> groupsResult = listAllProjects(groupName);
         assertNotNull(groupsResult);
@@ -136,13 +141,8 @@ class GroupsControllerTest extends OGKJerseyTest {
         env.setProjects(projects);
 
         // Set group.
-        Set<Group> groups = new TreeSet<>();
-        Group group;
-        String groupName = "group-foo";
-        group = new Group(groupName, "project-(1|2|3)");
-        groups.add(group);
-        env.setGroups(groups);
-        assertTrue(env.hasGroups());
+        String groupName = "group-all";
+        Group group = setGroup(groupName, "project-(1|2|3)");
 
         // Verify that the group has the projects.
         Set<Project> expectedProjects = group.getAllProjects();
@@ -152,5 +152,23 @@ class GroupsControllerTest extends OGKJerseyTest {
         List<String> groupsResult = listAllProjects(groupName);
         assertEquals(expectedProjects.stream().map(Project::getName).collect(Collectors.toList()),
                 groupsResult);
+    }
+
+    @Test
+    void testGetPattern() {
+        String groupName = "group-pattern";
+        final String groupPattern = "^project-.*";
+        setGroup(groupName, groupPattern);
+
+        GenericType<String> type = new GenericType<>() {
+        };
+
+        String pattern = target("groups")
+                .path(groupName)
+                .path("pattern")
+                .request()
+                .get(type);
+        assertNotNull(pattern);
+        assertEquals(groupPattern, pattern);
     }
 }
