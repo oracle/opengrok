@@ -23,8 +23,10 @@
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
@@ -155,6 +157,22 @@ class GroupsControllerTest extends OGKJerseyTest {
     }
 
     @Test
+    void testGetPatternNoGroup() {
+        String groupName = "group-pattern";
+        final String groupPattern = "^project-.*";
+        setGroup(groupName, groupPattern);
+
+        GenericType<String> type = new GenericType<>() {
+        };
+
+        assertThrows(NotFoundException.class, () -> target("groups")
+                .path(groupName + "1")
+                .path("pattern")
+                .request()
+                .get(type));
+    }
+
+    @Test
     void testGetPattern() {
         String groupName = "group-pattern";
         final String groupPattern = "^project-.*";
@@ -170,5 +188,47 @@ class GroupsControllerTest extends OGKJerseyTest {
                 .get(type);
         assertNotNull(pattern);
         assertEquals(groupPattern, pattern);
+    }
+
+    @Test
+    void testMatchNoGroup() {
+        String groupName = "group-pattern-positive";
+        final String groupPattern = "^project-.*";
+        setGroup(groupName, groupPattern);
+
+        Response response = target("groups")
+                .path(groupName + "bar")
+                .path("match")
+                .request()
+                .post(Entity.text("project-foo"));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void testMatchPositive() {
+        String groupName = "group-pattern-positive";
+        final String groupPattern = "^project-.*";
+        setGroup(groupName, groupPattern);
+
+        Response response = target("groups")
+                .path(groupName)
+                .path("match")
+                .request()
+                .post(Entity.text("project-foo"));
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void testMatchNegative() {
+        String groupName = "group-pattern-negative";
+        final String groupPattern = "^project-.*";
+        setGroup(groupName, groupPattern);
+
+        Response response = target("groups")
+                .path(groupName)
+                .path("match")
+                .request()
+                .post(Entity.text("proj"));
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
 }

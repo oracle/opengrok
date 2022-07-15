@@ -325,6 +325,23 @@ This includes also projects of any sub-groups.
 
             ^foo-.*
 
+## Group match [/groups/{group}/match]
+
+### check if (project) name matches group pattern [POST]
+
++ Request (text/plain)
+  + Body
+
+            name of the project
+
++ Response 200
+
+    match
+
++ Response 204
+
+    no match
+
 ## Projects [/projects]
 
 ### returns a list of all projects [GET]

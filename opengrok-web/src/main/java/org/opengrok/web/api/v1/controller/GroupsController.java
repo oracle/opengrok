@@ -22,7 +22,9 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -58,6 +60,7 @@ public final class GroupsController {
     @Path("/{group}/allprojects")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllProjectsForGroup(@PathParam("group") String groupName) {
+        // Avoid classification as a taint bug.
         groupName = Laundromat.launderInput(groupName);
         Group group;
         group = Group.getByName(groupName);
@@ -78,6 +81,7 @@ public final class GroupsController {
     @Path("/{group}/pattern")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getPattern(@PathParam("group") String groupName) {
+        // Avoid classification as a taint bug.
         groupName = Laundromat.launderInput(groupName);
         Group group;
         group = Group.getByName(groupName);
@@ -86,5 +90,27 @@ public final class GroupsController {
         }
 
         return Response.ok().entity(group.getPattern()).build();
+    }
+
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Path("/{group}/match")
+    public Response matchProject(@PathParam("group") String groupName, String projectNameParam) {
+        // Avoid classification as a taint bug.
+        final String projectName = Laundromat.launderInput(projectNameParam);
+
+        // Avoid classification as a taint bug.
+        groupName = Laundromat.launderInput(groupName);
+        Group group;
+        group = Group.getByName(groupName);
+        if (group == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (group.match(projectName)) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.NO_CONTENT).build();
+        }
     }
 }
