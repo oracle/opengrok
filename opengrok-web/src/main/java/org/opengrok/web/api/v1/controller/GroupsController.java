@@ -73,4 +73,18 @@ public final class GroupsController {
             return Response.ok().entity(projectNameList).build();
         }
     }
+
+    @GET
+    @Path("/{group}/pattern")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getPattern(@PathParam("group") String groupName) {
+        groupName = Laundromat.launderInput(groupName);
+        Group group;
+        group = Group.getByName(groupName);
+        if (group == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok().entity(group.getPattern()).build();
+    }
 }
