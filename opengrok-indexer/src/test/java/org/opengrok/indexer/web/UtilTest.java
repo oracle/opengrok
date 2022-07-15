@@ -624,7 +624,7 @@ public class UtilTest {
      * @throws Exception on error
      */
     @Test
-    void testWriteHADNegative() throws Exception {
+    void testWriteHADNonexistentFile() throws Exception {
         StringWriter writer = new StringWriter();
         String filePath = "/nonexistent/file.c";
         Util.writeHAD(writer, "/source", filePath);
