@@ -1064,9 +1064,9 @@ public final class PageConfig {
      */
     public String getSourceRootPath() {
         if (sourceRootPath == null) {
-            String srcpath = getEnv().getSourceRootPath();
-            if (srcpath != null) {
-                sourceRootPath = srcpath.replace(File.separatorChar, PATH_SEPARATOR);
+            String srcPathEnv = getEnv().getSourceRootPath();
+            if (srcPathEnv != null) {
+                sourceRootPath = srcPathEnv.replace(File.separatorChar, PATH_SEPARATOR);
             }
         }
         return sourceRootPath;
@@ -1107,8 +1107,8 @@ public final class PageConfig {
      * @return true if file/directory corresponding to the request path exists however is unreadable, false otherwise
      */
     public boolean isUnreadable() {
-        File f = new File(getSourceRootPath(), getPath());
-        return f.exists() && !f.canRead();
+        File file = new File(getSourceRootPath(), getPath());
+        return file.exists() && !file.canRead();
     }
 
     /**
@@ -1123,12 +1123,12 @@ public final class PageConfig {
      * @see #getSourceRootPath()
      */
     public File getResourceFile(String path) {
-        File f;
-        f = new File(getSourceRootPath(), path);
-        if (!f.canRead()) {
+        File file;
+        file = new File(getSourceRootPath(), path);
+        if (!file.canRead()) {
             return null;
         }
-        return f;
+        return file;
     }
 
     /**
