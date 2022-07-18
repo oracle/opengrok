@@ -37,6 +37,14 @@ from opengrok_tools.scm import get_repository
 from opengrok_tools.utils.exitvals import CONTINUE_EXITVAL, SUCCESS_EXITVAL
 
 
+@pytest.fixture(scope="module", autouse=True)
+def setup():
+    # The default has changed for python 3.8 (see https://github.com/oracle/opengrok/issues/3296).
+    # Because of the mocking we need to use the "fork" type to propagate all mocks to the
+    # processes spawned by mirror command
+    multiprocessing.set_start_method('fork')
+
+
 @pytest.mark.parametrize('do_changes', [True, False])
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
 def test_incoming_retval(monkeypatch, do_changes):
@@ -44,11 +52,6 @@ def test_incoming_retval(monkeypatch, do_changes):
     Test that the special CONTINUE_EXITVAL value bubbles all the way up to
     the mirror.py return value.
     """
-
-    # The default has changed for python 3.8 (see https://github.com/oracle/opengrok/issues/3296).
-    # Because of the mocking we need to use the "fork" type to propagate all mocks to the
-    # processes spawned by mirror command
-    multiprocessing.set_start_method('fork')
 
     class MockResponse:
 
