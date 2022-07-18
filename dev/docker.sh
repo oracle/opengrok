@@ -24,8 +24,9 @@ push_readme() {
 	fi
 
 	local code=$(curl -s -o /dev/null -L -w "%{http_code}" \
-	           -X PATCH --data-urlencode \
-		   full_description@${input_file} \
+	           -X PATCH \
+		   --data-urlencode full_description@${input_file} \
+		   -H "Content-Type: application/json" \
 	           -H "Authorization: JWT ${token}" \
 	           ${API_URL}/repositories/"${image}"/)
 
