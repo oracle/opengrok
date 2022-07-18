@@ -34,11 +34,12 @@ from git import Repo
 
 import opengrok_tools.mirror
 from opengrok_tools.scm import get_repository
-from opengrok_tools.utils.exitvals import CONTINUE_EXITVAL
+from opengrok_tools.utils.exitvals import CONTINUE_EXITVAL, SUCCESS_EXITVAL
 
 
+@pytest.mark.parametrize('do_changes', [True, False])
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
-def test_incoming_retval(monkeypatch):
+def test_incoming_retval(monkeypatch, do_changes):
     """
     Test that the special CONTINUE_EXITVAL value bubbles all the way up to
     the mirror.py return value.
@@ -65,7 +66,9 @@ def test_incoming_retval(monkeypatch):
         repo_path = os.path.join(source_root, repo_name)
         cloned_repo_name = "cloned_repo"
         cloned_repo_path = os.path.join(source_root, cloned_repo_name)
-        project_name = "foo"  # does not matter for this test
+        # The project name does not matter for this test except for the lock file created by main()
+        # so that both parametrized tests can run in parallel.
+        project_name = "test_incoming_retval-" + str(do_changes)
 
         os.mkdir(repo_path)
 
@@ -85,14 +88,24 @@ def test_incoming_retval(monkeypatch):
             git_config.set_value('user', 'email', 'someone@example.com')
             git_config.set_value('user', 'name', 'John Doe')
 
-        new_file_path = os.path.join(repo_path, 'foo')
+        # Add a file.
+        new_file_path = os.path.join(repo_path, 'newfile')
         with open(new_file_path, 'w'):
             pass
         assert os.path.isfile(new_file_path)
         index = repo.index
         index.add([new_file_path])
         index.commit("add file")
+
+        # Clone the repository first so that any subsequent changes in the repo
+        # will not be reflected in the clone.
         repo.clone(cloned_repo_path)
+
+        if do_changes:
+            with open(new_file_path, 'w') as fp:
+                fp.write("foo")
+            index.add([new_file_path])
+            index.commit("change file")
 
         with monkeypatch.context() as m:
             m.setattr(sys, 'argv', ['prog', "-I", project_name])
@@ -103,4 +116,9 @@ def test_incoming_retval(monkeypatch):
             m.setattr("opengrok_tools.utils.mirror.get_repos_for_project", mock_get_repos)
             m.setattr("opengrok_tools.utils.mirror.do_api_call", mock_get)
 
-            assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
+            if do_changes:
+                expected_retval = SUCCESS_EXITVAL
+            else:
+                expected_retval = CONTINUE_EXITVAL
+
+            assert opengrok_tools.mirror.main() == expected_retval
