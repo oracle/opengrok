@@ -52,8 +52,22 @@ class GitRepository(Repository):
         return self._run_custom_sync_command([self.command, 'pull', '--ff-only'])
 
     def incoming_check(self):
+        """
+        :return: True if there are any incoming changes present, False otherwise
+        """
         self._configure_git_pull()
-        return self._run_custom_incoming_command([self.command, 'pull', '--dry-run'])
+        self.fetch()
+        branch = self.get_branch()
+        status, out = self._run_command([self.command, 'log',
+                                         '--pretty=tformat:%H', '..origin/' + branch])
+        if status == 0:
+            if len(out) == 0:
+                return False
+        else:
+            raise RepositoryException("failed to check for incoming changes in {}: {}".
+                                      format(self, status))
+
+        return True
 
     def get_branch(self):
         status, out = self._run_command([self.command, 'branch', '--show-current'])
