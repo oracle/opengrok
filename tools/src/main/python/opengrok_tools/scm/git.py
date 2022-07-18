@@ -61,8 +61,7 @@ class GitRepository(Repository):
         status, out = self._run_command([self.command, 'log',
                                          '--pretty=tformat:%H', '..origin/' + branch])
         if status == 0:
-            lines = out.split('\n')
-            if len(lines) == 0:
+            if len(out) == 0:
                 return False
         else:
             raise RepositoryException("failed to check for incoming changes in {}: {}".
