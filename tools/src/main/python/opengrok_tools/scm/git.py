@@ -59,7 +59,7 @@ class GitRepository(Repository):
         self.fetch()
         branch = self.get_branch()
         status, out = self._run_command([self.command, 'log',
-                                         '--pretty=tformat:%H', '--reverse', '..origin/' + branch])
+                                         '--pretty=tformat:%H', '..origin/' + branch])
         if status == 0:
             lines = out.split('\n')
             if len(lines) == 0:
