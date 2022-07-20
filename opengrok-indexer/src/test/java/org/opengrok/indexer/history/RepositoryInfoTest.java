@@ -24,7 +24,6 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
