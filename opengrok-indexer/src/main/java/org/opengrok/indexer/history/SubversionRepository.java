@@ -35,6 +35,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -56,9 +57,6 @@ public class SubversionRepository extends Repository {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubversionRepository.class);
 
     private static final long serialVersionUID = 1L;
-
-    private static final String ENV_SVN_USERNAME = "OPENGROK_SUBVERSION_USERNAME";
-    private static final String ENV_SVN_PASSWORD = "OPENGROK_SUBVERSION_PASSWORD";
 
     /**
      * The property name used to obtain the client command for this repository.
@@ -365,12 +363,12 @@ public class SubversionRepository extends Repository {
         return working;
     }
 
-    private List<String> getAuthCommandLineParams() {
+    @VisibleForTesting
+    List<String> getAuthCommandLineParams() {
         List<String> result = new ArrayList<>();
-        String userName = System.getenv(ENV_SVN_USERNAME);
-        String password = System.getenv(ENV_SVN_PASSWORD);
-        if (userName != null && !userName.isEmpty() && password != null
-                && !password.isEmpty()) {
+        String userName = getUsername();
+        String password = getPassword();
+        if (userName != null && !userName.isEmpty() && password != null && !password.isEmpty()) {
             result.add("--username");
             result.add(userName);
             result.add("--password");

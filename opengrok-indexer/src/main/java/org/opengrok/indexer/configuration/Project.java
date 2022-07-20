@@ -73,8 +73,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private int tabSize;
 
     /**
-     * A flag if the navigate window should be opened by default when browsing
-     * the source code of this project.
+     * If navigate window should be opened by default when browsing the source code of this project.
      */
     private Boolean navigateWindowEnabled = null;
 
@@ -92,6 +91,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * This flag enables/disables per project merge commits.
      */
     private Boolean mergeCommitsEnabled = null;
+
+    private String username = null;
+    private String password = null;
 
     /**
      * This marks the project as (not)ready before initial index is done. this
@@ -307,6 +309,22 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public void setHistoryBasedReindex(boolean flag) {
         this.historyBasedReindex = flag;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     @VisibleForTesting

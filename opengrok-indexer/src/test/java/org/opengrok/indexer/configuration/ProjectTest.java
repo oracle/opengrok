@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -40,14 +40,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ProjectTest {
+class ProjectTest {
 
     /**
      * Test that a {@code Project} instance can be encoded and decoded without
      * errors. Bug #3077.
      */
     @Test
-    public void testEncodeDecode() {
+    void testEncodeDecode() {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
@@ -83,7 +83,7 @@ public class ProjectTest {
      * Test project matching.
      */
     @Test
-    public void testGetProject() {
+    void testGetProject() {
         // Create 2 projects, one being prefix of the other.
         Project foo = new Project("Project foo", "/foo");
         Project bar = new Project("Project foo-bar", "/foo-bar");
@@ -111,7 +111,7 @@ public class ProjectTest {
      * Test getProjectDescriptions().
      */
     @Test
-    public void testGetProjectDescriptions() {
+    void testGetProjectDescriptions() {
         // Create 2 projects.
         Project foo = new Project("foo", "/foo");
         Project bar = new Project("bar", "/bar");
@@ -136,7 +136,7 @@ public class ProjectTest {
      * Insert the value from configuration.
      */
     @Test
-    public void testMergeProjects1() {
+    void testMergeProjects1() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(new Configuration().getTabSize() + 3731);
         env.setNavigateWindowEnabled(!new Configuration().isNavigateWindowEnabled());
@@ -164,7 +164,7 @@ public class ProjectTest {
      * Do not overwrite customized project property.
      */
     @Test
-    public void testMergeProjects2() {
+    void testMergeProjects2() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(new Configuration().getTabSize() + 3731);
 
@@ -199,7 +199,7 @@ public class ProjectTest {
      * Create a project fill with defaults from the configuration.
      */
     @Test
-    public void testCreateProjectWithConfiguration() {
+    void testCreateProjectWithConfiguration() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(4);
 
@@ -209,7 +209,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void testEquality() {
+    void testEquality() {
         Project g1 = new Project();
         Project g2 = new Project();
         assertEquals(g1, g2, "null == null");
@@ -223,5 +223,21 @@ public class ProjectTest {
         assertEquals(g1, g2, "\"name\" == \"NAME\"");
         assertEquals(g1, g1, "\"name\" == \"name\"");
         assertEquals(g2, g2, "\"NAME\" == \"NAME\"");
+    }
+
+    @Test
+    void testUsername() {
+        Project project = new Project();
+        final String username = "foo";
+        project.setUsername(username);
+        assertEquals(username, project.getUsername());
+    }
+
+    @Test
+    void testPassword() {
+        Project project = new Project();
+        final String password = "foo";
+        project.setPassword(password);
+        assertEquals(password, project.getPassword());
     }
 }

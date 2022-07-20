@@ -81,6 +81,10 @@ public class RepositoryInfo implements Serializable {
     private boolean mergeCommitsEnabled;
     @DTOElement
     private boolean historyBasedReindex;
+    @DTOElement
+    private String username;
+    @DTOElement
+    private String password;
 
     /**
      * Empty constructor to support serialization.
@@ -102,6 +106,8 @@ public class RepositoryInfo implements Serializable {
         this.handleRenamedFiles = orig.handleRenamedFiles;
         this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
         this.historyBasedReindex = orig.historyBasedReindex;
+        this.username = orig.username;
+        this.password = orig.password;
     }
 
     /**
@@ -156,6 +162,14 @@ public class RepositoryInfo implements Serializable {
     public void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
     }
+
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) { this.password = password; }
 
     /**
      * @return relative path to source root
@@ -331,6 +345,8 @@ public class RepositoryInfo implements Serializable {
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
             setHistoryBasedReindex(proj.isHistoryBasedReindex());
+            setUsername(proj.getUsername());
+            setPassword(proj.getPassword());
         } else {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -385,6 +401,17 @@ public class RepositoryInfo implements Serializable {
             stringBuilder.append("merge=");
             stringBuilder.append(this.isMergeCommitsEnabled());
         }
+
+        stringBuilder.append(",");
+        if (getUsername() != null) {
+            stringBuilder.append("username:set");
+            stringBuilder.append(",");
+        }
+        if (getPassword() != null) {
+            stringBuilder.append("password:set");
+            stringBuilder.append(",");
+        }
+
         stringBuilder.append("}");
         return stringBuilder.toString();
     }
