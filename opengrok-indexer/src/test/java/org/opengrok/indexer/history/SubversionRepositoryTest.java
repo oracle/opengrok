@@ -74,7 +74,7 @@ class SubversionRepositoryTest {
     void testUsernamePassword() {
         final SubversionRepository repository = new SubversionRepository();
         final String username = "foo";
-        final String password= "bar";
+        final String password = "bar";
         repository.setUsername(username);
         repository.setPassword(password);
         assertEquals(List.of("--username", username, "--password", password), repository.getAuthCommandLineParams());
@@ -91,7 +91,7 @@ class SubversionRepositoryTest {
     @Test
     void testNullUsernameNonNullPassword() {
         final SubversionRepository repository = new SubversionRepository();
-        final String password= "bar";
+        final String password = "bar";
         assertNull(repository.getUsername());
         repository.setPassword(password);
         assertTrue(repository.getAuthCommandLineParams().isEmpty());
