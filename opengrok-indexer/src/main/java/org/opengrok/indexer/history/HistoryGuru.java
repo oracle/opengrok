@@ -965,8 +965,7 @@ public final class HistoryGuru {
             return;
         }
 
-        Map<String, Repository> newrepos =
-            Collections.synchronizedMap(new HashMap<>(repos.size()));
+        Map<String, Repository> repositoryMap = Collections.synchronizedMap(new HashMap<>(repos.size()));
         Statistics elapsed = new Statistics();
 
         LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
@@ -991,21 +990,21 @@ public final class HistoryGuru {
                     return thread;
                 });
 
-        for (RepositoryInfo rinfo : repos) {
+        for (RepositoryInfo repositoryInfo : repos) {
             executor.submit(() -> {
                 try {
-                    Repository r = RepositoryFactory.getRepository(rinfo, cmdType);
+                    Repository r = RepositoryFactory.getRepository(repositoryInfo, cmdType);
                     if (r == null) {
                         LOGGER.log(Level.WARNING,
-                                "Failed to instantiate internal repository data for {0} in {1}",
-                                new Object[]{rinfo.getType(), rinfo.getDirectoryName()});
+                                "Failed to instantiate internal repository data for {0} in ''{1}''",
+                                new Object[]{repositoryInfo.getType(), repositoryInfo.getDirectoryName()});
                     } else {
-                        newrepos.put(r.getDirectoryName(), r);
+                        repositoryMap.put(r.getDirectoryName(), r);
                     }
                 } catch (Exception ex) {
                     // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING, "Could not create " + rinfo.getType()
-                        + " for '" + rinfo.getDirectoryName(), ex);
+                    LOGGER.log(Level.WARNING, "Could not create " + repositoryInfo.getType()
+                        + " repository object for '" + repositoryInfo.getDirectoryName() + "'", ex);
                 } finally {
                     latch.countDown();
                 }
@@ -1021,9 +1020,11 @@ public final class HistoryGuru {
         executor.shutdown();
 
         clear();
-        newrepos.forEach((_key, repo) -> putRepository(repo));
+        repositoryMap.forEach((key, repo) -> putRepository(repo));
 
-        elapsed.report(LOGGER, String.format("Done invalidating %d repositories", newrepos.size()),
+        elapsed.report(LOGGER, String.format("Done invalidating repositories (%d valid, %d working)",
+                        repositoryMap.size(), repositoryMap.values().stream().
+                                filter(RepositoryInfo::isWorking).collect(Collectors.toSet()).size()),
                 "history.repositories.invalidate");
     }
 

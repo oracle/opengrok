@@ -189,6 +189,7 @@ public final class RepositoryFactory {
 
             if ((!isNested || referenceRepo.isNestable()) && isEnabled(clazz) &&
                     referenceRepo.isRepositoryFor(file, cmdType)) {
+
                 repo = clazz.getDeclaredConstructor().newInstance();
 
                 if (env.isProjectsEnabled() && relFile.equals(File.separator)) {
@@ -201,8 +202,7 @@ public final class RepositoryFactory {
                 repo.setDirectoryName(file);
 
                 if (!repo.isWorking()) {
-                    LOGGER.log(Level.WARNING,
-                            "{0} not working (missing binaries?): {1}",
+                    LOGGER.log(Level.WARNING, "{0} not working (missing binaries?): {1}",
                             new Object[]{
                                 repo.getClass().getSimpleName(),
                                 file.getPath()
