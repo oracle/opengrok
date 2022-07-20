@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -26,14 +26,17 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SubversionRepositoryTest {
+class SubversionRepositoryTest {
 
     @Test
-    public void testDateFormats() {
+    void testDateFormats() {
         String[][] tests = new String[][]{
             {"abcd", "expected exception"},
             {"2016-01-01 10:00:00", "expected exception"},
@@ -65,5 +68,41 @@ public class SubversionRepositoryTest {
                 assertNotNull(test[1], "Shouldn't throw a parsing exception for date: " + test[0]);
             }
         }
+    }
+
+    @Test
+    void testUsernamePassword() {
+        final SubversionRepository repository = new SubversionRepository();
+        final String username = "foo";
+        final String password= "bar";
+        repository.setUsername(username);
+        repository.setPassword(password);
+        assertEquals(List.of("--username", username, "--password", password), repository.getAuthCommandLineParams());
+    }
+
+    @Test
+    void testNullUsernameNullPassword() {
+        final SubversionRepository repository = new SubversionRepository();
+        assertNull(repository.getUsername());
+        assertNull(repository.getPassword());
+        assertTrue(repository.getAuthCommandLineParams().isEmpty());
+    }
+
+    @Test
+    void testNullUsernameNonNullPassword() {
+        final SubversionRepository repository = new SubversionRepository();
+        final String password= "bar";
+        assertNull(repository.getUsername());
+        repository.setPassword(password);
+        assertTrue(repository.getAuthCommandLineParams().isEmpty());
+    }
+
+    @Test
+    void testNonNullUsernameNullPassword() {
+        final SubversionRepository repository = new SubversionRepository();
+        final String username = "foo";
+        assertNull(repository.getPassword());
+        repository.setUsername(username);
+        assertTrue(repository.getAuthCommandLineParams().isEmpty());
     }
 }

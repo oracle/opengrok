@@ -18,14 +18,18 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.nio.file.Paths;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,14 +39,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  *
  * @author Vladimir Kotal
  */
-public class RepositoryInfoTest {
+class RepositoryInfoTest {
     @BeforeEach
     public void setUp() {
         RuntimeEnvironment.getInstance().setSourceRoot("/src");
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         String repoDirectory = "/src/foo";
 
         RepositoryInfo ri1 = new RepositoryInfo();
@@ -54,5 +58,44 @@ public class RepositoryInfoTest {
 
         ri2.setDirectoryName(new File(repoDirectory));
         assertEquals(ri1, ri2);
+    }
+
+    @Test
+    void testUsername() {
+        RepositoryInfo repositoryInfo = new RepositoryInfo();
+        final String username = "foo";
+        repositoryInfo.setUsername(username);
+        assertEquals(username, repositoryInfo.getUsername());
+    }
+
+    @Test
+    void testPassword() {
+        RepositoryInfo repositoryInfo = new RepositoryInfo();
+        final String password = "foo";
+        repositoryInfo.setPassword(password);
+        assertEquals(password, repositoryInfo.getPassword());
+    }
+
+    @Test
+    void testFillFromProjectUsernamePassword() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        env.setProjectsEnabled(true);
+
+        final String projectName = "proj";
+        Project project = new Project(projectName);
+        final String dirName = "/proj";
+        project.setPath(dirName);
+        final String username = "foo";
+        final String password = "bar";
+        project.setUsername(username);
+        project.setPassword(password);
+        env.setProjects(Map.of(projectName, project));
+
+        RepositoryInfo repositoryInfo = new RepositoryInfo();
+        repositoryInfo.setDirectoryNameRelative(dirName);
+        repositoryInfo.fillFromProject();
+        assertEquals(username, repositoryInfo.getUsername());
+        assertEquals(password, repositoryInfo.getPassword());
     }
 }
