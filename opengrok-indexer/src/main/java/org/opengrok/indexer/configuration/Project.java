@@ -317,18 +317,32 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         this.historyBasedReindex = flag;
     }
 
+    /**
+     * Set username to be used for repository authentication.
+     * @param username username
+     */
     public void setUsername(String username) {
         this.username = username;
     }
 
+    /**
+     * @return username used for repository authentication
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Set password to be used for repository authentication.
+     * @param password password
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /**
+     * @return password used for repository authentication
+     */
     public String getPassword() {
         return password;
     }
