@@ -86,7 +86,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testDataRoot() throws IOException {
+    void testDataRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNull(instance.getDataRootFile());
         assertNull(instance.getDataRootPath());
@@ -104,7 +104,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testIncludeRoot() throws IOException {
+    void testIncludeRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNull(instance.getIncludeRootPath());
 
@@ -124,7 +124,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testSourceRoot() throws IOException {
+    void testSourceRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNull(instance.getSourceRootFile());
         assertNull(instance.getSourceRootPath());
@@ -137,7 +137,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testProjects() throws IOException {
+    void testProjects() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         instance.setProjectsEnabled(true);
         assertFalse(instance.hasProjects());
@@ -158,7 +158,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testGroups() {
+    void testGroups() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertFalse(instance.hasGroups());
         assertNotNull(instance.getGroups());
@@ -176,7 +176,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testPerThreadConsistency() throws InterruptedException {
+    void testPerThreadConsistency() throws InterruptedException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String path = "/tmp/dataroot1";
         instance.setDataRoot(path);
@@ -191,13 +191,13 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testUrlPrefix() {
+    void testUrlPrefix() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals("/source/s?", instance.getUrlPrefix());
     }
 
     @Test
-    public void testCtags() {
+    void testCtags() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String instanceCtags = instance.getCtags();
         assertNotNull(instanceCtags);
@@ -216,7 +216,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testFetchHistoryWhenNotInCache() {
+    void testFetchHistoryWhenNotInCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isFetchHistoryWhenNotInCache());
         instance.setFetchHistoryWhenNotInCache(false);
@@ -224,7 +224,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testUseHistoryCache() {
+    void testUseHistoryCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.useHistoryCache());
         instance.setUseHistoryCache(false);
@@ -232,7 +232,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testGenerateHtml() {
+    void testGenerateHtml() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isGenerateHtml());
         instance.setGenerateHtml(false);
@@ -240,7 +240,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testCompressXref() {
+    void testCompressXref() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isCompressXref());
         instance.setCompressXref(false);
@@ -248,7 +248,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testQuickContextScan() {
+    void testQuickContextScan() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isQuickContextScan());
         instance.setQuickContextScan(false);
@@ -256,7 +256,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRepositories() {
+    void testRepositories() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNotNull(instance.getRepositories());
         instance.removeRepositories();
@@ -267,7 +267,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRamBufferSize() {
+    void testRamBufferSize() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals(16, instance.getRamBufferSize(), 0);  //default is 16
         instance.setRamBufferSize(256);
@@ -275,7 +275,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testAllowLeadingWildcard() {
+    void testAllowLeadingWildcard() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isAllowLeadingWildcard());
         instance.setAllowLeadingWildcard(false);
@@ -283,7 +283,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testIgnoredNames() {
+    void testIgnoredNames() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNotNull(instance.getIgnoredNames());
         instance.setIgnoredNames(null);
@@ -291,7 +291,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testUserPage() {
+    void testUserPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://www.myserver.org/viewProfile.jspa?username=";
         assertNull(instance.getUserPage());   // default value is null
@@ -300,7 +300,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testBugPage() {
+    void testBugPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
         assertNull(instance.getBugPage());   // default value is null
@@ -309,7 +309,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testBugPattern() {
+    void testBugPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
             "\\b([12456789][0-9]{6})\\b",
@@ -324,7 +324,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testInvalidBugPattern() {
+    void testInvalidBugPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
             "\\b([",
@@ -341,7 +341,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testReviewPage() {
+    void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://arc.myserver.org/caselog/PSARC/";
         assertNull(instance.getReviewPage());   // default value is null
@@ -350,7 +350,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testReviewPattern() {
+    void testReviewPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
             "\\b(\\d{4}/\\d{3})\\b",
@@ -365,7 +365,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testInvalidReviewPattern() {
+    void testInvalidReviewPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
             "\\b([",
@@ -382,7 +382,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testWebappLAF() {
+    void testWebappLAF() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals("default", instance.getWebappLAF());
         instance.setWebappLAF("foo");
@@ -390,7 +390,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRemoteScmSupported() {
+    void testRemoteScmSupported() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals(Configuration.RemoteSCM.OFF, instance.getRemoteScmSupported());
         instance.setRemoteScmSupported(Configuration.RemoteSCM.ON);
@@ -402,7 +402,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testOptimizeDatabase() {
+    void testOptimizeDatabase() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isOptimizeDatabase());
         instance.setOptimizeDatabase(false);
@@ -410,13 +410,13 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testUsingLuceneLocking() {
+    void testUsingLuceneLocking() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals(LuceneLockName.OFF, instance.getLuceneLocking());
     }
 
     @Test
-    public void testIndexVersionedFilesOnly() {
+    void testIndexVersionedFilesOnly() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertFalse(instance.isIndexVersionedFilesOnly());
         instance.setIndexVersionedFilesOnly(true);
@@ -424,7 +424,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testXMLencdec() throws IOException {
+    void testXMLencdec() throws IOException {
         Configuration c = new Configuration();
         String m = c.getXMLRepresentationAsString();
         Configuration o = Configuration.makeXMLStringAsConfiguration(m);
@@ -435,7 +435,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testAuthorizationFlagDecode() throws IOException {
+    void testAuthorizationFlagDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
@@ -498,7 +498,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testAuthorizationStackDecode() throws IOException {
+    void testAuthorizationStackDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
@@ -625,7 +625,7 @@ public class RuntimeEnvironmentTest {
         assertTrue(pluginConfiguration.getStack().get(2).getFlag().isRequisite());
         assertEquals("Requisite", pluginConfiguration.getStack().get(2).getName());
 
-        /**
+        /*
          * Third element is a stack which defines two nested plugins.
          */
         assertTrue(pluginConfiguration.getStack().get(1) instanceof AuthorizationStack);
@@ -647,7 +647,7 @@ public class RuntimeEnvironmentTest {
         assertTrue(plugin.getSetup().get("plugin") instanceof AuthorizationPlugin);
         assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
 
-        /**
+        /*
          * Fourth element is a stack slightly changed from the previous stack.
          * Only the setup for the particular plugin is changed.
          */
@@ -670,7 +670,7 @@ public class RuntimeEnvironmentTest {
         assertTrue(plugin.getSetup().get("plugin") instanceof AuthorizationPlugin);
         assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
 
-        /**
+        /*
          * Fifth element is a direct copy of the first stack.
          */
         assertTrue(pluginConfiguration.getStack().get(4) instanceof AuthorizationStack);
@@ -699,7 +699,7 @@ public class RuntimeEnvironmentTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testAuthorizationFlagDecodeInvalid() throws IOException {
+    void testAuthorizationFlagDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
@@ -722,8 +722,6 @@ public class RuntimeEnvironmentTest {
 
     /**
      * Testing invalid class names for authorization checks.
-     *
-     * @throws IOException I/O exception
      */
     @Test
     void testAuthorizationDecodeInvalid() {
@@ -748,7 +746,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testBug3095() throws IOException {
+    void testBug3095() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         File file = new File("foobar");
         assertTrue(file.createNewFile());
@@ -762,7 +760,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testBug3154() throws IOException {
+    void testBug3154() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         File file = File.createTempFile("dataroot", null);
         assertTrue(file.delete());
@@ -775,7 +773,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testObfuscateEMail() throws IOException {
+    void testObfuscateEMail() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // By default, don't obfuscate.
@@ -809,7 +807,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void isChattyStatusPage() {
+    void isChattyStatusPage() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // By default, status page should not be chatty.
@@ -829,8 +827,8 @@ public class RuntimeEnvironmentTest {
      * @throws ForbiddenSymlinkException forbidden symlink exception
      */
     @Test
-    public void testGetPathRelativeToSourceRoot() throws IOException,
-            ForbiddenSymlinkException {
+    void testGetPathRelativeToSourceRoot() throws IOException, ForbiddenSymlinkException {
+
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Create and set source root.
@@ -861,7 +859,7 @@ public class RuntimeEnvironmentTest {
             expex = e;
         }
         assertNotNull(expex, "getPathRelativeToSourceRoot() should have thrown " +
-                "IOexception for symlink that is not allowed");
+                "IOException for symlink that is not allowed");
 
         // Allow the symlink and retest.
         env.setAllowedSymlinks(new HashSet<>(Arrays.asList(symlink.getPath())));
@@ -874,7 +872,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testPopulateGroupsMultipleTimes() {
+    void testPopulateGroupsMultipleTimes() {
         // create a structure with two repositories
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Project project1 = new Project("bar", "/bar");
