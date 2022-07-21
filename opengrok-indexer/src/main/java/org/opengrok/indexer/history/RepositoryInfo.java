@@ -163,18 +163,32 @@ public class RepositoryInfo implements Serializable {
         this.historyEnabled = flag;
     }
 
+    /**
+     * @return username to be used for authentication
+     */
     String getUsername() {
         return username;
     }
 
+    /**
+     * Set username to be used for authentication.
+     * @param username username
+     */
     void setUsername(String username) {
         this.username = username;
     }
 
+    /**
+     * @return password to be used for authentication
+     */
     String getPassword() {
         return password;
     }
 
+    /**
+     * Set password to be used for authentication.
+     * @param password password
+     */
     void setPassword(String password) {
         this.password = password;
     }
