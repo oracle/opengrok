@@ -92,7 +92,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     private Boolean mergeCommitsEnabled = null;
 
+    /**
+     * Username to used for repository authentication. This is propagated to all repositories of this project.
+     */
     private String username = null;
+    /**
+     * Password to used for repository authentication. This is propagated to all repositories of this project.
+     */
     private String password = null;
 
     /**
