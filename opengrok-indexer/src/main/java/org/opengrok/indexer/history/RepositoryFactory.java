@@ -156,8 +156,7 @@ public final class RepositoryFactory {
     }
 
     /**
-     * Returns a repository for the given file, or null if no repository was
-     * found.
+     * Returns a repository for the given file, or null if no repository was found.
      *
      * Note that the operations performed by this method take quite a long time
      * thanks to external commands being executed. For that reason, when run
