@@ -46,7 +46,7 @@ LABEL maintainer="https://github.com/oracle/opengrok"
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial unzip inotify-tools python3 python3-pip \
-    python3-venv python3-setuptools
+    python3-venv python3-setuptools openssh-client
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
