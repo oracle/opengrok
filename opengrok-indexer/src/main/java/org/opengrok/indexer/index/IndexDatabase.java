@@ -1852,10 +1852,10 @@ public class IndexDatabase {
      * Get an indexReader for the Index database where a given file.
      *
      * @param path the file to get the database for
-     * @return The index database where the file should be located or null if it
-     * cannot be located.
+     * @return The index database where the file should be located or {@code null} if it cannot be located.
      */
     @SuppressWarnings("java:S2095")
+    @Nullable
     public static IndexReader getIndexReader(String path) {
         IndexReader ret = null;
 
@@ -1939,7 +1939,7 @@ public class IndexDatabase {
 
         Document doc;
         Query q = new QueryBuilder().setPath(path).build();
-        IndexSearcher searcher = new IndexSearcher(indexReader, RuntimeEnvironment.getInstance().getSearchExecutor());
+        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(indexReader);
         Statistics stat = new Statistics();
         TopDocs top = searcher.search(q, 1);
         stat.report(LOGGER, Level.FINEST, "search via getDocument() done",

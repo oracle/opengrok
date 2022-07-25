@@ -384,7 +384,7 @@ public class SearchHelper {
                 // no project setup
                 FSDirectory dir = FSDirectory.open(indexDir.toPath());
                 reader = DirectoryReader.open(dir);
-                searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
+                searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 closeOnDestroy = true;
             } else {
                 // Check list of project names first to make sure all of them
@@ -415,7 +415,7 @@ public class SearchHelper {
                 // given that MultiReader is just a cheap wrapper around set of IndexReader objects.
                 reader = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
                 if (reader != null) {
-                    searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
+                    searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index";
                     if (!projects.isEmpty()) {

@@ -181,15 +181,14 @@ public class SearchEngine {
      * @throws IOException
      */
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
-        IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
-        searcher = new IndexSearcher(ireader, RuntimeEnvironment.getInstance().getSearchExecutor());
+        IndexReader indexReader = DirectoryReader.open(FSDirectory.open(root.toPath()));
+        searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(indexReader);
         searchIndex(searcher, paging);
     }
 
     /**
      * Perform search on multiple indexes in parallel.
-     * @param paging whether to use paging (if yes, first X pages will load
-     * faster)
+     * @param paging whether to use paging (if yes, first X pages will load faster)
      * @param root list of projects to search
      * @throws IOException
      */
@@ -203,7 +202,7 @@ public class SearchEngine {
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
         MultiReader searchables = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
-        searcher = new IndexSearcher(searchables, RuntimeEnvironment.getInstance().getSearchExecutor());
+        searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(searchables);
         searchIndex(searcher, paging);
     }
 

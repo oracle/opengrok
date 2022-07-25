@@ -104,6 +104,9 @@ public final class RuntimeEnvironment {
     private final LazilyInstantiate<ExecutorService> lzRevisionExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
 
+    private final LazilyInstantiate<SuperIndexSearcherFactory> lzSuperIndexSearcherFactory;
+    private final LazilyInstantiate<IndexSearcherFactory> lzIndexSearcherFactory;
+
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
@@ -155,10 +158,11 @@ public final class RuntimeEnvironment {
         configuration = new Configuration();
         configLock = new CloseableReentrantReadWriteLock();
         watchDog = new WatchDogService();
-        lzIndexerParallelizer = LazilyInstantiate.using(() ->
-                new IndexerParallelizer(this));
+        lzIndexerParallelizer = LazilyInstantiate.using(() -> new IndexerParallelizer(this));
         lzSearchExecutor = LazilyInstantiate.using(this::newSearchExecutor);
         lzRevisionExecutor = LazilyInstantiate.using(this::newRevisionExecutor);
+        lzSuperIndexSearcherFactory = LazilyInstantiate.using(this::newSuperIndexSearcherFactory);
+        lzIndexSearcherFactory = LazilyInstantiate.using(this::newIndexSearcherFactory);
     }
 
     // Instance of authorization framework and its lock.
@@ -209,6 +213,22 @@ public final class RuntimeEnvironment {
     public void shutdownRevisionExecutor() throws InterruptedException {
         getRevisionExecutor().shutdownNow();
         getRevisionExecutor().awaitTermination(getIndexerCommandTimeout(), TimeUnit.SECONDS);
+    }
+
+    private SuperIndexSearcherFactory newSuperIndexSearcherFactory() {
+        return new SuperIndexSearcherFactory();
+    }
+
+    public SuperIndexSearcherFactory getSuperIndexSearcherFactory() {
+        return lzSuperIndexSearcherFactory.get();
+    }
+
+    private IndexSearcherFactory newIndexSearcherFactory() {
+        return new IndexSearcherFactory();
+    }
+
+    public IndexSearcherFactory getIndexSearcherFactory() {
+        return lzIndexSearcherFactory.get();
     }
 
     /**
@@ -1808,7 +1828,7 @@ public final class RuntimeEnvironment {
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
             Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
-            mgr = new SearcherManager(dir, new SuperIndexSearcherFactory());
+            mgr = new SearcherManager(dir, getSuperIndexSearcherFactory());
             searcherManagerMap.put(projectName, mgr);
         }
 
@@ -1819,8 +1839,8 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * After new configuration is put into place, the set of projects might
-     * change so we go through the SearcherManager objects and close those where
+     * After new configuration is put into place, the set of projects might change,
+     * so we go through the SearcherManager objects and close those where
      * the corresponding project is no longer present.
      */
     public void refreshSearcherManagerMap() {
