@@ -77,8 +77,7 @@ public class IndexAnalysisSettingsAccessor {
      */
     public IndexAnalysisSettings3[] read(IndexReader reader, int n) throws IOException {
 
-        IndexSearcher searcher = new IndexSearcher(reader,
-                RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor());
+        IndexSearcher searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
         Query q;
         try {
             q = new QueryParser(QueryBuilder.OBJUID, new CompatibleAnalyser()).

@@ -97,8 +97,7 @@ class NumLinesLOCAccessor {
          * directories or other object data (e.g. IndexAnalysisSettings3), which
          * have no stored PATH.
          */
-        IndexSearcher searcher = new IndexSearcher(reader,
-                RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor());
+        IndexSearcher searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
 
         Query query;
         try {
@@ -140,8 +139,7 @@ class NumLinesLOCAccessor {
             List<AccumulatedNumLinesLOC> counts, boolean isAggregatingDeltas) throws IOException {
 
         // Search for existing documents with QueryBuilder.D.
-        IndexSearcher searcher = new IndexSearcher(reader,
-                RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor());
+        IndexSearcher searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
 
         for (AccumulatedNumLinesLOC entry : counts) {
             Query query = new TermQuery(new Term(QueryBuilder.D, entry.getPath()));
@@ -208,8 +206,7 @@ class NumLinesLOCAccessor {
 
     private DSearchResult newDSearch(IndexReader reader, int n) throws IOException {
         // Search for existing documents with QueryBuilder.D.
-        IndexSearcher searcher = new IndexSearcher(reader,
-                RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor());
+        IndexSearcher searcher = new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
         Query query;
         try {
             QueryParser parser = new QueryParser(QueryBuilder.D, new CompatibleAnalyser());
