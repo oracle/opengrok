@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -70,10 +71,10 @@ public class FileControllerTest extends OGKJerseyTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
-        Indexer.getInstance().doIndexerExecution(true, Collections.singletonList("/git"), null);
+        Indexer.getInstance().doIndexerExecution(Collections.singletonList("/git"), null);
     }
 
     @AfterEach

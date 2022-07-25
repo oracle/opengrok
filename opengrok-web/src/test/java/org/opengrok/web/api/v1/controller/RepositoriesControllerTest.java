@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -102,7 +102,7 @@ public class RepositoriesControllerTest extends OGKJerseyTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
 

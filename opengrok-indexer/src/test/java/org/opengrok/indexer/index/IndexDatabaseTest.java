@@ -142,7 +142,7 @@ class IndexDatabaseTest {
         indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true,
-                false, null, null);
+                null, null);
 
         // Reset the state of the git project w.r.t. history based reindex.
         // It is the responsibility of each test that relies on the per project tunable
@@ -152,7 +152,7 @@ class IndexDatabaseTest {
 
         env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
 
-        indexer.doIndexerExecution(true, null, null);
+        indexer.doIndexerExecution(null, null);
 
         env.clearFileCollector();
     }
@@ -470,7 +470,7 @@ class IndexDatabaseTest {
         HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
         env.generateProjectRepositoriesMap();
 
         // Check history cache w.r.t. the merge changeset.
@@ -590,7 +590,7 @@ class IndexDatabaseTest {
         HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
         env.setRepositories(new ArrayList<>(HistoryGuru.getInstance().getRepositories()));
         env.generateProjectRepositoriesMap();
 
@@ -644,7 +644,7 @@ class IndexDatabaseTest {
         // for the 2nd stage of indexing.
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
 
         // Verify the collected files.
         FileCollector fileCollector = env.getFileCollector("git");
@@ -678,7 +678,7 @@ class IndexDatabaseTest {
         HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
         env.generateProjectRepositoriesMap();
 
         verifyIndexDown(gitProject, historyBased);
@@ -699,7 +699,7 @@ class IndexDatabaseTest {
         HistoryGuru.getInstance().clear();
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
         env.generateProjectRepositoriesMap();
 
         verifyIndexDown(gitProject, true);
@@ -734,7 +734,7 @@ class IndexDatabaseTest {
         // Re-generate the history cache so that the git repository is ready for history based re-index.
         indexer.prepareIndexer(
                 env, true, true,
-                false, List.of("/git"), null);
+                List.of("/git"), null);
         env.generateProjectRepositoriesMap();
 
         // Emulate forcing reindex from scratch.

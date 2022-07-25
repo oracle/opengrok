@@ -100,7 +100,7 @@ class IndexerRepoTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
         env.generateProjectRepositoriesMap();
@@ -165,7 +165,7 @@ class IndexerRepoTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
 

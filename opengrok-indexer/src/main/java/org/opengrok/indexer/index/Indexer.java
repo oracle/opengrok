@@ -116,7 +116,7 @@ public final class Indexer {
     private static Configuration cfg = null;
     private static boolean checkIndex = false;
     private static boolean runIndex = true;
-    private static boolean optimizedChanged = false;
+    private static boolean reduceSegmentCount = false;
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean bareConfig = false;
@@ -165,8 +165,6 @@ public final class Indexer {
         Executor.registerErrorHandler();
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
         Set<String> subFilesArgs = new HashSet<>();
-
-        boolean createDict = false;
 
         try {
             argv = parseOptions(argv);
@@ -375,7 +373,7 @@ public final class Indexer {
                         collect(Collectors.toSet());
             }
             getInstance().prepareIndexer(env, searchPaths, addProjects,
-                    createDict, runIndex, subFiles, new ArrayList<>(repositories));
+                    runIndex, subFiles, new ArrayList<>(repositories));
 
             // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
             // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
@@ -385,9 +383,13 @@ public final class Indexer {
             env.setDefaultProjectsFromNames(defaultProjects);
 
             // And now index it all.
-            if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
+            if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(update, subFiles, progress);
+                getInstance().doIndexerExecution(subFiles, progress);
+            }
+
+            if (reduceSegmentCount) {
+                IndexDatabase.reduceSegmentCountAll();
             }
 
             writeConfigToFile(env, configFilename);
@@ -672,17 +674,11 @@ public final class Indexer {
                     "Maximum depth of nested repositories. Default is 1.").execute(v ->
                     cfg.setNestingMaximum((Integer) v));
 
-            parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
-                    "Turn on/off the optimization of the index database as part of the",
-                    "indexing step. Default is on.").
-                execute(v -> {
-                    boolean oldval = cfg.isOptimizeDatabase();
-                    cfg.setOptimizeDatabase((Boolean) v);
-                    if (oldval != cfg.isOptimizeDatabase()) {
-                        optimizedChanged = true;
-                    }
-                }
-            );
+            parser.on("--reduceSegmentCount",
+                    "Reduce the number of segments in each index database to 1. This might ",
+                    "(or might not) bring some improved performance. Anyhow, this operation",
+                    "takes non-trivial time to complete.").
+                    execute(v -> reduceSegmentCount = true);
 
             parser.on("-o", "--ctagOpts", "=path",
                 "File with extra command line options for ctags.").
@@ -966,13 +962,12 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,
-                               boolean createDict,
                                List<String> subFiles,
                                List<String> repositories) throws IndexerException, IOException {
 
         prepareIndexer(env,
                 searchRepositories ? Collections.singleton(env.getSourceRootPath()) : Collections.emptySet(),
-                addProjects, createDict, true, subFiles, repositories);
+                addProjects, true, subFiles, repositories);
     }
 
     /**
@@ -985,7 +980,6 @@ public final class Indexer {
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
-     * @param createDict if true, create dictionary
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
      * @param repositories list of repositories
@@ -993,12 +987,11 @@ public final class Indexer {
      * @throws IOException I/O exception
      */
     public void prepareIndexer(RuntimeEnvironment env,
-            Set<String> searchPaths,
-            boolean addProjects,
-            boolean createDict,
-            boolean createHistoryCache,
-            List<String> subFiles,
-            List<String> repositories) throws IndexerException, IOException {
+                               Set<String> searchPaths,
+                               boolean addProjects,
+                               boolean createHistoryCache,
+                               List<String> subFiles,
+                               List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Universal Ctags");
@@ -1034,10 +1027,6 @@ public final class Indexer {
                 HistoryGuru.getInstance().createCache();
             }
             LOGGER.info("Done generating history cache");
-        }
-
-        if (createDict) {
-            IndexDatabase.listFrequentTokens(subFiles);
         }
     }
 
@@ -1075,17 +1064,13 @@ public final class Indexer {
     /**
      * This is the second phase of the indexer which generates Lucene index
      * by passing source code files through ctags, generating xrefs
-     * and storing data from the source files in the index (along with history,
-     * if any).
+     * and storing data from the source files in the index (along with history, if any).
      *
-     * @param update if set to true, index database is updated, otherwise optimized
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(final boolean update, List<String> subFiles,
-        IndexChangedListener progress)
-            throws IOException {
+    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
         Statistics elapsed = new Statistics();
         LOGGER.info("Starting indexing");
 
@@ -1093,13 +1078,7 @@ public final class Indexer {
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
-            if (update) {
-                latch = IndexDatabase.updateAll(progress);
-            } else if (env.isOptimizeDatabase()) {
-                latch = IndexDatabase.optimizeAll();
-            } else {
-                latch = new CountDownLatch(0);
-            }
+            latch = IndexDatabase.updateAll(progress);
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -1131,19 +1110,12 @@ public final class Indexer {
 
             latch = new CountDownLatch(dbs.size());
             for (final IndexDatabase db : dbs) {
-                final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
                 parallelizer.getFixedExecutor().submit(() -> {
                     try {
-                        if (update) {
-                            db.update();
-                        } else if (optimize) {
-                            db.optimize();
-                        }
+                        db.update();
                     } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "An error occurred while "
-                                + (update ? "updating" : "optimizing")
-                                + " index", e);
+                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                     } finally {
                         latch.countDown();
                     }

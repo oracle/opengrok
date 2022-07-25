@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -62,7 +62,7 @@ class DiffTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                false, // don't create dictionary
+                // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
     }

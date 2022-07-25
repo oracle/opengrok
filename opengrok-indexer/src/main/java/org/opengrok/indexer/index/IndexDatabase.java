@@ -160,12 +160,12 @@ public class IndexDatabase {
     private CopyOnWriteArrayList<IndexChangedListener> listeners;
     private File dirtyFile;
     private final Object lock = new Object();
-    private boolean dirty;
+    private boolean dirty;  // Whether the index was modified either by adding or removing a document.
     private boolean running;
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
     private List<String> directories;
-    private LockFactory lockfact;
+    private LockFactory lockFactory;
     private final BytesRef emptyBR = new BytesRef("");
 
     // Directory where we store indexes
@@ -195,7 +195,7 @@ public class IndexDatabase {
     public IndexDatabase(Project project, IndexDownArgsFactory factory) throws IOException {
         indexDownArgsFactory = factory;
         this.project = project;
-        lockfact = NoLockFactory.INSTANCE;
+        lockFactory = NoLockFactory.INSTANCE;
         initialize();
     }
 
@@ -329,8 +329,8 @@ public class IndexDatabase {
                 }
             }
 
-            lockfact = pickLockFactory(env);
-            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
+            lockFactory = pickLockFactory(env);
+            indexDirectory = FSDirectory.open(indexDir.toPath(), lockFactory);
             pathAccepter = env.getPathAccepter();
             analyzerGuru = new AnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
@@ -338,6 +338,11 @@ public class IndexDatabase {
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
             directories = new ArrayList<>();
+
+            if (dirty) {
+                LOGGER.log(Level.WARNING, "Index in ''{0}'' is dirty, the last indexing was likely interrupted." +
+                        " It might be worthwhile to reindex from scratch.", indexDir);
+            }
         }
     }
 
@@ -632,7 +637,10 @@ public class IndexDatabase {
                 try {
                     if (terms != null) {
                         uidIter = terms.iterator();
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid)); //init uid
+                        // The seekCeil() is pretty important because it makes uidIter.term() to become non-null.
+                        // Various indexer methods rely on this when working with the uidIter iterator - rather
+                        // than calling uidIter.next() first thing, they check uidIter.term().
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid));
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
@@ -720,9 +728,7 @@ public class IndexDatabase {
         }
 
         if (!isInterrupted() && isDirty()) {
-            if (env.isOptimizeDatabase()) {
-                optimize();
-            }
+            unsetDirty();
             env.setIndexTimestamp();
         }
     }
@@ -808,11 +814,11 @@ public class IndexDatabase {
     }
 
     /**
-     * Optimize all index databases.
+     * Reduce segment counts of all index databases.
      *
      * @throws IOException if an error occurs
      */
-    static CountDownLatch optimizeAll() throws IOException {
+    static void reduceSegmentCountAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
@@ -827,30 +833,35 @@ public class IndexDatabase {
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
-            if (db.isDirty()) {
-                parallelizer.getFixedExecutor().submit(() -> {
-                    try {
-                        db.update();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE,
-                            "Problem updating lucene index database: ", e);
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-            }
+            parallelizer.getFixedExecutor().submit(() -> {
+                try {
+                    db.reduceSegmentCount();
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE,
+                        "Problem reducing segment count of Lucene index database: ", e);
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
-        return latch;
+
+        try {
+            LOGGER.info("Waiting for the Lucene segment count reduction to finish");
+            latch.await();
+        } catch (InterruptedException exp) {
+            LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
+                    " for index segment count reduction to finish", exp);
+        }
     }
 
     /**
-     * Optimize the index database.
+     * Reduce number of segments in the index database.
      * @throws IOException I/O exception
      */
-    public void optimize() throws IOException {
+    public void reduceSegmentCount() throws IOException {
         synchronized (lock) {
             if (running) {
-                LOGGER.warning("Optimize terminated... Someone else is updating / optimizing it!");
+                LOGGER.warning("Segment count reduction terminated... Someone else is running the operation!");
                 return;
             }
             running = true;
@@ -861,25 +872,18 @@ public class IndexDatabase {
         try {
             Statistics elapsed = new Statistics();
             String projectDetail = this.project != null ? " for project " + project.getName() : "";
-            LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
+            LOGGER.log(Level.INFO, "Reducing number of segments in the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
-            wrt.forceMerge(1); // this is deprecated and not needed anymore
-            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail),
-                    "indexer.db.optimize");
-            synchronized (lock) {
-                if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
-                        dirtyFile.getAbsolutePath());
-                }
-                dirty = false;
-            }
+            wrt.forceMerge(1);
+            elapsed.report(LOGGER, String.format("Done reducing number of segments in index%s", projectDetail),
+                    "indexer.db.reduceSegments");
         } catch (IOException e) {
             writerException = e;
-            LOGGER.log(Level.SEVERE, "ERROR: optimizing index", e);
+            LOGGER.log(Level.SEVERE, "ERROR: reducing number of segments index", e);
         } finally {
             if (wrt != null) {
                 try {
@@ -922,6 +926,15 @@ public class IndexDatabase {
             } catch (IOException e) {
                 LOGGER.log(Level.FINE, "When creating dirty file: ", e);
             }
+        }
+    }
+
+    private void unsetDirty() {
+        synchronized (lock) {
+            if (dirtyFile.exists() && !dirtyFile.delete()) {
+                LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}", dirtyFile.getAbsolutePath());
+            }
+            dirty = false;
         }
     }
 
@@ -1688,6 +1701,7 @@ public class IndexDatabase {
                     }
                 }))).get();
         } catch (InterruptedException | ExecutionException e) {
+            interrupted = true;
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
             String exmsg = String.format("%d successes (%.1f%%) after aborting parallel-indexing",
@@ -1793,17 +1807,11 @@ public class IndexDatabase {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.U);
                 iter = terms.iterator(); // init uid iterator
             }
-            while (iter != null && iter.term() != null) {
-                String value = iter.term().utf8ToString();
-                if (value.isEmpty()) {
-                    iter.next();
-                    continue;
-                }
-
-                files.add(Util.uid2url(value));
-                BytesRef next = iter.next();
-                if (next == null) {
-                    iter = null;
+            BytesRef term;
+            while (iter != null && (term = iter.next()) != null) {
+                String value = term.utf8ToString();
+                if (!value.isEmpty()) {
+                    files.add(Util.uid2url(value));
                 }
             }
         } finally {
@@ -1830,65 +1838,6 @@ public class IndexDatabase {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
             return ireader.numDocs();
         } finally {
-            if (ireader != null) {
-                try {
-                    ireader.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occurred while closing index reader", e);
-                }
-            }
-        }
-    }
-
-    static void listFrequentTokens(List<String> subFiles) throws IOException {
-        final int limit = 4;
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.hasProjects()) {
-            if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjectList()) {
-                    IndexDatabase db = new IndexDatabase(project);
-                    db.listTokens(limit);
-                }
-            } else {
-                for (String path : subFiles) {
-                    Project project = Project.getProject(path);
-                    if (project == null) {
-                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
-                    } else {
-                        IndexDatabase db = new IndexDatabase(project);
-                        db.listTokens(limit);
-                    }
-                }
-            }
-        } else {
-            IndexDatabase db = new IndexDatabase();
-            db.listTokens(limit);
-        }
-    }
-
-    public void listTokens(int freq) throws IOException {
-        IndexReader ireader = null;
-        TermsEnum iter = null;
-        Terms terms;
-
-        try {
-            ireader = DirectoryReader.open(indexDirectory);
-            if (ireader.numDocs() > 0) {
-                terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
-                iter = terms.iterator(); // init uid iterator
-            }
-            while (iter != null && iter.term() != null) {
-                if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
-                    LOGGER.warning(iter.term().utf8ToString());
-                }
-                BytesRef next = iter.next();
-                if (next == null) {
-                    iter = null;
-                }
-            }
-        } finally {
-
             if (ireader != null) {
                 try {
                     ireader.close();

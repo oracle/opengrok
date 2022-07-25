@@ -402,14 +402,6 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    void testOptimizeDatabase() {
-        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertTrue(instance.isOptimizeDatabase());
-        instance.setOptimizeDatabase(false);
-        assertFalse(instance.isOptimizeDatabase());
-    }
-
-    @Test
     void testUsingLuceneLocking() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertEquals(LuceneLockName.OFF, instance.getLuceneLocking());
