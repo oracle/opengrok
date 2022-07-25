@@ -1808,7 +1808,7 @@ public final class RuntimeEnvironment {
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
             Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
-            mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+            mgr = new SearcherManager(dir, new SuperIndexSearcherFactory());
             searcherManagerMap.put(projectName, mgr);
         }
 

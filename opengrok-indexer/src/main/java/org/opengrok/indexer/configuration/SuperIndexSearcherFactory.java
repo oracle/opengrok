@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
   */
 package org.opengrok.indexer.configuration;
 
@@ -31,12 +31,11 @@ import org.apache.lucene.search.SearcherFactory;
  * to make sure the searcher threads are constrained to single thread pool.
  * @author vkotal
  */
-class ThreadpoolSearcherFactory extends SearcherFactory {
+class SuperIndexSearcherFactory extends SearcherFactory {
 
     @Override
     public SuperIndexSearcher newSearcher(IndexReader r, IndexReader prev) {
         // The previous IndexReader is not used here.
         return new SuperIndexSearcher(r, RuntimeEnvironment.getInstance().getSearchExecutor());
     }
-
 }
