@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -102,7 +102,7 @@ public class DirectoryHistoryReader {
                 throw new IOException("Could not locate index database");
             }
             // The search results will be sorted by date.
-            IndexSearcher searcher = new IndexSearcher(ireader);
+            IndexSearcher searcher = new IndexSearcher(ireader, RuntimeEnvironment.getInstance().getSearchExecutor());
             SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
             QueryParser qparser = new QueryParser(QueryBuilder.PATH, new CompatibleAnalyser());

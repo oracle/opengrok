@@ -1939,7 +1939,7 @@ public class IndexDatabase {
 
         Document doc;
         Query q = new QueryBuilder().setPath(path).build();
-        IndexSearcher searcher = new IndexSearcher(indexReader);
+        IndexSearcher searcher = new IndexSearcher(indexReader, RuntimeEnvironment.getInstance().getSearchExecutor());
         Statistics stat = new Statistics();
         TopDocs top = searcher.search(q, 1);
         stat.report(LOGGER, Level.FINEST, "search via getDocument() done",

@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -176,14 +176,13 @@ public class SearchEngine {
 
     /**
      * Search one index. This is used if no projects are set up.
-     * @param paging whether to use paging (if yes, first X pages will load
-     * faster)
+     * @param paging whether to use paging (if yes, first X pages will load  faster)
      * @param root which db to search
      * @throws IOException
      */
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
         IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
-        searcher = new IndexSearcher(ireader);
+        searcher = new IndexSearcher(ireader, RuntimeEnvironment.getInstance().getSearchExecutor());
         searchIndex(searcher, paging);
     }
 
@@ -203,9 +202,8 @@ public class SearchEngine {
         // We use MultiReader even for single project. This should
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
-        MultiReader searchables = RuntimeEnvironment.getInstance().
-            getMultiReader(projects, searcherList);
-        searcher = new IndexSearcher(searchables);
+        MultiReader searchables = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
+        searcher = new IndexSearcher(searchables, RuntimeEnvironment.getInstance().getSearchExecutor());
         searchIndex(searcher, paging);
     }
 
@@ -324,7 +322,6 @@ public class SearchEngine {
         try {
             query = newBuilder.build();
             if (query != null) {
-
                 if (projects.isEmpty()) {
                     // search the index database
                     //NOTE this assumes that src does not contain any project, just
