@@ -231,6 +231,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        env.setHistoryEnabled(true);
         env.setRepositories(repository.getSourceRoot());
 
         List<RepositoryInfo> repos = env.getRepositories();
@@ -412,6 +413,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
 
         Project project = new Project("bug3430");
         project.setPath("/bug3430");
@@ -431,6 +433,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
 
         // Make the test consistent. If run in sequence with other tests, env.hasProjects() returns true.
         // The same should work for standalone test run.
