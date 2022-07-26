@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -167,6 +167,7 @@ public final class WebappListener
         env.stopExpirationTimer();
         try {
             env.shutdownRevisionExecutor();
+            env.shutdownSearchExecutor();
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "Could not shutdown revision executor", e);
         }
