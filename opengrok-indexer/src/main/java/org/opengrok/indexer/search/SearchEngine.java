@@ -41,8 +41,6 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -50,7 +48,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
@@ -177,31 +174,31 @@ public class SearchEngine {
     /**
      * Search one index. This is used if no projects are set up.
      * @param paging whether to use paging (if yes, first X pages will load  faster)
-     * @param root which db to search
-     * @throws IOException
+     * @throws IOException when index could not be read
      */
-    private void searchSingleDatabase(File root, boolean paging) throws IOException {
-        IndexReader indexReader = DirectoryReader.open(FSDirectory.open(root.toPath()));
-        searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(indexReader);
-        searchIndex(searcher, paging);
+    private void searchSingleDatabase(boolean paging) throws IOException {
+        SuperIndexSearcher superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher("");
+        searcherList.add(superIndexSearcher);
+        searcher = superIndexSearcher;
+        searchIndex(superIndexSearcher, paging);
     }
 
     /**
-     * Perform search on multiple indexes in parallel.
+     * Perform search on multiple indexes.
      * @param paging whether to use paging (if yes, first X pages will load faster)
-     * @param root list of projects to search
-     * @throws IOException
+     * @param projectList list of projects to search
+     * @throws IOException when some index could not be read
      */
-    private void searchMultiDatabase(List<Project> root, boolean paging) throws IOException {
-        SortedSet<String> projects = new TreeSet<>();
-        for (Project p : root) {
-            projects.add(p.getName());
+    private void searchMultiDatabase(List<Project> projectList, boolean paging) throws IOException {
+        SortedSet<String> projectNames = new TreeSet<>();
+        for (Project project : projectList) {
+            projectNames.add(project.getName());
         }
 
         // We use MultiReader even for single project. This should
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
-        MultiReader searchables = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
+        MultiReader searchables = RuntimeEnvironment.getInstance().getMultiReader(projectNames, searcherList);
         searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(searchables);
         searchIndex(searcher, paging);
     }
@@ -323,20 +320,18 @@ public class SearchEngine {
             if (query != null) {
                 if (projects.isEmpty()) {
                     // search the index database
-                    //NOTE this assumes that src does not contain any project, just
-                    // data files - so no authorization can be enforced
-                    searchSingleDatabase(root, true);
+                    // NOTE: this assumes that source root does not contain any project,
+                    //       just data files - so no authorization can be enforced.
+                    searchSingleDatabase(true);
                 } else {
-                    // search all projects
+                    // search selected projects
                     //TODO support paging per project (in search.java)
-                    //TODO optimize if only one project by falling back to SingleDatabase ?
                     //NOTE projects are already filtered if we accessed through web page @see search(HttpServletRequest)
                     searchMultiDatabase(projects, false);
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(
-                    Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+            LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
         }
 
         if (!docs.isEmpty()) {
@@ -520,10 +515,13 @@ public class SearchEngine {
         }
     }
 
+    /**
+     * Free resources associated with this instance.
+     */
     public void destroy() {
-        for (SuperIndexSearcher is : searcherList) {
+        for (SuperIndexSearcher superIndexSearcher : searcherList) {
             try {
-                is.getSearcherManager().release(is);
+                superIndexSearcher.release();
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
             }

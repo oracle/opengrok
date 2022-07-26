@@ -108,6 +108,9 @@ public final class RuntimeEnvironment {
     private final LazilyInstantiate<IndexSearcherFactory> lzIndexSearcherFactory;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
+    /**
+     * Map of project name (or empty string in case of project-less configuration) to SearcherManager object.
+     */
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
     private String configURI;
@@ -151,8 +154,7 @@ public final class RuntimeEnvironment {
     private final Map<String, FileCollector> fileCollectorMap = new HashMap<>();
 
     /**
-     * Creates a new instance of RuntimeEnvironment. Private to ensure a
-     * singleton anti-pattern.
+     * Creates a new instance of RuntimeEnvironment. Private to ensure a singleton anti-pattern.
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
@@ -438,20 +440,18 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns a path relative to source root. This would just be a simple
-     * substring operation, except we need to support symlinks outside the
-     * source root.
+     * Returns a path relative to source root. This would just be a simple substring operation,
+     * except we need to support symlinks outside the source root.
      *
      * @param file A file to resolve
      * @return Path relative to source root
      * @throws IOException If an IO error occurs
      * @throws FileNotFoundException if the file is not relative to source root
      * or if {@code sourceRoot} is not defined
-     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
-     * an ineligible link
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters an ineligible link
      */
-    public String getPathRelativeToSourceRoot(File file)
-            throws IOException, ForbiddenSymlinkException {
+    public String getPathRelativeToSourceRoot(File file) throws IOException, ForbiddenSymlinkException {
+
         String sourceRoot = getSourceRootPath();
         if (sourceRoot == null) {
             throw new FileNotFoundException("sourceRoot is not defined");
@@ -1809,27 +1809,51 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get IndexSearcher for given project.
+     * Get IndexSearcher for given project or global IndexSearcher.
+     * Wrapper of {@link #getSuperIndexSearcher(String)}. Make sure to release the returned
+     * {@link SuperIndexSearcher} instance.
+     * @param file file object
+     * @return SuperIndexSearcher instance
+     * @throws IOException on error when reading
+     */
+    public SuperIndexSearcher getSuperIndexSearcher(File file) throws IOException {
+        String name = "";
+        if (RuntimeEnvironment.getInstance().hasProjects()) {
+            Project p = Project.getProject(file);
+            if (p != null) {
+                name = p.getName();
+            } else {
+                throw new IOException(String.format("project for '%s' not found", file));
+            }
+        }
+
+        return getSuperIndexSearcher(name);
+    }
+
+    /**
+     * Get IndexSearcher for given project or global IndexSearcher.
      * Each IndexSearcher is born from a SearcherManager object. There is one SearcherManager for every project.
      * This schema makes it possible to reuse IndexSearcher/IndexReader objects so the heavy lifting
-     * (esp. system calls) performed in {@code FSDirectory} and {@code DirectoryReader} happens only once for a project.
+     * (esp. system calls) performed in {@code FSDirectory} and {@code DirectoryReader} happens only once
+     * for given index.
+     * <p>
      * The caller has to make sure that the IndexSearcher is returned to the SearcherManager.
      * This is done with {@code searcherManagerInstance.release(indexSearcherInstance);}
      * The return of the IndexSearcher should happen only after the search result data are read fully.
      *
-     * @param projectName project
-     * @return SearcherManager for given project
+     * @param searcherName project name or empty string for project-less configuration
+     * @return SuperIndexSearcher instance
      * @throws IOException I/O exception
      */
     @SuppressWarnings("java:S2095")
-    public SuperIndexSearcher getIndexSearcher(String projectName) throws IOException {
+    public SuperIndexSearcher getSuperIndexSearcher(String searcherName) throws IOException {
 
-        SearcherManager mgr = searcherManagerMap.get(projectName);
+        SearcherManager mgr = searcherManagerMap.get(searcherName);
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
-            Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
+            Directory dir = FSDirectory.open(new File(indexDir, searcherName).toPath());
             mgr = new SearcherManager(dir, getSuperIndexSearcherFactory());
-            searcherManagerMap.put(projectName, mgr);
+            searcherManagerMap.put(searcherName, mgr);
         }
 
         SuperIndexSearcher searcher = (SuperIndexSearcher) mgr.acquire();
@@ -1868,7 +1892,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Return collection of IndexReader objects as MultiReader object for given list of projects.
-     * The caller is responsible for releasing the IndexSearcher objects.
+     * The caller is responsible for releasing the {@link SuperIndexSearcher} objects.
      *
      * @param projects list of projects
      * @param searcherList each SuperIndexSearcher produced will be put into this list
@@ -1882,7 +1906,7 @@ public final class RuntimeEnvironment {
         // TODO might need to rewrite to Project instead of String, need changes in projects.jspf too.
         for (String proj : projects) {
             try {
-                SuperIndexSearcher searcher = getIndexSearcher(proj);
+                SuperIndexSearcher searcher = getSuperIndexSearcher(proj);
                 subreaders[ii++] = searcher.getIndexReader();
                 searcherList.add(searcher);
             } catch (IOException | NullPointerException ex) {

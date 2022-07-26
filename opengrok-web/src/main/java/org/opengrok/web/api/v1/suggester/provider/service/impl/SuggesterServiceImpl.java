@@ -118,7 +118,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
             for (SuperIndexSearcher s : superIndexSearchers) {
                 try {
-                    s.getSearcherManager().release(s);
+                    s.release();
                 } catch (IOException e) {
                     logger.log(Level.WARNING, "Could not release " + s, e);
                 }
@@ -131,20 +131,20 @@ public class SuggesterServiceImpl implements SuggesterService {
             final List<SuperIndexSearcher> superIndexSearchers
     ) {
         if (env.isProjectsEnabled()) {
-            return projects.stream().map(project -> {
+            return projects.stream().map(projectName -> {
                 try {
-                    SuperIndexSearcher searcher = env.getIndexSearcher(project);
+                    SuperIndexSearcher searcher = env.getSuperIndexSearcher(projectName);
                     superIndexSearchers.add(searcher);
-                    return new NamedIndexReader(project, searcher.getIndexReader());
+                    return new NamedIndexReader(projectName, searcher.getIndexReader());
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "Could not get index reader for " + project, e);
+                    logger.log(Level.WARNING, "Could not get index reader for " + projectName, e);
                 }
                 return null;
             }).filter(Objects::nonNull).collect(Collectors.toList());
         } else {
             SuperIndexSearcher searcher;
             try {
-                searcher = env.getIndexSearcher("");
+                searcher = env.getSuperIndexSearcher("");
                 superIndexSearchers.add(searcher);
                 return Collections.singletonList(new NamedIndexReader("", searcher.getIndexReader()));
             } catch (IOException e) {

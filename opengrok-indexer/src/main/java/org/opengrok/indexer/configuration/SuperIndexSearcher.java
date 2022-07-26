@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.configuration;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -50,5 +51,9 @@ public class SuperIndexSearcher extends IndexSearcher {
 
     public SearcherManager getSearcherManager() {
         return (searcherManager);
+    }
+
+    public void release() throws IOException {
+        getSearcherManager().release(this);
     }
 }

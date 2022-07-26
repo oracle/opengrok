@@ -76,7 +76,6 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
@@ -99,6 +98,7 @@ import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
@@ -1849,44 +1849,10 @@ public class IndexDatabase {
     }
 
     /**
-     * Get an indexReader for the Index database where a given file.
-     *
-     * @param path the file to get the database for
-     * @return The index database where the file should be located or {@code null} if it cannot be located.
-     */
-    @SuppressWarnings("java:S2095")
-    @Nullable
-    public static IndexReader getIndexReader(String path) {
-        IndexReader ret = null;
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
-
-        if (env.hasProjects()) {
-            Project p = Project.getProject(path);
-            if (p == null) {
-                return null;
-            }
-            indexDir = new File(indexDir, p.getPath());
-        }
-        try {
-            FSDirectory fdir = FSDirectory.open(indexDir.toPath(), NoLockFactory.INSTANCE);
-            if (indexDir.exists() && DirectoryReader.indexExists(fdir)) {
-                ret = DirectoryReader.open(fdir);
-            }
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
-            LOGGER.log(Level.FINE, "Stack Trace: ", ex);
-        }
-        return ret;
-    }
-
-    /**
      * Get the latest definitions for a file from the index.
      *
      * @param file the file whose definitions to find
-     * @return definitions for the file, or {@code null} if they could not be
-     * found
+     * @return definitions for the file, or {@code null} if they could not be found
      * @throws IOException if an error happens when accessing the index
      * @throws ParseException if an error happens when building the Lucene query
      * @throws ClassNotFoundException if the class for the stored definitions
@@ -1909,11 +1875,13 @@ public class IndexDatabase {
 
     /**
      * @param file File object for a file under source root
-     * @return Document object for the file or {@code null}
+     * @return Document object for the file or {@code null} if no document was found
      * @throws IOException on I/O error
      * @throws ParseException on problem with building Query
      */
-    public static Document getDocument(File file) throws IOException, ParseException {
+    @Nullable
+    public static Document getDocument(File file) throws ParseException, IOException {
+
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
         try {
@@ -1925,36 +1893,28 @@ public class IndexDatabase {
         // Sanitize Windows path delimiters in order not to conflict with Lucene escape character.
         path = path.replace("\\", "/");
 
-        try (IndexReader indexReader = getIndexReader(path)) {
-            return getDocument(path, indexReader);
-        }
-    }
-
-    @Nullable
-    private static Document getDocument(String path, IndexReader indexReader) throws ParseException, IOException {
-        if (indexReader == null) {
-            // No index, no document..
-            return null;
-        }
-
         Document doc;
         Query q = new QueryBuilder().setPath(path).build();
-        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(indexReader);
-        Statistics stat = new Statistics();
-        TopDocs top = searcher.search(q, 1);
-        stat.report(LOGGER, Level.FINEST, "search via getDocument() done",
-                "search.latency", new String[]{"category", "getdocument",
-                        "outcome", top.totalHits.value == 0 ? "empty" : "success"});
-        if (top.totalHits.value == 0) {
-            // No hits, no document...
-            return null;
-        }
-        doc = searcher.doc(top.scoreDocs[0].doc);
-        String foundPath = doc.get(QueryBuilder.PATH);
+        SuperIndexSearcher searcher = env.getSuperIndexSearcher(file);
+        try {
+            Statistics stat = new Statistics();
+            TopDocs top = searcher.search(q, 1);
+            stat.report(LOGGER, Level.FINEST, "search via getDocument() done",
+                    "search.latency", new String[]{"category", "getdocument",
+                            "outcome", top.totalHits.value == 0 ? "empty" : "success"});
+            if (top.totalHits.value == 0) {
+                // No hits, no document...
+                return null;
+            }
+            doc = searcher.doc(top.scoreDocs[0].doc);
+            String foundPath = doc.get(QueryBuilder.PATH);
 
-        // Only use the document if we found an exact match.
-        if (!path.equals(foundPath)) {
-            return null;
+            // Only use the document if we found an exact match.
+            if (!path.equals(foundPath)) {
+                return null;
+            }
+        } finally {
+            searcher.release();
         }
 
         return doc;

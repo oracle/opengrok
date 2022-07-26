@@ -38,10 +38,8 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -49,7 +47,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 
@@ -93,17 +91,12 @@ public class DirectoryHistoryReader {
      * @throws IOException when index cannot be accessed
      */
     public DirectoryHistoryReader(String path) throws IOException {
-        IndexReader indexReader = null;
+        SuperIndexSearcher searcher = null;
         try {
             // Prepare for index search.
             String srcRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
-            indexReader = IndexDatabase.getIndexReader(path);
-            if (indexReader == null) {
-                throw new IOException(String.format("Could not locate index database for '%s'", path));
-            }
             // The search results will be sorted by date.
-            IndexSearcher searcher = RuntimeEnvironment.getInstance().
-                    getIndexSearcherFactory().newSearcher(indexReader);
+            searcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher(new File(srcRoot, path));
             SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
             QueryParser qparser = new QueryParser(QueryBuilder.PATH, new CompatibleAnalyser());
@@ -166,9 +159,9 @@ public class DirectoryHistoryReader {
             // into history object.
             history = new History(entries);
         } finally {
-            if (indexReader != null) {
+            if (searcher != null) {
                 try {
-                    indexReader.close();
+                    searcher.release();
                 } catch (Exception ex) {
                     LOGGER.log(Level.WARNING,
                             String.format("An error occurred while closing index reader for '%s'", path), ex);

@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FileControllerTest extends OGKJerseyTest {
+class FileControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -91,7 +91,7 @@ public class FileControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testFileContent() throws IOException {
+    void testFileContent() throws IOException {
         final String path = "git/header.h";
         byte[] encoded = Files.readAllBytes(Paths.get(repository.getSourceRoot(), path));
         String contents = new String(encoded);
@@ -104,7 +104,7 @@ public class FileControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testFileGenre() {
+    void testFileGenre() {
         final String path = "git/main.c";
         String genre = target("file")
                 .path("genre")

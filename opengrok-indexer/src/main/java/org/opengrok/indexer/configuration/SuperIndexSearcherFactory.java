@@ -27,7 +27,7 @@ import org.apache.lucene.search.SearcherFactory;
 
 /**
  * Factory for producing IndexSearcher objects.
- * This is used inside getIndexSearcher() to produce new SearcherManager objects
+ * This is used inside getSuperIndexSearcher() to produce new SearcherManager objects
  * to make sure the searcher threads are constrained to single thread pool.
  * @author vkotal
  */
