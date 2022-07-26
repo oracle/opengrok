@@ -332,6 +332,7 @@ public class IndexerTest {
         env.setSourceRoot(testrepo.getSourceRoot());
         env.setDataRoot(testrepo.getDataRoot());
         env.setRepositories(testrepo.getSourceRoot());
+        env.setHistoryEnabled(true);
 
         // Create history cache.
         Indexer.getInstance().prepareIndexer(env, true, true,
