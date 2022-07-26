@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
@@ -548,6 +549,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @param file the file to lookup
      * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
      */
+    @Nullable
     public static Project getProject(File file) {
         Project ret = null;
         try {
