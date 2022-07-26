@@ -83,7 +83,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testIsValidQuery() {
+    void testIsValidQuery() {
         SearchEngine instance = new SearchEngine();
         assertFalse(instance.isValidQuery());
         instance.setFile("foo");
@@ -91,7 +91,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testDefinition() {
+    void testDefinition() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getDefinition());
         String defs = "This is a definition";
@@ -100,7 +100,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testFile() {
+    void testFile() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getFile());
         String file = "This is a File";
@@ -109,7 +109,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testFreetext() {
+    void testFreetext() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getFreetext());
         String freetext = "This is just a piece of text";
@@ -118,7 +118,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testHistory() {
+    void testHistory() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getHistory());
         String hist = "This is a piece of history";
@@ -127,7 +127,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testSymbol() {
+    void testSymbol() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getSymbol());
         String sym = "This is a symbol";
@@ -136,7 +136,7 @@ public class SearchEngineTest {
     }
 
     @Test
-    public void testGetQuery() throws Exception {
+    void testGetQuery() throws Exception {
         SearchEngine instance = new SearchEngine();
         instance.setHistory("Once upon a time");
         instance.setFile("Makefile");

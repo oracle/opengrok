@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -63,7 +62,6 @@ import org.apache.lucene.search.Weight;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
-import org.apache.lucene.store.FSDirectory;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
@@ -71,7 +69,6 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
-import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.IndexedSymlink;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -80,7 +77,6 @@ import org.opengrok.indexer.search.Summarizer;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Working set for a search basically to factor out/separate search related
@@ -175,8 +171,7 @@ public class SearchHelper {
      */
     private IndexReader reader;
     /**
-     * the searcher used to open/search the index. Automatically set via
-     * {@link #prepareExec(SortedSet)}. Used only for setup with no projects.
+     * the searcher used to open/search the index. Automatically set via {@link #prepareExec(SortedSet)}.
      */
     private IndexSearcher searcher;
     /**
@@ -184,11 +179,7 @@ public class SearchHelper {
      * tracked by the indexSearcherMap so that they can be properly released
      * once the results are read.
      */
-    private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
-    /**
-     * Close IndexReader associated with searches on destroy().
-     */
-    private Boolean closeOnDestroy;
+    private final ArrayList<SuperIndexSearcher> superIndexSearchers = new ArrayList<>();
     /**
      * List of docs which result from the executing the query.
      */
@@ -212,8 +203,7 @@ public class SearchHelper {
      */
     private DirectSpellChecker checker;
     /**
-     * projects to use to setup indexer searchers. Usually setup via
-     * {@link #prepareExec(SortedSet)}.
+     * projects to use to set up indexer searchers. Usually done via {@link #prepareExec(SortedSet)}.
      */
     private SortedSet<String> projects;
     /**
@@ -228,8 +218,6 @@ public class SearchHelper {
      * history context usually created via {@link #prepareSummary()}.
      */
     private HistoryContext historyContext;
-
-    private File indexDir;
 
     private SettingsHelper settingsHelper;
 
@@ -344,8 +332,7 @@ public class SearchHelper {
     /**
      * Create the searcher to use w.r.t. currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
-     * nothing if {@link #redirect} or {@link #errorMsg} have a
-     * none-{@code null} value.
+     * nothing if {@link #redirect} or {@link #errorMsg} have a none-{@code null} value.
      * <p>
      * Parameters which should be populated/set at this time:
      * <ul>
@@ -358,11 +345,10 @@ public class SearchHelper {
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
      *
-     * @param projects project names. If empty, a no-project setup
-     * is assumed (i.e. DATA_ROOT/index will be used instead of possible
-     * multiple DATA_ROOT/$project/index). If the set contains projects
-     * not known in the configuration or projects not yet indexed,
-     * an error will be returned in {@link #errorMsg}.
+     * @param projects project names. If empty, a no-project setup is assumed (i.e. DATA_ROOT/index will be used
+     *                 instead of possible multiple DATA_ROOT/$project/index). If the set contains projects
+     *                 not known in the configuration or projects not yet indexed an error will be returned
+     *                 in {@link #errorMsg}.
      * @return this instance
      */
     public SearchHelper prepareExec(SortedSet<String> projects) {
@@ -373,7 +359,6 @@ public class SearchHelper {
         settingsHelper = null;
         // the Query created by the QueryBuilder
         try {
-            indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
             query = builder.build();
             if (projects == null) {
                 errorMsg = "No project selected!";
@@ -382,14 +367,12 @@ public class SearchHelper {
             this.projects = projects;
             if (projects.isEmpty()) {
                 // no project setup
-                FSDirectory dir = FSDirectory.open(indexDir.toPath());
-                reader = DirectoryReader.open(dir);
-                searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
-                closeOnDestroy = true;
+                SuperIndexSearcher superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher("");
+                searcher = superIndexSearcher;
+                superIndexSearchers.add(superIndexSearcher);
+                reader = superIndexSearcher.getIndexReader();
             } else {
-                // Check list of project names first to make sure all of them
-                // are valid and indexed.
-                closeOnDestroy = false;
+                // Check list of project names first to make sure all of them are valid and indexed.
                 Set<String> invalidProjects = projects.stream().
                     filter(proj -> (Project.getByName(proj) == null)).
                     collect(Collectors.toSet());
@@ -413,7 +396,7 @@ public class SearchHelper {
 
                 // We use MultiReader even for single project. This should not matter
                 // given that MultiReader is just a cheap wrapper around set of IndexReader objects.
-                reader = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
+                reader = RuntimeEnvironment.getInstance().getMultiReader(projects, superIndexSearchers);
                 if (reader != null) {
                     searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 } else {
@@ -621,36 +604,39 @@ public class SearchHelper {
         if (projects == null) {
             return new ArrayList<>(0);
         }
-        String[] name;
+
+        boolean emptyProjects = false;
+        String[] projectNames;
         if (projects.isEmpty()) {
-            name = new String[]{"/"};
+            projectNames = new String[]{"/"};
+            emptyProjects = true;
         } else if (projects.size() == 1) {
-            name = new String[]{projects.first()};
+            projectNames = new String[]{projects.first()};
         } else {
-            name = new String[projects.size()];
+            projectNames = new String[projects.size()];
             int ii = 0;
             for (String proj : projects) {
-                name[ii++] = proj;
+                projectNames[ii++] = proj;
             }
         }
+
         List<Suggestion> res = new ArrayList<>();
         List<String> dummy = new ArrayList<>();
-        FSDirectory dir;
         IndexReader ir = null;
         Term t;
-        for (String proj : name) {
-            Suggestion suggestion = new Suggestion(proj);
+        for (String projectName : projectNames) {
+            Suggestion suggestion = new Suggestion(projectName);
             try {
-                if (!closeOnDestroy) {
-                    SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
-                    searcherList.add(searcher);
-                    ir = searcher.getIndexReader();
+                SuperIndexSearcher superIndexSearcher;
+                if (emptyProjects) {
+                    superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher("");
                 } else {
-                    dir = FSDirectory.open(new File(indexDir, proj).toPath());
-                    ir = DirectoryReader.open(dir);
+                    superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher(projectName);
                 }
-                if (builder.getFreetext() != null
-                        && !builder.getFreetext().isEmpty()) {
+                superIndexSearchers.add(superIndexSearcher);
+                ir = superIndexSearcher.getIndexReader();
+
+                if (builder.getFreetext() != null && !builder.getFreetext().isEmpty()) {
                     t = new Term(QueryBuilder.FULL, builder.getFreetext());
                     getSuggestion(t, ir, dummy);
                     suggestion.setFreetext(dummy.toArray(new String[0]));
@@ -674,18 +660,11 @@ public class SearchHelper {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,
-                        String.format("Got exception while getting spelling suggestions for project %s:", proj), e);
-            } finally {
-                if (ir != null && closeOnDestroy) {
-                    try {
-                        ir.close();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Got exception while "
-                                + "getting spelling suggestions: ", ex);
-                    }
-                }
+                        String.format("Got exception while getting spelling suggestions for project %s:", projectName),
+                        e);
             }
         }
+
         return res;
     }
 
@@ -721,19 +700,14 @@ public class SearchHelper {
     }
 
     /**
-     * Free any resources associated with this helper (that includes closing the
-     * used {@link #searcher} in case of no-project setup).
+     * Free any resources associated with this helper.
      */
     public void destroy() {
-        if (searcher != null && closeOnDestroy) {
-            IOUtils.close(searcher.getIndexReader());
-        }
-
-        for (SuperIndexSearcher is : searcherList) {
+        for (SuperIndexSearcher superIndexSearcher : superIndexSearchers) {
             try {
-                is.getSearcherManager().release(is);
+                superIndexSearcher.release();
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
+                LOGGER.log(Level.WARNING, "cannot release SuperIndexSearcher", ex);
             }
         }
     }
