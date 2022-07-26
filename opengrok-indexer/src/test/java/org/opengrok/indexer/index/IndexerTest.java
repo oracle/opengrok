@@ -24,6 +24,7 @@
  */
 package org.opengrok.indexer.index;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -40,6 +41,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -177,17 +179,14 @@ public class IndexerTest {
         assertEquals(p1.getTabSize(), newP1.getTabSize(), "project tabsize");
     }
 
-    /**
-     * Test of doIndexerExecution method, of class Indexer.
-     */
     @Test
-    void testMain() {
-        System.out.println("Generate index by using command line options");
+    void testParseOptions() throws ParseException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
-                repository.getSourceRoot(), "-d", repository.getDataRoot(),
+        String[] argv = {"-S", "-P", "-H", "-Q", "off",
+                "-s", repository.getSourceRoot(),
+                "-d", repository.getDataRoot(),
                 "-v", "-c", env.getCtags()};
-        Indexer.main(argv);
+        assertDoesNotThrow(() -> Indexer.parseOptions(argv));
     }
 
     private static class MyIndexChangeListener implements IndexChangedListener {
@@ -226,7 +225,6 @@ public class IndexerTest {
     /**
      * Test indexing w.r.t. setIndexVersionedFilesOnly() setting,
      * i.e. if this option is set to true, index only files tracked by SCM.
-     * @throws Exception
      */
     @Test
     void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
