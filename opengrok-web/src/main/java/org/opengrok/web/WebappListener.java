@@ -58,8 +58,7 @@ import java.util.logging.Logger;
  *
  * @author Trond Norbye
  */
-public final class WebappListener
-        implements ServletContextListener, ServletRequestListener {
+public final class WebappListener implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
     private final Timer startupTimer = Timer.builder("webapp.startup.latency").
