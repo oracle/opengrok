@@ -17,26 +17,26 @@
  * CDDL HEADER END
  */
 
- /*
-  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
-  */
+/*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opengrok.indexer.configuration;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 
 /**
- * Factory for producing IndexSearcher objects.
- * This is used inside getIndexSearcher() to produce new SearcherManager objects
- * to make sure the searcher threads are constrained to single thread pool.
- * @author vkotal
+ * Factory for IndexSearcher objects with search executor.
  */
-class ThreadpoolSearcherFactory extends SearcherFactory {
-
-    @Override
-    public SuperIndexSearcher newSearcher(IndexReader r, IndexReader prev) {
-        // The previous IndexReader is not used here.
-        return new SuperIndexSearcher(r, RuntimeEnvironment.getInstance().getSearchExecutor());
+public class IndexSearcherFactory extends SearcherFactory {
+    public IndexSearcher newSearcher(IndexReader reader) {
+        return newSearcher(reader, null);
     }
 
+    @Override
+    public IndexSearcher newSearcher(IndexReader reader, IndexReader prev) {
+        // The previous IndexReader is not used here.
+        return new IndexSearcher(reader, RuntimeEnvironment.getInstance().getSearchExecutor());
+    }
 }

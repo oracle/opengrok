@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -37,6 +38,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
@@ -73,9 +75,9 @@ public class IndexAnalysisSettingsAccessor {
      * @return a defined instance, which is empty if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
-    public IndexAnalysisSettings3[] read(IndexReader reader, int n)
-            throws IOException {
-        IndexSearcher searcher = new IndexSearcher(reader);
+    public IndexAnalysisSettings3[] read(IndexReader reader, int n) throws IOException {
+
+        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
         Query q;
         try {
             q = new QueryParser(QueryBuilder.OBJUID, new CompatibleAnalyser()).

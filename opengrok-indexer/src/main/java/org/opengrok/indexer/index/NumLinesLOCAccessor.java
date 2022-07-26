@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -41,6 +42,7 @@ import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.AccumulatedNumLinesLOC;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.analysis.NumLinesLOC;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 
 import java.io.File;
@@ -87,8 +89,7 @@ class NumLinesLOCAccessor {
      * @return a value indicating whether any defined number-of-lines and
      * lines-of-code were found
      */
-    public boolean register(NumLinesLOCAggregator countsAggregator, IndexReader reader)
-            throws IOException {
+    public boolean register(NumLinesLOCAggregator countsAggregator, IndexReader reader) throws IOException {
 
         /*
          * Search for existing documents with any value of PATH. Those are
@@ -96,7 +97,7 @@ class NumLinesLOCAccessor {
          * directories or other object data (e.g. IndexAnalysisSettings3), which
          * have no stored PATH.
          */
-        IndexSearcher searcher = new IndexSearcher(reader);
+        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
 
         Query query;
         try {
@@ -138,7 +139,7 @@ class NumLinesLOCAccessor {
             List<AccumulatedNumLinesLOC> counts, boolean isAggregatingDeltas) throws IOException {
 
         // Search for existing documents with QueryBuilder.D.
-        IndexSearcher searcher = new IndexSearcher(reader);
+        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
 
         for (AccumulatedNumLinesLOC entry : counts) {
             Query query = new TermQuery(new Term(QueryBuilder.D, entry.getPath()));
@@ -205,7 +206,7 @@ class NumLinesLOCAccessor {
 
     private DSearchResult newDSearch(IndexReader reader, int n) throws IOException {
         // Search for existing documents with QueryBuilder.D.
-        IndexSearcher searcher = new IndexSearcher(reader);
+        IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
         Query query;
         try {
             QueryParser parser = new QueryParser(QueryBuilder.D, new CompatibleAnalyser());

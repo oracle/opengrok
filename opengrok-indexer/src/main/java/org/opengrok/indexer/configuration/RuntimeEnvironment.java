@@ -104,6 +104,9 @@ public final class RuntimeEnvironment {
     private final LazilyInstantiate<ExecutorService> lzRevisionExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
 
+    private final LazilyInstantiate<SuperIndexSearcherFactory> lzSuperIndexSearcherFactory;
+    private final LazilyInstantiate<IndexSearcherFactory> lzIndexSearcherFactory;
+
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
@@ -155,10 +158,11 @@ public final class RuntimeEnvironment {
         configuration = new Configuration();
         configLock = new CloseableReentrantReadWriteLock();
         watchDog = new WatchDogService();
-        lzIndexerParallelizer = LazilyInstantiate.using(() ->
-                new IndexerParallelizer(this));
+        lzIndexerParallelizer = LazilyInstantiate.using(() -> new IndexerParallelizer(this));
         lzSearchExecutor = LazilyInstantiate.using(this::newSearchExecutor);
         lzRevisionExecutor = LazilyInstantiate.using(this::newRevisionExecutor);
+        lzSuperIndexSearcherFactory = LazilyInstantiate.using(this::newSuperIndexSearcherFactory);
+        lzIndexSearcherFactory = LazilyInstantiate.using(this::newIndexSearcherFactory);
     }
 
     // Instance of authorization framework and its lock.
@@ -209,6 +213,22 @@ public final class RuntimeEnvironment {
     public void shutdownRevisionExecutor() throws InterruptedException {
         getRevisionExecutor().shutdownNow();
         getRevisionExecutor().awaitTermination(getIndexerCommandTimeout(), TimeUnit.SECONDS);
+    }
+
+    private SuperIndexSearcherFactory newSuperIndexSearcherFactory() {
+        return new SuperIndexSearcherFactory();
+    }
+
+    public SuperIndexSearcherFactory getSuperIndexSearcherFactory() {
+        return lzSuperIndexSearcherFactory.get();
+    }
+
+    private IndexSearcherFactory newIndexSearcherFactory() {
+        return new IndexSearcherFactory();
+    }
+
+    public IndexSearcherFactory getIndexSearcherFactory() {
+        return lzIndexSearcherFactory.get();
     }
 
     /**
@@ -1792,9 +1812,9 @@ public final class RuntimeEnvironment {
      * Get IndexSearcher for given project.
      * Each IndexSearcher is born from a SearcherManager object. There is one SearcherManager for every project.
      * This schema makes it possible to reuse IndexSearcher/IndexReader objects so the heavy lifting
-     * (esp. system calls) performed in FSDirectory and DirectoryReader happens only once for a project.
-     * The caller has to make sure that the IndexSearcher is returned back
-     * to the SearcherManager. This is done with returnIndexSearcher().
+     * (esp. system calls) performed in {@code FSDirectory} and {@code DirectoryReader} happens only once for a project.
+     * The caller has to make sure that the IndexSearcher is returned to the SearcherManager.
+     * This is done with {@code searcherManagerInstance.release(indexSearcherInstance);}
      * The return of the IndexSearcher should happen only after the search result data are read fully.
      *
      * @param projectName project
@@ -1803,24 +1823,24 @@ public final class RuntimeEnvironment {
      */
     @SuppressWarnings("java:S2095")
     public SuperIndexSearcher getIndexSearcher(String projectName) throws IOException {
-        SearcherManager mgr = searcherManagerMap.get(projectName);
-        SuperIndexSearcher searcher;
 
+        SearcherManager mgr = searcherManagerMap.get(projectName);
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
             Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
-            mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+            mgr = new SearcherManager(dir, getSuperIndexSearcherFactory());
             searcherManagerMap.put(projectName, mgr);
         }
-        searcher = (SuperIndexSearcher) mgr.acquire();
+
+        SuperIndexSearcher searcher = (SuperIndexSearcher) mgr.acquire();
         searcher.setSearcherManager(mgr);
 
         return searcher;
     }
 
     /**
-     * After new configuration is put into place, the set of projects might
-     * change so we go through the SearcherManager objects and close those where
+     * After new configuration is put into place, the set of projects might change,
+     * so we go through the SearcherManager objects and close those where
      * the corresponding project is no longer present.
      */
     public void refreshSearcherManagerMap() {
@@ -1847,17 +1867,14 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Return collection of IndexReader objects as MultiReader object
-     * for given list of projects.
-     * The caller is responsible for releasing the IndexSearcher objects
-     * so we add them to the map.
+     * Return collection of IndexReader objects as MultiReader object for given list of projects.
+     * The caller is responsible for releasing the IndexSearcher objects.
      *
      * @param projects list of projects
      * @param searcherList each SuperIndexSearcher produced will be put into this list
      * @return MultiReader for the projects
      */
-    public MultiReader getMultiReader(SortedSet<String> projects,
-        ArrayList<SuperIndexSearcher> searcherList) {
+    public MultiReader getMultiReader(SortedSet<String> projects, List<SuperIndexSearcher> searcherList) {
 
         IndexReader[] subreaders = new IndexReader[projects.size()];
         int ii = 0;

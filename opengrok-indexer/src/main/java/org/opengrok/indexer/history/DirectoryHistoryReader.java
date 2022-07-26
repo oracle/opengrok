@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -93,16 +93,17 @@ public class DirectoryHistoryReader {
      * @throws IOException when index cannot be accessed
      */
     public DirectoryHistoryReader(String path) throws IOException {
-        IndexReader ireader = null;
+        IndexReader indexReader = null;
         try {
             // Prepare for index search.
             String srcRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
-            ireader = IndexDatabase.getIndexReader(path);
-            if (ireader == null) {
-                throw new IOException("Could not locate index database");
+            indexReader = IndexDatabase.getIndexReader(path);
+            if (indexReader == null) {
+                throw new IOException(String.format("Could not locate index database for '%s'", path));
             }
             // The search results will be sorted by date.
-            IndexSearcher searcher = new IndexSearcher(ireader);
+            IndexSearcher searcher = RuntimeEnvironment.getInstance().
+                    getIndexSearcherFactory().newSearcher(indexReader);
             SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
             QueryParser qparser = new QueryParser(QueryBuilder.PATH, new CompatibleAnalyser());
@@ -130,7 +131,7 @@ public class DirectoryHistoryReader {
                     try {
                         cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
-                        LOGGER.log(Level.WARNING, String.format("Could not get date for %s", path), ex);
+                        LOGGER.log(Level.WARNING, String.format("Could not get date for '%s'", path), ex);
                         cdate = new Date();
                     }
                     int ls = rpath.lastIndexOf('/');
@@ -138,11 +139,12 @@ public class DirectoryHistoryReader {
                         String rparent = rpath.substring(0, ls);
                         String rbase = rpath.substring(ls + 1);
                         History hist = null;
+                        File f = new File(srcRoot + rparent, rbase);
                         try {
-                            File f = new File(srcRoot + rparent, rbase);
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
-                            LOGGER.log(Level.WARNING, "An error occurred while getting history reader", e);
+                            LOGGER.log(Level.WARNING,
+                                    String.format("An error occurred while getting history reader for '%s'", f), e);
                         }
                         if (hist == null) {
                             put(cdate, "", "-", "", rpath);
@@ -164,11 +166,12 @@ public class DirectoryHistoryReader {
             // into history object.
             history = new History(entries);
         } finally {
-            if (ireader != null) {
+            if (indexReader != null) {
                 try {
-                    ireader.close();
+                    indexReader.close();
                 } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING, "An error occurred while closing reader", ex);
+                    LOGGER.log(Level.WARNING,
+                            String.format("An error occurred while closing index reader for '%s'", path), ex);
                 }
             }
         }

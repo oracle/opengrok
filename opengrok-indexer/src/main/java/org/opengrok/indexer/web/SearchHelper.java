@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -176,7 +176,7 @@ public class SearchHelper {
     private IndexReader reader;
     /**
      * the searcher used to open/search the index. Automatically set via
-     * {@link #prepareExec(SortedSet)}.
+     * {@link #prepareExec(SortedSet)}. Used only for setup with no projects.
      */
     private IndexSearcher searcher;
     /**
@@ -384,7 +384,7 @@ public class SearchHelper {
                 // no project setup
                 FSDirectory dir = FSDirectory.open(indexDir.toPath());
                 reader = DirectoryReader.open(dir);
-                searcher = new IndexSearcher(reader);
+                searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 closeOnDestroy = true;
             } else {
                 // Check list of project names first to make sure all of them
@@ -411,12 +411,11 @@ public class SearchHelper {
                     return this;
                 }
 
-                // We use MultiReader even for single project. This should
-                // not matter given that MultiReader is just a cheap wrapper
-                // around set of IndexReader objects.
+                // We use MultiReader even for single project. This should not matter
+                // given that MultiReader is just a cheap wrapper around set of IndexReader objects.
                 reader = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
                 if (reader != null) {
-                    searcher = new IndexSearcher(reader);
+                    searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index";
                     if (!projects.isEmpty()) {
