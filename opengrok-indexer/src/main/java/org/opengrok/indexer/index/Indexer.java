@@ -413,7 +413,7 @@ public final class Indexer {
             System.err.println("Exception: " + e.getLocalizedMessage());
             System.exit(1);
         } finally {
-            env.getSearchExecutor().shutdownNow();
+            env.shutdownSearchExecutor();
             stats.report(LOGGER, "Indexer finished", "indexer.total");
         }
     }

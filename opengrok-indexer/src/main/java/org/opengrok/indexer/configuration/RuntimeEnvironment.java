@@ -203,6 +203,15 @@ public final class RuntimeEnvironment {
                 });
     }
 
+    public void shutdownSearchExecutor() {
+        getSearchExecutor().shutdownNow();
+        try {
+            getSearchExecutor().awaitTermination(getIndexerCommandTimeout(), TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "failed to await shutdown of search executor", e);
+        }
+    }
+
     public ExecutorService getRevisionExecutor() {
         return lzRevisionExecutor.get();
     }
