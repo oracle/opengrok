@@ -191,7 +191,7 @@ public class IndexerTest {
 
     private static class MyIndexChangeListener implements IndexChangedListener {
 
-        final Queue<String> files = new ConcurrentLinkedQueue<>();
+        final Queue<String> addedFiles = new ConcurrentLinkedQueue<>();
         final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
         @Override
@@ -200,7 +200,7 @@ public class IndexerTest {
 
         @Override
         public void fileAdded(String path, String analyzer) {
-            files.add(path);
+            addedFiles.add(path);
         }
 
         @Override
@@ -217,7 +217,7 @@ public class IndexerTest {
         }
 
         public void reset() {
-            this.files.clear();
+            this.addedFiles.clear();
             this.removedFiles.clear();
         }
     }
@@ -251,14 +251,14 @@ public class IndexerTest {
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
             idb.update();
-            assertEquals(2, listener.files.size());
+            assertEquals(2, listener.addedFiles.size());
             repository.purgeData();
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
             idb = new IndexDatabase(project);
             listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
             idb.update();
-            assertEquals(1, listener.files.size());
+            assertEquals(1, listener.addedFiles.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
             System.out.println("Skipping test. Repository for rfe2575 not found or an sccs I could use in path.");
@@ -422,7 +422,7 @@ public class IndexerTest {
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
         idb.update();
-        assertEquals(1, listener.files.size());
+        assertEquals(1, listener.addedFiles.size());
     }
 
     /**
@@ -449,21 +449,20 @@ public class IndexerTest {
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
         idb.update();
-        assertEquals(1, listener.files.size());
+        assertEquals(1, listener.addedFiles.size());
         listener.reset();
         repository.addDummyFile(ppath);
         idb.update();
-        assertEquals(1, listener.files.size(), "No new file added");
+        assertEquals(1, listener.addedFiles.size(), "No new file added");
         repository.removeDummyFile(ppath);
         idb.update();
-        assertEquals(1, listener.files.size(), "(added)files changed unexpectedly");
+        assertEquals(1, listener.addedFiles.size(), "(added)files changed unexpectedly");
         assertEquals(1, listener.removedFiles.size(), "Didn't remove the dummy file");
-        assertEquals(listener.files.peek(), listener.removedFiles.peek(), "Should have added then removed the same file");
+        assertEquals(listener.addedFiles.peek(), listener.removedFiles.peek(), "Should have added then removed the same file");
     }
 
     /**
      * Test that named pipes are not indexed.
-     * @throws Exception
      */
     @Test
     @EnabledIf("mkfifoInPath")
@@ -487,7 +486,7 @@ public class IndexerTest {
         idb.addIndexChangedListener(listener);
         System.out.println("Trying to index a special file - FIFO in this case.");
         idb.update();
-        assertEquals(0, listener.files.size());
+        assertEquals(0, listener.addedFiles.size());
     }
 
     boolean mkfifoInPath() {
@@ -496,7 +495,6 @@ public class IndexerTest {
 
     /**
      * Should include the existing project.
-     * @throws Exception
      */
     @Test
     void testDefaultProjectsSingleProject() throws Exception {
@@ -507,14 +505,14 @@ public class IndexerTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
+        assertNotNull(env.getDefaultProjects());
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Collections.singletonList("c")),
                 env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 
     /**
-     * Should discard the non existing project.
-     * @throws Exception
+     * Should discard the non-existing project.
      */
     @Test
     void testDefaultProjectsNonExistent() throws Exception {
@@ -532,6 +530,7 @@ public class IndexerTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, null);
         env.setDefaultProjectsFromNames(projectSet);
+        assertNotNull(env.getDefaultProjects());
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList("lisp", "pascal", "perl", "data")),
                 env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
@@ -539,7 +538,6 @@ public class IndexerTest {
 
     /**
      * Should include all projects in the source root.
-     * @throws Exception
      */
     @Test
     void testDefaultProjectsAll() throws Exception {
@@ -557,6 +555,7 @@ public class IndexerTest {
                 null, null);
         env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
+        assertNotNull(env.getDefaultProjects());
         assertEquals(projects.size(), env.getDefaultProjects().size());
         assertEquals(projects, env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
