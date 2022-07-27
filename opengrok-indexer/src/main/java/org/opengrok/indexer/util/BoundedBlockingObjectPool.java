@@ -5,6 +5,7 @@
  * https://dzone.com/articles/generic-and-concurrent-object : "Feel free to use
  * it, change it, add more implementations. Happy coding!"
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.util;
