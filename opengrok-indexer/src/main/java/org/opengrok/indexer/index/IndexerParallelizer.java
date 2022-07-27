@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.CtagsValidator;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.BoundedBlockingObjectPool;
 import org.opengrok.indexer.util.CtagsUtil;
@@ -241,43 +242,32 @@ public class IndexerParallelizer implements AutoCloseable {
 
     private void createLazyCtagsWatcherExecutor() {
         lzCtagsWatcherExecutor = LazilyInstantiate.using(() ->
-                new ScheduledThreadPoolExecutor(1, runnable -> {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("ctags-watcher-" + thread.getId());
-                    return thread;
-                }));
+                new ScheduledThreadPoolExecutor(1,
+                        new OpenGrokThreadFactory("ctags-watcher")));
     }
 
     private void createLazyXrefWatcherExecutor() {
         lzXrefWatcherExecutor = LazilyInstantiate.using(() ->
-                new ScheduledThreadPoolExecutor(1, runnable -> {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("xref-watcher-" + thread.getId());
-                    return thread;
-                }));
+                new ScheduledThreadPoolExecutor(1,
+                        new OpenGrokThreadFactory("xref-watcher")));
     }
 
     private void createLazyFixedExecutor() {
         lzFixedExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(indexingParallelism));
+                Executors.newFixedThreadPool(indexingParallelism,
+                        new OpenGrokThreadFactory("index-worker")));
     }
 
     private void createLazyHistoryExecutor() {
         lzHistoryExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryParallelism(), runnable -> {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("history-" + thread.getId());
-                        return thread;
-                }));
+                Executors.newFixedThreadPool(env.getHistoryParallelism(),
+                        new OpenGrokThreadFactory("history")));
     }
 
     private void createLazyHistoryFileExecutor() {
         lzHistoryFileExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryFileParallelism(), runnable -> {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("history-file-" + thread.getId());
-                    return thread;
-                }));
+                Executors.newFixedThreadPool(env.getHistoryFileParallelism(),
+                        new OpenGrokThreadFactory("history-file")));
     }
 
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {

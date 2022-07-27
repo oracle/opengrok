@@ -31,6 +31,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.indexer.Metrics;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
@@ -78,7 +79,8 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private Suggester suggester;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+            new OpenGrokThreadFactory("suggester-scheduler"));
 
     private ScheduledFuture<?> future;
 

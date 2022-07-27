@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api;
 
@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -47,9 +48,9 @@ class ApiTaskManagerTest {
     @Test
     void testQueueName() {
         String name = "foo";
-        assertEquals(name, ApiTaskManager.getQueueName(name));
+        assertTrue(ApiTaskManager.getQueueName(name).endsWith(name));
         name = "/foo";
-        assertEquals(name.substring(1), ApiTaskManager.getQueueName(name));
+        assertFalse(ApiTaskManager.getQueueName(name).contains("/"));
     }
 
     private Object doNothing() {

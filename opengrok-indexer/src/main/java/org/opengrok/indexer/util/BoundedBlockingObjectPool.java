@@ -16,6 +16,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -37,7 +39,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
     private final LinkedBlockingDeque<T> objects;
     private final ObjectValidator<T> validator;
     private final ObjectFactory<T> objectFactory;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool(new OpenGrokThreadFactory("bounded"));
     private volatile boolean puttingLast;
     private volatile boolean shutdownCalled;
 
