@@ -50,6 +50,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -984,11 +985,7 @@ public final class HistoryGuru {
             parallelismLevel = env.getRepositoryInvalidationParallelism();
         }
         final ExecutorService executor = Executors.newFixedThreadPool(parallelismLevel,
-                runnable -> {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("invalidate-repos-" + thread.getId());
-                    return thread;
-                });
+                new OpenGrokThreadFactory("invalidate-repos-"));
 
         for (RepositoryInfo repositoryInfo : repos) {
             executor.submit(() -> {

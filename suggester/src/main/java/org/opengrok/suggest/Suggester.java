@@ -109,7 +109,8 @@ public final class Suggester implements Closeable {
             Runtime.getRuntime().availableProcessors(),
             runnable -> {
                 Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                thread.setName("suggester-lookup-" + thread.getId());
+                // This should match the naming in OpenGrokThreadFactory class.
+                thread.setName("OpenGrok-suggester-lookup-" + thread.getId());
                 return thread;
             });
 

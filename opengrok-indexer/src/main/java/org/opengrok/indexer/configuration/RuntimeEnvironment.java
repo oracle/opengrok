@@ -62,7 +62,6 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.NamedThreadFactory;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
@@ -196,11 +195,7 @@ public final class RuntimeEnvironment {
     private ExecutorService newSearchExecutor() {
         return Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
-                runnable -> {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("search-" + thread.getId());
-                    return thread;
-                });
+                new OpenGrokThreadFactory("search"));
     }
 
     public void shutdownSearchExecutor() {
@@ -218,7 +213,7 @@ public final class RuntimeEnvironment {
 
     private ExecutorService newRevisionExecutor() {
         return Executors.newFixedThreadPool(this.getMaxRevisionThreadCount(),
-                new NamedThreadFactory("get-revision"));
+                new OpenGrokThreadFactory("get-revision"));
     }
 
     public void shutdownRevisionExecutor() throws InterruptedException {

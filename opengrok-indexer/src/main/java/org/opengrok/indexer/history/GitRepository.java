@@ -81,6 +81,7 @@ import org.eclipse.jgit.util.io.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -784,7 +785,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
      */
     @Override
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final ExecutorService executor = Executors.newSingleThreadExecutor(new OpenGrokThreadFactory("git-tags"));
         final Future<?> future = executor.submit(() -> rebuildTagList(directory));
         executor.shutdown();
 

@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api;
 
 import jakarta.ws.rs.core.Response;
-import org.apache.lucene.util.NamedThreadFactory;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.web.api.v1.controller.StatusController;
 
@@ -76,7 +76,11 @@ public final class ApiTaskManager {
     }
 
     static String getQueueName(String name) {
-        return name.replaceAll("^/", "").replace("/", "-");
+        String suffix = name.replaceAll("^/", "").replace("/", "-");
+        if (!suffix.startsWith("-")) {
+             suffix = "-" + suffix;
+        }
+        return "api_task" + suffix;
     }
 
     /**
@@ -121,7 +125,7 @@ public final class ApiTaskManager {
         }
 
         queues.put(queueName, Executors.newFixedThreadPool(threadCount,
-                new NamedThreadFactory(getQueueName(queueName))));
+                new OpenGrokThreadFactory(queueName)));
     }
 
     /**

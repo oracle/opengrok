@@ -22,6 +22,8 @@
  */
 package opengrok.auth.plugin.util;
 
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
+
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -56,10 +58,9 @@ public class WebHook implements Serializable {
     }
 
     public Future<String> post() {
-        CompletableFuture<String> completableFuture
-                = new CompletableFuture<>();
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
 
-        Executors.newCachedThreadPool().submit(() -> {
+        Executors.newCachedThreadPool(new OpenGrokThreadFactory("webhook-")).submit(() -> {
             int status = RestfulClient.postIt(getURI(), getContent());
             completableFuture.complete(String.valueOf(status));
             return null;

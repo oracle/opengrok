@@ -5,6 +5,7 @@
  * https://dzone.com/articles/generic-and-concurrent-object : "Feel free to use
  * it, change it, add more implementations. Happy coding!"
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.util;
@@ -16,6 +17,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -37,7 +40,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
     private final LinkedBlockingDeque<T> objects;
     private final ObjectValidator<T> validator;
     private final ObjectFactory<T> objectFactory;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool(new OpenGrokThreadFactory("bounded"));
     private volatile boolean puttingLast;
     private volatile boolean shutdownCalled;
 
