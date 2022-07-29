@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -252,16 +253,12 @@ public class Group implements Comparable<Group>, Nameable {
 
     @Override
     public int compareTo(Group o) {
-        return getName().toUpperCase(Locale.ROOT).compareTo(
-                o.getName().toUpperCase(Locale.ROOT));
+        return getName().compareTo(o.getName());
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 41 * hash + (this.name == null ? 0 :
-                this.name.toUpperCase(Locale.ROOT).hashCode());
-        return hash;
+        return Objects.hashCode(name);
     }
 
     @Override
@@ -280,8 +277,7 @@ public class Group implements Comparable<Group>, Nameable {
         int numNull = (name == null ? 1 : 0) + (other.name == null ? 1 : 0);
         switch (numNull) {
             case 0:
-                return name.toUpperCase(Locale.ROOT).equals(
-                        other.name.toUpperCase(Locale.ROOT));
+                return name.equals(other.name);
             case 1:
                 return false;
             default:

@@ -217,12 +217,6 @@ class ProjectTest {
         g1 = new Project("name");
         g2 = new Project("other");
         assertNotEquals(g1, g2, "\"name\" != \"other\"");
-
-        g1 = new Project("name");
-        g2 = new Project("NAME");
-        assertEquals(g1, g2, "\"name\" == \"NAME\"");
-        assertEquals(g1, g1, "\"name\" == \"name\"");
-        assertEquals(g2, g2, "\"NAME\" == \"NAME\"");
     }
 
     @Test
