@@ -1,4 +1,4 @@
-name: Build docker image
+name: Build Docker image
 
 on: [push, pull_request]
 
