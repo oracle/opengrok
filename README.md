@@ -1,5 +1,5 @@
 
-Copyright (c) 2006, 2021 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2022 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
@@ -53,7 +53,7 @@ For full list of contributors see https://github.com/oracle/opengrok/graphs/cont
 
 ## 5. Contact us
 
-There are Slack channels on https://opengrok.slack.com/
+Use the [Github Discussions](https://github.com/oracle/opengrok/discussions).
 
 ## 6. Run as container
 
