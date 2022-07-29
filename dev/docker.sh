@@ -12,32 +12,6 @@
 
 set -e
 
-# Update README file in Docker hub.
-push_readme() {
-	declare -r image="${1}"
-	declare -r token="${2}"
-	declare -r input_file="${3}"
-
-	if [[ ! -r $input_file ]]; then
-		echo "file $input_file is not readable"
-		exit 1
-	fi
-
-	local code=$(curl -s -o /dev/null -L -w "%{http_code}" \
-	           -X PATCH \
-		   --data-urlencode full_description@${input_file} \
-		   -H "Content-Type: application/json" \
-	           -H "Authorization: JWT ${token}" \
-	           ${API_URL}/repositories/"${image}"/)
-
-	if [[ "${code}" = "200" ]]; then
-		echo "Successfully pushed README to Docker Hub"
-	else
-		printf "Unable to push README to Docker Hub, response code: %s\n" "${code}"
-		exit 1
-	fi
-}
-
 echo "Running linter"
 docker run --rm -i hadolint/hadolint:2.6.0 < Dockerfile || exit 1
 
@@ -119,17 +93,4 @@ if [ -n "$DOCKER_PASSWORD" -a -n "$DOCKER_USERNAME" -a -n "$TAGS" ]; then
 		echo "Pushing Docker image for tag $tag"
 		docker push $IMAGE:$tag
 	done
-fi
-
-# Update README and badge only for release builds.
-if [[ -n $OPENGROK_TAG ]]; then
-	TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
-	    -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' \
-	    ${API_URL}/users/login/ | jq -r .token)
-	if [[ -z $TOKEN ]]; then
-		echo "Cannot get auth token to publish the README file"
-		exit 1
-	fi
-
-	push_readme "${IMAGE}" "${TOKEN}" "docker/README.md"
 fi
