@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -446,7 +446,8 @@ class SuggesterProjectData implements Closeable {
         }
 
         try {
-            if (lookups.get(term.field()).get(term.text()) == null) {
+            WFSTCompletionLookup lookup = lookups.get(term.field());
+            if (lookup == null || lookup.get(term.text()) == null) {
                 logger.log(Level.FINE, "Cannot increment search count for unknown term {0} in {1}",
                         new Object[]{term, suggesterDir});
                 return false; // unknown term
