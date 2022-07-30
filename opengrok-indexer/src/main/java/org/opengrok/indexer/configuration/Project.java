@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -585,16 +585,12 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
 
     @Override
     public int compareTo(Project p2) {
-        return getName().toUpperCase(Locale.ROOT).compareTo(
-                p2.getName().toUpperCase(Locale.ROOT));
+        return getName().compareTo(p2.getName());
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 41 * hash + (this.name == null ? 0 :
-                this.name.toUpperCase(Locale.ROOT).hashCode());
-        return hash;
+        return Objects.hashCode(name);
     }
 
     @Override
@@ -613,8 +609,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         int numNull = (name == null ? 1 : 0) + (other.name == null ? 1 : 0);
         switch (numNull) {
             case 0:
-                return name.toUpperCase(Locale.ROOT).equals(
-                        other.name.toUpperCase(Locale.ROOT));
+                return name.equals(other.name);
             case 1:
                 return false;
             default:

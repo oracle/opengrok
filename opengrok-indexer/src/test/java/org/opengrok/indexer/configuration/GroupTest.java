@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -39,14 +39,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GroupTest {
+class GroupTest {
 
     /**
      * Test that a {@code Group} instance can be encoded and decoded without
      * errors.
      */
     @Test
-    public void testEncodeDecode() {
+    void testEncodeDecode() {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
@@ -79,7 +79,7 @@ public class GroupTest {
     }
 
     @Test
-    public void invalidPatternTest() {
+    void invalidPatternTest() {
         testPattern("*dangling asterisk", false);
         testPattern(".*(", false);
         testPattern("+", false);
@@ -102,7 +102,7 @@ public class GroupTest {
     }
 
     @Test
-    public void basicTest() {
+    void basicTest() {
         Group g = new Group("Random name", "abcd");
 
         assertEquals("Random name", g.getName());
@@ -140,7 +140,7 @@ public class GroupTest {
     }
 
     @Test
-    public void subgroupsTest() {
+    void subgroupsTest() {
         Group g1 = new Group("Random name", "abcd");
         Group g2 = new Group("Random name2", "efgh");
         Group g3 = new Group("Random name3", "xyz");
@@ -177,7 +177,7 @@ public class GroupTest {
     }
 
     @Test
-    public void projectTest() {
+    void projectTest() {
         Group random1 = new Group("Random name", "abcd");
         Group random2 = new Group("Random name2", "efgh");
 
@@ -205,7 +205,7 @@ public class GroupTest {
     }
 
     @Test
-    public void testEquality() {
+    void testEquality() {
         Group g1 = new Group();
         Group g2 = new Group();
         assertEquals(g1, g2, "null == null");
@@ -213,11 +213,5 @@ public class GroupTest {
         g1 = new Group("name");
         g2 = new Group("other");
         assertNotEquals(g1, g2, "\"name\" != \"other\"");
-
-        g1 = new Group("name");
-        g2 = new Group("NAME");
-        assertEquals(g1, g2, "\"name\" == \"NAME\"");
-        assertEquals(g1, g1, "\"name\" == \"name\"");
-        assertEquals(g2, g2, "\"NAME\" == \"NAME\"");
     }
 }
