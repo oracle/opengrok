@@ -446,8 +446,8 @@ class SuggesterProjectData implements Closeable {
         }
 
         try {
-            WFSTCompletionLookup lookup;
-            if ((lookup = lookups.get(term.field())) == null || lookup.get(term.text()) == null) {
+            WFSTCompletionLookup lookup = lookups.get(term.field());
+            if (lookup == null || lookup.get(term.text()) == null) {
                 logger.log(Level.FINE, "Cannot increment search count for unknown term {0} in {1}",
                         new Object[]{term, suggesterDir});
                 return false; // unknown term
