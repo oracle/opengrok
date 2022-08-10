@@ -27,6 +27,8 @@ package org.opengrok.web;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -228,7 +230,20 @@ public class DirectoryListing {
                 out.write(isDir ? 'r' : 'p');
                 out.write("\"/>");
                 out.write("</td><td><a href=\"");
-                if (isDir) {
+                boolean isSymlink = Files.isSymbolicLink(child.toPath());
+                if (isSymlink) {
+                    Path linkTarget = Files.readSymbolicLink(child.toPath());
+                    out.write(Util.uriEncodePath(filename));
+                    if (isDir) {
+                        out.write("/\"><b>");
+                        out.write(filename + " -&gt; " + linkTarget.toString());
+                        out.write("</b></a>/");
+                    } else {
+                        out.write("\">");
+                        out.write(filename + " -&gt; " + linkTarget.toString());
+                        out.write("</a>");
+                    }
+                } else if (isDir) {
                     String longpath = getSimplifiedPath(child);
                     out.write(Util.uriEncodePath(longpath));
                     out.write("/\"><b>");
