@@ -509,6 +509,7 @@ public class AnalyzerGuru {
      * {@link #addExtension(String, AnalyzerFactory)} and
      * {@link #addPrefix(String, AnalyzerFactory)} merged with default language
      * mappings of OpenGrok's analyzers.
+     * @return LangMap instance
      */
     public static LangMap getLangMap() {
         return langMap.mergeSecondary(defaultLangMap).unmodifiable();

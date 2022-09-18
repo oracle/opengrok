@@ -849,6 +849,8 @@ public final class Util {
      * {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR} in order not
      * to conflict with the Lucene escape character and also so {@code path}
      * appears as a correctly formed URI in search results.
+     * @param path path to fix
+     * @return fixed path
      */
     public static String fixPathIfWindows(String path) {
         if (path != null && SystemUtils.IS_OS_WINDOWS) {

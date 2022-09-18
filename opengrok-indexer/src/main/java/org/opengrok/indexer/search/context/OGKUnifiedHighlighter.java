@@ -50,13 +50,11 @@ import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Represents a subclass of {@link UnifiedHighlighter} with customizations for
- * OpenGrok.
+ * Represents a subclass of {@link UnifiedHighlighter} with customizations for OpenGrok.
  */
 public class OGKUnifiedHighlighter extends UnifiedHighlighter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        OGKUnifiedHighlighter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OGKUnifiedHighlighter.class);
 
     private final RuntimeEnvironment env;
 
@@ -74,8 +72,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * @param indexAnalyzer a required instance
      * @throws IllegalArgumentException if any argument is null
      */
-    public OGKUnifiedHighlighter(RuntimeEnvironment env,
-            IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
+    public OGKUnifiedHighlighter(RuntimeEnvironment env, IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
         super(indexSearcher, indexAnalyzer);
 
         if (env == null) {
