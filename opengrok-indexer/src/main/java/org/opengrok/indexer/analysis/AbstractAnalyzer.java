@@ -125,6 +125,8 @@ public abstract class AbstractAnalyzer extends Analyzer {
     /**
      * Subclasses must override to incorporate a determined number of lines and
      * lines-of-code (LOC).
+     * @param doc Document instance
+     * @param counts NumLinesLOC instance
      */
     protected abstract void addNumLinesLOC(Document doc, NumLinesLOC counts);
 

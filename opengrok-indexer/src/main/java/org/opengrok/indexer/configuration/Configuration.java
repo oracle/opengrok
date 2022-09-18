@@ -1066,6 +1066,7 @@ public final class Configuration {
 
     /**
      * Gets a value indicating if the web app should run ctags as necessary.
+     * @return true if ctags should be run, false otherwise
      */
     public boolean isWebappCtags() {
         return webappCtags;
@@ -1073,6 +1074,7 @@ public final class Configuration {
 
     /**
      * Sets a value indicating if the web app should run ctags as necessary.
+     * @param value true or false
      */
     public void setWebappCtags(boolean value) {
         this.webappCtags = value;

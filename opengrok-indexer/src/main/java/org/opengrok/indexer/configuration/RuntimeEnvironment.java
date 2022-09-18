@@ -187,7 +187,10 @@ public final class RuntimeEnvironment {
         return watchDog;
     }
 
-    /** Gets the thread pool used for multi-project searches. */
+    /**
+     * Gets the thread pool used for multi-project searches.
+     * @return ExecutorService instance
+     */
     public ExecutorService getSearchExecutor() {
         return lzSearchExecutor.get();
     }
@@ -252,6 +255,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets an instance associated to this environment.
+     * @return PathAccepter instance
      */
     public PathAccepter getPathAccepter() {
         return new PathAccepter(getIgnoredNames(), getIncludedNames());
@@ -1510,6 +1514,8 @@ public final class RuntimeEnvironment {
      *
      * @param host the host address to receive the configuration
      * @throws IOException if an error occurs
+     * @throws InterruptedException on timeout
+     * @throws IllegalArgumentException on invalid configuration
      */
     public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);

@@ -94,6 +94,8 @@ public abstract class TextAnalyzer extends FileAnalyzer {
     /**
      * Gets a BOM-stripped {@link Reader} (default UTF-8 charset) of the
      * specified {@code stream}, wrapped in a {@link ZeroReader}.
+     * @param stream input stream
+     * @return Reader instance
      */
     protected Reader getReader(InputStream stream) throws IOException {
         // sourceRoot is read with UTF-8 as a default.
