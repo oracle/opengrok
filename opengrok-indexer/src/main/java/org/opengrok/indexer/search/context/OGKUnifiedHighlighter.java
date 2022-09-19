@@ -63,11 +63,12 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
 
     /**
      * Initializes an instance with
-     * {@link UnifiedHighlighter#UnifiedHighlighter(org.apache.lucene.search.IndexSearcher, org.apache.lucene.analysis.Analyzer)}
+     * {@link UnifiedHighlighter#UnifiedHighlighter(UnifiedHighlighter.Builder)}
      * for the specified {@code indexSearcher} and {@code indexAnalyzer}, and
      * stores the {@code env} for later use.
      * @param env a required instance
      * @throws IllegalArgumentException if any argument is null
+     * @param uhBuilder a required instance
      */
     public OGKUnifiedHighlighter(RuntimeEnvironment env,
                                  UnifiedHighlighter.Builder uhBuilder) {
