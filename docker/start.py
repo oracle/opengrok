@@ -488,7 +488,7 @@ def main():
     # Note that deploy is done before Tomcat is started.
     deploy(logger, url_root)
 
-    if url_root != '/source':
+    if url_root != 'source':
         setup_redirect_source(logger, url_root)
 
     env = {}
