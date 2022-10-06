@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout master branch
-      uses: actions/checkout@v2
-    - name: Build Docker image
+      uses: actions/checkout@v3
+    - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -16,14 +16,12 @@ jobs:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
-    - name: push README to Dockerhub on release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: christian-korneck/update-container-description-action@v1
-      env:
-        DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+    - uses: actions/setup-python@v4
       with:
-        destination_container_repo: opengrok/docker
-        provider: dockerhub
-        short_description: 'Official OpenGrok Docker image'
-        readme_file: 'docker/README.md'
+        python-version: '3.10'
+    - name: Optionally update README on Docker hub
+      env:
+        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: ./dev/dockerhub_readme.py
