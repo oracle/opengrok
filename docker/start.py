@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -76,7 +76,50 @@ NOMIRROR_ENV_NAME = 'NOMIRROR'
 
 expected_token = None
 
-sleep_event = threading.Event()
+
+class PeriodicTimer:
+    """
+    Helper class to facilitate waiting for periodic events.
+    Requires the start() function to be called first.
+    """
+    def __init__(self, interval):
+        """
+        :param interval: interval in seconds
+        """
+        self._interval = interval
+        self._flag = 0
+        self._cv = threading.Condition()
+
+    def start(self):
+        threading.Thread(target=self.run, daemon=True).start()
+
+    def run(self):
+        """
+        Run the timer and notify waiting threads after each interval
+        """
+        while True:
+            time.sleep(self._interval)
+            self.notify_all()
+
+    def wait_for_tick(self):
+        """
+        Wait for the next tick of the timer
+        """
+        with self._cv:
+            last_flag = self._flag
+            while last_flag == self._flag:
+                self._cv.wait()
+
+    def notify_all(self):
+        """
+        Notify all listeners, possibly out of band.
+        """
+        with self._cv:
+            self._flag ^= 1
+            self._cv.notify_all()
+
+
+periodic_timer = None
 app = Flask(__name__)
 auth = HTTPTokenAuth(scheme='Bearer')
 REINDEX_POINT = '/reindex'
@@ -84,8 +127,7 @@ REINDEX_POINT = '/reindex'
 
 def trigger_reindex():
     # Signal the sync/indexer thread.
-    sleep_event.set()
-    sleep_event.clear()
+    periodic_timer.notify_all()
 
 
 @auth.verify_token
@@ -100,7 +142,7 @@ def verify_token(token):
 @app.route(REINDEX_POINT)
 @auth.login_required
 def index():
-    trigger_reindex()
+    periodic_timer.notify_all()
 
     return "Reindex triggered"
 
@@ -193,7 +235,7 @@ def setup_redirect_source(logger, url_root):
 def wait_for_tomcat(logger, uri):
     """
     Active/busy waiting for Tomcat to come up.
-    Currently there is no upper time bound.
+    Currently, there is no upper time bound.
     """
     logger.info("Waiting for Tomcat to start")
 
@@ -299,16 +341,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
         indexer.execute()
 
         logger.info("Waiting for reindex to be triggered")
-        sleep_event.wait()
-
-
-def timeout_loop(logger, sync_period):
-    while True:
-        sleep_seconds = sync_period * 60
-        logger.info("Sleeping for {} seconds".format(sleep_seconds))
-        time.sleep(sleep_seconds)
-
-        trigger_reindex()
+        periodic_timer.wait_for_tick()
 
 
 def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
@@ -357,7 +390,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
             save_config(logger, uri, config_path)
 
         logger.info("Waiting for reindex to be triggered")
-        sleep_event.wait()
+        periodic_timer.wait_for_tick()
 
 
 def create_bare_config(logger, use_projects, extra_indexer_options=None):
@@ -412,7 +445,7 @@ def check_index_and_wipe_out(logger):
     """
     Check index by running the indexer. If the index does not match
     currently running version and the CHECK_INDEX environment variable
-    is non empty, wipe out the directories under data root.
+    is non-empty, wipe out the directories under data root.
     """
     check_index = os.environ.get('CHECK_INDEX')
     if check_index and os.path.exists(OPENGROK_CONFIG_FILE):
@@ -430,8 +463,8 @@ def check_index_and_wipe_out(logger):
                     try:
                         logger.info("Removing '{}'".format(path))
                         shutil.rmtree(path)
-                    except Exception as e:
-                        logger.error("cannot delete '{}': {}".format(path, e))
+                    except Exception as exc:
+                        logger.error("cannot delete '{}': {}".format(path, exc))
 
 
 def start_rest_thread(logger):
@@ -449,14 +482,6 @@ def start_rest_thread(logger):
                                    name="REST thread",
                                    args=(logger, rest_port), daemon=True)
     rest_thread.start()
-
-
-def start_timeout_thread(logger, sync_period):
-    logger.debug("Starting timeout thread")
-    thread = threading.Thread(target=timeout_loop,
-                              name="Timeout thread",
-                              args=(logger, sync_period), daemon=True)
-    thread.start()
 
 
 def main():
@@ -479,11 +504,11 @@ def main():
     logger.debug("URL_ROOT = {}".format(url_root))
     logger.debug("URI = {}".format(uri))
 
-    sync_period = get_num_from_env(logger, 'SYNC_PERIOD_MINUTES', 10)
-    if sync_period == 0:
+    sync_period_mins = get_num_from_env(logger, 'SYNC_PERIOD_MINUTES', 10)
+    if sync_period_mins == 0:
         logger.info("periodic synchronization disabled")
     else:
-        logger.info("synchronization period = {} minutes".format(sync_period))
+        logger.info("synchronization period = {} minutes".format(sync_period_mins))
 
     # Note that deploy is done before Tomcat is started.
     deploy(logger, url_root)
@@ -505,7 +530,7 @@ def main():
         use_projects = False
 
     #
-    # Create empty configuration to avoid the non existent file exception
+    # Create empty configuration to avoid the non-existent file exception
     # in the web app during the first web app startup.
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
@@ -513,7 +538,7 @@ def main():
         create_bare_config(logger, use_projects, extra_indexer_options.split())
 
     #
-    # Index check needs read-only configuration so it is placed
+    # Index check needs read-only configuration, so it is called
     # right after create_bare_config().
     #
     check_index_and_wipe_out(logger)
@@ -579,8 +604,11 @@ def main():
         sync_thread.start()
 
         start_rest_thread(logger)
-        if sync_period > 0:
-            start_timeout_thread(logger, sync_period)
+
+        if sync_period_mins > 0:
+            global periodic_timer
+            periodic_timer = PeriodicTimer(sync_period_mins * 60)
+            periodic_timer.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
@@ -595,8 +623,9 @@ def signal_handler(signum, frame):
     print("Received signal {}".format(signum))
 
     global tomcat_popen
-    print("Terminating Tomcat {}".format(tomcat_popen))
-    tomcat_popen.terminate()
+    if tomcat_popen:
+        print("Terminating Tomcat {}".format(tomcat_popen))
+        tomcat_popen.terminate()
 
     sys.exit(0)
 
