@@ -49,7 +49,7 @@ from opengrok_tools.utils.readconfig import read_config
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 from opengrok_tools.utils.mirror import check_configuration
 from opengrok_tools.mirror import OPENGROK_NO_MIRROR_ENV
-
+from periodic_timer import PeriodicTimer
 
 fs_root = os.path.abspath('.').split(os.path.sep)[0] + os.path.sep
 if os.environ.get('OPENGROK_TOMCAT_ROOT'):  # debug only
@@ -75,50 +75,6 @@ OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
 NOMIRROR_ENV_NAME = 'NOMIRROR'
 
 expected_token = None
-
-
-class PeriodicTimer:
-    """
-    Helper class to facilitate waiting for periodic events.
-    Requires the start() function to be called first.
-    """
-    def __init__(self, interval):
-        """
-        :param interval: interval in seconds
-        """
-        self._interval = interval
-        self._flag = 0
-        self._cv = threading.Condition()
-
-    def start(self):
-        threading.Thread(target=self.run, daemon=True).start()
-
-    def run(self):
-        """
-        Run the timer and notify waiting threads after each interval
-        """
-        while True:
-            time.sleep(self._interval)
-            self.notify_all()
-
-    def wait_for_tick(self):
-        """
-        Wait for the next tick of the timer
-        """
-        with self._cv:
-            last_flag = self._flag
-            while last_flag == self._flag:
-                self._cv.wait()
-
-    def notify_all(self):
-        """
-        Notify all listeners, possibly out of band.
-        """
-        with self._cv:
-            self._flag ^= 1
-            self._cv.notify_all()
-
-
 periodic_timer = None
 app = Flask(__name__)
 auth = HTTPTokenAuth(scheme='Bearer')
