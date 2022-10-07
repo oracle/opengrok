@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -31,7 +31,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 }
 %><%@
 
-include file="httpheader.jspf"
+include file="/httpheader.jspf"
 
 %><body>
 <div id="page">
@@ -40,7 +40,7 @@ include file="httpheader.jspf"
         <div id="Masthead">Error: file not found</div>
         <div id="sbar"><%@
 
-include file="menu.jspf"
+include file="/menu.jspf"
 
         %></div>
     </header>
@@ -61,6 +61,6 @@ include file="menu.jspf"
 /* ---------------------- enoent.jsp end --------------------- */
 %><%@
 
-include file="foot.jspf"
+include file="/foot.jspf"
 
 %>
