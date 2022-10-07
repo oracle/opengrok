@@ -18,14 +18,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2009, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="
-org.opengrok.indexer.configuration.RuntimeEnvironment,
 org.opengrok.indexer.web.Util"
 %><%
 {
@@ -34,7 +33,7 @@ org.opengrok.indexer.web.Util"
 }
 %><%@
 
-include file="projects.jspf"
+include file="/projects.jspf"
 
 %><%
 /* ---------------------- status.jsp start --------------------- */
@@ -44,19 +43,19 @@ include file="projects.jspf"
 }
 %><%@
 
-include file="httpheader.jspf"
+include file="/httpheader.jspf"
 
 %>
 <body>
     <div id="page">
         <header id="whole_header">
-            <%@include file="pageheader.jspf" %>
+            <%@include file="/pageheader.jspf" %>
             <div id="Masthead"></div>
         </header>
         <div id="status">
             <h1>OpenGrok status page</h1>
             <p>
-This page is only used for testing purposes to dump some of the
+This page is only used for testing purposes to dump some
 internal settings on your OpenGrok server.</p><%
 {
         PageConfig cfg = PageConfig.get(request);
@@ -75,6 +74,6 @@ default. To enable, set the property <code>chattyStatusPage</code> to
 /* ---------------------- status.jsp start --------------------- */
 %><%@
 
-include file="foot.jspf"
+include file="/foot.jspf"
 
 %>

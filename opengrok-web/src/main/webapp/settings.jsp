@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="org.opengrok.web.PageConfig" %>
@@ -27,11 +27,11 @@ Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
         cfg.setTitle("OpenGrok Settings");
     }
 %>
-<%@ include file="httpheader.jspf" %>
+<%@ include file="/httpheader.jspf" %>
 <body>
 <div id="page">
     <header id="whole_header">
-        <%@include file="pageheader.jspf" %>
+        <%@include file="/pageheader.jspf" %>
         <div id="Masthead">
             <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
         </div>
@@ -59,4 +59,4 @@ Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
     document.pageReady.push(() => initSettings());
     /* ]]> */
 </script>
-<%@include file="foot.jspf" %>
+<%@include file="/foot.jspf" %>

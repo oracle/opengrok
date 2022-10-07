@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -28,12 +28,12 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 %><%@
 
-        include file="httpheader.jspf"
+        include file="/httpheader.jspf"
 
 %><body>
 <div id="page">
     <header id="whole_header">
-        <%@include file="pageheader.jspf" %>
+        <%@include file="/pageheader.jspf" %>
     </header>
 <h3 class="error">Error: access forbidden</h3>
 <p>The request was forbidden. This can be either file/directory permissions problem or insufficient authorization.</p>
@@ -43,6 +43,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 /* ---------------------- eforbidden.jsp end --------------------- */
 %><%@
 
-        include file="foot.jspf"
+        include file="/foot.jspf"
 
 %>

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@page import="org.opengrok.web.PageConfig"%>
 <%

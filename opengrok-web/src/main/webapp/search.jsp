@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -44,7 +44,7 @@ java.util.List"
 }
 %><%@
 
-include file="projects.jspf"
+include file="/projects.jspf"
 
 %><%!
     private StringBuilder createUrl(HttpServletRequest request, SearchHelper sh, boolean menu) {
@@ -104,12 +104,12 @@ include file="projects.jspf"
 }
 %><%@
 
-include file="httpheader.jspf"
+include file="/httpheader.jspf"
 
 %><body>
 <div id="page">
     <header id="whole_header">
-        <%@include file="pageheader.jspf" %>
+        <%@include file="/pageheader.jspf" %>
         <div id="Masthead">
             <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
             <%-- TODO: jel: IMHO it should be move to menu.jspf as combobox --%>
@@ -140,7 +140,7 @@ include file="httpheader.jspf"
         </div>
         <div id="menu"><%@
 
-include file="menu.jspf"
+include file="/menu.jspf"
 
 %>
         </div>
@@ -241,6 +241,6 @@ include file="menu.jspf"
 /* ---------------------- search.jsp end --------------------- */
 %><%@
 
-include file="foot.jspf"
+include file="/foot.jspf"
 
 %>

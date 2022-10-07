@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2022, Krystof Tulinger <k.tulinger@seznam.cz>.
@@ -36,7 +36,7 @@ org.opengrok.indexer.web.QueryParameters"
 }
 %><%@
 
-include file="httpheader.jspf"
+include file="/httpheader.jspf"
 
 %>
 <body>
@@ -48,7 +48,7 @@ include file="httpheader.jspf"
         <div id="sbar">
             <div id="menu"><%@
 
-include file="menu.jspf"
+include file="/menu.jspf"
 
 %>
             </div>
@@ -250,6 +250,6 @@ you can use 'n' for next and 'b' for back to jump over to the next chunk. This i
 /* ---------------------- help.jsp end --------------------- */
 %><%@
 
-include file="foot.jspf"
+include file="/foot.jspf"
 
 %>

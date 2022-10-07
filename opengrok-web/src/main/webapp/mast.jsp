@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -72,7 +72,7 @@ org.opengrok.indexer.web.Util"%>
 %>
 <%@
 
-include file="httpheader.jspf"
+include file="/httpheader.jspf"
 
         %><body>
 <script type="text/javascript">/* <![CDATA[ */
@@ -83,7 +83,7 @@ include file="httpheader.jspf"
 /* ]]> */</script>
 <div id="page">
     <header id="whole_header">
-        <%@include file="pageheader.jspf" %>
+        <%@include file="/pageheader.jspf" %>
 <div id="Masthead">
     <%
 {
@@ -119,7 +119,7 @@ include file="httpheader.jspf"
 </div>
 <%@
 
-include file="minisearch.jspf"
+include file="/minisearch.jspf"
 
 %>
 <%
