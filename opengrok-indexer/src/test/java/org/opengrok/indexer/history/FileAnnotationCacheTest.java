@@ -29,6 +29,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,13 +93,45 @@ class FileAnnotationCacheTest {
     }
 
     @Test
+    void testReadAnnotationNegative() {
+        final String fileName = "nonexistent";
+        File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
+        assertFalse(file.exists());
+        Annotation annotation = cache.readAnnotation(file);
+        assertNull(annotation);
+    }
+
+    @Test
+    void testReadAnnotationNegativeCorruptedCacheFile() throws Exception {
+        // Create annotation cache entry.
+        final String fileName = "Makefile";
+        File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
+        assertTrue(file.exists());
+        Annotation annotation = new Annotation(fileName);
+        annotation.addLine("1", "author1", true);
+        annotation.addLine("2", "author1", true);
+        cache.store(file, annotation);
+        File cachedFile = cache.getCachedFile(file);
+        assertTrue(cachedFile.exists());
+
+        // Corrupt the serialized annotation. Better test would be to corrupt the XML representation,
+        // not just the compressed file.
+        try (FileWriter writer = new FileWriter(cachedFile)) {
+            writer.write("foo");
+        }
+
+        // Try to read the annotation from cache.
+        Annotation annotationFromCache = cache.readAnnotation(file);
+        assertNull(annotationFromCache);
+    }
+
+    @Test
     void testClearFile() throws Exception {
         // Even though fake annotation is stored, this should be close to reality.
         final String fileName = "header.h";
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertTrue(file.exists());
 
-        FileAnnotationCache cache = new FileAnnotationCache();
         Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
