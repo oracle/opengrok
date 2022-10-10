@@ -206,13 +206,13 @@ public final class HistoryGuru {
     /**
      * Fetch the annotation for given file from the cache or using the repository method.
      * @param file file to get the annotation for
-     * @param rev revision string
+     * @param rev revision string, specifies revision for which to get the annotation
      * @return {@link Annotation} instance or <code>null</code>
      * @throws IOException on error
      */
     @Nullable
     private Annotation getAnnotation(File file, String rev) throws IOException {
-        Annotation annotation = null;
+        Annotation annotation;
 
         if (annotationCache != null) {
             annotation = annotationCache.get(file, rev);

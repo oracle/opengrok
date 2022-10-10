@@ -18,12 +18,14 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,13 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author austvik
  */
-public class AnnotationTest {
+class AnnotationTest {
 
     /**
      * Test of getRevision method, of class Annotation.
      */
     @Test
-    public void getRevision() {
+    void getRevision() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals("", instance.getRevision(1));
         instance.addLine("1.0", "Author", true);
@@ -52,7 +54,7 @@ public class AnnotationTest {
      * Test of getAuthor method, of class Annotation.
      */
     @Test
-    public void getAuthor() {
+    void getAuthor() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals("", instance.getAuthor(1));
         instance.addLine("1.0", "Author", true);
@@ -65,7 +67,7 @@ public class AnnotationTest {
      * Test of isEnabled method, of class Annotation.
      */
     @Test
-    public void isEnabled() {
+    void isEnabled() {
         Annotation instance = new Annotation("testfile.tst");
         assertFalse(instance.isEnabled(1));
         instance.addLine("1.0", "Author", true);
@@ -78,7 +80,7 @@ public class AnnotationTest {
      * Test of size method, of class Annotation.
      */
     @Test
-    public void size() {
+    void size() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals(0, instance.size());
         instance.addLine("1.0", "Author", true);
@@ -91,7 +93,7 @@ public class AnnotationTest {
      * Test of getWidestRevision method, of class Annotation.
      */
     @Test
-    public void getWidestRevision() {
+    void getWidestRevision() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals(0, instance.getWidestRevision());
         instance.addLine("1.0", "Author", true);
@@ -104,7 +106,7 @@ public class AnnotationTest {
      * Test of getWidestAuthor method, of class Annotation.
      */
     @Test
-    public void getWidestAuthor() {
+    void getWidestAuthor() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals(0, instance.getWidestAuthor());
         instance.addLine("1.0", "Author", true);
@@ -117,7 +119,7 @@ public class AnnotationTest {
      * Test of addLine method, of class Annotation.
      */
     @Test
-    public void addLine() {
+    void addLine() {
         Annotation instance = new Annotation("testfile.tst");
         instance.addLine("1.0", "Author", true);
         assertEquals(1, instance.size());
@@ -128,13 +130,24 @@ public class AnnotationTest {
      * Test of getFilename method, of class Annotation.
      */
     @Test
-    public void getFilename() {
+    void getFilename() {
         Annotation instance = new Annotation("testfile.tst");
         assertEquals("testfile.tst", instance.getFilename());
     }
 
     @Test
-    public void testColorPalette() {
+    void testGetRevisions() {
+        final Annotation annotation = new Annotation("testfile.txt");
+        annotation.addLine("1.0", "Me", true);
+        annotation.addLine("1.1", "Me", true);
+        annotation.addLine("1.2", "Me", true);
+        annotation.addFileVersion("1.0", 3);
+        annotation.addFileVersion("1.2", 2);
+        assertEquals(Set.of("1.0", "1.1", "1.2"), annotation.getRevisions());
+    }
+
+    @Test
+    void testColorPalette() {
         final Annotation annotation = new Annotation("testfile.txt");
         annotation.addLine("1.0", "Me", true);
         annotation.addLine("1.1", "Me", true);
@@ -143,7 +156,7 @@ public class AnnotationTest {
     }
 
     @Test
-    public void testSortedColorPalette() {
+    void testSortedColorPalette() {
         final Annotation annotation = new Annotation("testfile.txt");
         annotation.addLine("1.0", "Me", true);
         annotation.addLine("1.1", "Me", true);

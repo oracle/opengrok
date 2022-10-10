@@ -196,7 +196,7 @@ public class Annotation {
      * @see #getRevisions()
      */
     private Map<String, String> generateColors() {
-        List<Color> colors = RainbowColorGenerator.getOrderedColors();
+        List<Color> orderedColors = RainbowColorGenerator.getOrderedColors();
 
         Map<String, String> colorMap = new HashMap<>();
         final List<String> revisions =
@@ -213,7 +213,7 @@ public class Annotation {
                         .sorted(Comparator.comparingInt(this::getFileVersion).reversed())
                         .collect(Collectors.toList());
 
-        final int nColors = colors.size();
+        final int nColors = orderedColors.size();
         final double colorsPerBucket = (double) nColors / getRevisions().size();
 
         revisions.forEach(revision -> {
@@ -221,7 +221,7 @@ public class Annotation {
             final double bucketTotal = colorsPerBucket * lineVersion;
             final int bucketIndex = (int) Math.max(
                     Math.min(Math.floor(bucketTotal), nColors - 1.0), 0);
-            Color color = colors.get(bucketIndex);
+            Color color = orderedColors.get(bucketIndex);
             colorMap.put(revision, String.format("rgb(%d, %d, %d)", color.red, color.green, color.blue));
         });
 

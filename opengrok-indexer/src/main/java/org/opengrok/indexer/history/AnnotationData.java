@@ -24,6 +24,7 @@ package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.TestOnly;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -52,7 +53,7 @@ public class AnnotationData implements Serializable {
     private int widestAuthor;
     private String filename;
     /**
-     * The revision it was generated for is used for staleness check in FileAnnotationCache.
+     * The revision it was generated for is used for staleness check in {@link FileAnnotationCache#get(File, String)}.
      * Storing it in the filename would not work well ({@link org.opengrok.indexer.util.TandemPath}
      * shortening with very long filenames), on the other hand it is necessary to deserialize the object
      * to tell whether it is stale.
@@ -67,10 +68,12 @@ public class AnnotationData implements Serializable {
         this.annotationLines = annotationLines;
     }
 
+    // For serialization.
     public void setWidestRevision(int widestRevision) {
         this.widestRevision = widestRevision;
     }
 
+    // For serialization.
     public void setWidestAuthor(int widestAuthor) {
         this.widestAuthor = widestAuthor;
     }

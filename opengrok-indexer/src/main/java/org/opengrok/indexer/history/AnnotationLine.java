@@ -44,10 +44,10 @@ public class AnnotationLine implements Serializable {
         // for serialization
     }
 
-    AnnotationLine(String rev, String aut, boolean ena) {
-        revision = (rev == null) ? "" : rev;
-        author = (aut == null) ? "" : aut;
-        enabled = ena;
+    AnnotationLine(String revision, String author, boolean enabled) {
+        this.revision = (revision == null) ? "" : revision;
+        this.author = (author == null) ? "" : author;
+        this.enabled = enabled;
     }
 
     public String getRevision() {

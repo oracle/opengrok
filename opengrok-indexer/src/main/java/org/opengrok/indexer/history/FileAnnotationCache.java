@@ -100,6 +100,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
 
     public Annotation get(File file, String rev) {
         Annotation annotation = null;
+        // TODO: rev is null
         if (LatestRevisionUtil.getLatestRevision(file).equals(rev)) {
             // read from the cache
             annotation = readAnnotation(file);
