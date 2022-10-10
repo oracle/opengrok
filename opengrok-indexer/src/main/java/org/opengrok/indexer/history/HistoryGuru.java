@@ -211,7 +211,7 @@ public final class HistoryGuru {
      * @throws IOException on error
      */
     @Nullable
-    private Annotation getAnnotation(File file, String rev) throws IOException {
+    private Annotation getAnnotation(File file, @Nullable String rev) throws IOException {
         Annotation annotation;
 
         if (annotationCache != null) {
@@ -225,7 +225,7 @@ public final class HistoryGuru {
         return getAnnotationFromRepository(file, rev);
     }
 
-    private Annotation getAnnotationFromRepository(File file, String rev) throws IOException {
+    private Annotation getAnnotationFromRepository(File file, @Nullable String rev) throws IOException {
         Annotation annotation = null;
 
         if (!env.getPathAccepter().accept(file)) {

@@ -24,6 +24,7 @@ package org.opengrok.indexer.history;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -98,10 +99,10 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         return null;
     }
 
-    public Annotation get(File file, String rev) {
+    public Annotation get(File file, @Nullable String rev) {
         Annotation annotation = null;
-        // TODO: rev is null
-        if (LatestRevisionUtil.getLatestRevision(file).equals(rev)) {
+        String latestRevision = LatestRevisionUtil.getLatestRevision(file);
+        if (latestRevision != null && latestRevision.equals(rev)) {
             // read from the cache
             annotation = readAnnotation(file);
             if (annotation != null) {
