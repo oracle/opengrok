@@ -27,6 +27,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+/**
+ * Tests for {@link AnnotationLine}.
+ */
 class AnnotationLineTest {
     /**
      * This is useful for various equals tests in {@link AnnotationDataTest}.
