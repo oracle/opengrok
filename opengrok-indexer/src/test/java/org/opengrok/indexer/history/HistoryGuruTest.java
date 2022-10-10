@@ -138,7 +138,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void annotation() throws Exception {
+    void testAnnotationSmokeTest() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (instance.hasAnnotation(f)) {
@@ -148,7 +148,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void getCacheInfo() throws HistoryException {
+    void getHistoryCacheInfo() throws HistoryException {
         // FileHistoryCache is used by default
         assertEquals("FileHistoryCache", HistoryGuru.getInstance().getHistoryCacheInfo());
     }
