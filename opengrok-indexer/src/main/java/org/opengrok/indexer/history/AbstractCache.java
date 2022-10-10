@@ -83,7 +83,7 @@ public abstract class AbstractCache implements Cache {
             try {
                 this.clear(r);
                 clearedRepos.add(r.getDirectoryName());
-                LOGGER.log(Level.INFO,"{1} cache for {0} cleared.",
+                LOGGER.log(Level.INFO, "{1} cache for {0} cleared.",
                         new Object[]{r.getDirectoryName(), this.getInfo()});
             } catch (HistoryException e) {
                 LOGGER.log(Level.WARNING,
