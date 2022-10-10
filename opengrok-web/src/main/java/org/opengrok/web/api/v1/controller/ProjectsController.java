@@ -309,7 +309,7 @@ public class ProjectsController {
 
         if (clearHistoryGuru) {
             guru.removeRepositories(repos.stream().
-                    map(RepositoryInfo::getDirectoryNameRelative).collect(Collectors.toList()));
+                    map(RepositoryInfo::getDirectoryName).collect(Collectors.toList()));
         }
     }
 

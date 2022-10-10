@@ -156,7 +156,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         Statistics statistics = new Statistics();
         try {
             CacheUtil.writeCache(annotation.annotationData, cacheFile);
-            statistics.report(LOGGER, Level.FINEST, String.format("wrote annotation for '%s'", file),
+            statistics.report(LOGGER, Level.FINEST, String.format("wrote annotation for ''%s''", file),
                     "cache.annotation.file.store");
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to write annotation to cache", e);

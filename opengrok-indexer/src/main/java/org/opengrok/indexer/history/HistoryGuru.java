@@ -945,7 +945,7 @@ public final class HistoryGuru {
         try {
             Statistics statistics = new Statistics();
             Annotation annotation = repository.annotate(file, null);
-            statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for '%s'", file),
+            statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for ''%s''", file),
                     "annotation.retrieve");
 
             // Storing annotation has its own statistics.
@@ -1045,7 +1045,7 @@ public final class HistoryGuru {
      * Remove list of repositories from the list maintained in the HistoryGuru.
      * This is much less heavyweight than {@code invalidateRepositories()}
      * since it just removes items from the map.
-     * @param repos repository paths
+     * @param repos absolute repository paths
      */
     public void removeRepositories(Collection<String> repos) {
         Set<Repository> removedRepos = repos.stream().map(repositories::remove)
