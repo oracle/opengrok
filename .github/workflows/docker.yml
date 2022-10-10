@@ -23,6 +23,7 @@ jobs:
       run: python3 -m pip install requests
     - name: Optionally update README on Docker hub
       env:
+        OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

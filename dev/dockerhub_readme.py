@@ -76,17 +76,27 @@ def check_push_env():
 
     logger = logging.getLogger(__name__)
 
-    if os.environ.get("OPENGROK_PULL_REQUEST"):
+    repo_slug = os.environ.get("OPENGROK_REPO_SLUG")
+    if repo_slug is None:
+        logger.error("OPENGROK_REPO_SLUG environment variable not set")
+        sys.exit(1)
+
+    if repo_slug != MAIN_REPO_SLUG:
+        logger.info("Not updating Docker hub README for non main repo")
+        sys.exit(0)
+
+    pull_request = os.environ.get("OPENGROK_PULL_REQUEST")
+    if pull_request and len(pull_request) > 0:
         logger.info("Not updating Docker hub README for pull requests")
         sys.exit(0)
 
     docker_username = os.environ.get("DOCKER_USERNAME")
-    if docker_username is None:
+    if docker_username is None or len(docker_username) == 0:
         logger.info("DOCKER_USERNAME is empty, exiting")
         sys.exit(1)
 
     docker_password = os.environ.get("DOCKER_PASSWORD")
-    if docker_password is None:
+    if docker_password is None or len(docker_password) == 0:
         logger.info("DOCKER_PASSWORD is empty, exiting")
         sys.exit(1)
 
