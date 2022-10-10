@@ -207,35 +207,42 @@ public final class HistoryGuru {
      * Fetch the annotation for given file from the cache or using the repository method.
      * @param file file to get the annotation for
      * @param rev revision string
-     * @return annotation or null
+     * @return {@link Annotation} instance or <code>null</code>
      * @throws IOException on error
      */
     @Nullable
     private Annotation getAnnotation(File file, String rev) throws IOException {
-        Annotation ret = null;
+        Annotation annotation = null;
 
         if (annotationCache != null) {
-            ret = annotationCache.get(file, rev);
-            if (ret != null) {
-                return ret;
+            annotation = annotationCache.get(file, rev);
+            if (annotation != null) {
+                return annotation;
             }
         }
 
-        if (hasAnnotation(file)) {
-            Repository repo = getRepository(file);
-            if (repo != null) {
-                ret = repo.annotate(file, rev);
-                if (ret != null) {
-                    ret.setRevision(rev);
-                    if (annotationCache != null) {
-                        // TODO
-                        annotationCache.store(file, ret);
-                    }
-                }
+        // Fall back to repository based annotation.
+        return getAnnotationFromRepository(file, rev);
+    }
+
+    private Annotation getAnnotationFromRepository(File file, String rev) throws IOException {
+        Annotation annotation = null;
+
+        if (!env.getPathAccepter().accept(file)) {
+            LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for annotation", file);
+            return null;
+        }
+
+        Repository repository = getRepository(file);
+        if ((hasAnnotation(file)) && (repository != null)) {
+            annotation = repository.annotate(file, rev);
+            if (annotation != null) {
+                annotation.setRevision(rev);
+                // It might be possible to store the annotation to cache here, needs further thought.
             }
         }
 
-        return ret;
+        return annotation;
     }
 
     /**
@@ -243,31 +250,38 @@ public final class HistoryGuru {
      *
      * @param file the file to annotate
      * @param rev the revision to annotate (<code>null</code> means BASE)
-     * @return file annotation, or <code>null</code> if the
-     * <code>HistoryParser</code> does not support annotation
+     * @return file annotation, or <code>null</code> if the <code>HistoryParser</code> does not support annotation
      * @throws IOException if I/O exception occurs
      */
     @Nullable
     public Annotation annotate(File file, String rev) throws IOException {
-        Annotation ret;
-        ret = getAnnotation(file, rev);
-        if (ret == null) {
+        Annotation annotation;
+        annotation = getAnnotation(file, rev);
+        if (annotation == null) {
             return null;
         }
 
         Repository repo = getRepository(file);
         if (repo == null) {
+            LOGGER.log(Level.FINER, "cannot get repository for file ''{0}'' to complete annotation", file);
             return null;
         }
 
-        History hist = null;
+        completeAnnotationWithHistory(file, annotation, repo);
+
+        return annotation;
+    }
+
+    private void completeAnnotationWithHistory(File file, Annotation annotation, Repository repo) {
+        History history = null;
         try {
-            hist = getHistory(file);
+            history = getHistory(file);
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "Cannot get messages for tooltip: ", ex);
         }
-        if (hist != null) {
-            Set<String> revs = ret.getRevisions();
+
+        if (history != null) {
+            Set<String> revs = annotation.getRevisions();
             int revsMatched = 0;
             // !!! cannot do this because of not matching rev ids (keys)
             // first is the most recent one, so we need the position of "rev"
@@ -275,22 +289,20 @@ public final class HistoryGuru {
             //if (hent.indexOf(rev)>0) {
             //     hent = hent.subList(hent.indexOf(rev), hent.size());
             //}
-            for (HistoryEntry he : hist.getHistoryEntries()) {
+            for (HistoryEntry he : history.getHistoryEntries()) {
                 String hist_rev = he.getRevision();
                 String short_rev = repo.getRevisionForAnnotate(hist_rev);
                 if (revs.contains(short_rev)) {
-                    ret.addDesc(short_rev, "changeset: " + he.getRevision()
+                    annotation.addDesc(short_rev, "changeset: " + he.getRevision()
                             + "\nsummary: " + he.getMessage() + "\nuser: "
                             + he.getAuthor() + "\ndate: " + he.getDate());
                     // History entries are coming from recent to older,
                     // file version should be from oldest to newer.
-                    ret.addFileVersion(short_rev, revs.size() - revsMatched);
+                    annotation.addFileVersion(short_rev, revs.size() - revsMatched);
                     revsMatched++;
                 }
             }
         }
-
-        return ret;
     }
 
     /**
@@ -298,8 +310,7 @@ public final class HistoryGuru {
      *
      * @param file The file to get the history reader for
      * @throws HistoryException If an error occurs while getting the history
-     * @return A HistorReader that may be used to read out history data for a
-     * named file
+     * @return A {@link HistoryReader} that may be used to read out history data for a named file
      */
     public HistoryReader getHistoryReader(File file) throws HistoryException {
         History history = getHistory(file, false);
@@ -425,9 +436,10 @@ public final class HistoryGuru {
      * @param ui called from the webapp
      * @param fallback fall back to fetching the history from the repository
      *                 if it cannot be retrieved from history cache
-     * @return history for the file
+     * @return history for the file or <code>null</code>
      * @throws HistoryException on error when accessing the history
      */
+    @Nullable
     public History getHistory(File file, boolean withFiles, boolean ui, boolean fallback) throws HistoryException {
 
         final File dir = file.isDirectory() ? file : file.getParentFile();
@@ -440,11 +452,14 @@ public final class HistoryGuru {
                 return history;
             }
 
-            return getHistoryFromRepository(file, repository, ui);
+            if (fallback) {
+                return getHistoryFromRepository(file, repository, ui);
+            }
         } catch (ForbiddenSymlinkException e) {
             LOGGER.log(Level.FINER, e.getMessage());
-            return null;
         }
+
+        return null;
     }
 
     @Nullable
@@ -472,7 +487,7 @@ public final class HistoryGuru {
         }
 
         if (!env.getPathAccepter().accept(file)) {
-            LOGGER.log(Level.FINEST, "file ''{0}'' not accepted", file);
+            LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for history", file);
             return null;
         }
 
@@ -841,7 +856,6 @@ public final class HistoryGuru {
             }
         }
 
-        // TODO: log similar somewhere for annotation cache (per repository)
         LOGGER.log(Level.INFO, "Creating history cache for {0} repositories",
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
@@ -911,23 +925,30 @@ public final class HistoryGuru {
     /**
      * Retrieve and store the annotation for given file.
      * This needs to be called after the history was stored since the history might be needed
-     * to construct the Annotation object.
+     * to construct the {@link Annotation} object.
      * @param file file object
      */
     public void createAnnotationCache(File file) throws HistoryException {
         if (!useAnnotationCache()) {
+            LOGGER.log(Level.FINER, "annotation cache could not be used to create cache for ''{0}''", file);
             return;
         }
 
         Repository repository = getRepository(file);
-        if (!repository.isAnnotationCacheEnabled()) {
+        if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
+            LOGGER.log(Level.FINER, "repository {0} does not allow to create annotation for ''{1}''",
+                    new Object[]{repository, file});
             return;
         }
 
+        LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", file);
         try {
-            // TODO: log FINEST
-            // TODO: add elapsed time (separately for retrieving and storing)
+            Statistics statistics = new Statistics();
             Annotation annotation = repository.annotate(file, null);
+            statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for '%s'", file),
+                    "annotation.retrieve");
+
+            // Storing annotation has its own statistics.
             annotationCache.store(file, annotation);
         } catch (IOException e) {
             throw new HistoryException(e);

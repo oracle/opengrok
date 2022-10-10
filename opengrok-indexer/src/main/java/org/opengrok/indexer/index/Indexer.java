@@ -501,7 +501,8 @@ public final class Indexer {
                             "Annotation cache provides speedup when getting annotation ",
                             "for files in the webapp at the cost of significantly increased ",
                             "indexing time (multiple times slower) and slightly increased ",
-                            "disk space (comparable to history cache size).").
+                            "disk space (comparable to history cache size). ",
+                            "Can be enabled per project.").
                     execute(v -> cfg.setAnnotationCache((Boolean) v));
 
             parser.on("--apiTimeout", "=number", Integer.class,
@@ -966,7 +967,9 @@ public final class Indexer {
         }
     }
 
-    // Wrapper for prepareIndexer() that always generates history cache.
+    /**
+     * Wrapper for prepareIndexer() that always generates history cache.
+     */
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,

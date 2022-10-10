@@ -30,6 +30,7 @@ import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.Statistics;
 
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
@@ -56,10 +57,6 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
 
     // TODO
     private final PathAccepter pathAccepter = env.getPathAccepter();
-
-    FileAnnotationCache() {
-        // TODO
-    }
 
     public void initialize() {
         MeterRegistry meterRegistry = Metrics.getRegistry();
@@ -106,36 +103,32 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
             LOGGER.log(Level.WARNING, String.format("failed to read annotation cache for '%s'", file), e);
         }
 
-        // TODO: should be used elsewhere ? in store() ?
-        //if (!pathAccepter.accept(file)) {
-        //    return null;
-        //}
-
         return null;
     }
 
     public Annotation get(File file, String rev) {
-        Annotation ret = null;
+        Annotation annotation = null;
         if (LatestRevisionUtil.getLatestRevision(file).equals(rev)) {
             // read from the cache
-            ret = readAnnotation(file);
-            if (ret != null) {
-                // Double check that the cached annotation is not stale.
-                // TODO: what about file time stamp based check ?
-                final String storedRevision = ret.getRevision();
+            annotation = readAnnotation(file);
+            if (annotation != null) {
+                /*
+                 * Double check that the cached annotation is not stale by comparing the stored revision
+                 * with revision to be fetched.
+                 * This should be more robust than the file time stamp based check performed by history cache,
+                 * at the expense of having to read from the annotation cache.
+                 */
+                final String storedRevision = annotation.getRevision();
                 if (storedRevision != null && !storedRevision.equals(rev)) {
-                    LOGGER.log(Level.FINER, "stored revision {0} does not match requested revision {1}",
-                            new Object[]{storedRevision, rev});
-                    ret = null;
+                    LOGGER.log(Level.FINER,
+                            "stored revision {0} for ''{1}'' does not match requested revision {2}",
+                            new Object[]{storedRevision, file, rev});
+                    annotation = null;
                 }
             }
         }
 
-        // TODO: remove the stale cache entry ?
-        // need to state the assumptions on how the cache entry could become invalid.
-        // - certainly during indexing
-
-        if (ret != null) {
+        if (annotation != null) {
             if (fileAnnotationCacheHits != null) {
                 fileAnnotationCacheHits.increment();
             }
@@ -143,15 +136,15 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
             if (fileAnnotationCacheMisses != null) {
                 fileAnnotationCacheMisses.increment();
             }
-            LOGGER.log(Level.FINEST, "annotation cache miss for {0} in revision {1}", new Object[]{file, rev});
+            LOGGER.log(Level.FINEST, "annotation cache miss for ''{0}'' in revision {1}",
+                    new Object[]{file, rev});
             return null;
         }
 
-        return ret;
+        return annotation;
     }
 
-    @Override
-    public void store(File file, Annotation annotation) {
+    public void store(File file, Annotation annotation) throws HistoryException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
@@ -161,22 +154,21 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         }
 
         File dir = cacheFile.getParentFile();
-        // calling isDirectory twice to prevent a race condition
+        // calling isDirectory() twice to prevent a race condition
         if (!dir.isDirectory() && !dir.mkdirs() && !dir.isDirectory()) {
-            // throw new HistoryException("Unable to create cache directory '" + dir + "'.");
-            LOGGER.log(Level.WARNING, "Unable to create cache directory");
-            return;
+            throw new HistoryException("Unable to create cache directory '" + dir + "'.");
         }
 
-        File outputFile = cacheFile;
+        Statistics statistics = new Statistics();
         try {
-            CacheUtil.writeCache(annotation.annotationData, outputFile);
+            CacheUtil.writeCache(annotation.annotationData, cacheFile);
+            statistics.report(LOGGER, Level.FINEST, String.format("wrote annotation for '%s'", file),
+                    "cache.annotation.file.store");
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to write annotation to cache", e);
         }
     }
 
-    @Override
     public void clear(Repository repository) {
         CacheUtil.clearCacheDir(repository, this);
     }

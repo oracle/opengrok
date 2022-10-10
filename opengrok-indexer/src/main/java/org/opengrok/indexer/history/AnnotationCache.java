@@ -22,6 +22,8 @@
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 
 public interface AnnotationCache extends Cache {
@@ -29,9 +31,26 @@ public interface AnnotationCache extends Cache {
 
     // TODO: supportsRepository() ? like in HistoryCache
 
+    /**
+     * Retrieve annotation from cache.
+     * @param file file under source root to get the annotation for
+     * @param rev requested revision
+     * @return {@link Annotation} object or <code>null</code>
+     */
+    @Nullable
     Annotation get(File file, String rev);
 
-    void store(File file, Annotation annotation);
+    /**
+     * Store annotation for file into cache
+     * @param file file under source root to store the annotation for
+     * @param annotation {@link Annotation} object
+     * @throws HistoryException on error
+     */
+    void store(File file, Annotation annotation) throws HistoryException;
 
+    /**
+     * Clear annotation cache entry for given file.
+     * @param path path to the file relative to source root
+     */
     void clearFile(String path);
 }

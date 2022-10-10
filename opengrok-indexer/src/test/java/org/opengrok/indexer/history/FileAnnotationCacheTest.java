@@ -62,7 +62,7 @@ class FileAnnotationCacheTest {
     }
 
     @Test
-    void testSerialization() {
+    void testSerialization() throws HistoryException {
         Annotation annotation = new Annotation("foo.txt");
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
