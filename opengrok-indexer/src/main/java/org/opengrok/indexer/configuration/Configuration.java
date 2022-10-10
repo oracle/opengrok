@@ -108,6 +108,10 @@ public final class Configuration {
      */
     private boolean historyCache;
     /**
+     * Should the latest annotation be cached?
+     */
+    private boolean annotationCache;
+    /**
      * flag to generate history. This is bigger hammer than @{code historyCache}
      * above. If set to false, no history query will be ever made and the webapp
      * will not display any history related links/allow any history queries.
@@ -517,6 +521,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setAllowLeadingWildcard(true);
         setAllowedSymlinks(new HashSet<>());
+        setAnnotationCache(false);
         setAuthenticationTokens(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
@@ -796,6 +801,25 @@ public final class Configuration {
      */
     public boolean isHistoryCache() {
         return historyCache;
+    }
+
+    /**
+     * Should the latest annotation be cached?
+     *
+     * @return {@code true} if a {@code AnnotationCache} implementation should be
+     * used, {@code false} otherwise
+     */
+    public boolean isAnnotationCache() {
+        return annotationCache;
+    }
+
+    /**
+     * Set whether latest annotation should be cached.
+     *
+     * @param useCache if {@code true} enable annotation cache
+     */
+    public void setAnnotationCache(boolean useCache) {
+        this.annotationCache = useCache;
     }
 
     /**

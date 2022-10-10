@@ -95,7 +95,7 @@ public class HistoryGuruTest {
                 env.getRepositories().size());
 
         // Create cache with initial set of repositories.
-        histGuru.createCache();
+        histGuru.createHistoryCache();
     }
 
     @AfterAll
@@ -150,7 +150,7 @@ public class HistoryGuruTest {
     @Test
     void getCacheInfo() throws HistoryException {
         // FileHistoryCache is used by default
-        assertEquals("FileHistoryCache", HistoryGuru.getInstance().getCacheInfo());
+        assertEquals("FileHistoryCache", HistoryGuru.getInstance().getHistoryCacheInfo());
     }
 
     @Test
@@ -318,7 +318,7 @@ public class HistoryGuruTest {
 
         // HistoryGuru is final class so cannot be reasonably mocked with Mockito.
         // In order to avoid getting the history from the cache, move the cache away for a bit.
-        String dirName = FileHistoryCache.getRepositoryHistDataDirname(repository);
+        String dirName = CacheUtil.getRepositoryCacheDataDirname(repository, new FileHistoryCache());
         assertNotNull(dirName);
         Path histPath = Path.of(dirName);
         Path tmpHistPath = Path.of(dirName + ".disabled");

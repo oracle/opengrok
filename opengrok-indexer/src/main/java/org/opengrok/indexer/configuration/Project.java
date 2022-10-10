@@ -89,6 +89,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private Boolean historyEnabled = null;
 
     /**
+     * This flag enables/disables per-project annotation cache.
+     */
+    private Boolean annotationCacheEnabled = null;
+
+    /**
      * This flag enables/disables per project merge commits.
      */
     private Boolean mergeCommitsEnabled = null;
@@ -298,6 +303,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project should have annotation cache.
+     */
+    public boolean isAnnotationCacheEnabled() {
+        return annotationCacheEnabled != null && annotationCacheEnabled;
+    }
+
+    /**
+     * @param flag true if project should have annotation cache, false otherwise.
+     */
+    public void setAnnotationCacheEnabled(boolean flag) {
+        this.annotationCacheEnabled = flag;
+    }
+
+    /**
      * @param flag true if project's repositories should deal with merge commits.
      */
     public void setMergeCommitsEnabled(boolean flag) {
@@ -353,6 +372,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         historyBasedReindex = null;
         mergeCommitsEnabled = null;
         historyEnabled = null;
+        annotationCacheEnabled = null;
         handleRenamedFiles = null;
     }
 
@@ -478,6 +498,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Allow project to override global setting of history cache generation.
         if (historyEnabled == null) {
             setHistoryEnabled(env.isHistoryEnabled());
+        }
+
+        // Allow project to override global setting of annotation cache generation.
+        if (annotationCacheEnabled == null) {
+            setAnnotationCacheEnabled(env.useAnnotationCache());
         }
 
         // Allow project to override global setting of navigate window.

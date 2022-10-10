@@ -497,6 +497,13 @@ public final class Indexer {
                         }
             });
 
+            parser.on("--annotationCache", "=on|off", ON_OFF, Boolean.class,
+                            "Annotation cache provides speedup when getting annotation ",
+                            "for files in the webapp at the cost of significantly increased ",
+                            "indexing time (multiple times slower) and slightly increased ",
+                            "disk space (comparable to history cache size).").
+                    execute(v -> cfg.setAnnotationCache((Boolean) v));
+
             parser.on("--apiTimeout", "=number", Integer.class,
                     "Set timeout for asynchronous API requests.").execute(v -> cfg.setApiTimeout((Integer) v));
 
@@ -973,11 +980,11 @@ public final class Indexer {
 
     /**
      * Generate history cache and/or scan the repositories.
-     *
+     * <p>
      * This is the first phase of the indexing where history cache is being
      * generated for repositories (at least for those which support getting
      * history per directory).
-     *
+     * </p>
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
@@ -1021,11 +1028,10 @@ public final class Indexer {
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: {0}",
                         String.join(",", repositories));
-                HistoryGuru.getInstance().
-                        createCache(repositories);
+                HistoryGuru.getInstance().createHistoryCache(repositories);
             } else {
                 LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-                HistoryGuru.getInstance().createCache();
+                HistoryGuru.getInstance().createHistoryCache();
             }
             LOGGER.info("Done generating history cache");
         }

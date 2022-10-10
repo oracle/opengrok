@@ -23,9 +23,9 @@
 package org.opengrok.indexer.history;
 
 /**
- * Exception thrown when retrieval or manipulation of history information
- * fails.
+ * Exception thrown when retrieval or manipulation of history information fails.
  */
+// TODO: rename to CacheException ?
 public class HistoryException extends Exception {
     private static final long serialVersionUID = 1L;
 

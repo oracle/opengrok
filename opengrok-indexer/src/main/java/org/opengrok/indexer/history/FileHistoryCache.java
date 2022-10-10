@@ -27,9 +27,7 @@ import java.beans.Encoder;
 import java.beans.Expression;
 import java.beans.PersistenceDelegate;
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -59,27 +57,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
-import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
-import org.opengrok.indexer.util.TandemPath;
+
 
 /**
  * Class representing file based storage of per source file history.
  */
-class FileHistoryCache implements HistoryCache {
+class FileHistoryCache extends AbstractCache implements HistoryCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHistoryCache.class);
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -158,11 +153,11 @@ class FileHistoryCache implements HistoryCache {
     public void initialize() {
         MeterRegistry meterRegistry = Metrics.getRegistry();
         if (meterRegistry != null) {
-            fileHistoryCacheHits = Counter.builder("filehistorycache.history.get").
+            fileHistoryCacheHits = Counter.builder("cache.history.file.get").
                     description("file history cache hits").
                     tag("what", "hits").
                     register(meterRegistry);
-            fileHistoryCacheMisses = Counter.builder("filehistorycache.history.get").
+            fileHistoryCacheMisses = Counter.builder("cache.history.file.get").
                     description("file history cache misses").
                     tag("what", "miss").
                     register(meterRegistry);
@@ -184,40 +179,14 @@ class FileHistoryCache implements HistoryCache {
         return true;
     }
 
-    /**
-     * Get a <code>File</code> object describing the cache file.
-     *
-     * @param file the file to find the cache for
-     * @return file that might contain cached history for <code>file</code>
-     */
-    private static File getCachedFile(File file) throws HistoryException, ForbiddenSymlinkException {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(env.getDataRootPath());
-        sb.append(File.separatorChar);
-        sb.append(HISTORY_CACHE_DIR_NAME);
-
-        try {
-            String add = env.getPathRelativeToSourceRoot(file);
-            if (add.length() == 0) {
-                add = File.separator;
-            }
-            sb.append(add);
-        } catch (IOException e) {
-            throw new HistoryException("Failed to get path relative to source root for " + file, e);
-        }
-
-        return new File(TandemPath.join(sb.toString(), ".gz"));
-    }
-
-    private static XMLDecoder getDecoder(InputStream in) {
-        return new XMLDecoder(in, null, null, new HistoryClassLoader());
+    private static XMLDecoder getDecoder(InputStream in, ClassLoader classLoader) {
+        return new XMLDecoder(in, null, null, classLoader);
     }
 
     @TestOnly
     static History readCache(String xmlconfig) {
         final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
-        try (XMLDecoder d = getDecoder(in)) {
+        try (XMLDecoder d = getDecoder(in, new HistoryClassLoader())) {
             return (History) d.readObject();
         }
     }
@@ -227,50 +196,38 @@ class FileHistoryCache implements HistoryCache {
      */
     static History readCache(File file) throws IOException {
         try (FileInputStream in = new FileInputStream(file);
-            XMLDecoder d = getDecoder(new GZIPInputStream(new BufferedInputStream(in)))) {
+            XMLDecoder d = getDecoder(new GZIPInputStream(new BufferedInputStream(in)), new HistoryClassLoader())) {
             return (History) d.readObject();
         }
     }
 
     /**
-     * Store history in file on disk.
+     * Store object in file on disk.
      * @param dir directory where the file will be saved
-     * @param history history to store
+     * @param object object to store
      * @param cacheFile the file to store the history to
      */
-    private void writeHistoryToFile(File dir, History history, File cacheFile) throws HistoryException {
-
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
-                    new Object[]{cacheFile, history.getRevisionList()});
-        }
+    private void writeObjectToFile(File dir, Object object, File cacheFile) throws HistoryException {
 
         // We have a problem that multiple threads may access the cache layer
         // at the same time. Since I would like to avoid read-locking, I just
         // serialize the write access to the cache file. The generation of the
         // cache file would most likely be executed during index generation, and
-        // that happens sequential anyway....
+        // that happens sequentially anyway....
         // Generate the file with a temporary name and move it into place when
         // done, so it is not necessary to protect the readers for partially updated
         // files...
         final File output;
         try {
-            output = File.createTempFile("oghist", null, dir);
-            try (FileOutputStream out = new FileOutputStream(output);
-                XMLEncoder e = new XMLEncoder(new GZIPOutputStream(
-                    new BufferedOutputStream(out)))) {
-                e.setPersistenceDelegate(File.class,
-                        new FilePersistenceDelegate());
-                e.writeObject(history);
-            }
+            output = File.createTempFile("ogtmp", null, dir);
+            CacheUtil.writeCache(object, output);
         } catch (IOException ioe) {
             throw new HistoryException("Failed to write history", ioe);
         }
         synchronized (lock) {
             if (!cacheFile.delete() && cacheFile.exists()) {
                 if (!output.delete()) {
-                    LOGGER.log(Level.WARNING,
-                            "Failed to remove temporary history cache file");
+                    LOGGER.log(Level.WARNING, "Failed to remove temporary cache file");
                 }
                 throw new HistoryException(String.format("Cache file '%s' exists, and could not be deleted.",
                         cacheFile));
@@ -371,7 +328,11 @@ class FileHistoryCache implements HistoryCache {
             history = histNew;
         }
 
-        writeHistoryToFile(dir, history, cacheFile);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
+                    new Object[]{cacheFile, history.getRevisionList()});
+        }
+        writeObjectToFile(dir, history, cacheFile);
     }
 
     private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
@@ -379,7 +340,7 @@ class FileHistoryCache implements HistoryCache {
     }
 
     private void finishStore(Repository repository, String latestRev) {
-        String histDir = getRepositoryHistDataDirname(repository);
+        String histDir = CacheUtil.getRepositoryCacheDataDirname(repository, this);
         if (histDir == null || !(new File(histDir)).isDirectory()) {
             // If the history was not created for some reason (e.g. temporary
             // failure), do not create the CachedRevision file as this would
@@ -397,17 +358,18 @@ class FileHistoryCache implements HistoryCache {
         store(history, repository, null);
     }
 
+    /**
+     * Go through history entries for this repository acquired through
+     * history/log command executed for top-level directory of the repo
+     * and parsed into {@link HistoryEntry} structures and create hash map which
+     * maps file names into list of HistoryEntry structures corresponding
+     * to changesets in which the file was modified.
+     * @return latest revision
+     */
     private String createFileMap(History history, HashMap<String, List<HistoryEntry>> map) {
         String latestRev = null;
         HashMap<String, Boolean> acceptanceCache = new HashMap<>();
 
-        /*
-         * Go through all history entries for this repository (acquired through
-         * history/log command executed for top-level directory of the repo
-         * and parsed into HistoryEntry structures) and create hash map which
-         * maps file names into list of HistoryEntry structures corresponding
-         * to changesets in which the file was modified.
-         */
         for (HistoryEntry e : history.getHistoryEntries()) {
             // The history entries are sorted from newest to oldest.
             if (latestRev == null) {
@@ -418,7 +380,7 @@ class FileHistoryCache implements HistoryCache {
                  * We do not want to generate history cache for files which
                  * do not currently exist in the repository.
                  *
-                 * Also we cache the result of this evaluation to boost
+                 * Also, we cache the result of this evaluation to boost
                  * performance, since a particular file can appear in many
                  * repository revisions.
                  */
@@ -487,7 +449,7 @@ class FileHistoryCache implements HistoryCache {
         // File based history cache does not store files for individual changesets so strip them.
         history.strip();
 
-        File histDataDir = new File(getRepositoryHistDataDirname(repository));
+        File histDataDir = new File(CacheUtil.getRepositoryCacheDataDirname(repository, this));
         // Check the directory again in case of races (might happen in the presence of sub-repositories).
         if (!histDataDir.isDirectory() && !histDataDir.mkdirs() && !histDataDir.isDirectory()) {
             LOGGER.log(Level.WARNING, "cannot create history cache directory for ''{0}''", histDataDir);
@@ -519,7 +481,7 @@ class FileHistoryCache implements HistoryCache {
                         doFileHistory(file, new History(map.get(file)), repository, root, false);
                         fileHistoryCount.getAndIncrement();
                     } catch (Exception ex) {
-                        // We want to catch any exception since we are in thread.
+                        // We want to catch any exception since we are in a thread.
                         LOGGER.log(Level.WARNING, "doFileHistory() got exception ", ex);
                     } finally {
                         latch.countDown();
@@ -663,38 +625,8 @@ class FileHistoryCache implements HistoryCache {
         return cachedFile != null && cachedFile.exists() && file.lastModified() <= cachedFile.lastModified();
     }
 
-    @Override
-    public boolean hasCacheForFile(File file) throws HistoryException {
-        try {
-            return getCachedFile(file).exists();
-        } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINER, ex.getMessage());
-            return false;
-        }
-    }
-
-    @VisibleForTesting
-    public static String getRepositoryHistDataDirname(Repository repository) {
-        String repoDirBasename;
-
-        try {
-            repoDirBasename = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING,
-                    String.format("Could not resolve repository %s relative to source root", repository), ex);
-            return null;
-        } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINER, ex.getMessage());
-            return null;
-        }
-
-        return env.getDataRootPath() + File.separatorChar
-            + FileHistoryCache.HISTORY_CACHE_DIR_NAME
-            + repoDirBasename;
-    }
-
     private String getRepositoryCachedRevPath(Repository repository) {
-        String histDir = getRepositoryHistDataDirname(repository);
+        String histDir = CacheUtil.getRepositoryCacheDataDirname(repository, this);
         if (histDir == null) {
             return null;
         }
@@ -778,47 +710,16 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
-        String histDir = getRepositoryHistDataDirname(repository);
-        if (histDir != null) {
-            // Remove all files which constitute the history cache.
-            try {
-                IOUtils.removeRecursive(Paths.get(histDir));
-            } catch (NoSuchFileException ex) {
-                LOGGER.log(Level.WARNING, String.format("directory %s does not exist", histDir));
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "tried removeRecursive()", ex);
-            }
-        }
-    }
-
-    @Override
-    public void clearFile(String path) {
-        File historyFile;
-        try {
-            historyFile = getCachedFile(new File(env.getSourceRootPath() + path));
-        } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINER, ex.getMessage());
-            return;
-        } catch (HistoryException ex) {
-            LOGGER.log(Level.WARNING, "cannot get history file for file " + path, ex);
-            return;
-        }
-        File parent = historyFile.getParentFile();
-
-        if (!historyFile.delete() && historyFile.exists()) {
-            LOGGER.log(Level.WARNING,
-                "Failed to remove obsolete history cache-file: {0}",
-                historyFile.getAbsolutePath());
-        }
-
-        if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty history cache dir:{0}",
-                parent.getAbsolutePath());
-        }
+        CacheUtil.clearCacheDir(repository, this);
     }
 
     @Override
     public String getInfo() {
         return getClass().getSimpleName();
+    }
+
+    @Override
+    public String getCacheDirName() {
+        return HISTORY_CACHE_DIR_NAME;
     }
 }

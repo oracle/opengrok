@@ -78,7 +78,7 @@ class RepositoryWithPerPartesHistoryTest {
      */
     @Test
     void testChangesets() throws HistoryException {
-        // To avoid calling getHistory() for individual files via createCache() below.
+        // To avoid calling getHistory() for individual files via createHistoryCache() below.
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
 
         ArgumentCaptor<String> stringArgumentCaptor1 = ArgumentCaptor.forClass(String.class);

@@ -78,6 +78,8 @@ public class RepositoryInfo implements Serializable {
     @DTOElement
     private boolean historyEnabled;
     @DTOElement
+    private boolean annotationCacheEnabled;
+    @DTOElement
     private boolean mergeCommitsEnabled;
     @DTOElement
     private boolean historyBasedReindex;
@@ -103,6 +105,7 @@ public class RepositoryInfo implements Serializable {
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
         this.historyEnabled = orig.historyEnabled;
+        this.annotationCacheEnabled = orig.annotationCacheEnabled;
         this.handleRenamedFiles = orig.handleRenamedFiles;
         this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
         this.historyBasedReindex = orig.historyBasedReindex;
@@ -161,6 +164,14 @@ public class RepositoryInfo implements Serializable {
 
     public void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
+    }
+
+    public boolean isAnnotationCacheEnabled() {
+        return annotationCacheEnabled;
+    }
+
+    public void setAnnotationCacheEnabled(boolean annotationCacheEnabled) {
+        this.annotationCacheEnabled = annotationCacheEnabled;
     }
 
     /**
@@ -364,6 +375,7 @@ public class RepositoryInfo implements Serializable {
         Project proj = Project.getProject(getDirectoryNameRelative());
         if (proj != null) {
             setHistoryEnabled(proj.isHistoryEnabled());
+            setAnnotationCacheEnabled(proj.isAnnotationCacheEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
             setHistoryBasedReindex(proj.isHistoryBasedReindex());
@@ -373,6 +385,7 @@ public class RepositoryInfo implements Serializable {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             setHistoryEnabled(env.isHistoryEnabled());
+            setAnnotationCacheEnabled(env.useAnnotationCache());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
             setHistoryBasedReindex(env.isHistoryBasedReindex());
@@ -414,14 +427,21 @@ public class RepositoryInfo implements Serializable {
         stringBuilder.append(",");
 
         if (!isHistoryEnabled()) {
-            stringBuilder.append("history=off");
+            stringBuilder.append("historyCache=off");
         } else {
-            stringBuilder.append("history=on,");
+            stringBuilder.append("historyCache=on,");
             stringBuilder.append("renamed=");
             stringBuilder.append(this.isHandleRenamedFiles());
             stringBuilder.append(",");
             stringBuilder.append("merge=");
             stringBuilder.append(this.isMergeCommitsEnabled());
+        }
+
+        stringBuilder.append(",");
+        if (isAnnotationCacheEnabled()) {
+            stringBuilder.append("annotationCache=on");
+        } else {
+            stringBuilder.append("annotationCache=off");
         }
 
         stringBuilder.append(",");

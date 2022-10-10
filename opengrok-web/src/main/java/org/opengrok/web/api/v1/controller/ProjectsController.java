@@ -250,9 +250,13 @@ public class ProjectsController {
 
         deleteHistoryCacheWorkHorse(projectName, clearHistoryGuru);
 
+        // TODO: deleteAnnotationCacheWorkHorse(projectName);
+
         // Delete suggester data.
         suggester.delete(projectName);
     }
+
+    // TODO: add endpoint for deleting annotation cache
 
     @DELETE
     @Path("/{project}/historycache")
@@ -287,7 +291,7 @@ public class ProjectsController {
 
         // Delete history cache data.
         HistoryGuru guru = HistoryGuru.getInstance();
-        guru.removeCache(repos.stream().
+        guru.removeHistoryCache(repos.stream().
                 map(x -> {
                     try {
                         return env.getPathRelativeToSourceRoot(new File((x).getDirectoryName()));
@@ -298,10 +302,15 @@ public class ProjectsController {
                         LOGGER.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
                         // Empty output should not cause any harm
                         // since {@code getReposFromString()} inside
-                        // {@code removeCache()} will return nothing.
+                        // {@code removeHistoryCache()} will return nothing.
                         return "";
                     }
-                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()), clearHistoryGuru);
+                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
+
+        if (clearHistoryGuru) {
+            guru.removeRepositories(repos.stream().
+                    map(RepositoryInfo::getDirectoryNameRelative).collect(Collectors.toList()));
+        }
     }
 
     @PUT

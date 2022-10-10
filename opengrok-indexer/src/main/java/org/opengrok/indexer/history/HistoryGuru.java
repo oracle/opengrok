@@ -81,6 +81,11 @@ public final class HistoryGuru {
     private final HistoryCache historyCache;
 
     /**
+     * The annotation cache to use.
+     */
+    private final AnnotationCache annotationCache;
+
+    /**
      * Map of repositories, with {@code DirectoryName} as key.
      */
     private final Map<String, Repository> repositories = new ConcurrentHashMap<>();
@@ -107,27 +112,47 @@ public final class HistoryGuru {
     }
 
     /**
-     * Creates a new instance of HistoryGuru, and try to set the default source
-     * control system.
+     * Creates a new instance of HistoryGuru. Initialize cache objects.
      */
     private HistoryGuru() {
         env = RuntimeEnvironment.getInstance();
 
-        HistoryCache cache = null;
-        if (env.useHistoryCache()) {
-            cache = new FileHistoryCache();
+        this.historyCache = initializeHistoryCache();
+        this.annotationCache = initializeAnnotationCache();
+
+        repositoryLookup = RepositoryLookup.cached();
+    }
+
+    private AnnotationCache initializeAnnotationCache() {
+        AnnotationCache annotationCacheResult = null;
+        if (env.useAnnotationCache()) {
+            annotationCacheResult = new FileAnnotationCache();
 
             try {
-                cache.initialize();
-            } catch (HistoryException he) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to initialize the history cache", he);
-                // Failed to initialize, run without a history cache
-                cache = null;
+                annotationCacheResult.initialize();
+            } catch (Exception he) {
+                LOGGER.log(Level.WARNING, "Failed to initialize the annotation cache", he);
+                // Failed to initialize, run without annotation cache.
+                annotationCacheResult = null;
             }
         }
-        historyCache = cache;
-        repositoryLookup = RepositoryLookup.cached();
+        return annotationCacheResult;
+    }
+
+    private HistoryCache initializeHistoryCache() {
+        HistoryCache historyCacheResult = null;
+        if (env.useHistoryCache()) {
+            historyCacheResult = new FileHistoryCache();
+
+            try {
+                historyCacheResult.initialize();
+            } catch (HistoryException he) {
+                LOGGER.log(Level.WARNING, "Failed to initialize the history cache", he);
+                // Failed to initialize, run without a history cache.
+                historyCacheResult = null;
+            }
+        }
+        return historyCacheResult;
     }
 
     /**
@@ -144,8 +169,18 @@ public final class HistoryGuru {
      *
      * @return {@code true} if the history cache has been enabled and initialized, {@code false} otherwise
      */
-    private boolean useCache() {
+    private boolean useHistoryCache() {
         return historyCache != null;
+    }
+
+    /**
+     * Return whether cache should be used for annotations.
+     *
+     * @return {@code true} if the annotation cache has been enabled and
+     * initialized, {@code false} otherwise
+     */
+    private boolean useAnnotationCache() {
+        return annotationCache != null;
     }
 
     /**
@@ -154,8 +189,53 @@ public final class HistoryGuru {
      * @return a free form text string describing the history cache instance
      * @throws HistoryException if an error occurred while getting the info
      */
-    public String getCacheInfo() throws HistoryException {
-        return historyCache == null ? "No cache" : historyCache.getInfo();
+    public String getHistoryCacheInfo() throws HistoryException {
+        return historyCache == null ? "No history cache" : historyCache.getInfo();
+    }
+
+    /**
+     * Get a string with information about the annotation cache.
+     *
+     * @return a free form text string describing the history cache instance
+     * @throws HistoryException if an error occurred while getting the info
+     */
+    public String getAnnotationCacheInfo() throws HistoryException {
+        return annotationCache == null ? "No annotation cache" : annotationCache.getInfo();
+    }
+
+    /**
+     * Fetch the annotation for given file from the cache or using the repository method.
+     * @param file file to get the annotation for
+     * @param rev revision string
+     * @return annotation or null
+     * @throws IOException on error
+     */
+    @Nullable
+    private Annotation getAnnotation(File file, String rev) throws IOException {
+        Annotation ret = null;
+
+        if (annotationCache != null) {
+            ret = annotationCache.get(file, rev);
+            if (ret != null) {
+                return ret;
+            }
+        }
+
+        if (hasAnnotation(file)) {
+            Repository repo = getRepository(file);
+            if (repo != null) {
+                ret = repo.annotate(file, rev);
+                if (ret != null) {
+                    ret.setRevision(rev);
+                    if (annotationCache != null) {
+                        // TODO
+                        annotationCache.store(file, ret);
+                    }
+                }
+            }
+        }
+
+        return ret;
     }
 
     /**
@@ -169,37 +249,48 @@ public final class HistoryGuru {
      */
     @Nullable
     public Annotation annotate(File file, String rev) throws IOException {
-        Annotation annotation = null;
+        Annotation ret;
+        ret = getAnnotation(file, rev);
+        if (ret == null) {
+            return null;
+        }
 
         Repository repo = getRepository(file);
-        if (repo != null) {
-            annotation = repo.annotate(file, rev);
-            History hist = null;
-            try {
-                hist = getHistory(file);
-            } catch (HistoryException ex) {
-                LOGGER.log(Level.FINEST, "Cannot get messages for tooltip: ", ex);
-            }
-            if (hist != null && annotation != null) {
-                Set<String> revs = annotation.getRevisions();
-                int revsMatched = 0;
-                for (HistoryEntry he : hist.getHistoryEntries()) {
-                    String histRev = he.getRevision();
-                    String shortRev = repo.getRevisionForAnnotate(histRev);
-                    if (revs.contains(shortRev)) {
-                        annotation.addDesc(shortRev, "changeset: " + he.getRevision()
-                                + "\nsummary: " + he.getMessage() + "\nuser: "
-                                + he.getAuthor() + "\ndate: " + he.getDate());
-                        // History entries are coming from recent to older,
-                        // file version should be from oldest to newer.
-                        annotation.addFileVersion(shortRev, revs.size() - revsMatched);
-                        revsMatched++;
-                    }
+        if (repo == null) {
+            return null;
+        }
+
+        History hist = null;
+        try {
+            hist = getHistory(file);
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "Cannot get messages for tooltip: ", ex);
+        }
+        if (hist != null) {
+            Set<String> revs = ret.getRevisions();
+            int revsMatched = 0;
+            // !!! cannot do this because of not matching rev ids (keys)
+            // first is the most recent one, so we need the position of "rev"
+            // until the end of the list
+            //if (hent.indexOf(rev)>0) {
+            //     hent = hent.subList(hent.indexOf(rev), hent.size());
+            //}
+            for (HistoryEntry he : hist.getHistoryEntries()) {
+                String hist_rev = he.getRevision();
+                String short_rev = repo.getRevisionForAnnotate(hist_rev);
+                if (revs.contains(short_rev)) {
+                    ret.addDesc(short_rev, "changeset: " + he.getRevision()
+                            + "\nsummary: " + he.getMessage() + "\nuser: "
+                            + he.getAuthor() + "\ndate: " + he.getDate());
+                    // History entries are coming from recent to older,
+                    // file version should be from oldest to newer.
+                    ret.addFileVersion(short_rev, revs.size() - revsMatched);
+                    revsMatched++;
                 }
             }
         }
 
-        return annotation;
+        return ret;
     }
 
     /**
@@ -265,7 +356,7 @@ public final class HistoryGuru {
     private History getHistoryFromCache(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
 
-        if (useCache() && historyCache.supportsRepository(repository)) {
+        if (useHistoryCache() && historyCache.supportsRepository(repository)) {
             return historyCache.get(file, repository, withFiles);
         }
 
@@ -477,7 +568,7 @@ public final class HistoryGuru {
      * @return true if there is cache, false otherwise
      */
     public boolean hasCacheForFile(File file) {
-        if (!useCache()) {
+        if (!useHistoryCache()) {
             LOGGER.log(Level.FINEST, "history cache is off for ''{0}'' to check history cache presence", file);
             return false;
         }
@@ -539,7 +630,7 @@ public final class HistoryGuru {
             return Collections.emptyMap();
         }
 
-        if (!useCache()) {
+        if (!useHistoryCache()) {
             LOGGER.log(Level.FINEST, "history cache is disabled for ''{0}'' to retrieve last modified times",
                     directory);
             return Collections.emptyMap();
@@ -686,7 +777,7 @@ public final class HistoryGuru {
                 map(RepositoryInfo::new).collect(Collectors.toSet());
     }
 
-    private void createCache(Repository repository, String sinceRevision) {
+    private void createHistoryCache(Repository repository, String sinceRevision) {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
@@ -718,7 +809,7 @@ public final class HistoryGuru {
         }
     }
 
-    private void createCacheReal(Collection<Repository> repositories) {
+    private void createHistoryCacheReal(Collection<Repository> repositories) {
         if (repositories.isEmpty()) {
             LOGGER.log(Level.WARNING, "History cache is enabled however the list of repositories is empty. " +
                     "Either specify the repositories in configuration or let the indexer scan them.");
@@ -750,16 +841,17 @@ public final class HistoryGuru {
             }
         }
 
+        // TODO: log similar somewhere for annotation cache (per repository)
         LOGGER.log(Level.INFO, "Creating history cache for {0} repositories",
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
         for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
             executor.submit(() -> {
                 try {
-                    createCache(entry.getKey(), entry.getValue());
+                    createHistoryCache(entry.getKey(), entry.getValue());
                 } catch (Exception ex) {
                     // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING, "createCacheReal() got exception", ex);
+                    LOGGER.log(Level.WARNING, "createHistoryCacheReal() got exception", ex);
                 } finally {
                     latch.countDown();
                 }
@@ -797,50 +889,19 @@ public final class HistoryGuru {
      *
      * @param repositories list of repository paths
      */
-    public void createCache(Collection<String> repositories) {
-        if (!useCache()) {
+    public void createHistoryCache(Collection<String> repositories) {
+        if (!useHistoryCache()) {
             return;
         }
-        createCacheReal(getReposFromString(repositories));
-    }
-
-    /**
-     * Remove history data for a list of repositories.
-     * Note that this just deals with the data, the map used by HistoryGuru
-     * will be left intact.
-     *
-     * @param repositories list of repository paths relative to source root
-     * @return list of repository paths that were found and their history data removed
-     */
-    public List<String> clearCache(Collection<String> repositories) {
-        List<String> clearedRepos = new ArrayList<>();
-
-        if (!useCache()) {
-            return clearedRepos;
-        }
-
-        for (Repository r : getReposFromString(repositories)) {
-            try {
-                historyCache.clear(r);
-                clearedRepos.add(r.getDirectoryName());
-                LOGGER.log(Level.INFO,
-                        "History cache for {0} cleared.", r.getDirectoryName());
-            } catch (HistoryException e) {
-                LOGGER.log(Level.WARNING,
-                        "Clearing history cache for repository {0} failed: {1}",
-                        new Object[]{r.getDirectoryName(), e.getLocalizedMessage()});
-            }
-        }
-
-        return clearedRepos;
+        createHistoryCacheReal(getReposFromString(repositories));
     }
 
     /**
      * Clear entry for single file from history cache.
      * @param path path to the file relative to the source root
      */
-    public void clearCacheFile(String path) {
-        if (!useCache()) {
+    public void clearHistoryCacheFile(String path) {
+        if (!useHistoryCache()) {
             return;
         }
 
@@ -848,33 +909,82 @@ public final class HistoryGuru {
     }
 
     /**
-     * Remove history data for a list of repositories. Those that are
-     * successfully cleared may be removed from the internal list of repositories,
-     * depending on the {@code removeRepositories} parameter.
-     *
-     * @param repositories list of repository paths relative to source root
-     * @param removeRepositories set true to also remove the repositories from internal structures
+     * Retrieve and store the annotation for given file.
+     * This needs to be called after the history was stored since the history might be needed
+     * to construct the Annotation object.
+     * @param file file object
      */
-    public void removeCache(Collection<String> repositories, boolean removeRepositories) {
-        if (!useCache()) {
+    public void createAnnotationCache(File file) throws HistoryException {
+        if (!useAnnotationCache()) {
             return;
         }
 
-        List<String> repos = clearCache(repositories);
-        if (removeRepositories) {
-            removeRepositories(repos);
+        Repository repository = getRepository(file);
+        if (!repository.isAnnotationCacheEnabled()) {
+            return;
+        }
+
+        try {
+            // TODO: log FINEST
+            // TODO: add elapsed time (separately for retrieving and storing)
+            Annotation annotation = repository.annotate(file, null);
+            annotationCache.store(file, annotation);
+        } catch (IOException e) {
+            throw new HistoryException(e);
         }
     }
 
     /**
-     * Create the history cache for all of the repositories.
-     */
-    public void createCache() {
-        if (!useCache()) {
+      * Clear entry for single file from annotation cache.
+      * @param path path to the file relative to the source root
+    */
+    public void clearAnnotationCacheFile(String path) {
+        if (!useAnnotationCache()) {
             return;
         }
 
-        createCacheReal(repositories.values());
+        annotationCache.clearFile(path);
+    }
+
+    /**
+     * Remove history cache data for a list of repositories. Those that are
+     * successfully cleared may be removed from the internal list of repositories,
+     * depending on the {@code removeRepositories} parameter.
+     *
+     * @param repositories list of repository paths relative to source root
+     */
+    public void removeHistoryCache(Collection<String> repositories) {
+        if (!useHistoryCache()) {
+            return;
+        }
+
+        historyCache.clearCache(repositories);
+    }
+
+    /**
+     * Remove annotation cache data for a list of repositories. Those that are
+     * successfully cleared may be removed from the internal list of repositories,
+     * depending on the {@code removeRepositories} parameter.
+     *
+     * @param repositories list of repository paths relative to source root
+     */
+    public void removeAnnotationCache(Collection<String> repositories) {
+        if (!useHistoryCache()) {
+            return;
+        }
+
+        annotationCache.clearCache(repositories);
+    }
+
+    /**
+     * Create the history cache for all repositories.
+     */
+    public void createHistoryCache() {
+        if (!useHistoryCache()) {
+            return;
+        }
+
+        createHistoryCacheReal(repositories.values());
     }
 
     /**
@@ -882,7 +992,7 @@ public final class HistoryGuru {
      * @param repositories paths to repositories relative to source root
      * @return list of repositories
      */
-    private List<Repository> getReposFromString(Collection<String> repositories) {
+    List<Repository> getReposFromString(Collection<String> repositories) {
         ArrayList<Repository> repos = new ArrayList<>();
         File srcRoot = env.getSourceRootFile();
 
@@ -900,6 +1010,11 @@ public final class HistoryGuru {
         return repos;
     }
 
+    /**
+     * Lookup repository for given file.
+     * @param file file object source root
+     * @return repository object
+     */
     public Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);

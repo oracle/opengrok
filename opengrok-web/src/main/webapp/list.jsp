@@ -53,6 +53,7 @@ org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
 %>
 <%@ page import="static org.opengrok.web.PageConfig.DUMMY_REVISION" %>
+<%@ page import="static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision" %>
 <%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="jakarta.servlet.http.Cookie" %>
 <%
@@ -71,7 +72,7 @@ org.opengrok.indexer.web.SearchHelper"
          * Get the latest revision and redirect so that the revision number
          * appears in the URL.
          */
-        String latestRevision = cfg.getLatestRevision();
+        String latestRevision = getLatestRevision(cfg.getResourceFile());
         if (latestRevision != null) {
             cfg.evaluateMatchOffset();
             String location = cfg.getRevisionLocation(latestRevision);

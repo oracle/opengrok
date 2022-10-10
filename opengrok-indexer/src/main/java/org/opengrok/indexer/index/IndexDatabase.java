@@ -100,6 +100,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.history.FileCollector;
+import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -955,14 +956,18 @@ public class IndexDatabase {
     }
 
     private void removeHistoryFile(String path) {
-        HistoryGuru.getInstance().clearCacheFile(path);
+        HistoryGuru.getInstance().clearHistoryCacheFile(path);
+    }
+
+    private void removeAnnotationFile(String path) {
+         HistoryGuru.getInstance().clearAnnotationCacheFile(path);
     }
 
     /**
      * Remove a stale file from the index database and potentially also from history cache,
      * and queue the removal of the associated xref file.
      *
-     * @param removeHistory if false, do not remove history cache for this file
+     * @param removeHistory if false, do not remove history cache and annotation cache for this file
      * @throws java.io.IOException if an error occurs
      */
     private void removeFile(boolean removeHistory) throws IOException {
@@ -979,6 +984,12 @@ public class IndexDatabase {
         if (removeHistory) {
             removeHistoryFile(path);
         }
+
+        /*
+         * Even when the history should not be removed (incremental reindex), annotation should,
+         * because for given file it is always regenerated from scratch.
+         */
+        removeAnnotationFile(path);
 
         setDirty();
 
@@ -1050,8 +1061,7 @@ public class IndexDatabase {
             File transientXref = null;
             if (env.isGenerateHtml()) {
                 xrefAbs = getXrefPath(path);
-                transientXref = new File(TandemPath.join(xrefAbs,
-                        PendingFileCompleter.PENDING_EXTENSION));
+                transientXref = new File(TandemPath.join(xrefAbs, PendingFileCompleter.PENDING_EXTENSION));
                 xrefOut = newXrefWriter(path, transientXref, env.isCompressXref());
             }
 
@@ -1098,6 +1108,12 @@ public class IndexDatabase {
         }
 
         setDirty();
+
+        try {
+            HistoryGuru.getInstance().createAnnotationCache(file);
+        } catch (HistoryException e) {
+            LOGGER.log(Level.WARNING, "failed to create annotation", e);
+        }
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());

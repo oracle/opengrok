@@ -716,6 +716,24 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Is annotation cache currently enabled?
+     *
+     * @return true if annotation cache is enabled
+     */
+    public boolean useAnnotationCache() {
+        return syncReadConfiguration(Configuration::isAnnotationCache);
+    }
+
+    /**
+     * Specify if we should use annotation cache or not.
+     *
+     * @param useAnnotationCache set false if you do not want to use history cache
+     */
+    public void setUseAnnotationCache(boolean useAnnotationCache) {
+        syncWriteConfiguration(useAnnotationCache, Configuration::setAnnotationCache);
+    }
+
+    /**
      * Should we generate HTML or not during the indexing phase.
      *
      * @return true if HTML should be generated during the indexing phase
@@ -1456,12 +1474,12 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(flag, Configuration::setHistoryBasedReindex);
     }
 
-    public FileCollector getFileCollector(String name) {
-        return fileCollectorMap.get(name);
+    public FileCollector getFileCollector(String projectName) {
+        return fileCollectorMap.get(projectName);
     }
 
-    public void setFileCollector(String name, FileCollector fileCollector) {
-        fileCollectorMap.put(name, fileCollector);
+    public void setFileCollector(String projectName, FileCollector fileCollector) {
+        fileCollectorMap.put(projectName, fileCollector);
     }
 
     @VisibleForTesting

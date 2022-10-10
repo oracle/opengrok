@@ -24,6 +24,7 @@
  */
 package org.opengrok.web;
 
+import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR_STRING;
 
@@ -38,12 +39,10 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.InvalidParameterException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -62,8 +61,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
-import org.apache.lucene.document.DateTools;
-import org.apache.lucene.document.Document;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
@@ -77,10 +74,7 @@ import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.HistoryEntry;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
@@ -1281,89 +1275,12 @@ public final class PageConfig {
     }
 
     /**
-     * @return last revision string for {@code file} or null
-     */
-    @Nullable
-    public String getLatestRevision() {
-        if (!getEnv().isHistoryEnabled()) {
-            LOGGER.log(Level.FINE, "will not get latest revision for ''{0}'' as history is disabled",
-                    getResourceFile());
-            return null;
-        }
-
-        // Try getting the history revision from the index first.
-        String lastRev = getLastRevFromIndex();
-        if (lastRev != null) {
-            LOGGER.log(Level.FINEST, "got last revision of ''{0}'' from the index", getResourceFile());
-            return lastRev;
-        }
-
-        // If this is older index, fallback to the history (either fetch from history cache or retrieve from
-        // the repository directly).
-        try {
-            return getLastRevFromHistory();
-        } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "cannot get latest revision for ''{0}'' using history", getPath());
-            return null;
-        }
-    }
-
-    @Nullable
-    private String getLastRevFromHistory() throws HistoryException {
-        File file = new File(getEnv().getSourceRootFile(), getPath());
-        HistoryEntry he = HistoryGuru.getInstance().getLastHistoryEntry(file, true);
-        if (he != null) {
-            return he.getRevision();
-        }
-
-        return null;
-    }
-
-    /**
-     * Retrieve last revision from the document matching the resource file (if any).
-     * @return last revision or {@code null} if the document cannot be found, is out of sync
-     * w.r.t. last modified time of the file or the last commit ID is not stored in the document.
-     */
-    @Nullable
-    @VisibleForTesting
-    String getLastRevFromIndex() {
-        Document doc = null;
-        try {
-            doc = IndexDatabase.getDocument(getResourceFile());
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
-        }
-
-        String lastRev = null;
-        if (doc != null) {
-            // There is no point of checking the date if the LASTREV field is not present.
-            lastRev = doc.get(QueryBuilder.LASTREV);
-            if (lastRev != null) {
-                Date docDate;
-                try {
-                    docDate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
-                } catch (ParseException e) {
-                    LOGGER.log(Level.WARNING, String.format("cannot get date from the document %s", doc), e);
-                    return null;
-                }
-                Date fileDate = new Date(getResourceFile().lastModified());
-                if (docDate.compareTo(fileDate) < 0) {
-                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", getResourceFile());
-                    return null;
-                }
-            }
-        }
-
-        return lastRev;
-    }
-
-    /**
      * Is revision the latest revision ?
      * @param rev revision string
      * @return true if latest revision, false otherwise
      */
     public boolean isLatestRevision(String rev) {
-        return rev.equals(getLatestRevision());
+        return rev.equals(getLatestRevision(getResourceFile()));
     }
 
     /**

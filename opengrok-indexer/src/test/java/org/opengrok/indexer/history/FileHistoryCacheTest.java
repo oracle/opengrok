@@ -274,7 +274,7 @@ class FileHistoryCacheTest {
         assertNull(retrievedHistoryMainC.getTags().get(e2.getRevision()), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
-        String histCachePath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        String histCachePath = CacheUtil.getRepositoryCacheDataDirname(repo, cache);
         assertNotNull(histCachePath);
         File dir = new File(histCachePath);
         assertTrue(dir.isDirectory());
@@ -377,7 +377,7 @@ class FileHistoryCacheTest {
         assertSameEntry(newEntry1, updatedEntries.removeFirst(), false);
 
         // test clearing of cache
-        String dirPath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        String dirPath = CacheUtil.getRepositoryCacheDataDirname(repo, cache);
         assertNotNull(dirPath);
         File dir = new File(dirPath);
         assertTrue(dir.isDirectory());

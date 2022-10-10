@@ -29,24 +29,13 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
-interface HistoryCache {
+interface HistoryCache extends Cache {
     /**
-     * Create and initialize an empty history cache if one doesn't exist
-     * already.
+     * Create and initialize an empty history cache if one doesn't exist already.
      *
      * @throws HistoryException if initialization fails
      */
     void initialize() throws HistoryException;
-
-    /**
-     * Check whether this cache implementation can store history for the given
-     * repository.
-     *
-     * @param repository the repository to check
-     * @return {@code true} if this cache implementation can store history
-     * for the repository, or {@code false} otherwise
-     */
-    boolean supportsRepository(Repository repository);
 
     /**
      * Retrieve the history for the given file, either from the cache or by
@@ -84,18 +73,6 @@ interface HistoryCache {
     void store(History history, Repository repository, String tillRevision) throws HistoryException;
 
     /**
-     * Optimize how the history is stored on disk. This method is typically
-     * called after the cache has been populated, or after large modifications
-     * to the cache. The exact effect of this method is specific to each
-     * implementation, but it may for example include compressing, compacting
-     * or reordering the disk image of the cache in order to optimize
-     * performance or space usage.
-     *
-     * @throws HistoryException if an error happens during optimization
-     */
-    void optimize() throws HistoryException;
-
-    /**
      * Check if the specified file is present in the cache.
      * @param file the file to check
      * @return {@code true} if the file is in the cache, {@code false}
@@ -124,24 +101,8 @@ interface HistoryCache {
     Map<String, Date> getLastModifiedTimes(File directory, Repository repository) throws HistoryException;
 
     /**
-     * Clear the history cache for a repository.
-     *
-     * @param repository the repository whose cache to clear
-     * @throws HistoryException if the cache couldn't be cleared
-     */
-    void clear(Repository repository) throws HistoryException;
-
-    /**
      * Clear entry for single file from history cache.
      * @param file path to the file relative to the source root
      */
     void clearFile(String file);
-
-    /**
-     * Get a string with information about the history cache.
-     *
-     * @return a free form text string describing the history cache instance
-     * @throws HistoryException if an error occurred while getting the info
-     */
-    String getInfo() throws HistoryException;
 }
