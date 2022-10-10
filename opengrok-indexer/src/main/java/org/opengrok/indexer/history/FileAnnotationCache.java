@@ -26,8 +26,6 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
-import org.opengrok.indexer.configuration.PathAccepter;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.Statistics;
