@@ -53,11 +53,6 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
 
     private static final String ANNOTATION_CACHE_DIR_NAME = "annotationcache";
 
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    // TODO
-    private final PathAccepter pathAccepter = env.getPathAccepter();
-
     public void initialize() {
         MeterRegistry meterRegistry = Metrics.getRegistry();
         if (meterRegistry != null) {
@@ -73,7 +68,6 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     private static XMLDecoder getDecoder(InputStream in) {
-        // TODO: use single AnnotationDataClassLoader instance ?
         return new XMLDecoder(in, null, null, classLoader);
     }
 
