@@ -49,7 +49,7 @@ public class LatestRevisionUtil {
     }
 
     /**
-     * @param file file
+     * @param file file object corresponding to a file under source root
      * @return last revision string for {@code file} or null
      */
     @Nullable
@@ -74,6 +74,7 @@ public class LatestRevisionUtil {
 
     /**
      * Retrieve last revision from the document matching the file (if any).
+     * @param file object corresponding to a file under source root
      * @return last revision or {@code null} if the document cannot be found, is out of sync
      * w.r.t. last modified time of the file or the last commit ID is not stored in the document.
      */

@@ -29,8 +29,6 @@ import java.io.File;
 public interface AnnotationCache extends Cache {
     void initialize();
 
-    // TODO: supportsRepository() ? like in HistoryCache
-
     /**
      * Retrieve annotation from cache.
      * @param file file under source root to get the annotation for
