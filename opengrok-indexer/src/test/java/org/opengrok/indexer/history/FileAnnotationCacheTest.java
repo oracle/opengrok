@@ -32,6 +32,10 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileAnnotationCacheTest {
 
@@ -61,14 +65,49 @@ class FileAnnotationCacheTest {
         cache = null;
     }
 
+    /**
+     * Assumes the comparison of {@link AnnotationData} objects works well.
+     * This is being tested in {@link AnnotationDataTest} and {@link AnnotationLineTest}.
+     */
     @Test
     void testSerialization() throws HistoryException {
-        Annotation annotation = new Annotation("foo.txt");
+        final String fileName = "main.c";
+        Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
-        File file = Paths.get(repositories.getSourceRoot(), "git", "main.c").toFile();
+        File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
+        assertTrue(file.exists());
         cache.store(file, annotation);
-        Annotation annotation1 = cache.readAnnotation(file);
-        assertEquals(annotation.annotationData, annotation1.annotationData);
+        Annotation annotationFromCache = cache.readAnnotation(file);
+        assertNotNull(annotationFromCache);
+        assertEquals(annotation.annotationData, annotationFromCache.annotationData);
+    }
+
+    @Test
+    void testGetNullLatestRev() {
+        File file = new File(env.getSourceRootFile(), "foo");
+        assertNull(LatestRevisionUtil.getLatestRevision(file));
+        FileAnnotationCache cache = new FileAnnotationCache();
+        assertNull(cache.get(file, null));
+    }
+
+    @Test
+    void testClearFile() throws Exception {
+        // Even though fake annotation is stored, this should be close to reality.
+        final String fileName = "header.h";
+        File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
+        assertTrue(file.exists());
+
+        FileAnnotationCache cache = new FileAnnotationCache();
+        Annotation annotation = new Annotation(fileName);
+        annotation.addLine("1", "author1", true);
+        annotation.addLine("2", "author1", true);
+        cache.store(file, annotation);
+        File cachedFile = cache.getCachedFile(file);
+        assertTrue(cachedFile.exists());
+
+        cache.clearFile(env.getPathRelativeToSourceRoot(file));
+        assertFalse(cachedFile.exists());
+        assertFalse(cachedFile.getParentFile().exists());
     }
 }
