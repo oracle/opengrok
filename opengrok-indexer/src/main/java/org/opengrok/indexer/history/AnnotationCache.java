@@ -41,7 +41,7 @@ public interface AnnotationCache extends Cache {
     Annotation get(File file, String rev);
 
     /**
-     * Store annotation for file into cache
+     * Store annotation for file into cache.
      * @param file file under source root to store the annotation for
      * @param annotation {@link Annotation} object
      * @throws HistoryException on error

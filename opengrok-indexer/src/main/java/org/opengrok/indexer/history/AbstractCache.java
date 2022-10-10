@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 20XX, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -34,7 +34,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * TODO
+ * Class to hold code shared between various cache implementations,
+ * notably {@link FileHistoryCache} and {@link FileAnnotationCache}.
  */
 public abstract class AbstractCache implements Cache {
 
@@ -82,7 +83,6 @@ public abstract class AbstractCache implements Cache {
             try {
                 this.clear(r);
                 clearedRepos.add(r.getDirectoryName());
-                // TODO: report what kind of cache it is
                 LOGGER.log(Level.INFO,"{1} cache for {0} cleared.",
                         new Object[]{r.getDirectoryName(), this.getInfo()});
             } catch (HistoryException e) {

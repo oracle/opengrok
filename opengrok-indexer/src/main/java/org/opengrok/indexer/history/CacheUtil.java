@@ -35,9 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -54,10 +51,10 @@ public class CacheUtil {
     }
 
     /**
-     * TODO
-     * @param object
-     * @param output
-     * @throws IOException
+     * Write serialized object to file.
+     * @param object object to be stored
+     * @param output output file
+     * @throws IOException on error
      */
     public static void writeCache(Object object, File output) throws IOException {
         try (FileOutputStream out = new FileOutputStream(output);

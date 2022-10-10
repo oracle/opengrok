@@ -20,20 +20,11 @@
 /*
  * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.history;
 
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.TandemPath;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public interface Cache {
