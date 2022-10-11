@@ -443,6 +443,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return getHistory(file, sinceRevision, null);
     }
 
+    @Override
     public int getPerPartesCount() {
         return MAX_CHANGESETS;
     }
