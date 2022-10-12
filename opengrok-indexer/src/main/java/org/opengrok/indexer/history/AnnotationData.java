@@ -175,11 +175,18 @@ public class AnnotationData implements Serializable {
      * @param revision revision number
      * @param author author name
      */
-    void addLine(String revision, String author, boolean enabled) {
-        final AnnotationLine annotationLine = new AnnotationLine(revision, author, enabled);
+    void addLine(final AnnotationLine annotationLine) {
         annotationLines.add(annotationLine);
         widestRevision = Math.max(widestRevision, annotationLine.getRevision().length());
         widestAuthor = Math.max(widestAuthor, annotationLine.getAuthor().length());
+    }
+
+    /**
+     * @see #addLine(AnnotationLine)
+     */
+    void addLine(String revision, String author, boolean enabled) {
+        final AnnotationLine annotationLine = new AnnotationLine(revision, author, enabled);
+        addLine(annotationLine);
     }
 
     /**
@@ -225,6 +232,9 @@ public class AnnotationData implements Serializable {
             return false;
         }
         if (!Objects.equals(getWidestRevision(), other.getWidestRevision())) {
+            return false;
+        }
+        if (!Objects.equals(getRevision(), other.getRevision())) {
             return false;
         }
 

@@ -51,6 +51,7 @@ class AnnotationDataTest {
 
     /**
      * This is useful for {@link FileAnnotationCacheTest#testSerialization()}.
+     * {@link AnnotationData} with different filenames should differ.
      */
     @Test
     void testEqualsNegativeFileName() {
@@ -61,35 +62,70 @@ class AnnotationDataTest {
 
     /**
      * This is useful for {@link FileAnnotationCacheTest#testSerialization()}.
+     * {@link AnnotationData} with different lists of {@link AnnotationLine} should differ.
      */
     @Test
     void testEqualsNegative() {
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true);
+
         AnnotationData annotationData1 = new AnnotationData();
-        annotationData1.addLine("1.0", "Me", true);
-        annotationData1.addLine("1.1", "Me", true);
-        annotationData1.addLine("1.2", "Me", true);
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.addLine(annotationLine3);
 
         AnnotationData annotationData2 = new AnnotationData();
-        annotationData2.addLine("1.0", "Me", true);
-        annotationData2.addLine("1.1", "Me", true);
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
 
         assertNotEquals(annotationData1, annotationData2);
     }
 
     /**
      * This is useful for {@link FileAnnotationCacheTest#testSerialization()}.
+     * {@link AnnotationData} with equal lists of {@link AnnotationLine} and different revisions should differ.
+     */
+    @Test
+    void testEqualsNegativeStoredRevision() {
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
+
+        AnnotationData annotationData1 = new AnnotationData();
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.setRevision("1.1");
+
+        AnnotationData annotationData2 = new AnnotationData();
+        annotationData2.addLine(annotationLine1);
+        annotationData2.addLine(annotationLine2);
+
+        assertNotEquals(annotationData1, annotationData2);
+    }
+
+    /**
+     * This is useful for {@link FileAnnotationCacheTest#testSerialization()}.
+     * The comparison of {@link AnnotationData} objects should compare lists of {@link AnnotationLine} objects
+     * filenames and revisions.
      */
     @Test
     void testEqualsPositive() {
-        AnnotationData annotationData1 = new AnnotationData();
-        annotationData1.addLine("1.0", "Me", true);
-        annotationData1.addLine("1.1", "Me", true);
-        annotationData1.addLine("1.2", "Me", true);
+        final String fileName = "foo.txt";
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true);
 
-        AnnotationData annotationData2 = new AnnotationData();
-        annotationData2.addLine("1.0", "Me", true);
-        annotationData2.addLine("1.1", "Me", true);
-        annotationData1.addLine("1.2", "Me", true);
+        AnnotationData annotationData1 = new AnnotationData(fileName);
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.addLine(annotationLine3);
+        annotationData1.setRevision("1.2");
+
+        AnnotationData annotationData2 = new AnnotationData(fileName);
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.addLine(annotationLine3);
+        annotationData1.setRevision("1.2");
 
         assertNotEquals(annotationData1, annotationData2);
     }
