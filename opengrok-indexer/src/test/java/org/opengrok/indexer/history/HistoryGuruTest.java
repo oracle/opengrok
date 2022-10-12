@@ -73,6 +73,7 @@ public class HistoryGuruTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+        env.setUseAnnotationCache(true);
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
@@ -145,6 +146,43 @@ public class HistoryGuruTest {
                 assertNotNull(instance.annotate(f, null));
             }
         }
+    }
+
+    /**
+     * Test annotation cache and fall back to repository method.
+     * Assumes {@link AnnotationCache} implementation in {@link HistoryGuru} is {@link FileAnnotationCache}.
+     */
+    @Test
+    void testAnnotationFallback() throws Exception {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        File file = Paths.get(env.getSourceRootPath(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+
+        // Clear the cache and get annotation for current revision of the file.
+        String relativePath = env.getPathRelativeToSourceRoot(file);
+        instance.clearAnnotationCacheFile(relativePath);
+        Annotation annotation = instance.annotate(file, null);
+        assertNotNull(annotation);
+
+        // Try to get annotation for historical revision of the file.
+        History history = instance.getHistory(file);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertTrue(history.getHistoryEntries().size() > 0);
+        annotation = instance.annotate(file, history.getHistoryEntries().get(1).getRevision());
+        assertNotNull(annotation);
+
+        // Create annotation cache and try to get annotation for current revision of the file.
+        instance.createAnnotationCache(file);
+        Repository repository = instance.getRepository(file);
+        // Ensure the annotation is loaded from the cache.
+        final String tmpDirName = "gitdisabled";
+        Files.move(Paths.get(repository.getDirectoryName(), ".git"),
+                Paths.get(repository.getDirectoryName(), tmpDirName));
+        annotation = instance.annotate(file, null);
+        Files.move(Paths.get(repository.getDirectoryName(), tmpDirName),
+                Paths.get(repository.getDirectoryName(), ".git"));
+        assertNotNull(annotation);
     }
 
     @Test

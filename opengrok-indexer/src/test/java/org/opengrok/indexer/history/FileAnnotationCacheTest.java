@@ -25,19 +25,29 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * Tests for {@link FileAnnotationCache}. These generally assume that the default
+ * {@link AnnotationCache} implementation in {@link HistoryGuru} is {@link FileAnnotationCache}.
+ */
 class FileAnnotationCacheTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -50,9 +60,11 @@ class FileAnnotationCacheTest {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
 
+        // This needs to be set before the call to env.setRepositories() below as it instantiates HistoryGuru.
+        env.setUseAnnotationCache(true);
+
         // Needed for HistoryGuru to operate normally.
         env.setRepositories(repositories.getSourceRoot());
-        env.setUseAnnotationCache(true);
 
         cache = new FileAnnotationCache();
         cache.initialize();
@@ -76,6 +88,7 @@ class FileAnnotationCacheTest {
         Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
+        annotation.setRevision("2");
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertTrue(file.exists());
         cache.store(file, annotation);
@@ -85,15 +98,7 @@ class FileAnnotationCacheTest {
     }
 
     @Test
-    void testGetNullLatestRev() {
-        File file = new File(env.getSourceRootFile(), "foo");
-        assertNull(LatestRevisionUtil.getLatestRevision(file));
-        FileAnnotationCache cache = new FileAnnotationCache();
-        assertNull(cache.get(file, null));
-    }
-
-    @Test
-    void testReadAnnotationNegative() {
+    void testReadAnnotationForNonexistentFile() {
         final String fileName = "nonexistent";
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertFalse(file.exists());
@@ -110,6 +115,7 @@ class FileAnnotationCacheTest {
         Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
+        annotation.setRevision("2");
         cache.store(file, annotation);
         File cachedFile = cache.getCachedFile(file);
         assertTrue(cachedFile.exists());
@@ -135,6 +141,7 @@ class FileAnnotationCacheTest {
         Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
         annotation.addLine("2", "author1", true);
+        annotation.setRevision("2");
         cache.store(file, annotation);
         File cachedFile = cache.getCachedFile(file);
         assertTrue(cachedFile.exists());
@@ -142,5 +149,144 @@ class FileAnnotationCacheTest {
         cache.clearFile(env.getPathRelativeToSourceRoot(file));
         assertFalse(cachedFile.exists());
         assertFalse(cachedFile.getParentFile().exists());
+    }
+
+    private static Stream<Arguments> getTestGetNullLatestRevParams() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(true, false),
+                Arguments.of(false, false),
+                Arguments.of(true, true)
+        );
+    }
+
+    /**
+     * This is more test of {@link HistoryGuru#annotate(File, String)} than {@link FileAnnotationCache},
+     * however in {@link HistoryGuruTest} the annotation cache is not directly accessible,
+     * so the test resides here.
+     * <p>
+     * Specifically, the test ensures that annotation for the last revision
+     * (specified with the <code>null</code> revision argument) retrieved from repository
+     * has the correct non-<code>null</code> revision filled in and the revision is preserved in the cache.
+     * </p>
+     */
+    @ParameterizedTest
+    @MethodSource("getTestGetNullLatestRevParams")
+    void testGetNullLatestRev(boolean storeViaHistoryGuru, boolean nullLatestRevision) throws Exception {
+        // Make sure the file exists and its last revision can be determined.
+        // The latter is important later on for checking whether the annotation
+        // gets stored along with the last revision.
+        File file = Paths.get(env.getSourceRootPath(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+        String latestRev = LatestRevisionUtil.getLatestRevision(file);
+        assertNotNull(latestRev);
+
+        // Make sure there is clean state. The file should not have any cache entry.
+        FileAnnotationCache cache = new FileAnnotationCache();
+        cache.clearFile(env.getPathRelativeToSourceRoot(file));
+        Annotation annotation = cache.get(file, null);
+        assertNull(annotation);
+
+        // Store the annotation in the cache.
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        if (storeViaHistoryGuru) {
+            annotation = historyGuru.getRepository(file).annotate(file, null);
+            assertNotNull(annotation);
+            // Repository method does not set the revision, so it has to be set here.
+            assertNull(annotation.getRevision());
+            annotation.setRevision(latestRev);
+            historyGuru.createAnnotationCache(file);
+        } else {
+            annotation = historyGuru.annotate(file, null);
+            assertNotNull(annotation);
+            assertNotNull(annotation.getRevision());
+            cache.store(file, annotation);
+        }
+
+        // Retrieve annotation directly from the cache.
+        Annotation cachedAnnotation;
+        if (nullLatestRevision) {
+            cachedAnnotation = cache.get(file, null);
+        } else {
+            cachedAnnotation = cache.get(file, latestRev);
+        }
+        assertNotNull(cachedAnnotation);
+        assertNotNull(cachedAnnotation.getRevision());
+        assertEquals(latestRev, cachedAnnotation.getRevision());
+        assertEquals(annotation.annotationData, cachedAnnotation.annotationData);
+    }
+
+    /**
+     * Test that the {@link Repository#isAnnotationCacheEnabled()} is honored when creating history cache.
+     * Specifically that repository can override global setting.
+     */
+    @Test
+    void testRepositoryDisabledAnnotationCache() throws Exception {
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        assertTrue(env.useAnnotationCache());
+        assertFalse(historyGuru.getAnnotationCacheInfo().startsWith("No"));
+
+        File file = Paths.get(env.getSourceRootPath(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+
+        // Make sure there is clean state. The file should not have any cache entry.
+        FileAnnotationCache cache = new FileAnnotationCache();
+        cache.clearFile(env.getPathRelativeToSourceRoot(file));
+        Annotation annotation = cache.get(file, null);
+        assertNull(annotation);
+
+        Repository repository = historyGuru.getRepository(file);
+        assertNotNull(repository);
+
+        repository.setAnnotationCacheEnabled(false);
+        historyGuru.createAnnotationCache(file);
+        assertNull(cache.get(file, null));
+        repository.setAnnotationCacheEnabled(false);
+    }
+
+    private enum revisionType {
+        NULL,
+        LATEST,
+        INVALID
+    };
+
+    /**
+     * Make sure stale check via revision string comparison works.
+     */
+    @ParameterizedTest
+    @EnumSource(revisionType.class)
+    void testGeRevisionMismatch(revisionType revisionType) throws Exception {
+        // Even though fake annotation is stored, the file has to be real because eventually
+        // its latest revision is to be fetched in cache.get().
+        final String fileName = "header.h";
+        File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
+        assertTrue(file.exists());
+
+        // Store annotation for particular revision.
+        final String revision = "2";
+        FileAnnotationCache cache = new FileAnnotationCache();
+        Annotation annotation = new Annotation(fileName);
+        annotation.addLine("1", "author1", true);
+        annotation.addLine("2", "author1", true);
+        annotation.setRevision(revision);
+        cache.store(file, annotation);
+        File cachedFile = cache.getCachedFile(file);
+        assertTrue(cachedFile.exists());
+
+        // Try to retrieve different revision of the file.
+        switch (revisionType) {
+            case NULL:
+                assertNull(cache.get(file, null));
+                break;
+            case LATEST:
+                String latestRev = LatestRevisionUtil.getLatestRevision(file);
+                assertNull(cache.get(file,  latestRev));
+                break;
+            case INVALID:
+                assertNull(cache.get(file, revision + "1"));
+                break;
+            default:
+                fail("Invalid value");
+        }
     }
 }
