@@ -27,6 +27,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 public interface AnnotationCache extends Cache {
+    /**
+     * Perform whatever initialization is needed for given cache implementation.
+     */
     void initialize();
 
     /**
