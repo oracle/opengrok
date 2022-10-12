@@ -116,7 +116,7 @@ public final class HistoryGuru {
      */
     private HistoryGuru() {
         env = RuntimeEnvironment.getInstance();
-        
+
         this.historyCache = initializeHistoryCache();
         this.annotationCache = initializeAnnotationCache();
 
