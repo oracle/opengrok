@@ -102,7 +102,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     public Annotation get(File file, @Nullable String rev) {
         Annotation annotation = null;
         String latestRevision = LatestRevisionUtil.getLatestRevision(file);
-        if (latestRevision != null && latestRevision.equals(rev)) {
+        if (rev == null || (latestRevision != null && latestRevision.equals(rev))) {
             // read from the cache
             annotation = readAnnotation(file);
             if (annotation != null) {
@@ -113,9 +113,16 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
                  * at the expense of having to read from the annotation cache.
                  */
                 final String storedRevision = annotation.getRevision();
-                if (storedRevision != null && !storedRevision.equals(rev)) {
+                /*
+                 * Even though store() does not allow to store annotation with null revision, the check
+                 * should be present to catch weird cases of someone not using the store() or general badness.
+                 */
+                if (storedRevision == null) {
+                    LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''", file);
+                    annotation = null;
+                } else if (!storedRevision.equals(latestRevision)) {
                     LOGGER.log(Level.FINER,
-                            "stored revision {0} for ''{1}'' does not match requested revision {2}",
+                            "stored revision {0} for ''{1}'' does not match latest revision {2}",
                             new Object[]{storedRevision, file, rev});
                     annotation = null;
                 }
