@@ -116,13 +116,17 @@ public final class HistoryGuru {
      */
     private HistoryGuru() {
         env = RuntimeEnvironment.getInstance();
-
+        
         this.historyCache = initializeHistoryCache();
         this.annotationCache = initializeAnnotationCache();
 
         repositoryLookup = RepositoryLookup.cached();
     }
 
+    /**
+     * Set annotation cache to its default implementation.
+     * @return {@link AnnotationCache} instance
+     */
     private AnnotationCache initializeAnnotationCache() {
         AnnotationCache annotationCacheResult = null;
         if (env.useAnnotationCache()) {
@@ -139,6 +143,10 @@ public final class HistoryGuru {
         return annotationCacheResult;
     }
 
+    /**
+     * Set history cache to its default implementation.
+     * @return {@link HistoryCache} instance
+     */
     private HistoryCache initializeHistoryCache() {
         HistoryCache historyCacheResult = null;
         if (env.useHistoryCache()) {
@@ -222,9 +230,17 @@ public final class HistoryGuru {
         }
 
         // Fall back to repository based annotation.
+        // It might be possible to store the annotation to the annotation cache here, needs further thought.
         return getAnnotationFromRepository(file, rev);
     }
 
+    /**
+     * Annotate given file using repository method. Makes sure that the resulting annotation has the revision set.
+     * @param file file object to generate the annotaiton for
+     * @param rev revision to get the annotation for or {@code null} for latest revision of given file
+     * @return annotation object
+     * @throws IOException on error when getting the annotation
+     */
     private Annotation getAnnotationFromRepository(File file, @Nullable String rev) throws IOException {
         Annotation annotation = null;
 
@@ -234,11 +250,15 @@ public final class HistoryGuru {
         }
 
         Repository repository = getRepository(file);
-        if ((hasAnnotation(file)) && (repository != null)) {
+        if (repository != null && hasAnnotation(file)) {
             annotation = repository.annotate(file, rev);
             if (annotation != null) {
+                if (rev == null) {
+                    // There is a theoretical race condition here. The file history might get updated
+                    // after the annotation is fetched.
+                    rev = LatestRevisionUtil.getLatestRevision(file);
+                }
                 annotation.setRevision(rev);
-                // It might be possible to store the annotation to cache here, needs further thought.
             }
         }
 
@@ -944,7 +964,8 @@ public final class HistoryGuru {
         LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", file);
         try {
             Statistics statistics = new Statistics();
-            Annotation annotation = repository.annotate(file, null);
+
+            Annotation annotation = getAnnotationFromRepository(file, null);
             statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for ''%s''", file),
                     "annotation.retrieve");
 
@@ -958,7 +979,7 @@ public final class HistoryGuru {
     /**
       * Clear entry for single file from annotation cache.
       * @param path path to the file relative to the source root
-    */
+      */
     public void clearAnnotationCacheFile(String path) {
         if (!useAnnotationCache()) {
             return;
