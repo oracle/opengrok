@@ -442,14 +442,13 @@ public class RepositoryInfo implements Serializable {
             stringBuilder.append("annotationCache=off");
         }
 
-        stringBuilder.append(",");
         if (getUsername() != null) {
-            stringBuilder.append("username:set");
             stringBuilder.append(",");
+            stringBuilder.append("username:set");
         }
         if (getPassword() != null) {
-            stringBuilder.append("password:set");
             stringBuilder.append(",");
+            stringBuilder.append("password:set");
         }
 
         stringBuilder.append("}");
