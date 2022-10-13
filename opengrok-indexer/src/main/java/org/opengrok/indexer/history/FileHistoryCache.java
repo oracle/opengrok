@@ -623,7 +623,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         return cachedFile != null && cachedFile.exists() && file.lastModified() <= cachedFile.lastModified();
     }
 
-    private String getRepositoryCachedRevPath(Repository repository) {
+    private String getRepositoryCachedRevPath(RepositoryInfo repository) {
         String histDir = CacheUtil.getRepositoryCacheDataDirname(repository, this);
         if (histDir == null) {
             return null;
@@ -695,7 +695,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public void clear(Repository repository) {
+    public void clear(RepositoryInfo repository) {
         String revPath = getRepositoryCachedRevPath(repository);
         if (revPath != null) {
             // remove the file cached last revision (done separately in case

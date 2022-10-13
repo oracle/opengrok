@@ -73,14 +73,6 @@ interface HistoryCache extends Cache {
     void store(History history, Repository repository, String tillRevision) throws HistoryException;
 
     /**
-     * Check if the specified file is present in the cache.
-     * @param file the file to check
-     * @return {@code true} if the file is in the cache, {@code false}
-     * otherwise
-     */
-    boolean hasCacheForFile(File file) throws HistoryException;
-
-    /**
      * Get the revision identifier for the latest cached revision in a repository.
      *
      * @param repository the repository whose latest revision to return

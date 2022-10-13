@@ -23,6 +23,8 @@
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.logger.LoggerFactory;
+
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
@@ -45,7 +47,7 @@ public interface Cache {
      * @param repository the repository whose cache to clear
      * @throws HistoryException if the cache couldn't be cleared
      */
-    void clear(Repository repository) throws HistoryException;
+    void clear(RepositoryInfo repository) throws HistoryException;
 
     /**
      * Optimize how the history is stored on disk. This method is typically
@@ -79,7 +81,14 @@ public interface Cache {
      * will be left intact.
      *
      * @param repositories list of repository paths relative to source root
-     * @return list of repository paths that were found and their history data removed
+     * @return list of repository paths relative to source root for which the cache was successfully removed
      */
-    List<String> clearCache(Collection<String> repositories);
+    List<String> clearCache(Collection<RepositoryInfo> repositories);
+
+    /**
+     * Check if the specified file is present in the cache.
+     * @param file the file to check
+     * @return {@code true} if the file is in the cache, {@code false} otherwise
+     */
+    boolean hasCacheForFile(File file) throws HistoryException;
 }

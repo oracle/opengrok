@@ -384,8 +384,24 @@ This will also mark the project as not indexed.
 ### delete history cache for a project [DELETE]
 
 This will delete history cache for a project.
+Return list of repository paths for which the cache was successfully deleted.
 
-+ Response 204
++ Response 200 (application/json)
+  + Body
+
+            ["/project/repository1","/project/repository2"]
+
+## Project annotation cache management [/projects/{project}/annotationcache]
+
+### delete annotation cache for a project [DELETE]
+
+This will delete annotation cache for a project.
+Return list of repository paths for which the cache was successfully deleted.
+
++ Response 200 (application/json)
+  + Body
+
+            ["/project/repository1","/project/repository2"]
 
 ## Project metadata management [/projects/{project}/indexed]
 

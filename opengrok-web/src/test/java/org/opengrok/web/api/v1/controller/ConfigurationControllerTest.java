@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.opengrok.web.api.v1.controller.ApiUtils.waitForTask;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -50,6 +49,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.ApiUtils;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.ApiTaskManager;
@@ -76,7 +76,8 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     @Override
     protected DeploymentContext configureDeployment() {
         return ServletDeploymentContext.
-                forServlet(new ServletContainer(new ResourceConfig(ConfigurationController.class)
+                forServlet(new ServletContainer(
+                        new ResourceConfig(ConfigurationController.class, StatusController.class)
                         .register(new AbstractBinder() {
                             @Override
                             protected void configure() {
@@ -86,7 +87,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetAndGetBasicConfig() {
+    void testApplySetAndGetBasicConfig() throws Exception {
         Configuration config = new Configuration();
         String srcRoot = "/foo";
         config.setSourceRoot(srcRoot);
@@ -96,7 +97,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        waitForTask(response);
+        ApiUtils.waitForAsyncApi(response);
 
         assertEquals(srcRoot, env.getSourceRootPath());
 
@@ -108,19 +109,19 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetInvalidMethod() {
+    void testApplySetInvalidMethod() throws Exception {
         Response r = setValue("noMethodExists", "1000");
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
-    private Response setValue(final String field, final String value) {
+    private Response setValue(final String field, final String value) throws InterruptedException {
         Response response = target("configuration")
                 .path(field)
                 .request()
                 .put(Entity.text(value));
 
-        return waitForTask(response);
+        return ApiUtils.waitForAsyncApi(response);
     }
 
     @Test
@@ -134,14 +135,14 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetInvalidMethodParameter() {
+    void testApplySetInvalidMethodParameter() throws Exception {
         Response r = setValue("setDefaultProjects", "1000"); // expecting Set
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
     @Test
-    void testApplySetOptionInteger() {
+    void testApplySetOptionInteger() throws Exception {
         assertEquals(25, env.getHitsPerPage());
 
         setValue("hitsPerPage", "1000");
@@ -152,20 +153,20 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetOptionInvalidInteger() {
+    void testApplySetOptionInvalidInteger() throws Exception {
         Response r = setValue("hitsPerPage", "abcd");
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
     @Test
-    void testApplySetOptionBooleanTrue() {
+    void testApplySetOptionBooleanTrue() throws Exception {
         testSetChattyStatusPageTrue("true");
         testSetChattyStatusPageTrue("on");
         testSetChattyStatusPageTrue("1");
     }
 
-    private void testSetChattyStatusPageTrue(final String value) {
+    private void testSetChattyStatusPageTrue(final String value) throws Exception {
         env.setChattyStatusPage(false);
 
         setValue("chattyStatusPage", value);
@@ -174,13 +175,13 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetOptionBooleanFalse() {
+    void testApplySetOptionBooleanFalse() throws Exception {
         testSetChattyStatusPageFalse("false");
         testSetChattyStatusPageFalse("off");
         testSetChattyStatusPageFalse("0");
     }
 
-    private void testSetChattyStatusPageFalse(final String value) {
+    private void testSetChattyStatusPageFalse(final String value) throws Exception {
         env.setChattyStatusPage(true);
 
         setValue("chattyStatusPage", value);
@@ -189,21 +190,21 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testApplySetOptionInvalidBoolean1() {
+    void testApplySetOptionInvalidBoolean1() throws Exception {
         Response r = setValue("chattyStatusPage", "1000"); // only 1 is accepted as true
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
     @Test
-    void testApplySetOptionInvalidBoolean2() {
+    void testApplySetOptionInvalidBoolean2() throws Exception {
         Response r = setValue("chattyStatusPage", "anything");
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
     @Test
-    void testApplySetOptionString() {
+    void testApplySetOptionString() throws Exception {
         String old = env.getUserPage();
 
         setValue("userPage", "http://users.portal.com?user=");
@@ -249,7 +250,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testSuggesterServiceNotifiedOnConfigurationFieldChange() {
+    void testSuggesterServiceNotifiedOnConfigurationFieldChange() throws Exception {
         reset(suggesterService);
         setValue("sourceRoot", "test");
         verify(suggesterService).refresh();
@@ -261,7 +262,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(new Configuration().getXMLRepresentationAsString()));
-        waitForTask(response);
+        ApiUtils.waitForAsyncApi(response);
         verify(suggesterService).refresh();
     }
 
@@ -297,7 +298,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        waitForTask(response);
+        ApiUtils.waitForAsyncApi(response);
 
         // Unblock the thread.
         endLatch.countDown();

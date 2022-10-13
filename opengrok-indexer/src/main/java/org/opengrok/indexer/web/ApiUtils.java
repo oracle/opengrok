@@ -55,6 +55,11 @@ public class ApiUtils {
     public static @NotNull Response waitForAsyncApi(@NotNull Response response)
             throws InterruptedException, IllegalArgumentException {
 
+        if (response.getStatus() != Response.Status.ACCEPTED.getStatusCode()) {
+            LOGGER.log(Level.WARNING, "API request not accepted: {0}", response);
+            return response;
+        }
+
         String location = response.getHeaderString(HttpHeaders.LOCATION);
         if (location == null) {
             throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));

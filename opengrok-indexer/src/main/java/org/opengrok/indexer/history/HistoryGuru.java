@@ -598,11 +598,10 @@ public final class HistoryGuru {
     }
 
     /**
-     * Does the history cache contain entry for this directory ?
      * @param file file object
-     * @return true if there is cache, false otherwise
+     * @return if there is history cache entry for the file
      */
-    public boolean hasCacheForFile(File file) {
+    public boolean hasHistoryCacheForFile(File file) {
         if (!useHistoryCache()) {
             LOGGER.log(Level.FINEST, "history cache is off for ''{0}'' to check history cache presence", file);
             return false;
@@ -645,6 +644,26 @@ public final class HistoryGuru {
         }
 
         return repo.fileHasAnnotation(file);
+    }
+
+    /**
+     * @param file file object
+     * @return if there is annotation cache entry for the file
+     */
+    public boolean hasAnnotationCacheForFile(File file) {
+        if (!useAnnotationCache()) {
+            LOGGER.log(Level.FINEST, "annotation cache is off for ''{0}'' to check history cache presence", file);
+            return false;
+        }
+
+        try {
+            return annotationCache.hasCacheForFile(file);
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.FINE,
+                    String.format("failed to get annotation cache for file '%s' to check history cache presence", file),
+                    ex);
+            return false;
+        }
     }
 
     /**
@@ -955,6 +974,11 @@ public final class HistoryGuru {
         }
 
         Repository repository = getRepository(file);
+        if (repository == null) {
+            LOGGER.log(Level.FINER, "no repository for ''{0}''", file);
+            return;
+        }
+
         if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
             LOGGER.log(Level.FINER, "repository {0} does not allow to create annotation for ''{1}''",
                     new Object[]{repository, file});
@@ -993,14 +1017,15 @@ public final class HistoryGuru {
      * successfully cleared may be removed from the internal list of repositories,
      * depending on the {@code removeRepositories} parameter.
      *
-     * @param repositories list of repository paths relative to source root
+     * @param repositories list of repository objects relative to source root
+     * @return list of repository names
      */
-    public void removeHistoryCache(Collection<String> repositories) {
+    public List<String> removeHistoryCache(Collection<RepositoryInfo> repositories) {
         if (!useHistoryCache()) {
-            return;
+            return List.of();
         }
 
-        historyCache.clearCache(repositories);
+        return historyCache.clearCache(repositories);
     }
 
     /**
@@ -1008,14 +1033,15 @@ public final class HistoryGuru {
      * successfully cleared may be removed from the internal list of repositories,
      * depending on the {@code removeRepositories} parameter.
      *
-     * @param repositories list of repository paths relative to source root
+     * @param repositories list of repository objects relative to source root
+     * @return list of repository names
      */
-    public void removeAnnotationCache(Collection<String> repositories) {
-        if (!useHistoryCache()) {
-            return;
+    public List<String> removeAnnotationCache(Collection<RepositoryInfo> repositories) {
+        if (!useAnnotationCache()) {
+            return List.of();
         }
 
-        annotationCache.clearCache(repositories);
+        return annotationCache.clearCache(repositories);
     }
 
     /**

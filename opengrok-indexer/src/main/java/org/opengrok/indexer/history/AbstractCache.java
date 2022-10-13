@@ -76,19 +76,19 @@ public abstract class AbstractCache implements Cache {
         return new File(TandemPath.join(sb.toString(), ".gz"));
     }
 
-    public List<String> clearCache(Collection<String> repositories) {
+    public List<String> clearCache(Collection<RepositoryInfo> repositories) {
         List<String> clearedRepos = new ArrayList<>();
 
-        for (Repository r : HistoryGuru.getInstance().getReposFromString(repositories)) {
+        for (RepositoryInfo repo : repositories) {
             try {
-                this.clear(r);
-                clearedRepos.add(r.getDirectoryName());
-                LOGGER.log(Level.INFO, "{1} cache for {0} cleared.",
-                        new Object[]{r.getDirectoryName(), this.getInfo()});
+                this.clear(repo);
+                clearedRepos.add(repo.getDirectoryNameRelative());
+                LOGGER.log(Level.INFO, "{1} cache for ''{0}'' cleared.",
+                        new Object[]{repo.getDirectoryName(), this.getInfo()});
             } catch (HistoryException e) {
                 LOGGER.log(Level.WARNING,
                         "Clearing cache for repository {0} failed: {1}",
-                        new Object[]{r.getDirectoryName(), e.getLocalizedMessage()});
+                        new Object[]{repo.getDirectoryName(), e.getLocalizedMessage()});
             }
         }
 

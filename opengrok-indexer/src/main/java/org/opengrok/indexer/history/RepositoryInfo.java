@@ -221,9 +221,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Get the name of the root directory for this repository.
-     *
-     * @return the name of the root directory
+     * @return the name of the root directory for this repository
      */
     public String getDirectoryName() {
         return Paths.get(RuntimeEnvironment.getInstance().getSourceRootPath(),

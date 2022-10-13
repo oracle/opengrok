@@ -65,7 +65,7 @@ public class CacheUtil {
     }
 
     @VisibleForTesting
-    public static String getRepositoryCacheDataDirname(Repository repository, Cache cache) {
+    public static String getRepositoryCacheDataDirname(RepositoryInfo repository, Cache cache) {
         String repoDirBasename;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -86,7 +86,7 @@ public class CacheUtil {
                 + repoDirBasename;
     }
 
-    public static void clearCacheDir(Repository repository, Cache cache) {
+    public static void clearCacheDir(RepositoryInfo repository, Cache cache) {
         String histDir = CacheUtil.getRepositoryCacheDataDirname(repository, cache);
         if (histDir != null) {
             // Remove all files which constitute the history cache.

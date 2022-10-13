@@ -64,7 +64,6 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.web.api.ApiTask;
 import org.opengrok.indexer.web.Laundromat;
@@ -186,15 +185,15 @@ public class ProjectsController {
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
                         () -> {
-                            deleteProjectWorkHorse(projectName, project);
+                            deleteProjectWorkHorse(project);
                             return null;
                         },
                         Response.Status.NO_CONTENT));
     }
 
-    private void deleteProjectWorkHorse(String projectName, Project project) {
+    private void deleteProjectWorkHorse(Project project) {
         // Delete index data associated with the project.
-        deleteProjectDataWorkHorse(projectName, true);
+        deleteProjectDataWorkHorse(project, true);
 
         // Remove the project from its groups.
         for (Group group : project.getGroups()) {
@@ -211,7 +210,7 @@ public class ProjectsController {
             env.getProjectRepositoriesMap().remove(project);
         }
 
-        env.getProjects().remove(projectName, project);
+        env.getProjects().remove(project.getName(), project);
 
         // Prevent the project to be included in new searches.
         env.refreshSearcherManagerMap();
@@ -224,19 +223,20 @@ public class ProjectsController {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
-        disableProject(projectName);
+        Project project = disableProject(projectName);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
                         () -> {
-                            deleteProjectDataWorkHorse(projectName, false);
+                            deleteProjectDataWorkHorse(project, false);
                             return null;
                         },
                         Response.Status.NO_CONTENT));
     }
 
-    private void deleteProjectDataWorkHorse(String projectName, boolean clearHistoryGuru) {
-        LOGGER.log(Level.INFO, "deleting data for project {0}", projectName);
+    private void deleteProjectDataWorkHorse(Project project, boolean clearHistoryGuru) {
+        String projectName = project.getName();
+        LOGGER.log(Level.INFO, "deleting data for project ''{0}''", projectName);
 
         // Delete index and xrefs.
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
@@ -244,22 +244,60 @@ public class ProjectsController {
             try {
                 IOUtils.removeRecursive(path);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not delete {0}", path);
+                LOGGER.log(Level.WARNING, "Could not delete ''{0}''", path);
             }
         }
 
-        deleteHistoryCacheWorkHorse(projectName, clearHistoryGuru);
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+        if (repos == null || repos.isEmpty()) {
+            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", projectName);
+            return;
+        }
 
-        // TODO: deleteAnnotationCacheWorkHorse(projectName);
+        deleteHistoryCacheWorkHorse(projectName, repos);
+        deleteAnnotationCacheWorkHorse(projectName, repos);
+
+        if (clearHistoryGuru) {
+            HistoryGuru.getInstance().removeRepositories(repos.stream().
+                    map(RepositoryInfo::getDirectoryName).collect(Collectors.toList()));
+        }
 
         // Delete suggester data.
         suggester.delete(projectName);
     }
 
-    // TODO: add endpoint for deleting annotation cache
+    @DELETE
+    @Path("/{project}/annotationcache")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteAnnotationCache(@Context HttpServletRequest request,
+                                       @PathParam("project") String projectNameParam) {
+
+        Project project = getProjectFromName(projectNameParam);
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+        if (repos == null || repos.isEmpty()) {
+            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", project.getName());
+            return null;
+        }
+
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(),
+                        () -> deleteAnnotationCacheWorkHorse(project.getName(), repos)));
+    }
+
+    private Project getProjectFromName(String projectNameParam) {
+        // Avoid classification as a taint bug.
+        final String projectName = Laundromat.launderInput(projectNameParam);
+        Project project = env.getProjects().get(projectName);
+        if (project == null) {
+            throw new IllegalStateException("cannot get project \"" + projectName + "\"");
+        }
+
+        return project;
+    }
 
     @DELETE
     @Path("/{project}/historycache")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response deleteHistoryCache(@Context HttpServletRequest request,
                                        @PathParam("project") String projectNameParam) {
 
@@ -267,50 +305,30 @@ public class ProjectsController {
             return Response.status(Response.Status.NO_CONTENT).build();
         }
 
-        // Avoid classification as a taint bug.
-        final String projectName = Laundromat.launderInput(projectNameParam);
+        Project project = getProjectFromName(projectNameParam);
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+        if (repos == null || repos.isEmpty()) {
+            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", project.getName());
+            return null;
+        }
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
-                        () -> {
-                            deleteHistoryCacheWorkHorse(projectName, false);
-                            return null;
-                        }));
+                        () -> deleteHistoryCacheWorkHorse(project.getName(), repos)));
     }
 
-    private void deleteHistoryCacheWorkHorse(String projectName, boolean clearHistoryGuru) {
-        Project project = disableProject(projectName);
-
-        LOGGER.log(Level.INFO, "deleting history cache for project {0}", projectName);
-
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
-        if (repos == null || repos.isEmpty()) {
-            LOGGER.log(Level.INFO, "history cache for project {0} is not present", projectName);
-            return;
-        }
+    private List<String> deleteHistoryCacheWorkHorse(String projectName, List<RepositoryInfo> repos) {
+        LOGGER.log(Level.INFO, "deleting history cache for project ''{0}''", projectName);
 
         // Delete history cache data.
-        HistoryGuru guru = HistoryGuru.getInstance();
-        guru.removeHistoryCache(repos.stream().
-                map(x -> {
-                    try {
-                        return env.getPathRelativeToSourceRoot(new File((x).getDirectoryName()));
-                    } catch (ForbiddenSymlinkException e) {
-                        LOGGER.log(Level.FINER, e.getMessage());
-                        return "";
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
-                        // Empty output should not cause any harm
-                        // since {@code getReposFromString()} inside
-                        // {@code removeHistoryCache()} will return nothing.
-                        return "";
-                    }
-                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
+        return HistoryGuru.getInstance().removeHistoryCache(repos);
+    }
 
-        if (clearHistoryGuru) {
-            guru.removeRepositories(repos.stream().
-                    map(RepositoryInfo::getDirectoryName).collect(Collectors.toList()));
-        }
+    private List<String> deleteAnnotationCacheWorkHorse(String projectName, List<RepositoryInfo> repos) {
+        LOGGER.log(Level.INFO, "deleting annotation cache for project ''{0}''", projectName);
+
+        // Delete annotation cache data.
+        return HistoryGuru.getInstance().removeAnnotationCache(repos);
     }
 
     @PUT
@@ -323,7 +341,7 @@ public class ProjectsController {
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
-            LOGGER.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
+            LOGGER.log(Level.WARNING, "cannot find project ''{0}'' to mark as indexed", projectName);
             throw new NotFoundException(String.format("project '%s' does not exist", projectName));
         }
 
