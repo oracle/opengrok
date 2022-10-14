@@ -100,6 +100,7 @@ public final class ApiTaskManager {
         apiTasks.put(apiTask.getUuid(), apiTask);
 
         StringBuilder uriStringBuilder = new StringBuilder();
+        // This is useful for testing where there is no context path.
         if (contextPath != null) {
             uriStringBuilder.append(contextPath);
             uriStringBuilder.append("/api/v1");
