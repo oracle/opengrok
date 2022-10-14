@@ -1105,10 +1105,17 @@ public class IndexDatabase {
 
         setDirty();
 
-        try {
-            HistoryGuru.getInstance().createAnnotationCache(file);
-        } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "failed to create annotation", e);
+        // It only makes sense to create annotation cache if history is enabled. The LASTREV field is
+        // added to the document in the populateDocument() call above with the same condition.
+        if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+            try {
+                // The last revision should be fresh. Using LatestRevisionUtil#getLatestRevision()
+                // would not work here, because it uses IndexDatabase#getDocument() and the index searcher used therein
+                // does not know about updated document yet, so stale revision would be returned.
+                HistoryGuru.getInstance().createAnnotationCache(file, doc.get(QueryBuilder.LASTREV));
+            } catch (HistoryException e) {
+                LOGGER.log(Level.WARNING, "failed to create annotation", e);
+            }
         }
 
         for (IndexChangedListener listener : listeners) {

@@ -348,10 +348,10 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @param file the file to annotate
      * @param revision revision of the file. Either {@code null} (for latest revision) or a non-empty string.
-     * @return an <code>Annotation</code> object
+     * @return an <code>Annotation</code> object or {@code null}
      * @throws java.io.IOException if an error occurs
      */
-    abstract Annotation annotate(File file, @Nullable String revision) throws IOException;
+    abstract @Nullable Annotation annotate(File file, @Nullable String revision) throws IOException;
 
     /**
      * Return revision for annotate view.

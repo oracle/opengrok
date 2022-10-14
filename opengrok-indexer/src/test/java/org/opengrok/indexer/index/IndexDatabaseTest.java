@@ -55,15 +55,21 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.FileAnnotationCache;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
+import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.LatestRevisionUtil;
+import org.opengrok.indexer.history.MercurialRepositoryTest;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -107,6 +113,10 @@ class IndexDatabaseTest {
     @BeforeEach
     public void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+
+        // This needs to be set before HistoryGuru is instantiated for the first time,
+        // otherwise the annotation cache therein would be permanently set to null.
+        env.setUseAnnotationCache(true);
 
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -811,5 +821,66 @@ class IndexDatabaseTest {
         idb.update();
 
         checkIndexDown(false, idb);
+    }
+
+    /**
+     * Test that incremental reindex will re-generate the annotation with correct revision.
+     * This is done to prevent {@link HistoryGuru#createAnnotationCache(File, String)} to be called
+     * with invalid/old revision in {@code IndexDatabase#addFile(File, String, Ctags)}.
+     * <p>
+     * Assumes the fallback argument of {@link HistoryGuru#annotate(File, String, boolean)}
+     * does the right thing.
+     * </p>
+     */
+    @Test
+    void testUpdateAnnotationCacheRevision() throws Exception {
+        File repoRoot = new File(env.getSourceRootPath(), "git");
+        assertTrue(repoRoot.isDirectory());
+        File file = new File(repoRoot, "main.c");
+        assertTrue(file.exists());
+
+        // Check annotation cache existence.
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        assertTrue(historyGuru.hasAnnotationCacheForFile(file));
+
+        // Get the latest revision of given file in the history before changing it.
+        String prevRev = getLastRevisionFromHistory(file, historyGuru);
+        assertNotNull(prevRev);
+
+        // Check the annotation cache entry for the file has the correct revision set.
+        // Make sure the annotation was taken from the cache by setting the fallback argument to false.
+        Annotation annotation = historyGuru.annotate(file, null, false);
+        assertNotNull(annotation);
+        assertEquals(prevRev, annotation.getRevision());
+
+        // Add some changesets to the repository.
+        changeGitRepository(repoRoot);
+
+        // Verify the changeset was applied. At this point LatestRevisionUtil#getLatestRevision() should
+        // fall back to the history method, because the index document is out of sync w.r.t. its pre-image file,
+        // however to be sure use the history directly.
+        String newRev = getLastRevisionFromHistory(file, historyGuru);
+        assertNotEquals(newRev, prevRev);
+
+        // Perform reindex.
+        indexer.prepareIndexer(
+                env, true, true,
+                null, null);
+        indexer.doIndexerExecution(null, null);
+
+        // Check that the annotation cache entry contains the new revision.
+        // Make sure the annotation was taken from the cache by setting the fallback argument to false.
+        annotation = historyGuru.annotate(file, null, false);
+        assertNotNull(annotation);
+        assertEquals(newRev, annotation.getRevision());
+    }
+
+    private static String getLastRevisionFromHistory(File file, HistoryGuru historyGuru) throws HistoryException {
+        History history = historyGuru.getHistory(file, false);
+        assertNotNull(history);
+        HistoryEntry historyEntry = history.getLastHistoryEntry();
+        assertNotNull(historyEntry);
+        String prevRev = historyEntry.getRevision();
+        return prevRev;
     }
 }

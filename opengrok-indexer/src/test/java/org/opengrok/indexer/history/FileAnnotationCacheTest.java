@@ -195,7 +195,7 @@ class FileAnnotationCacheTest {
             // Repository method does not set the revision, so it has to be set here.
             assertNull(annotation.getRevision());
             annotation.setRevision(latestRev);
-            historyGuru.createAnnotationCache(file);
+            historyGuru.createAnnotationCache(file, latestRev);
         } else {
             annotation = historyGuru.annotate(file, null);
             assertNotNull(annotation);
@@ -239,7 +239,8 @@ class FileAnnotationCacheTest {
         assertNotNull(repository);
 
         repository.setAnnotationCacheEnabled(false);
-        historyGuru.createAnnotationCache(file);
+        String latestRev = LatestRevisionUtil.getLatestRevision(file);
+        historyGuru.createAnnotationCache(file, latestRev);
         assertNull(cache.get(file, null));
         repository.setAnnotationCacheEnabled(false);
     }

@@ -169,21 +169,40 @@ public class HistoryGuruTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertTrue(history.getHistoryEntries().size() > 0);
-        annotation = instance.annotate(file, history.getHistoryEntries().get(1).getRevision());
+        String revision = history.getHistoryEntries().get(1).getRevision();
+        annotation = instance.annotate(file, revision, false);
+        assertNull(annotation);
+        annotation = instance.annotate(file, revision, true);
+        assertNotNull(annotation);
+        // annotate() without the fallback argument should be the same as fallback set to true.
+        annotation = instance.annotate(file, revision);
         assertNotNull(annotation);
 
         // Create annotation cache and try to get annotation for current revision of the file.
-        instance.createAnnotationCache(file);
+        String latestRev = LatestRevisionUtil.getLatestRevision(file);
+        assertNotNull(latestRev);
+        instance.createAnnotationCache(file, latestRev);
         Repository repository = instance.getRepository(file);
-        // Ensure the annotation is loaded from the cache.
+
+        // Ensure the annotation is loaded from the cache by moving the dot git directory away.
         final String tmpDirName = "gitdisabled";
         Files.move(Paths.get(repository.getDirectoryName(), ".git"),
                 Paths.get(repository.getDirectoryName(), tmpDirName));
+        annotation = instance.annotate(file, null, true);
+        assertNotNull(annotation);
         annotation = instance.annotate(file, null);
+        assertNotNull(annotation);
+        annotation = instance.annotate(file, null, false);
+        assertNotNull(annotation);
+
+        // Cleanup.
         Files.move(Paths.get(repository.getDirectoryName(), tmpDirName),
                 Paths.get(repository.getDirectoryName(), ".git"));
-        assertNotNull(annotation);
     }
+
+    // TODO: test what happens if history is disabled and annotation cache enabled
+
+    // TODO: figure out per-project/repo override of annotation cache
 
     @Test
     void getHistoryCacheInfo() throws HistoryException {
