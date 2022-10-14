@@ -593,23 +593,7 @@ public class AnalyzerGuru {
                 new BytesRef(file.getAbsolutePath())));
 
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
-            try {
-                HistoryGuru histGuru = HistoryGuru.getInstance();
-                HistoryReader hr = histGuru.getHistoryReader(file);
-                if (hr != null) {
-                    doc.add(new TextField(QueryBuilder.HIST, hr));
-                    History history;
-                    if ((history = histGuru.getHistory(file)) != null) {
-                        List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
-                        if (!historyEntries.isEmpty()) {
-                            HistoryEntry histEntry = historyEntries.get(0);
-                            doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
-                        }
-                    }
-                }
-            } catch (HistoryException e) {
-                LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
-            }
+            populateDocumentHistory(doc, file);
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));
@@ -630,8 +614,7 @@ public class AnalyzerGuru {
         String fileParent = fpath.getParent();
         if (fileParent != null && fileParent.length() > 0) {
             String normalizedPath = QueryBuilder.normalizeDirPath(fileParent);
-            StringField npstring = new StringField(QueryBuilder.DIRPATH,
-                normalizedPath, Store.NO);
+            StringField npstring = new StringField(QueryBuilder.DIRPATH, normalizedPath, Store.NO);
             doc.add(npstring);
         }
 
@@ -644,6 +627,26 @@ public class AnalyzerGuru {
 
             String type = fa.getFileTypeName();
             doc.add(new StringField(QueryBuilder.TYPE, type, Store.YES));
+        }
+    }
+
+    private static void populateDocumentHistory(Document doc, File file) {
+        try {
+            HistoryGuru histGuru = HistoryGuru.getInstance();
+            HistoryReader hr = histGuru.getHistoryReader(file);
+            if (hr != null) {
+                doc.add(new TextField(QueryBuilder.HIST, hr));
+                History history;
+                if ((history = histGuru.getHistory(file)) != null) {
+                    List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
+                    if (!historyEntries.isEmpty()) {
+                        HistoryEntry histEntry = historyEntries.get(0);
+                        doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
+                    }
+                }
+            }
+        } catch (HistoryException e) {
+            LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
         }
     }
 
