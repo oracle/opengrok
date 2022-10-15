@@ -1082,7 +1082,7 @@ public class IndexDatabase {
             cleanupResources(doc);
             throw e;
         } catch (Exception e) {
-            LOGGER.log(Level.INFO,"Skipped file ''{0}'' because the analyzer didn''t understand it.", path);
+            LOGGER.log(Level.INFO, "Skipped file ''{0}'' because the analyzer didn''t understand it.", path);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, String.format("Exception from analyzer %s", fa.getClass().getName()), e);
             }

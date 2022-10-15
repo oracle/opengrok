@@ -55,21 +55,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.FileAnnotationCache;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.history.LatestRevisionUtil;
-import org.opengrok.indexer.history.MercurialRepositoryTest;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -98,9 +94,10 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
- *
+ * <p>
  * This is quite a heavy test class - it runs the indexer before each (parametrized) test,
  * so it might contribute significantly to the overall test run time.
+ * </p>
  */
 class IndexDatabaseTest {
 
