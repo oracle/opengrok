@@ -98,7 +98,7 @@ public class Statistics {
     }
 
     /**
-     * log a message along with how much time it took since the constructor was called.
+     * Log a message along with how much time it took since the constructor was called.
      * If there is a metrics registry, it will update the timer specified by the meter name.
      * The log level is {@code INFO}.
      * @param logger logger instance
