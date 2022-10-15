@@ -168,7 +168,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         try {
             CacheUtil.writeCache(annotation.annotationData, cacheFile);
             statistics.report(LOGGER, Level.FINEST, String.format("wrote annotation for ''%s''", file),
-                    "cache.annotation.file.store");
+                    "cache.annotation.file.store.latency");
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to write annotation to cache", e);
         }

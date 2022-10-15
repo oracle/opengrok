@@ -1001,7 +1001,7 @@ public final class HistoryGuru {
             Statistics statistics = new Statistics();
             Annotation annotation = getAnnotationFromRepository(file, null);
             statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for ''%s''", file),
-                    "annotation.retrieve");
+                    "annotation.retrieve.latency");
 
             if (annotation != null) {
                 annotation.setRevision(latestRev);
