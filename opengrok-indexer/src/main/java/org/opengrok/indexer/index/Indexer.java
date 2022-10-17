@@ -431,6 +431,11 @@ public final class Indexer {
             die("Repositories were specified; history is off however");
         }
 
+        if (cfg.isAnnotationCache() && !cfg.isHistoryEnabled()) {
+            die("annotation cache is enabled however history is disabled. " +
+                    "This cannot work as annotation cache stores latest revision retrieved from history.");
+        }
+
         try {
             cfg.checkConfiguration();
         } catch (Configuration.ConfigurationException e) {
