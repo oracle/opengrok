@@ -146,7 +146,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     public void store(File file, Annotation annotation) throws HistoryException {
-        if (annotation.getRevision() == null) {
+        if (annotation.getRevision() == null || annotation.getRevision().isEmpty()) {
             throw new HistoryException(String.format("annotation for ''%s'' does not contain revision", file));
         }
 
