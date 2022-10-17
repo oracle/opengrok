@@ -418,6 +418,10 @@ public final class Indexer {
         }
     }
 
+    /**
+     * This is supposed to be run after {@link #parseOptions(String[])}.
+     * It will exit the program if there is some serious configuration (meaning {@link #cfg}) discrepancy.
+     */
     private static void checkConfiguration() {
         if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
             die("Missing webappURI setting");
@@ -438,10 +442,10 @@ public final class Indexer {
      * Parse OpenGrok Indexer options
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
-     *
+     * <p>
      * Limit usage lines to {@link org.opengrok.indexer.util.OptionParser.Option#MAX_DESCRIPTION_LINE_LENGTH}
      * characters for concise formatting.
-     *
+     * </p>
      * @param argv the command line arguments
      * @return array of remaining non option arguments
      * @throws ParseException if parsing failed
