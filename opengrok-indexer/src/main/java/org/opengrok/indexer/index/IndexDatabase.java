@@ -1715,7 +1715,7 @@ public class IndexDatabase {
 
                         progress.increment();
                         stats.report(LOGGER, Level.FINEST,
-                                String.format("file ''%s'' %s", x.file, ret ? "indexed" : "failed indexing"));
+                                String.format("file '%s' %s", x.file, ret ? "indexed" : "failed indexing"));
                         return ret;
                     }
                 }))).get();
