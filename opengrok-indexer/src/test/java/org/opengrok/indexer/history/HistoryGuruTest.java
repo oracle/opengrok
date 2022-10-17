@@ -200,9 +200,34 @@ public class HistoryGuruTest {
                 Paths.get(repository.getDirectoryName(), ".git"));
     }
 
+    /**
+     * The annotation cache should be initialized regardless global setting,
+     * to allow for per-project/repository override.
+     * <p>
+     * This test assumes that {@link HistoryGuru} constructor uses the result of
+     * {@link HistoryGuru#initializeAnnotationCache()} to assign as value to the private field
+     * used as annotation cache.
+     * </p>
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testHistoryEnabledVsAnnotationCache(boolean useAnnotationCache) {
+        boolean useAnnotationCacheOrig = env.useAnnotationCache();
+
+        env.setUseAnnotationCache(useAnnotationCache);
+        assertNotNull(HistoryGuru.initializeAnnotationCache());
+
+        // cleanup
+        env.setUseHistoryCache(useAnnotationCacheOrig);
+    }
+
     // TODO: test what happens if history is disabled and annotation cache enabled
 
     // TODO: figure out per-project/repo override of annotation cache
+    @Test
+    void testAnnotationCachePerRepoOverride() {
+
+    }
 
     @Test
     void getHistoryCacheInfo() throws HistoryException {

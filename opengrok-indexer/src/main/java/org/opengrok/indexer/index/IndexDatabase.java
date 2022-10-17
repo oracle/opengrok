@@ -1107,6 +1107,7 @@ public class IndexDatabase {
 
         // It only makes sense to create annotation cache if history is enabled. The LASTREV field is
         // added to the document in the populateDocument() call above with the same condition.
+        // TODO: what about per repository history ?
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             try {
                 // The last revision should be fresh. Using LatestRevisionUtil#getLatestRevision()

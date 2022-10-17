@@ -125,22 +125,25 @@ public final class HistoryGuru {
 
     /**
      * Set annotation cache to its default implementation.
-     * @return {@link AnnotationCache} instance
+     * @return {@link AnnotationCache} instance or {@code null} on error
      */
-    private AnnotationCache initializeAnnotationCache() {
+    @VisibleForTesting
+    @Nullable
+    static AnnotationCache initializeAnnotationCache() {
         AnnotationCache annotationCacheResult = null;
-        // TODO: what about per-project override ?
-        if (env.useAnnotationCache()) {
-            annotationCacheResult = new FileAnnotationCache();
 
-            try {
-                annotationCacheResult.initialize();
-            } catch (Exception he) {
-                LOGGER.log(Level.WARNING, "Failed to initialize the annotation cache", he);
-                // Failed to initialize, run without annotation cache.
-                annotationCacheResult = null;
-            }
+        // The annotation cache is initialized regardless the value of global setting
+        // RuntimeEnvironment.getInstance().useAnnotationCache() to allow for per-project/repository override.
+        annotationCacheResult = new FileAnnotationCache();
+
+        try {
+            annotationCacheResult.initialize();
+        } catch (Exception he) {
+            LOGGER.log(Level.WARNING, "Failed to initialize the annotation cache", he);
+            // Failed to initialize, run without annotation cache.
+            annotationCacheResult = null;
         }
+
         return annotationCacheResult;
     }
 
