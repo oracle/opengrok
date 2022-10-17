@@ -972,28 +972,26 @@ public final class HistoryGuru {
     }
 
     /**
-     * Retrieve and store the annotation for given file.
-     * This needs to be called after the history was stored since the history might be needed
-     * to construct the {@link Annotation} object.
-     * @param file file object
+     * Retrieve and store the annotation cache entry for given file.
+     * @param file file object under source root. Needs to have a repository associated for the cache to be created.
      * @param latestRev latest revision of the file
+     * @throws HistoryException on error, otherwise the cache entry is created
      */
     public void createAnnotationCache(File file, String latestRev) throws HistoryException {
         if (!useAnnotationCache()) {
-            LOGGER.log(Level.FINER, "annotation cache could not be used to create cache for ''{0}''", file);
-            return;
+            throw new HistoryException(String.format("annotation cache could not be used to create cache for '%s'",
+                    file));
         }
 
         Repository repository = getRepository(file);
         if (repository == null) {
-            LOGGER.log(Level.FINER, "no repository for ''{0}''", file);
-            return;
+            throw new HistoryException(String.format("no repository for '%s'", file));
         }
 
         if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
-            LOGGER.log(Level.FINER, "repository {0} does not allow to create annotation for ''{1}''",
-                    new Object[]{repository, file});
-            return;
+            throw new HistoryException(
+                    String.format("repository %s does not allow to create annotation cache for '%s'",
+                            repository, file));
         }
 
         LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", file);
