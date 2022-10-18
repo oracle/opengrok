@@ -120,7 +120,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
             <artifactId>jettison</artifactId>
-            <version>1.4.1</version>
+            <version>1.5.1</version>
         </dependency>
 
         <!-- to get rid of SL4J warning messages -->
