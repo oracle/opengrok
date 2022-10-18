@@ -146,8 +146,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Create a project with given name and path and default configuration
-     * values.
+     * Create a project with given name and path and default configuration values.
      *
      * @param name the name of the project
      * @param path the path of the project relative to the source root
