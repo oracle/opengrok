@@ -541,8 +541,9 @@ class IndexDatabaseTest {
      * Make sure that history based reindex is not performed for projects
      * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}
      * or have the history based reindex explicitly disabled.
-     *
+     * <p>
      * Instead of checking the result of the functions that make the decision, check the actual indexing.
+     * </p>
      */
     @EnabledForRepository(CVS)
     @ParameterizedTest
@@ -879,5 +880,71 @@ class IndexDatabaseTest {
         assertNotNull(historyEntry);
         String prevRev = historyEntry.getRevision();
         return prevRev;
+    }
+
+    private static Stream<Arguments> provideParamsForTestAnnotationCacheProjectTunable() {
+        return Stream.of(
+                Arguments.of(false, false),
+                Arguments.of(false, true),
+                Arguments.of(true, false),
+                Arguments.of(true, true)
+        );
+    }
+
+    /**
+     * Per project tunable should control how whether annotation cache will be created.
+     * <p>
+     * Depends on the {@code fallback} argument {@link HistoryGuru#annotate(File, String, boolean)}
+     * to be implemented correctly, i.e. do not perform fallback to repository annotate method
+     * if annotation cache is not present.
+     * </p>
+     */
+    @ParameterizedTest
+    @MethodSource("provideParamsForTestAnnotationCacheProjectTunable")
+    void testAnnotationCacheProjectTunable(boolean useAnnotationCache, boolean isHistoryEnabled) throws Exception {
+        env.setUseAnnotationCache(!useAnnotationCache);
+        env.setHistoryEnabled(isHistoryEnabled);
+
+        // Ignore the reindex performed in the setup and set custom data root,
+        // so that annotation cache can be checked reliably.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        String dataRootOrig = env.getDataRootPath();
+        Path dataRoot = Files.createTempDirectory("indexDbAnnotationTest");
+        env.setDataRoot(dataRoot.toString());
+
+        // Set the per project tunable.
+        Project gitProject = env.getProjects().get("git");
+        boolean projectUseAnnotationOrig = gitProject.isAnnotationCacheEnabled();
+        gitProject.setAnnotationCacheEnabled(useAnnotationCache);
+        gitProject.completeWithDefaults();
+
+        // verify initial state
+        File file = new File(repositoryRoot, "main.c");
+        assertTrue(file.exists());
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        assertNull(historyGuru.annotate(file, null, false));
+
+        // reindex
+        HistoryGuru.getInstance().clear();
+        indexer.prepareIndexer(
+                env, true, true,
+                List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
+        indexer.doIndexerExecution(null, null);
+
+        // verify
+        assertTrue(file.exists());
+        Annotation annotation = historyGuru.annotate(file, null, false);
+        if (useAnnotationCache && isHistoryEnabled) {
+            assertNotNull(annotation);
+        } else {
+            assertNull(annotation);
+        }
+
+        // cleanup
+        gitProject.setHistoryBasedReindex(projectUseAnnotationOrig);
+        env.setDataRoot(dataRootOrig);
+        IOUtils.removeRecursive(dataRoot);
     }
 }

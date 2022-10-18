@@ -233,14 +233,6 @@ public class HistoryGuruTest {
         env.setUseHistoryCache(useHistoryCacheOrig);
     }
 
-    // TODO: test what happens if history is disabled and annotation cache enabled
-
-    // TODO: figure out per-project/repo override of annotation cache
-    @Test
-    void testAnnotationCachePerRepoOverride() {
-
-    }
-
     @Test
     void getHistoryCacheInfo() throws HistoryException {
         // FileHistoryCache is used by default
