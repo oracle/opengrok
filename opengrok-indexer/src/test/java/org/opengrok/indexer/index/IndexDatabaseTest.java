@@ -113,7 +113,7 @@ class IndexDatabaseTest {
 
         // This needs to be set before HistoryGuru is instantiated for the first time,
         // otherwise the annotation cache therein would be permanently set to null.
-        env.setUseAnnotationCache(true);
+        env.setAnnotationCacheEnabled(true);
 
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -902,7 +902,7 @@ class IndexDatabaseTest {
     @ParameterizedTest
     @MethodSource("provideParamsForTestAnnotationCacheProjectTunable")
     void testAnnotationCacheProjectTunable(boolean useAnnotationCache, boolean isHistoryEnabled) throws Exception {
-        env.setUseAnnotationCache(!useAnnotationCache);
+        env.setAnnotationCacheEnabled(!useAnnotationCache);
         env.setHistoryEnabled(isHistoryEnabled);
 
         // Ignore the reindex performed in the setup and set custom data root,

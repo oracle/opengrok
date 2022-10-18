@@ -62,7 +62,7 @@ class FileAnnotationCacheTest {
         repositories.create(getClass().getResource("/repositories"));
 
         // This needs to be set before the call to env.setRepositories() below as it instantiates HistoryGuru.
-        env.setUseAnnotationCache(true);
+        env.setAnnotationCacheEnabled(true);
 
         // Needed for HistoryGuru to operate normally.
         env.setRepositories(repositories.getSourceRoot());
@@ -224,7 +224,7 @@ class FileAnnotationCacheTest {
     @Test
     void testRepositoryDisabledAnnotationCache() throws Exception {
         HistoryGuru historyGuru = HistoryGuru.getInstance();
-        assertTrue(env.useAnnotationCache());
+        assertTrue(env.isAnnotationCacheEnabled());
         assertFalse(historyGuru.getAnnotationCacheInfo().startsWith("No"));
 
         File file = Paths.get(env.getSourceRootPath(), "git", "main.c").toFile();

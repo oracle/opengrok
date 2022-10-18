@@ -143,7 +143,7 @@ class RepositoryInfoTest {
         } else {
             env.setProjects(Collections.emptyMap());
             env.setHistoryEnabled(historyEnabled);
-            env.setUseAnnotationCache(useAnnotationCache);
+            env.setAnnotationCacheEnabled(useAnnotationCache);
         }
 
         RepositoryInfo repositoryInfo = new RepositoryInfo();

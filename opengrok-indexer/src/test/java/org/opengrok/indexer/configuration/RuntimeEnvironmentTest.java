@@ -234,9 +234,9 @@ public class RuntimeEnvironmentTest {
     @Test
     void testUseAnnotationCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertFalse(instance.useAnnotationCache());
-        instance.setUseAnnotationCache(true);
-        assertTrue(instance.useAnnotationCache());
+        assertFalse(instance.isAnnotationCacheEnabled());
+        instance.setAnnotationCacheEnabled(true);
+        assertTrue(instance.isAnnotationCacheEnabled());
     }
 
     @Test

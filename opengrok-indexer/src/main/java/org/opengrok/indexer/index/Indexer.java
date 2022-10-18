@@ -431,7 +431,7 @@ public final class Indexer {
             die("Repositories were specified; history is off however");
         }
 
-        if (cfg.isAnnotationCache() && !cfg.isHistoryEnabled()) {
+        if (cfg.isAnnotationCacheEnabled() && !cfg.isHistoryEnabled()) {
             die("annotation cache is enabled however history is disabled. " +
                     "This cannot work as annotation cache stores latest revision retrieved from history.");
         }
@@ -512,7 +512,7 @@ public final class Indexer {
                             "indexing time (multiple times slower) and slightly increased ",
                             "disk space (comparable to history cache size). ",
                             "Can be enabled per project.").
-                    execute(v -> cfg.setAnnotationCache((Boolean) v));
+                    execute(v -> cfg.setAnnotationCacheEnabled((Boolean) v));
 
             parser.on("--apiTimeout", "=number", Integer.class,
                     "Set timeout for asynchronous API requests.").execute(v -> cfg.setApiTimeout((Integer) v));

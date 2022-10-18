@@ -126,7 +126,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
-        env.setUseAnnotationCache(true);
+        env.setAnnotationCacheEnabled(true);
         env.setHandleHistoryOfRenamedFiles(true);
         RepositoryFactory.initializeIgnoredNames(env);
     }

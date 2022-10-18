@@ -73,7 +73,7 @@ public class HistoryGuruTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        env.setUseAnnotationCache(true);
+        env.setAnnotationCacheEnabled(true);
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
@@ -218,11 +218,11 @@ public class HistoryGuruTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testHistoryEnabledVsAnnotationCache(boolean useAnnotationCache) {
-        boolean useAnnotationCacheOrig = env.useAnnotationCache();
+        boolean useAnnotationCacheOrig = env.isAnnotationCacheEnabled();
         boolean useHistoryOrig = env.isHistoryEnabled();
         boolean useHistoryCacheOrig = env.isHistoryCache();
 
-        env.setUseAnnotationCache(useAnnotationCache);
+        env.setAnnotationCacheEnabled(useAnnotationCache);
         env.setHistoryEnabled(false);
         env.setUseHistoryCache(false);
         assertNotNull(HistoryGuru.initializeAnnotationCache());

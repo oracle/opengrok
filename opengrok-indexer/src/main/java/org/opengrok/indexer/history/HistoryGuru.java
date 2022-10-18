@@ -133,7 +133,7 @@ public final class HistoryGuru {
         AnnotationCache annotationCacheResult;
 
         // The annotation cache is initialized regardless the value of global setting
-        // RuntimeEnvironment.getInstance().useAnnotationCache() to allow for per-project/repository override.
+        // RuntimeEnvironment.getInstance().isAnnotationCacheEnabled() to allow for per-project/repository override.
         annotationCacheResult = new FileAnnotationCache();
 
         try {

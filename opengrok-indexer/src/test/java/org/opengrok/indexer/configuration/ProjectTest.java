@@ -183,7 +183,7 @@ class ProjectTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         env.setHistoryEnabled(isHistoryEnabled);
-        env.setUseAnnotationCache(useAnnotationCache);
+        env.setAnnotationCacheEnabled(useAnnotationCache);
 
         Project p1 = new Project();
         assertNotNull(p1);

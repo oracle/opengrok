@@ -383,7 +383,7 @@ public class RepositoryInfo implements Serializable {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             setHistoryEnabled(env.isHistoryEnabled());
-            setAnnotationCacheEnabled(env.useAnnotationCache());
+            setAnnotationCacheEnabled(env.isAnnotationCacheEnabled());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
             setHistoryBasedReindex(env.isHistoryBasedReindex());

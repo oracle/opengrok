@@ -501,7 +501,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
 
         // Allow project to override global setting of annotation cache generation.
         if (annotationCacheEnabled == null) {
-            setAnnotationCacheEnabled(env.useAnnotationCache());
+            setAnnotationCacheEnabled(env.isAnnotationCacheEnabled());
         }
 
         // Allow project to override global setting of navigate window.

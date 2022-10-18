@@ -718,19 +718,19 @@ public final class RuntimeEnvironment {
     /**
      * Is annotation cache currently enabled?
      *
-     * @return true if annotation cache is enabled
+     * @return whether annotation cache is enabled
      */
-    public boolean useAnnotationCache() {
-        return syncReadConfiguration(Configuration::isAnnotationCache);
+    public boolean isAnnotationCacheEnabled() {
+        return syncReadConfiguration(Configuration::isAnnotationCacheEnabled);
     }
 
     /**
-     * Specify if we should use annotation cache or not.
+     * Specify whether annotation cache should be generated during indexing.
      *
-     * @param useAnnotationCache set false if you do not want to use history cache
+     * @param useAnnotationCache set false if you do not want to use annotation cache
      */
-    public void setUseAnnotationCache(boolean useAnnotationCache) {
-        syncWriteConfiguration(useAnnotationCache, Configuration::setAnnotationCache);
+    public void setAnnotationCacheEnabled(boolean useAnnotationCache) {
+        syncWriteConfiguration(useAnnotationCache, Configuration::setAnnotationCacheEnabled);
     }
 
     /**
@@ -754,8 +754,7 @@ public final class RuntimeEnvironment {
     /**
      * Set if we should compress the xref files or not.
      *
-     * @param compressXref set to true if the generated html files should be
-     * compressed
+     * @param compressXref set to true if the generated html files should be compressed
      */
     public void setCompressXref(boolean compressXref) {
         syncWriteConfiguration(compressXref, Configuration::setCompressXref);
