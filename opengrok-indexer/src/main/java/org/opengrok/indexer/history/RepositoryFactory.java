@@ -157,13 +157,13 @@ public final class RepositoryFactory {
 
     /**
      * Returns a repository for the given file, or null if no repository was found.
-     *
+     * <p>
      * Note that the operations performed by this method take quite a long time
      * thanks to external commands being executed. For that reason, when run
      * on multiple files, it should be parallelized (e.g. like it is done in
      * {@code invalidateRepositories()}) and the commands run within should
      * use interactive command timeout (as specified in {@code Configuration}).
-     *
+     * </p>
      * @param file File that might contain a repository
      * @param cmdType command timeout type
      * @param isNested a value indicating if a nestable {@link Repository} is required
