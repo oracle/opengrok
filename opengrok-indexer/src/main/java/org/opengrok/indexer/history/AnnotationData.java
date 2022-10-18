@@ -171,9 +171,7 @@ public class AnnotationData implements Serializable {
 
     /**
      * Adds a line to the file.
-     *
-     * @param revision revision number
-     * @param author author name
+     * @param annotationLine {@link AnnotationLine} instance
      */
     void addLine(final AnnotationLine annotationLine) {
         annotationLines.add(annotationLine);
@@ -182,6 +180,9 @@ public class AnnotationData implements Serializable {
     }
 
     /**
+     * @param revision revision number
+     * @param author author name
+     * @param enabled whether the line is enabled
      * @see #addLine(AnnotationLine)
      */
     void addLine(String revision, String author, boolean enabled) {
