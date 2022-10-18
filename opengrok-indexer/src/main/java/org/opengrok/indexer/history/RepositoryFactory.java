@@ -258,8 +258,7 @@ public final class RepositoryFactory {
     }
 
     /**
-     * Returns a repository for the given file, or null if no repository was
-     * found.
+     * Returns a repository for the given file, or null if no repository was found.
      *
      * @param info Information about the repository
      * @param cmdType command timeout type
