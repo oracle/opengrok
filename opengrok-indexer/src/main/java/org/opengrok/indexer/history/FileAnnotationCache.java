@@ -81,7 +81,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     @VisibleForTesting
-    Annotation readAnnotation(File file) {
+    Annotation readAnnotation(File file) throws AnnotationException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
@@ -93,13 +93,11 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         try {
             return readCache(cacheFile);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("failed to read annotation cache for '%s'", file), e);
+            throw new AnnotationException(String.format("failed to read annotation cache for '%s'", file), e);
         }
-
-        return null;
     }
 
-    public Annotation get(File file, @Nullable String rev) {
+    public Annotation get(File file, @Nullable String rev) throws AnnotationException {
         Annotation annotation = null;
         String latestRevision = LatestRevisionUtil.getLatestRevision(file);
         if (rev == null || (latestRevision != null && latestRevision.equals(rev))) {
@@ -145,9 +143,9 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         return annotation;
     }
 
-    public void store(File file, Annotation annotation) throws HistoryException {
+    public void store(File file, Annotation annotation) throws AnnotationException {
         if (annotation.getRevision() == null || annotation.getRevision().isEmpty()) {
-            throw new HistoryException(String.format("annotation for ''%s'' does not contain revision", file));
+            throw new AnnotationException(String.format("annotation for ''%s'' does not contain revision", file));
         }
 
         File cacheFile;
@@ -161,7 +159,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         File dir = cacheFile.getParentFile();
         // calling isDirectory() twice to prevent a race condition
         if (!dir.isDirectory() && !dir.mkdirs() && !dir.isDirectory()) {
-            throw new HistoryException("Unable to create cache directory '" + dir + "'.");
+            throw new AnnotationException("Unable to create cache directory '" + dir + "'.");
         }
 
         Statistics statistics = new Statistics();

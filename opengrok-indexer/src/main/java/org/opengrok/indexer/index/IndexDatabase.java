@@ -99,8 +99,8 @@ import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
+import org.opengrok.indexer.history.AnnotationException;
 import org.opengrok.indexer.history.FileCollector;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -1114,8 +1114,8 @@ public class IndexDatabase {
                 // Instead, use the last revision (retrieved from the history in the populateDocument()
                 // call above) directly.
                 HistoryGuru.getInstance().createAnnotationCache(file, lastRev);
-            } catch (HistoryException e) {
-                LOGGER.log(Level.WARNING, "failed to create annotation", e);
+            } catch (AnnotationException e) {
+                LOGGER.log(e.getLevel(), "failed to create annotation", e);
             }
         }
 

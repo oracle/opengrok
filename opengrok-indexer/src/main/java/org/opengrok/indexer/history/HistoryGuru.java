@@ -227,10 +227,15 @@ public final class HistoryGuru {
     private Annotation getAnnotation(File file, @Nullable String rev, boolean fallback) throws IOException {
         Annotation annotation;
 
-        if (annotationCache != null) {
-            annotation = annotationCache.get(file, rev);
-            if (annotation != null) {
-                return annotation;
+        Repository repository = getRepository(file);
+        if (annotationCache != null && repository != null && repository.isAnnotationCacheEnabled()) {
+            try {
+                annotation = annotationCache.get(file, rev);
+                if (annotation != null) {
+                    return annotation;
+                }
+            } catch (AnnotationException e) {
+                LOGGER.log(e.getLevel(), e.toString());
             }
         }
 
@@ -978,23 +983,23 @@ public final class HistoryGuru {
      * Retrieve and store the annotation cache entry for given file.
      * @param file file object under source root. Needs to have a repository associated for the cache to be created.
      * @param latestRev latest revision of the file
-     * @throws HistoryException on error, otherwise the cache entry is created
+     * @throws AnnotationException on error, otherwise the cache entry is created
      */
-    public void createAnnotationCache(File file, String latestRev) throws HistoryException {
+    public void createAnnotationCache(File file, String latestRev) throws AnnotationException {
         if (!useAnnotationCache()) {
-            throw new HistoryException(String.format("annotation cache could not be used to create cache for '%s'",
-                    file));
+            throw new AnnotationException(String.format("annotation cache could not be used to create cache for '%s'",
+                    file), Level.FINE);
         }
 
         Repository repository = getRepository(file);
         if (repository == null) {
-            throw new HistoryException(String.format("no repository for '%s'", file));
+            throw new AnnotationException(String.format("no repository for '%s'", file), Level.FINE);
         }
 
         if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
-            throw new HistoryException(
+            throw new AnnotationException(
                     String.format("repository %s does not allow to create annotation cache for '%s'",
-                            repository, file));
+                            repository, file), Level.FINER);
         }
 
         LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", file);
@@ -1011,7 +1016,7 @@ public final class HistoryGuru {
                 annotationCache.store(file, annotation);
             }
         } catch (IOException e) {
-            throw new HistoryException(e);
+            throw new AnnotationException(e);
         }
     }
 

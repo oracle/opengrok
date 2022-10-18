@@ -84,7 +84,7 @@ class FileAnnotationCacheTest {
      * This is being tested in {@link AnnotationDataTest} and {@link AnnotationLineTest}.
      */
     @Test
-    void testSerialization() throws HistoryException {
+    void testSerialization() throws Exception {
         final String fileName = "main.c";
         Annotation annotation = new Annotation(fileName);
         annotation.addLine("1", "author1", true);
@@ -99,12 +99,11 @@ class FileAnnotationCacheTest {
     }
 
     @Test
-    void testReadAnnotationForNonexistentFile() {
+    void testReadAnnotationForNonexistentFile() throws Exception {
         final String fileName = "nonexistent";
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertFalse(file.exists());
-        Annotation annotation = cache.readAnnotation(file);
-        assertNull(annotation);
+        assertThrows(AnnotationException.class, () -> cache.readAnnotation(file));
     }
 
     @Test
@@ -128,8 +127,7 @@ class FileAnnotationCacheTest {
         }
 
         // Try to read the annotation from cache.
-        Annotation annotationFromCache = cache.readAnnotation(file);
-        assertNull(annotationFromCache);
+        assertThrows(AnnotationException.class, () -> cache.readAnnotation(file));
     }
 
     @Test
@@ -185,11 +183,11 @@ class FileAnnotationCacheTest {
         // Make sure there is clean state. The file should not have any cache entry.
         FileAnnotationCache cache = new FileAnnotationCache();
         cache.clearFile(env.getPathRelativeToSourceRoot(file));
-        Annotation annotation = cache.get(file, null);
-        assertNull(annotation);
+        assertThrows(AnnotationException.class, () -> cache.get(file, null));
 
         // Store the annotation in the cache.
         HistoryGuru historyGuru = HistoryGuru.getInstance();
+        Annotation annotation;
         if (storeViaHistoryGuru) {
             annotation = historyGuru.getRepository(file).annotate(file, null);
             assertNotNull(annotation);
@@ -233,17 +231,15 @@ class FileAnnotationCacheTest {
         // Make sure there is clean state. The file should not have any cache entry.
         FileAnnotationCache cache = new FileAnnotationCache();
         cache.clearFile(env.getPathRelativeToSourceRoot(file));
-        Annotation annotation = cache.get(file, null);
-        assertNull(annotation);
+        assertThrows(AnnotationException.class, () -> cache.get(file, null));
 
         Repository repository = historyGuru.getRepository(file);
         assertNotNull(repository);
 
         repository.setAnnotationCacheEnabled(false);
         String latestRev = LatestRevisionUtil.getLatestRevision(file);
-        assertThrows(HistoryException.class,
+        assertThrows(AnnotationException.class,
                 () -> historyGuru.createAnnotationCache(file, latestRev));
-        assertNull(cache.get(file, null));
         repository.setAnnotationCacheEnabled(false);
     }
 

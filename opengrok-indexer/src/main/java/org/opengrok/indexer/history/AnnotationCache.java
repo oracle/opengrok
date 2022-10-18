@@ -39,15 +39,15 @@ public interface AnnotationCache extends Cache {
      * @return {@link Annotation} object or <code>null</code>
      */
     @Nullable
-    Annotation get(File file, String rev);
+    Annotation get(File file, String rev) throws AnnotationException;
 
     /**
      * Store annotation for file into cache.
      * @param file file under source root to store the annotation for
      * @param annotation {@link Annotation} object
-     * @throws HistoryException on error
+     * @throws AnnotationException on error
      */
-    void store(File file, Annotation annotation) throws HistoryException;
+    void store(File file, Annotation annotation) throws AnnotationException;
 
     /**
      * Clear annotation cache entry for given file.
