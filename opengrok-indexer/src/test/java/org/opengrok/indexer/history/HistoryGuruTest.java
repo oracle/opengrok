@@ -201,24 +201,36 @@ public class HistoryGuruTest {
     }
 
     /**
-     * The annotation cache should be initialized regardless global setting,
+     * The annotation cache should be initialized regardless global annotation/history settings,
      * to allow for per-project/repository override.
      * <p>
      * This test assumes that {@link HistoryGuru} constructor uses the result of
      * {@link HistoryGuru#initializeAnnotationCache()} to assign as value to the private field
      * used as annotation cache.
      * </p>
+     * <p>
+     * This is sort of poor man's solution. Proper test would have to separate the individual
+     * cases into separate JVM runs and go through the cache creation and verification.
+     * The limitation is caused {@link HistoryGuru} is singleton and the cache is initialized
+     * just once in its constructor.
+     * </p>
      */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testHistoryEnabledVsAnnotationCache(boolean useAnnotationCache) {
         boolean useAnnotationCacheOrig = env.useAnnotationCache();
+        boolean useHistoryOrig = env.isHistoryEnabled();
+        boolean useHistoryCacheOrig = env.isHistoryCache();
 
         env.setUseAnnotationCache(useAnnotationCache);
+        env.setHistoryEnabled(false);
+        env.setUseHistoryCache(false);
         assertNotNull(HistoryGuru.initializeAnnotationCache());
 
         // cleanup
         env.setUseHistoryCache(useAnnotationCacheOrig);
+        env.setHistoryEnabled(useHistoryOrig);
+        env.setUseHistoryCache(useHistoryCacheOrig);
     }
 
     // TODO: test what happens if history is disabled and annotation cache enabled
