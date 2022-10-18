@@ -61,6 +61,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.FileAnnotationCache;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -197,10 +198,21 @@ class IndexDatabaseTest {
         assertNull(defs2);
     }
 
+    /**
+     * Assumes:
+     * <ul>
+     *     <li>default history/annotation check are {@link org.opengrok.indexer.history.FileHistoryCache} and
+     *      {@link org.opengrok.indexer.history.FileAnnotationCache}, respectively</li>
+     *     <li>the directory names used</li>
+     *     <li>the way file paths are constructed ({@link TandemPath})</li>
+     * </ul>
+     * @param fileName file name to check
+     * @param shouldExist whether the data file should exist
+     */
     private void checkDataExistence(String fileName, boolean shouldExist) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        for (String dirName : new String[] {"historycache", IndexDatabase.XREF_DIR}) {
+        for (String dirName : new String[] {"historycache", "annotationcache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
             File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
@@ -213,8 +225,11 @@ class IndexDatabaseTest {
     }
 
     /**
-     * Test removal of IndexDatabase. xrefs and history index entries after
-     * file has been removed from a repository.
+     * Test removal of IndexDatabase after file has been removed from a repository.
+     * Specifically the xrefs, history/annotation cache, index entries.
+     * <p>
+     * Assumes the indexer in the setup ran with annotation cache enabled.
+     * </p>
      */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
