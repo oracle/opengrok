@@ -598,7 +598,7 @@ public class AnalyzerGuru {
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));
 
-        // `path' is not null, as it was passed to Util.path2uid() above.
+        // 'path' is not null, as it was passed to Util.path2uid() above.
         doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
         Project project = Project.getProject(path);
         if (project != null) {
