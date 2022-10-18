@@ -24,10 +24,17 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
@@ -75,13 +82,16 @@ class RepositoryInfoTest {
         assertEquals(password, repositoryInfo.getPassword());
     }
 
+    /**
+     * This test assumes that {@link RepositoryFactory#getRepository(File, CommandTimeoutType, boolean)}
+     * uses {@link RepositoryInfo#fillFromProject()} to complete {@link RepositoryInfo} field values.
+     */
     @Test
     void testFillFromProjectUsernamePassword() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
         env.setProjectsEnabled(true);
 
-        final String projectName = "proj";
+        final String projectName = "projectWithUsernameAndPassword";
         Project project = new Project(projectName);
         final String dirName = "/proj";
         project.setPath(dirName);
@@ -96,5 +106,51 @@ class RepositoryInfoTest {
         repositoryInfo.fillFromProject();
         assertEquals(username, repositoryInfo.getUsername());
         assertEquals(password, repositoryInfo.getPassword());
+    }
+
+    private static Stream<Arguments> provideArgumentsForTestHistoryAndAnnotationFields() {
+        return Stream.of(
+                Arguments.of(true, true, true),
+                Arguments.of(true, true, false),
+                Arguments.of(true, false, true),
+                Arguments.of(false, true, true),
+                Arguments.of(true, false, false),
+                Arguments.of(false, false, true),
+                Arguments.of(false, true, false),
+                Arguments.of(false, false, false)
+        );
+    }
+
+    /**
+     * Test history/annotation field "inheritance" from project or global configuration.
+     * <p>
+     * Same comment applies as for {@link #testFillFromProjectUsernamePassword()}.
+     * </p>
+     */
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForTestHistoryAndAnnotationFields")
+    void testHistoryAndAnnotationFields(boolean isProjectPresent, boolean historyEnabled, boolean useAnnotationCache) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjectsEnabled(true);
+
+        final String dirName = "/proj";
+        if (isProjectPresent) {
+            final String projectName = "projectWithHistoryAndAnnotationSettings";
+            Project project = new Project(projectName);
+            project.setPath(dirName);
+            project.setAnnotationCacheEnabled(useAnnotationCache);
+            project.setHistoryEnabled(historyEnabled);
+            env.setProjects(Map.of(projectName, project));
+        } else {
+            env.setProjects(Collections.emptyMap());
+            env.setHistoryEnabled(historyEnabled);
+            env.setUseAnnotationCache(useAnnotationCache);
+        }
+
+        RepositoryInfo repositoryInfo = new RepositoryInfo();
+        repositoryInfo.setDirectoryNameRelative(dirName);
+        repositoryInfo.fillFromProject();
+        assertEquals(historyEnabled, repositoryInfo.isHistoryEnabled());
+        assertEquals(useAnnotationCache, repositoryInfo.isAnnotationCacheEnabled());
     }
 }
