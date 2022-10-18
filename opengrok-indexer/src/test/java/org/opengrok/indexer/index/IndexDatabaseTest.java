@@ -61,7 +61,6 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.FileAnnotationCache;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -199,7 +198,7 @@ class IndexDatabaseTest {
     }
 
     /**
-     * Assumes:
+     * Assumes the following.
      * <ul>
      *     <li>default history/annotation check are {@link org.opengrok.indexer.history.FileHistoryCache} and
      *      {@link org.opengrok.indexer.history.FileAnnotationCache}, respectively</li>
