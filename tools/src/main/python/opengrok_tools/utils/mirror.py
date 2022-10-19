@@ -55,6 +55,7 @@ IGNORED_REPOS_PROPERTY = 'ignored_repos'
 PROXY_PROPERTY = 'proxy'
 INCOMING_PROPERTY = 'incoming_check'
 IGNORE_ERR_PROPERTY = 'ignore_errors'
+IGNORE_PROPERTY = 'ignore'
 COMMANDS_PROPERTY = 'commands'
 DISABLED_PROPERTY = 'disabled'
 DISABLED_REASON_PROPERTY = 'disabled-reason'
@@ -169,7 +170,7 @@ def get_project_properties(project_config, project_name, hookdir):
     :param project_name: name of the project
     :param hookdir: directory with hooks
     :return: list of properties: prehook, posthook, hook_timeout,
-    command_timeout, use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors
+    command_timeout, use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors, ignore
     """
 
     prehook = None
@@ -181,6 +182,7 @@ def get_project_properties(project_config, project_name, hookdir):
     check_changes = None
     strip_outgoing = None
     ignore_errors = None
+    ignore = None
 
     logger = logging.getLogger(__name__)
 
@@ -245,11 +247,17 @@ def get_project_properties(project_config, project_name, hookdir):
                                      project_config.get(IGNORE_ERR_PROPERTY))
             logger.debug("ignore errors = {}".format(check_changes))
 
+        if project_config.get(IGNORE_PROPERTY) is not None:
+            ignore = get_bool(logger, ("ignore project {}".
+                                       format(project_name)),
+                              project_config.get(IGNORE_PROPERTY))
+            logger.debug("project ignore = {}".format(check_changes))
+
     if not ignored_repos:
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors
+        use_proxy, ignored_repos, check_changes, strip_outgoing, ignore_errors, ignore
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -460,10 +468,10 @@ def mirror_project(config, project_name, check_changes, strip_outgoing, uri,
         ignored_repos, \
         check_changes_proj, \
         strip_outgoing_proj, \
-        ignore_errors_proj = get_project_properties(project_config,
-                                                    project_name,
-                                                    config.
-                                                    get(HOOKDIR_PROPERTY))
+        ignore_errors_proj, \
+        ignore = get_project_properties(project_config,
+                                        project_name,
+                                        config.get(HOOKDIR_PROPERTY))
 
     if not command_timeout:
         command_timeout = config.get(CMD_TIMEOUT_PROPERTY)
@@ -488,6 +496,10 @@ def mirror_project(config, project_name, check_changes, strip_outgoing, uri,
     proxy = None
     if use_proxy:
         proxy = config.get(PROXY_PROPERTY)
+
+    if ignore:
+        logger.info(f"Project {project_name} ignored per configuration, no mirror performed.")
+        return SUCCESS_EXITVAL
 
     # We want this to be logged to the log file (if any).
     if project_config and project_config.get(DISABLED_PROPERTY):
