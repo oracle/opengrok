@@ -604,7 +604,8 @@ def check_project_configuration(multiple_project_config, hookdir=False,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
                               DISABLED_REASON_PROPERTY, INCOMING_PROPERTY,
-                              IGNORE_ERR_PROPERTY, STRIP_OUTGOING_PROPERTY]
+                              IGNORE_ERR_PROPERTY, STRIP_OUTGOING_PROPERTY,
+                              IGNORE_PROPERTY]
 
     if not multiple_project_config:
         return True
