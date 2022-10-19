@@ -407,7 +407,7 @@ def test_ignore_project():
     verify(opengrok_tools.utils.mirror, times=0). \
         get_repos_for_project(project_name, ANY, ANY, ...)
 
-    # Necessary to disable the process_hook spy otherwise mockito will
+    # Necessary to disable the spies otherwise mockito will
     # complain about recursive invocation.
     unstub()
 
