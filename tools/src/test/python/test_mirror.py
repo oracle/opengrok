@@ -48,7 +48,7 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
     INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, \
-    HOOKDIR_PROPERTY, HOOK_POST_PROPERTY, COMMANDS_PROPERTY
+    HOOKDIR_PROPERTY, HOOK_POST_PROPERTY, COMMANDS_PROPERTY, IGNORE_PROPERTY
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST, CALL_PROPERTY
 
 
@@ -375,6 +375,32 @@ def test_ignore_errors_hooks(monkeypatch, hook_type, per_project):
         # Necessary to disable the process_hook spy otherwise mockito will
         # complain about recursive invocation.
         unstub()
+
+
+def test_ignore_project():
+    """
+    Test that ignored projects do not call XXX
+    """
+
+    spy2(opengrok_tools.utils.mirror.process_hook)
+    project_name = "foo"
+    config = {
+        PROJECTS_PROPERTY: {
+            project_name: {IGNORE_PROPERTY: True}
+        }
+    }
+
+    src_root = "srcroot"
+    assert mirror_project(config, project_name, False, False,
+                          None, src_root) == SUCCESS_EXITVAL
+    # Assumes that get_repos_for_project() is the first function to be called
+    # in mirror_project().
+    verify(opengrok_tools.utils.mirror, times=0). \
+        get_repos_for_project(project_name, ANY, ANY, ...)
+
+    # Necessary to disable the process_hook spy otherwise mockito will
+    # complain about recursive invocation.
+    unstub()
 
 
 def test_disabled_command_run_args():
