@@ -379,7 +379,8 @@ def test_ignore_errors_hooks(monkeypatch, hook_type, per_project):
 
 def test_ignore_project():
     """
-    Test that ignored projects do not call XXX
+    Test that for ignored projects mirror_project() returns SUCCESS_EXITVAL
+    and does not perform any tasks.
     """
 
     spy2(opengrok_tools.utils.mirror.process_hook)
