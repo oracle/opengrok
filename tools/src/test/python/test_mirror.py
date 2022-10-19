@@ -383,7 +383,6 @@ def test_ignore_project():
     and does not perform any tasks.
     """
 
-    spy2(opengrok_tools.utils.mirror.process_hook)
     project_name = "foo"
     config = {
         PROJECTS_PROPERTY: {
@@ -391,11 +390,20 @@ def test_ignore_project():
         }
     }
 
+    spy2(opengrok_tools.utils.mirror.get_project_config)
+    spy2(opengrok_tools.utils.mirror.get_project_properties)
+    spy2(opengrok_tools.utils.mirror.get_repos_for_project)
+
     src_root = "srcroot"
     assert mirror_project(config, project_name, False, False,
                           None, src_root) == SUCCESS_EXITVAL
+
+    verify(opengrok_tools.utils.mirror). \
+        get_project_config(ANY, project_name)
+    verify(opengrok_tools.utils.mirror). \
+        get_project_properties(ANY, project_name, ANY)
     # Assumes that get_repos_for_project() is the first function to be called
-    # in mirror_project().
+    # in mirror_project() after the project configuration is retrieved.
     verify(opengrok_tools.utils.mirror, times=0). \
         get_repos_for_project(project_name, ANY, ANY, ...)
 
