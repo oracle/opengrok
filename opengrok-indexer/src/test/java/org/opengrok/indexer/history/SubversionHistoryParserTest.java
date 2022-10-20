@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author austvik
  */
-public class SubversionHistoryParserTest {
+class SubversionHistoryParserTest {
 
     private SubversionHistoryParser instance;
 
@@ -59,7 +59,7 @@ public class SubversionHistoryParserTest {
      * Test of parse method, of class SubversionHistoryParser.
      */
     @Test
-    public void parseEmpty() throws Exception {
+    void parseEmpty() throws Exception {
         // Empty repository shoud produce at least valid XML.
         History result = instance.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<log>\n" + "</log>");
@@ -72,7 +72,7 @@ public class SubversionHistoryParserTest {
      * Test of parsing output similar to that in subversions own svn repository.
      */
     @Test
-    public void parseALaSvn() throws Exception {
+    void parseALaSvn() throws Exception {
         String revId1 = "12345";
         String author1 = "username1";
         String date1 = "2007-09-11T11:48:56.123456Z";
@@ -177,14 +177,17 @@ public class SubversionHistoryParserTest {
 
     }
 
-
     @Test
-    public void testDateFormats() {
+    void testDateFormats() {
         DateTimeTestData[] dates = new DateTimeTestData[] {
-                new DateTimeTestData("2020-03-24T17:11:35.545818Z", LocalDateTime.of(2020, 3, 24, 17, 11, 35, 545000000)),
-                new DateTimeTestData("2007-09-11T11:48:56.123456Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56, 123000000)),
-                new DateTimeTestData("2007-09-11T11:48:56.000000Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
-                new DateTimeTestData("2007-09-11T11:48:56.Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+                new DateTimeTestData("2020-03-24T17:11:35.545818Z",
+                        LocalDateTime.of(2020, 3, 24, 17, 11, 35, 545000000)),
+                new DateTimeTestData("2007-09-11T11:48:56.123456Z",
+                        LocalDateTime.of(2007, 9, 11, 11, 48, 56, 123000000)),
+                new DateTimeTestData("2007-09-11T11:48:56.000000Z",
+                        LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+                new DateTimeTestData("2007-09-11T11:48:56.Z",
+                        LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
                 new DateTimeTestData("2007-09-11 11:48:56Z"),
                 new DateTimeTestData("2007-09-11T11:48:56"),
                 new DateTimeTestData("2007-09-11T11:48:56.123456"),
