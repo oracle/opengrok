@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;
@@ -40,6 +41,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -74,6 +76,12 @@ public class SubversionRepository extends Repository {
     private static final String URLattr = "url";
 
     protected String reposPath;
+
+    /**
+     * This is a static replacement for 'working' field. Effectively, check if the svn command is working once in a JVM
+     * instead of calling it for every {@link SubversionRepository} instance.
+     */
+    private static final Supplier<Boolean> SVN_IS_WORKING = LazilyInstantiate.using(SubversionRepository::isSvnWorking);
 
     public SubversionRepository() {
         type = "Subversion";
@@ -354,11 +362,16 @@ public class SubversionRepository extends Repository {
         return false;
     }
 
+    private static boolean isSvnWorking() {
+        String repoCommand = getCommand(SubversionRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
+        return checkCmd(repoCommand, "--help");
+    }
+
     @Override
     public boolean isWorking() {
         if (working == null) {
+            working = SVN_IS_WORKING.get();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand, "--help");
         }
         return working;
     }
