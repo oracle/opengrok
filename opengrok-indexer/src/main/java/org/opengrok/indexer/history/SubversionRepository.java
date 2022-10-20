@@ -364,7 +364,12 @@ public class SubversionRepository extends Repository {
 
     private static boolean isSvnWorking() {
         String repoCommand = getCommand(SubversionRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
-        return checkCmd(repoCommand, "--help");
+        boolean works = checkCmd(repoCommand, "--help");
+        if (!works) {
+            LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
+                    "Some operations with Subversion repositories will fail as a result.", repoCommand);
+        }
+        return works;
     }
 
     @Override
