@@ -95,7 +95,9 @@ public class LazilyInstantiate<T> implements Supplier<T> {
         this.current = this::swapper;
     }
 
-    //swaps the itself out for a supplier of an instantiated object
+    /**
+     * Swaps itself out for a supplier of an instantiated object.
+     */
     private synchronized T swapper() {
         if (!(current instanceof Factory)) {
             T obj = supplier.get();
