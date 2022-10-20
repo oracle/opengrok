@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
+import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -465,10 +466,18 @@ public final class HistoryGuru {
         }
 
         // This should return true for Annotate view.
-        return ((env.getRemoteScmSupported() == RemoteSCM.ON)
-                || (env.getRemoteScmSupported() == RemoteSCM.UIONLY)
-                || (env.getRemoteScmSupported() == RemoteSCM.DIRBASED)
+        Configuration.RemoteSCM globalRemoteSupport = env.getRemoteScmSupported();
+        boolean remoteSupported = ((globalRemoteSupport == RemoteSCM.ON)
+                || (globalRemoteSupport == RemoteSCM.UIONLY)
+                || (globalRemoteSupport == RemoteSCM.DIRBASED)
                 || !repo.isRemote());
+
+        if (!remoteSupported) {
+            LOGGER.log(Level.FINEST, "not eligible to display history for ''{0}'' as repository {1} is remote " +
+                    "and the global setting is {2}", new Object[]{file, repo, globalRemoteSupport});
+        }
+
+        return remoteSupported;
     }
 
     /**
