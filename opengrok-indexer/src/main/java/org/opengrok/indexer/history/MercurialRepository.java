@@ -109,8 +109,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
             = TEMPLATE_STUB + FILE_LIST
             + END_OF_ENTRY + "\\n";
 
-    private static final Pattern LOG_COPIES_PATTERN
-            = Pattern.compile("^(\\d+):(.*)");
+    private static final Pattern LOG_COPIES_PATTERN = Pattern.compile("^(\\d+):(.*)");
 
     /**
      * This is a static replacement for 'working' field. Effectively, check if hg is working once in a JVM
