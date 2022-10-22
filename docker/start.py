@@ -81,11 +81,6 @@ auth = HTTPTokenAuth(scheme='Bearer')
 REINDEX_POINT = '/reindex'
 
 
-def trigger_reindex():
-    # Signal the sync/indexer thread.
-    periodic_timer.notify_all()
-
-
 @auth.verify_token
 def verify_token(token):
     if expected_token is None:
@@ -98,9 +93,16 @@ def verify_token(token):
 @app.route(REINDEX_POINT)
 @auth.login_required
 def index():
-    periodic_timer.notify_all()
+    global periodic_timer
 
-    return "Reindex triggered"
+    if periodic_timer:
+        logger = logging.getLogger(__name__)
+        logger.debug("Triggering reindex based on API call")
+
+        periodic_timer.notify_all()
+        return "Reindex triggered\n"
+
+    return "Reindex not triggered - the timer is not initialized yet\n"
 
 
 def rest_function(logger, rest_port):
@@ -297,7 +299,8 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
         indexer.execute()
 
         logger.info("Waiting for reindex to be triggered")
-        periodic_timer.wait_for_tick()
+        global periodic_timer
+        periodic_timer.wait_for_event()
 
 
 def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
@@ -346,7 +349,8 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
             save_config(logger, uri, config_path)
 
         logger.info("Waiting for reindex to be triggered")
-        periodic_timer.wait_for_tick()
+        global periodic_timer
+        periodic_timer.wait_for_event()
 
 
 def create_bare_config(logger, use_projects, extra_indexer_options=None):
@@ -553,6 +557,12 @@ def main():
                        extra_indexer_options)
 
     if sync_enabled:
+        period_seconds = sync_period_mins * 60
+        logger.debug(f"Creating and starting periodic timer (period {period_seconds} seconds)")
+        global periodic_timer
+        periodic_timer = PeriodicTimer(period_seconds)
+        periodic_timer.start()
+
         logger.debug("Starting sync thread")
         sync_thread = threading.Thread(target=worker_function,
                                        name="Sync thread",
@@ -560,11 +570,6 @@ def main():
         sync_thread.start()
 
         start_rest_thread(logger)
-
-        if sync_period_mins > 0:
-            global periodic_timer
-            periodic_timer = PeriodicTimer(sync_period_mins * 60)
-            periodic_timer.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
