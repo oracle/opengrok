@@ -97,6 +97,20 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         }
     }
 
+    /**
+     * This is potentially expensive operation as the cache entry has to be retrieved from disk
+     * in order to tell whether it is stale or not.
+     * @param file source file
+     * @return indication whether the cache entry is fresh
+     */
+    public boolean isUpToDate(File file) {
+        try {
+            return get(file, null) != null;
+        } catch (AnnotationException e) {
+            return false;
+        }
+    }
+
     public Annotation get(File file, @Nullable String rev) throws AnnotationException {
         Annotation annotation = null;
         String latestRevision = LatestRevisionUtil.getLatestRevision(file);

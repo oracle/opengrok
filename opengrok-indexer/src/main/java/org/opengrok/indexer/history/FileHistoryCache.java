@@ -595,8 +595,8 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
 
-        File cacheFile = getCachedFile(file);
-        if (isUpToDate(file, cacheFile)) {
+        if (isUpToDate(file)) {
+            File cacheFile = getCachedFile(file);
             try {
                 if (fileHistoryCacheHits != null) {
                     fileHistoryCacheHits.increment();
@@ -616,10 +616,10 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
 
     /**
      * @param file the file to check
-     * @param cachedFile the file which contains the cached history for the file
      * @return {@code true} if the cache is up-to-date for the file, {@code false} otherwise
      */
-    private boolean isUpToDate(File file, File cachedFile) {
+    public boolean isUpToDate(File file) throws HistoryException, ForbiddenSymlinkException {
+        File cachedFile = getCachedFile(file);
         return cachedFile != null && cachedFile.exists() && file.lastModified() <= cachedFile.lastModified();
     }
 
