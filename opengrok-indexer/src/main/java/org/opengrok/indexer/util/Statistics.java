@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -45,7 +45,9 @@ public class Statistics {
 
     private void logIt(Logger logger, Level logLevel, String msg, Duration duration) {
         String timeStr = StringUtils.getReadableTime(duration.toMillis());
-        logger.log(logLevel, msg + " (took {0})", timeStr);
+        if (logger.isLoggable(logLevel)) {
+            logger.log(logLevel, String.format("%s (took %s)", msg, timeStr));
+        }
     }
 
     /**
@@ -96,7 +98,7 @@ public class Statistics {
     }
 
     /**
-     * log a message along with how much time it took since the constructor was called.
+     * Log a message along with how much time it took since the constructor was called.
      * If there is a metrics registry, it will update the timer specified by the meter name.
      * The log level is {@code INFO}.
      * @param logger logger instance

@@ -184,7 +184,7 @@ class IndexerRepoTest {
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
         assertTrue(HistoryGuru.getInstance().hasHistory(fileInRepo));
-        assertTrue(HistoryGuru.getInstance().hasCacheForFile(fileInRepo));
+        assertTrue(HistoryGuru.getInstance().hasHistoryCacheForFile(fileInRepo));
 
         // cleanup
         IOUtils.removeRecursive(realSource);

@@ -39,6 +39,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengrok.indexer.condition.EnabledForRepository;
@@ -54,6 +56,7 @@ import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.ApiUtils;
 import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -78,7 +81,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
-import static org.opengrok.web.api.v1.controller.ApiUtils.waitForTask;
 
 @ExtendWith(MockitoExtension.class)
 @EnabledForRepository({MERCURIAL, SUBVERSION})
@@ -103,7 +105,8 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
     @Override
     protected DeploymentContext configureDeployment() {
-        return ServletDeploymentContext.forServlet(new ServletContainer(new ResourceConfig(ProjectsController.class)
+        return ServletDeploymentContext.forServlet(new ServletContainer(
+                new ResourceConfig(ProjectsController.class, StatusController.class)
                 .register(new AbstractBinder() {
                     @Override
                     protected void configure() {
@@ -123,6 +126,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setAnnotationCacheEnabled(true);
         env.setHandleHistoryOfRenamedFiles(true);
         RepositoryFactory.initializeIgnoredNames(env);
     }
@@ -140,7 +144,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testAddInherit() {
+    void testAddInherit() throws Exception {
         assertTrue(env.getRepositories().isEmpty());
         assertTrue(env.getProjects().isEmpty());
         assertTrue(env.isHandleHistoryOfRenamedFiles());
@@ -155,11 +159,11 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertTrue(proj.isHandleRenamedFiles());
     }
 
-    private Response addProject(final String project) {
+    private Response addProject(final String project) throws InterruptedException {
         Response response = target("projects")
                 .request()
                 .post(Entity.text(project));
-        return waitForTask(response);
+        return org.opengrok.indexer.web.ApiUtils.waitForAsyncApi(response);
     }
 
     /**
@@ -349,16 +353,74 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertEquals(0, group.getProjects().size());
     }
 
-    private Response deleteProject(final String project) {
+    private Response deleteProject(final String project) throws InterruptedException {
         Response response = target("projects")
                 .path(project)
                 .request()
                 .delete();
-        return waitForTask(response);
+        return ApiUtils.waitForAsyncApi(response);
+    }
+
+    /**
+     * This test assumes that annotation cache is enabled.
+     * @param historyCache whether to use history or annotation cache
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testDeleteCache(boolean historyCache) throws Exception {
+        final String cacheName = historyCache ? "historycache" : "annotationcache";
+        final String projectName = "git";
+        addProject(projectName);
+
+        Indexer.getInstance().prepareIndexer(
+                env,
+                false, // don't search for repositories
+                true, // add projects
+                // don't create dictionary
+                new ArrayList<>(), // subFiles - needed when refreshing history partially
+                new ArrayList<>()); // repositories - needed when refreshing history partially
+        Indexer.getInstance().doIndexerExecution(null, null);
+
+        // Check the history cache is present. Assumes single file is enough.
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        File file = Paths.get(env.getSourceRootPath(), projectName, "main.c").toFile();
+        assertTrue(file.exists());
+        if (historyCache) {
+            assertTrue(historyGuru.hasHistoryCacheForFile(file));
+        } else {
+            assertTrue(historyGuru.hasAnnotationCacheForFile(file));
+        }
+
+        // Delete the cache via API request.
+        Response initialResponse = target("projects")
+                .path(projectName)
+                .path(cacheName)
+                .request()
+                .delete();
+        Response response = org.opengrok.indexer.web.ApiUtils.waitForAsyncApi(initialResponse);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Object entity = response.getEntity();
+        List<String> list = response.readEntity(new GenericType<>() {
+        });
+        assertNotNull(entity);
+        assertEquals(1, list.size());
+        assertEquals("/git", list.get(0));
+
+        // Check the cache was indeed removed. Assumes single file is enough.
+        if (historyCache) {
+            assertFalse(historyGuru.hasHistoryCacheForFile(file));
+        } else {
+            assertFalse(historyGuru.hasAnnotationCacheForFile(file));
+        }
+
+        // Check that the project and its index is still present.
+        assertNotNull(env.getProjects().get(projectName));
+        env.maybeRefreshIndexSearchers();
+        assertNotNull(IndexDatabase.getDocument(file));
     }
 
     @Test
-    void testIndexed() throws IOException {
+    void testIndexed() throws Exception {
         String projectName = "mercurial";
 
         // When a project is added, it should be marked as not indexed.
@@ -407,17 +469,17 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertTrue(ri.getCurrentVersion().contains("c78fa757c524"), "current version should be refreshed");
     }
 
-    private Response markIndexed(final String project) {
+    private Response markIndexed(final String project) throws InterruptedException {
         Response response = target("projects")
                 .path(project)
                 .path("indexed")
                 .request()
                 .put(Entity.text(""));
-        return waitForTask(response);
+        return ApiUtils.waitForAsyncApi(response);
     }
 
     @Test
-    void testList() {
+    void testList() throws Exception {
         addProject("mercurial");
         assertEquals(markIndexed("mercurial").getStatusInfo().getFamily(), Response.Status.Family.SUCCESSFUL);
 
@@ -501,7 +563,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testSetIndexed() {
+    void testSetIndexed() throws Exception {
         String project = "git";
         addProject(project);
         assertEquals(1, env.getProjectList().size());
@@ -518,7 +580,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testSetGet() {
+    void testSetGet() throws Exception {
         assertTrue(env.isHandleHistoryOfRenamedFiles());
         String[] projects = new String[] {"mercurial", "git"};
 

@@ -18,23 +18,29 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
-/**
- * Exception thrown when retrieval or manipulation of history information fails.
- */
-public class HistoryException extends Exception {
+import java.util.logging.Level;
+
+public class AnnotationException extends Exception {
     private static final long serialVersionUID = 1L;
+
+    private final Level level;
 
     /**
      * Construct a {@code HistoryException} with the specified message.
      *
      * @param msg the message string
      */
-    public HistoryException(String msg) {
+    public AnnotationException(String msg) {
+        this(msg, Level.WARNING);
+    }
+
+    public AnnotationException(String msg, Level level) {
         super(msg);
+        this.level = level;
     }
 
     /**
@@ -42,18 +48,26 @@ public class HistoryException extends Exception {
      *
      * @param cause the cause of the exception
      */
-    public HistoryException(Throwable cause) {
+    public AnnotationException(Throwable cause) {
         super(cause);
+        this.level = Level.WARNING;
     }
 
     /**
-     * Construct a {@code HistoryException} with the specified message
-     * and cause.
+     * Construct a {@code AnnotationException} with the specified message and cause.
      *
      * @param msg the message string
      * @param cause the cause of the exception
      */
-    public HistoryException(String msg, Throwable cause) {
+    public AnnotationException(String msg, Throwable cause) {
         super(msg, cause);
+        this.level = Level.WARNING;
+    }
+
+    /**
+     * @return log {@link Level} to be used when logging the exception
+     */
+    public Level getLevel() {
+        return level;
     }
 }

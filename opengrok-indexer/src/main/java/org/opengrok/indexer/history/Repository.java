@@ -66,6 +66,7 @@ public abstract class Repository extends RepositoryInfo {
      * format used for printing the date in {@code currentVersion}.
      * <p>
      * NOTE: SimpleDateFormat is not thread-safe, lock must be held when formatting
+     * </p>
      */
     protected static final SimpleDateFormat OUTPUT_DATE_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd HH:mm Z");
@@ -170,8 +171,7 @@ public abstract class Repository extends RepositoryInfo {
             LOGGER.log(Level.WARNING,
                     "Incremental history retrieval is not implemented for {0}.",
                     getClass().getSimpleName());
-            LOGGER.log(Level.WARNING,
-                    "Falling back to slower full history retrieval.");
+            LOGGER.log(Level.WARNING, "Falling back to slower full history retrieval.");
         }
 
         History history = getHistory(file);
@@ -347,12 +347,11 @@ public abstract class Repository extends RepositoryInfo {
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate
-     * @param revision revision of the file. Either {@code null} or a non-empty
-     * string.
-     * @return an <code>Annotation</code> object
+     * @param revision revision of the file. Either {@code null} (for latest revision) or a non-empty string.
+     * @return an <code>Annotation</code> object or {@code null}
      * @throws java.io.IOException if an error occurs
      */
-    abstract Annotation annotate(File file, String revision) throws IOException;
+    abstract @Nullable Annotation annotate(File file, @Nullable String revision) throws IOException;
 
     /**
      * Return revision for annotate view.
@@ -370,7 +369,7 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Create a history log cache for all files in this repository.
+     * Create history cache for all files in this repository.
      * {@code getHistory()} is used to fetch the history for the entire
      * repository. If {@code hasHistoryForDirectories()} returns {@code false},
      * this method is a no-op.
@@ -483,10 +482,10 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Determine and return the current version of the repository.
-     *
+     * <p>
      * This operation is considered "heavy" so this function should not be
      * called on every web request.
-     *
+     * </p>
      * @param cmdType command timeout type
      * @return the version
      * @throws IOException if I/O exception occurred

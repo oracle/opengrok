@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -229,6 +229,14 @@ public class RuntimeEnvironmentTest {
         assertTrue(instance.useHistoryCache());
         instance.setUseHistoryCache(false);
         assertFalse(instance.useHistoryCache());
+    }
+
+    @Test
+    void testUseAnnotationCache() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertFalse(instance.isAnnotationCacheEnabled());
+        instance.setAnnotationCacheEnabled(true);
+        assertTrue(instance.isAnnotationCacheEnabled());
     }
 
     @Test

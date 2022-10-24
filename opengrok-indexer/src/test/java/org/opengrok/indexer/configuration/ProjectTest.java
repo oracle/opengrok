@@ -30,7 +30,12 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -158,6 +163,34 @@ class ProjectTest {
                 () -> assertEquals(env.getReviewPage(), p1.getReviewPage()),
                 () -> assertEquals(env.getReviewPattern(), p1.getReviewPattern())
         );
+    }
+
+    private static Stream<Arguments> provideArgumentsForTestHistoryAnnotationEnabled() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(true, false),
+                Arguments.of(false, true),
+                Arguments.of(false, false)
+        );
+    }
+
+    /**
+     * Assumes that the indexer uses {@link Project#completeWithDefaults()} when creating new projects.
+     */
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForTestHistoryAnnotationEnabled")
+    void testHistoryAnnotationEnabled(boolean isHistoryEnabled, boolean useAnnotationCache) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        env.setHistoryEnabled(isHistoryEnabled);
+        env.setAnnotationCacheEnabled(useAnnotationCache);
+
+        Project p1 = new Project();
+        assertNotNull(p1);
+
+        p1.completeWithDefaults();
+        assertEquals(isHistoryEnabled, p1.isHistoryEnabled());
+        assertEquals(useAnnotationCache, p1.isAnnotationCacheEnabled());
     }
 
     /**

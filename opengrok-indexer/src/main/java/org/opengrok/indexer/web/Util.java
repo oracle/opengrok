@@ -1089,8 +1089,7 @@ public final class Util {
      * @throws HistoryException if the history guru cannot be accesses
      */
     @SuppressWarnings("boxing")
-    public static void dumpConfiguration(Appendable out) throws IOException,
-            HistoryException {
+    public static void dumpConfiguration(Appendable out) throws IOException, HistoryException {
         out.append("<table border=\"1\" width=\"100%\">");
         out.append("<tr><th>Variable</th><th>Value</th></tr>");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -1111,11 +1110,14 @@ public final class Util {
         printTableRow(out, "Allow leading wildcard in search",
                 env.isAllowLeadingWildcard());
         printTableRow(out, "History cache", HistoryGuru.getInstance()
-                .getCacheInfo());
+                .getHistoryCacheInfo());
+        printTableRow(out, "Annotation cache", HistoryGuru.getInstance()
+                .getAnnotationCacheInfo());
         printTableRow(out, "Authorization plugin directory", env.getPluginDirectory());
         printTableRow(out, "Authorization watchdog directory", env.getPluginDirectory());
         printTableRow(out, "Authorization watchdog enabled", env.isAuthorizationWatchdog());
-        printTableRow(out, "Authorization stack", "<pre>" + env.getAuthorizationFramework().getStack().hierarchyToString() + "</pre>");
+        printTableRow(out, "Authorization stack", "<pre>" +
+                env.getAuthorizationFramework().getStack().hierarchyToString() + "</pre>");
         out.append("</table>");
     }
 

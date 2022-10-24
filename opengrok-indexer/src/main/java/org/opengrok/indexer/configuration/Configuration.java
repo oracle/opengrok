@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -107,6 +107,10 @@ public final class Configuration {
      * Should the history log be cached?
      */
     private boolean historyCache;
+    /**
+     * Should the latest annotation be cached?
+     */
+    private boolean annotationCacheEnabled;
     /**
      * flag to generate history. This is bigger hammer than @{code historyCache}
      * above. If set to false, no history query will be ever made and the webapp
@@ -517,6 +521,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setAllowLeadingWildcard(true);
         setAllowedSymlinks(new HashSet<>());
+        setAnnotationCacheEnabled(false);
         setAuthenticationTokens(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
@@ -796,6 +801,25 @@ public final class Configuration {
      */
     public boolean isHistoryCache() {
         return historyCache;
+    }
+
+    /**
+     * Should the latest annotation be cached?
+     *
+     * @return {@code true} if a {@code AnnotationCache} implementation should be
+     * used, {@code false} otherwise
+     */
+    public boolean isAnnotationCacheEnabled() {
+        return annotationCacheEnabled;
+    }
+
+    /**
+     * Set whether latest annotation should be cached.
+     *
+     * @param useCache if {@code true} enable annotation cache
+     */
+    public void setAnnotationCacheEnabled(boolean useCache) {
+        this.annotationCacheEnabled = useCache;
     }
 
     /**

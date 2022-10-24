@@ -716,6 +716,24 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Is annotation cache currently enabled?
+     *
+     * @return whether annotation cache is enabled
+     */
+    public boolean isAnnotationCacheEnabled() {
+        return syncReadConfiguration(Configuration::isAnnotationCacheEnabled);
+    }
+
+    /**
+     * Specify whether annotation cache should be generated during indexing.
+     *
+     * @param useAnnotationCache set false if you do not want to use annotation cache
+     */
+    public void setAnnotationCacheEnabled(boolean useAnnotationCache) {
+        syncWriteConfiguration(useAnnotationCache, Configuration::setAnnotationCacheEnabled);
+    }
+
+    /**
      * Should we generate HTML or not during the indexing phase.
      *
      * @return true if HTML should be generated during the indexing phase
@@ -736,8 +754,7 @@ public final class RuntimeEnvironment {
     /**
      * Set if we should compress the xref files or not.
      *
-     * @param compressXref set to true if the generated html files should be
-     * compressed
+     * @param compressXref set to true if the generated html files should be compressed
      */
     public void setCompressXref(boolean compressXref) {
         syncWriteConfiguration(compressXref, Configuration::setCompressXref);
@@ -1456,12 +1473,12 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(flag, Configuration::setHistoryBasedReindex);
     }
 
-    public FileCollector getFileCollector(String name) {
-        return fileCollectorMap.get(name);
+    public FileCollector getFileCollector(String projectName) {
+        return fileCollectorMap.get(projectName);
     }
 
-    public void setFileCollector(String name, FileCollector fileCollector) {
-        fileCollectorMap.put(name, fileCollector);
+    public void setFileCollector(String projectName, FileCollector fileCollector) {
+        fileCollectorMap.put(projectName, fileCollector);
     }
 
     @VisibleForTesting

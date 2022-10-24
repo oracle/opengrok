@@ -60,9 +60,11 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
+import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -92,9 +94,10 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
- *
+ * <p>
  * This is quite a heavy test class - it runs the indexer before each (parametrized) test,
  * so it might contribute significantly to the overall test run time.
+ * </p>
  */
 class IndexDatabaseTest {
 
@@ -107,6 +110,10 @@ class IndexDatabaseTest {
     @BeforeEach
     public void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+
+        // This needs to be set before HistoryGuru is instantiated for the first time,
+        // otherwise the annotation cache therein would be permanently set to null.
+        env.setAnnotationCacheEnabled(true);
 
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -190,10 +197,21 @@ class IndexDatabaseTest {
         assertNull(defs2);
     }
 
+    /**
+     * Assumes the following.
+     * <ul>
+     *     <li>default history/annotation check are {@link org.opengrok.indexer.history.FileHistoryCache} and
+     *      {@link org.opengrok.indexer.history.FileAnnotationCache}, respectively</li>
+     *     <li>the directory names used</li>
+     *     <li>the way file paths are constructed ({@link TandemPath})</li>
+     * </ul>
+     * @param fileName file name to check
+     * @param shouldExist whether the data file should exist
+     */
     private void checkDataExistence(String fileName, boolean shouldExist) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        for (String dirName : new String[] {"historycache", IndexDatabase.XREF_DIR}) {
+        for (String dirName : new String[] {"historycache", "annotationcache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
             File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
@@ -206,8 +224,11 @@ class IndexDatabaseTest {
     }
 
     /**
-     * Test removal of IndexDatabase. xrefs and history index entries after
-     * file has been removed from a repository.
+     * Test removal of IndexDatabase after file has been removed from a repository.
+     * Specifically the xrefs, history/annotation cache, index entries.
+     * <p>
+     * Assumes the indexer in the setup ran with annotation cache enabled.
+     * </p>
      */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -534,8 +555,9 @@ class IndexDatabaseTest {
      * Make sure that history based reindex is not performed for projects
      * where some repositories are not instances of {@code RepositoryWithHistoryTraversal}
      * or have the history based reindex explicitly disabled.
-     *
+     * <p>
      * Instead of checking the result of the functions that make the decision, check the actual indexing.
+     * </p>
      */
     @EnabledForRepository(CVS)
     @ParameterizedTest
@@ -811,5 +833,132 @@ class IndexDatabaseTest {
         idb.update();
 
         checkIndexDown(false, idb);
+    }
+
+    /**
+     * Test that incremental reindex will re-generate the annotation with correct revision.
+     * This is done to prevent {@link HistoryGuru#createAnnotationCache(File, String)} to be called
+     * with invalid/old revision in {@code IndexDatabase#addFile(File, String, Ctags)}.
+     * <p>
+     * Assumes the fallback argument of {@link HistoryGuru#annotate(File, String, boolean)}
+     * does the right thing.
+     * </p>
+     */
+    @Test
+    void testUpdateAnnotationCacheRevision() throws Exception {
+        File repoRoot = new File(env.getSourceRootPath(), "git");
+        assertTrue(repoRoot.isDirectory());
+        File file = new File(repoRoot, "main.c");
+        assertTrue(file.exists());
+
+        // Check annotation cache existence.
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        assertTrue(historyGuru.hasAnnotationCacheForFile(file));
+
+        // Get the latest revision of given file in the history before changing it.
+        String prevRev = getLastRevisionFromHistory(file, historyGuru);
+        assertNotNull(prevRev);
+
+        // Check the annotation cache entry for the file has the correct revision set.
+        // Make sure the annotation was taken from the cache by setting the fallback argument to false.
+        Annotation annotation = historyGuru.annotate(file, null, false);
+        assertNotNull(annotation);
+        assertEquals(prevRev, annotation.getRevision());
+
+        // Add some changesets to the repository.
+        changeGitRepository(repoRoot);
+
+        // Verify the changeset was applied. At this point LatestRevisionUtil#getLatestRevision() should
+        // fall back to the history method, because the index document is out of sync w.r.t. its pre-image file,
+        // however to be sure use the history directly.
+        String newRev = getLastRevisionFromHistory(file, historyGuru);
+        assertNotEquals(newRev, prevRev);
+
+        // Perform reindex.
+        indexer.prepareIndexer(
+                env, true, true,
+                null, null);
+        indexer.doIndexerExecution(null, null);
+
+        // Check that the annotation cache entry contains the new revision.
+        // Make sure the annotation was taken from the cache by setting the fallback argument to false.
+        annotation = historyGuru.annotate(file, null, false);
+        assertNotNull(annotation);
+        assertEquals(newRev, annotation.getRevision());
+    }
+
+    private static String getLastRevisionFromHistory(File file, HistoryGuru historyGuru) throws HistoryException {
+        History history = historyGuru.getHistory(file, false);
+        assertNotNull(history);
+        HistoryEntry historyEntry = history.getLastHistoryEntry();
+        assertNotNull(historyEntry);
+        String prevRev = historyEntry.getRevision();
+        return prevRev;
+    }
+
+    private static Stream<Arguments> provideParamsForTestAnnotationCacheProjectTunable() {
+        return Stream.of(
+                Arguments.of(false, false),
+                Arguments.of(false, true),
+                Arguments.of(true, false),
+                Arguments.of(true, true)
+        );
+    }
+
+    /**
+     * Per project tunable should control how whether annotation cache will be created.
+     * <p>
+     * Depends on the {@code fallback} argument {@link HistoryGuru#annotate(File, String, boolean)}
+     * to be implemented correctly, i.e. do not perform fallback to repository annotate method
+     * if annotation cache is not present.
+     * </p>
+     */
+    @ParameterizedTest
+    @MethodSource("provideParamsForTestAnnotationCacheProjectTunable")
+    void testAnnotationCacheProjectTunable(boolean useAnnotationCache, boolean isHistoryEnabled) throws Exception {
+        env.setAnnotationCacheEnabled(!useAnnotationCache);
+        env.setHistoryEnabled(isHistoryEnabled);
+
+        // Ignore the reindex performed in the setup and set custom data root,
+        // so that annotation cache can be checked reliably.
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.isDirectory());
+        String dataRootOrig = env.getDataRootPath();
+        Path dataRoot = Files.createTempDirectory("indexDbAnnotationTest");
+        env.setDataRoot(dataRoot.toString());
+
+        // Set the per project tunable.
+        Project gitProject = env.getProjects().get("git");
+        boolean projectUseAnnotationOrig = gitProject.isAnnotationCacheEnabled();
+        gitProject.setAnnotationCacheEnabled(useAnnotationCache);
+        gitProject.completeWithDefaults();
+
+        // verify initial state
+        File file = new File(repositoryRoot, "main.c");
+        assertTrue(file.exists());
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        assertNull(historyGuru.annotate(file, null, false));
+
+        // reindex
+        HistoryGuru.getInstance().clear();
+        indexer.prepareIndexer(
+                env, true, true,
+                List.of("/git"), null);
+        env.generateProjectRepositoriesMap();
+        indexer.doIndexerExecution(null, null);
+
+        // verify
+        assertTrue(file.exists());
+        Annotation annotation = historyGuru.annotate(file, null, false);
+        if (useAnnotationCache && isHistoryEnabled) {
+            assertNotNull(annotation);
+        } else {
+            assertNull(annotation);
+        }
+
+        // cleanup
+        gitProject.setHistoryBasedReindex(projectUseAnnotationOrig);
+        env.setDataRoot(dataRootOrig);
+        IOUtils.removeRecursive(dataRoot);
     }
 }

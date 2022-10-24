@@ -33,10 +33,8 @@ import org.opengrok.indexer.util.RainbowColorGenerator;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,16 +50,47 @@ public class Annotation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Annotation.class);
 
-    private final List<Line> lines = new ArrayList<>();
-    private final Map<String, String> desc = new HashMap<>(); // revision to description
+    AnnotationData annotationData;
+
+    private final Map<String, String> desc = new HashMap<>(); // maps revision to description
     private final Map<String, Integer> fileVersions = new HashMap<>(); // maps revision to file version
+
     private final LazilyInstantiate<Map<String, String>> colors = LazilyInstantiate.using(this::generateColors);
-    private int widestRevision;
-    private int widestAuthor;
-    private final String filename;
 
     public Annotation(String filename) {
-        this.filename = filename;
+        annotationData = new AnnotationData(filename);
+    }
+
+    public Annotation(AnnotationData annotationData) {
+        this.annotationData = annotationData;
+    }
+
+    void addLine(String revision, String author, boolean enabled) {
+        annotationData.addLine(revision, author, enabled);
+    }
+
+    public String getFilename() {
+        return annotationData.getFilename();
+    }
+
+    public void setRevision(String revision) {
+        annotationData.setRevision(revision);
+    }
+
+    /**
+     * @return revision this annotation was generated for
+     */
+    public String getRevision() {
+        return annotationData.getRevision();
+    }
+
+    /**
+     * Returns the size of the file (number of lines).
+     *
+     * @return number of lines
+     */
+    public int size() {
+        return annotationData.size();
     }
 
     /**
@@ -72,11 +101,7 @@ public class Annotation {
      * about the specified line
      */
     public String getRevision(int line) {
-        try {
-            return lines.get(line - 1).revision;
-        } catch (IndexOutOfBoundsException e) {
-            return "";
-        }
+        return annotationData.getRevision(line);
     }
 
     /**
@@ -85,16 +110,12 @@ public class Annotation {
      * @return list of all revisions the file has
      */
     public Set<String> getRevisions() {
-        Set<String> ret = new HashSet<>();
-        for (Line ln : this.lines) {
-            ret.add(ln.revision);
-        }
-        return ret;
+        return annotationData.getRevisions();
     }
 
     @TestOnly
     Set<String> getAuthors() {
-        return lines.stream().map(ln -> ln.author).collect(Collectors.toSet());
+        return annotationData.getAuthors();
     }
 
     /**
@@ -105,11 +126,15 @@ public class Annotation {
      * specified line
      */
     public String getAuthor(int line) {
-        try {
-            return lines.get(line - 1).author;
-        } catch (IndexOutOfBoundsException e) {
-            return "";
-        }
+        return annotationData.getAuthor(line);
+    }
+
+    public int getWidestRevision() {
+        return annotationData.getWidestRevision();
+    }
+
+    public int getWidestAuthor() {
+        return annotationData.getWidestAuthor();
     }
 
     /**
@@ -119,52 +144,7 @@ public class Annotation {
      * @return true if the xref for this revision is enabled, false otherwise
      */
     public boolean isEnabled(int line) {
-        try {
-            return lines.get(line - 1).enabled;
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Returns the size of the file (number of lines).
-     *
-     * @return number of lines
-     */
-    public int size() {
-        return lines.size();
-    }
-
-    /**
-     * Returns the widest revision string in the file (used for pretty
-     * printing).
-     *
-     * @return number of characters in the widest revision string
-     */
-    public int getWidestRevision() {
-        return widestRevision;
-    }
-
-    /**
-     * Returns the widest author name in the file (used for pretty printing).
-     *
-     * @return number of characters in the widest author string
-     */
-    public int getWidestAuthor() {
-        return widestAuthor;
-    }
-
-    /**
-     * Adds a line to the file.
-     *
-     * @param revision revision number
-     * @param author author name
-     */
-    void addLine(String revision, String author, boolean enabled) {
-        final Line line = new Line(revision, author, enabled);
-        lines.add(line);
-        widestRevision = Math.max(widestRevision, line.revision.length());
-        widestAuthor = Math.max(widestAuthor, line.author.length());
+        return annotationData.isEnabled(line);
     }
 
     void addDesc(String revision, String description) {
@@ -216,7 +196,7 @@ public class Annotation {
      * @see #getRevisions()
      */
     private Map<String, String> generateColors() {
-        List<Color> colors = RainbowColorGenerator.getOrderedColors();
+        List<Color> orderedColors = RainbowColorGenerator.getOrderedColors();
 
         Map<String, String> colorMap = new HashMap<>();
         final List<String> revisions =
@@ -233,7 +213,7 @@ public class Annotation {
                         .sorted(Comparator.comparingInt(this::getFileVersion).reversed())
                         .collect(Collectors.toList());
 
-        final int nColors = colors.size();
+        final int nColors = orderedColors.size();
         final double colorsPerBucket = (double) nColors / getRevisions().size();
 
         revisions.forEach(revision -> {
@@ -241,27 +221,11 @@ public class Annotation {
             final double bucketTotal = colorsPerBucket * lineVersion;
             final int bucketIndex = (int) Math.max(
                     Math.min(Math.floor(bucketTotal), nColors - 1.0), 0);
-            Color color = colors.get(bucketIndex);
+            Color color = orderedColors.get(bucketIndex);
             colorMap.put(revision, String.format("rgb(%d, %d, %d)", color.red, color.green, color.blue));
         });
 
         return colorMap;
-    }
-
-    /** Class representing one line in the file. */
-    private static class Line {
-        final String revision;
-        final String author;
-        final boolean enabled;
-        Line(String rev, String aut, boolean ena) {
-            revision = (rev == null) ? "" : rev;
-            author = (aut == null) ? "" : aut;
-            enabled = ena;
-        }
-    }
-
-    public String getFilename() {
-        return filename;
     }
 
     //TODO below might be useless, need to test with more SCMs and different commit messages
@@ -281,10 +245,10 @@ public class Annotation {
     @Override
     public String toString() {
         StringWriter sw = new StringWriter();
-        for (Line line : lines) {
-            sw.append(line.revision);
+        for (AnnotationLine annotationLine : annotationData.getLines()) {
+            sw.append(annotationLine.getRevision());
             sw.append("|");
-            sw.append(line.author);
+            sw.append(annotationLine.getAuthor());
             sw.append(": \n");
         }
 

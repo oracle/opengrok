@@ -50,6 +50,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.LatestRevisionUtil;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
@@ -63,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
 
 /**
  * Unit tests for the {@code PageConfig} class.
@@ -313,7 +315,7 @@ public class PageConfigTest {
         };
 
         PageConfig cfg = PageConfig.get(req1);
-        String rev = cfg.getLatestRevision();
+        String rev = getLatestRevision(cfg.getResourceFile());
 
         assertEquals("aa35c258", rev);
     }
@@ -338,15 +340,17 @@ public class PageConfigTest {
                 null); // repositories - needed when refreshing history partially
         indexer.doIndexerExecution(null, null);
 
+        final String filePath = "/git/main.c";
+
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
             public String getPathInfo() {
-                return "/git/main.c";
+                return filePath;
             }
         };
 
         PageConfig cfg = PageConfig.get(req1);
-        String rev = cfg.getLastRevFromIndex();
+        String rev = LatestRevisionUtil.getLastRevFromIndex(new File(repository.getSourceRoot(), filePath));
         assertNotNull(rev);
         assertEquals("aa35c258", rev);
     }
@@ -372,7 +376,7 @@ public class PageConfigTest {
 
         PageConfig cfg = PageConfig.get(req1);
 
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
+        String location = cfg.getRevisionLocation(getLatestRevision(cfg.getResourceFile()));
         assertNotNull(location);
         assertEquals("source/xref/git/main.c?r=aa35c258&a=true", location);
     }
@@ -398,7 +402,7 @@ public class PageConfigTest {
 
         PageConfig cfg = PageConfig.get(req1);
 
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
+        String location = cfg.getRevisionLocation(getLatestRevision(cfg.getResourceFile()));
         assertNotNull(location);
         assertEquals("source/xref/git/main.c?r=aa35c258", location);
     }
@@ -413,7 +417,7 @@ public class PageConfigTest {
         };
 
         PageConfig cfg = PageConfig.get(req2);
-        String rev = cfg.getLatestRevision();
+        String rev = getLatestRevision(cfg.getResourceFile());
         assertNull(rev);
     }
 

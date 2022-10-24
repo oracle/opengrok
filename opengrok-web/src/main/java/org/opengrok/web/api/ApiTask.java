@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api;
 
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -157,7 +158,8 @@ public class ApiTask {
 
     /**
      * This method assumes that the API task is finished.
-     * @return response object corresponding to the state of the API task
+     * @return {@link Response} object corresponding to the state of the API task. If the task returns
+     * non-{@code null} object, its JSON representation will be sent in the response payload.
      * @throws IllegalStateException if the API task is not finished
      */
     public Response getResponse() {
@@ -176,14 +178,17 @@ public class ApiTask {
         }
 
         if (obj != null) {
-            return Response.status(getResponseStatus()).entity(obj.toString()).build();
+            return Response.status(getResponseStatus()).
+                    type(MediaType.APPLICATION_JSON_TYPE).
+                    entity(obj).
+                    build();
         }
 
         return Response.status(getResponseStatus()).build();
     }
 
     /**
-     * @return Runnable object that contains the work that needs to be completed for this API request
+     * @return {@link Callable} object that contains the work that needs to be completed for this API request
      */
     public Callable<Object> getCallable() {
         synchronized (this) {

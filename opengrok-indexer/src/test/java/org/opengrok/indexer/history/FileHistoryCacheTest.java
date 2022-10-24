@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -274,7 +274,7 @@ class FileHistoryCacheTest {
         assertNull(retrievedHistoryMainC.getTags().get(e2.getRevision()), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
-        String histCachePath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        String histCachePath = CacheUtil.getRepositoryCacheDataDirname(repo, cache);
         assertNotNull(histCachePath);
         File dir = new File(histCachePath);
         assertTrue(dir.isDirectory());
@@ -377,7 +377,7 @@ class FileHistoryCacheTest {
         assertSameEntry(newEntry1, updatedEntries.removeFirst(), false);
 
         // test clearing of cache
-        String dirPath = FileHistoryCache.getRepositoryHistDataDirname(repo);
+        String dirPath = CacheUtil.getRepositoryCacheDataDirname(repo, cache);
         assertNotNull(dirPath);
         File dir = new File(dirPath);
         assertTrue(dir.isDirectory());

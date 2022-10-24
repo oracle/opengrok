@@ -418,6 +418,10 @@ public final class Indexer {
         }
     }
 
+    /**
+     * This is supposed to be run after {@link #parseOptions(String[])}.
+     * It will exit the program if there is some serious configuration (meaning {@link #cfg}) discrepancy.
+     */
     private static void checkConfiguration() {
         if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
             die("Missing webappURI setting");
@@ -425,6 +429,11 @@ public final class Indexer {
 
         if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
             die("Repositories were specified; history is off however");
+        }
+
+        if (cfg.isAnnotationCacheEnabled() && !cfg.isHistoryEnabled()) {
+            die("annotation cache is enabled however history is disabled. " +
+                    "This cannot work as annotation cache stores latest revision retrieved from history.");
         }
 
         try {
@@ -438,10 +447,10 @@ public final class Indexer {
      * Parse OpenGrok Indexer options
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
-     *
+     * <p>
      * Limit usage lines to {@link org.opengrok.indexer.util.OptionParser.Option#MAX_DESCRIPTION_LINE_LENGTH}
      * characters for concise formatting.
-     *
+     * </p>
      * @param argv the command line arguments
      * @return array of remaining non option arguments
      * @throws ParseException if parsing failed
@@ -496,6 +505,14 @@ public final class Indexer {
                             }
                         }
             });
+
+            parser.on("--annotationCache", "=on|off", ON_OFF, Boolean.class,
+                            "Annotation cache provides speedup when getting annotation ",
+                            "for files in the webapp at the cost of significantly increased ",
+                            "indexing time (multiple times slower) and slightly increased ",
+                            "disk space (comparable to history cache size). ",
+                            "Can be enabled per project.").
+                    execute(v -> cfg.setAnnotationCacheEnabled((Boolean) v));
 
             parser.on("--apiTimeout", "=number", Integer.class,
                     "Set timeout for asynchronous API requests.").execute(v -> cfg.setApiTimeout((Integer) v));
@@ -959,7 +976,9 @@ public final class Indexer {
         }
     }
 
-    // Wrapper for prepareIndexer() that always generates history cache.
+    /**
+     * Wrapper for prepareIndexer() that always generates history cache.
+     */
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,
@@ -973,11 +992,11 @@ public final class Indexer {
 
     /**
      * Generate history cache and/or scan the repositories.
-     *
+     * <p>
      * This is the first phase of the indexing where history cache is being
      * generated for repositories (at least for those which support getting
      * history per directory).
-     *
+     * </p>
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
@@ -1021,11 +1040,10 @@ public final class Indexer {
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: {0}",
                         String.join(",", repositories));
-                HistoryGuru.getInstance().
-                        createCache(repositories);
+                HistoryGuru.getInstance().createHistoryCache(repositories);
             } else {
                 LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-                HistoryGuru.getInstance().createCache();
+                HistoryGuru.getInstance().createHistoryCache();
             }
             LOGGER.info("Done generating history cache");
         }

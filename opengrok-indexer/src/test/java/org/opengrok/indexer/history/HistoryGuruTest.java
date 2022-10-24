@@ -73,6 +73,7 @@ public class HistoryGuruTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+        env.setAnnotationCacheEnabled(true);
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
@@ -95,7 +96,7 @@ public class HistoryGuruTest {
                 env.getRepositories().size());
 
         // Create cache with initial set of repositories.
-        histGuru.createCache();
+        histGuru.createHistoryCache();
     }
 
     @AfterAll
@@ -138,7 +139,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void annotation() throws Exception {
+    void testAnnotationSmokeTest() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (instance.hasAnnotation(f)) {
@@ -147,10 +148,95 @@ public class HistoryGuruTest {
         }
     }
 
+    /**
+     * Test annotation cache and fall back to repository method.
+     * Assumes {@link AnnotationCache} implementation in {@link HistoryGuru} is {@link FileAnnotationCache}.
+     */
     @Test
-    void getCacheInfo() throws HistoryException {
+    void testAnnotationFallback() throws Exception {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        File file = Paths.get(env.getSourceRootPath(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+
+        // Clear the cache and get annotation for current revision of the file.
+        String relativePath = env.getPathRelativeToSourceRoot(file);
+        instance.clearAnnotationCacheFile(relativePath);
+        Annotation annotation = instance.annotate(file, null);
+        assertNotNull(annotation);
+
+        // Try to get annotation for historical revision of the file.
+        History history = instance.getHistory(file);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertTrue(history.getHistoryEntries().size() > 0);
+        String revision = history.getHistoryEntries().get(1).getRevision();
+        annotation = instance.annotate(file, revision, false);
+        assertNull(annotation);
+        annotation = instance.annotate(file, revision, true);
+        assertNotNull(annotation);
+        // annotate() without the fallback argument should be the same as fallback set to true.
+        annotation = instance.annotate(file, revision);
+        assertNotNull(annotation);
+
+        // Create annotation cache and try to get annotation for current revision of the file.
+        String latestRev = LatestRevisionUtil.getLatestRevision(file);
+        assertNotNull(latestRev);
+        instance.createAnnotationCache(file, latestRev);
+        Repository repository = instance.getRepository(file);
+
+        // Ensure the annotation is loaded from the cache by moving the dot git directory away.
+        final String tmpDirName = "gitdisabled";
+        Files.move(Paths.get(repository.getDirectoryName(), ".git"),
+                Paths.get(repository.getDirectoryName(), tmpDirName));
+        annotation = instance.annotate(file, null, true);
+        assertNotNull(annotation);
+        annotation = instance.annotate(file, null);
+        assertNotNull(annotation);
+        annotation = instance.annotate(file, null, false);
+        assertNotNull(annotation);
+
+        // Cleanup.
+        Files.move(Paths.get(repository.getDirectoryName(), tmpDirName),
+                Paths.get(repository.getDirectoryName(), ".git"));
+    }
+
+    /**
+     * The annotation cache should be initialized regardless global annotation/history settings,
+     * to allow for per-project/repository override.
+     * <p>
+     * This test assumes that {@link HistoryGuru} constructor uses the result of
+     * {@link HistoryGuru#initializeAnnotationCache()} to assign as value to the private field
+     * used as annotation cache.
+     * </p>
+     * <p>
+     * This is sort of poor man's solution. Proper test would have to separate the individual
+     * cases into separate JVM runs and go through the cache creation and verification.
+     * The limitation is caused {@link HistoryGuru} is singleton and the cache is initialized
+     * just once in its constructor.
+     * </p>
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testHistoryEnabledVsAnnotationCache(boolean useAnnotationCache) {
+        boolean useAnnotationCacheOrig = env.isAnnotationCacheEnabled();
+        boolean useHistoryOrig = env.isHistoryEnabled();
+        boolean useHistoryCacheOrig = env.isHistoryCache();
+
+        env.setAnnotationCacheEnabled(useAnnotationCache);
+        env.setHistoryEnabled(false);
+        env.setUseHistoryCache(false);
+        assertNotNull(HistoryGuru.initializeAnnotationCache());
+
+        // cleanup
+        env.setUseHistoryCache(useAnnotationCacheOrig);
+        env.setHistoryEnabled(useHistoryOrig);
+        env.setUseHistoryCache(useHistoryCacheOrig);
+    }
+
+    @Test
+    void getHistoryCacheInfo() throws HistoryException {
         // FileHistoryCache is used by default
-        assertEquals("FileHistoryCache", HistoryGuru.getInstance().getCacheInfo());
+        assertEquals("FileHistoryCache", HistoryGuru.getInstance().getHistoryCacheInfo());
     }
 
     @Test
@@ -318,7 +404,7 @@ public class HistoryGuruTest {
 
         // HistoryGuru is final class so cannot be reasonably mocked with Mockito.
         // In order to avoid getting the history from the cache, move the cache away for a bit.
-        String dirName = FileHistoryCache.getRepositoryHistDataDirname(repository);
+        String dirName = CacheUtil.getRepositoryCacheDataDirname(repository, new FileHistoryCache());
         assertNotNull(dirName);
         Path histPath = Path.of(dirName);
         Path tmpHistPath = Path.of(dirName + ".disabled");

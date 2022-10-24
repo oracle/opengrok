@@ -99,9 +99,18 @@ public final class ApiTaskManager {
         apiTask.setFuture(queues.get(queueName).submit(apiTask.getCallable()));
         apiTasks.put(apiTask.getUuid(), apiTask);
 
+        StringBuilder uriStringBuilder = new StringBuilder();
+        // This is useful for testing where there is no context path.
+        if (contextPath != null) {
+            uriStringBuilder.append(contextPath);
+            uriStringBuilder.append("/api/v1");
+        }
+        uriStringBuilder.append(StatusController.PATH);
+        uriStringBuilder.append("/");
+        uriStringBuilder.append(apiTask.getUuid());
+
         return Response.status(Response.Status.ACCEPTED).
-                location(URI.create(contextPath + "/api/v1" + StatusController.PATH + "/" +
-                        apiTask.getUuid())).build();
+                location(URI.create(uriStringBuilder.toString())).build();
     }
 
     /**

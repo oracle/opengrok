@@ -99,6 +99,7 @@ import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
+import org.opengrok.indexer.history.AnnotationException;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
@@ -955,14 +956,18 @@ public class IndexDatabase {
     }
 
     private void removeHistoryFile(String path) {
-        HistoryGuru.getInstance().clearCacheFile(path);
+        HistoryGuru.getInstance().clearHistoryCacheFile(path);
+    }
+
+    private void removeAnnotationFile(String path) {
+         HistoryGuru.getInstance().clearAnnotationCacheFile(path);
     }
 
     /**
      * Remove a stale file from the index database and potentially also from history cache,
      * and queue the removal of the associated xref file.
      *
-     * @param removeHistory if false, do not remove history cache for this file
+     * @param removeHistory if false, do not remove history cache and annotation cache for this file
      * @throws java.io.IOException if an error occurs
      */
     private void removeFile(boolean removeHistory) throws IOException {
@@ -979,6 +984,12 @@ public class IndexDatabase {
         if (removeHistory) {
             removeHistoryFile(path);
         }
+
+        /*
+         * Even when the history should not be removed (incremental reindex), annotation should,
+         * because for given file it is always regenerated from scratch.
+         */
+        removeAnnotationFile(path);
 
         setDirty();
 
@@ -1050,8 +1061,7 @@ public class IndexDatabase {
             File transientXref = null;
             if (env.isGenerateHtml()) {
                 xrefAbs = getXrefPath(path);
-                transientXref = new File(TandemPath.join(xrefAbs,
-                        PendingFileCompleter.PENDING_EXTENSION));
+                transientXref = new File(TandemPath.join(xrefAbs, PendingFileCompleter.PENDING_EXTENSION));
                 xrefOut = newXrefWriter(path, transientXref, env.isCompressXref());
             }
 
@@ -1072,13 +1082,9 @@ public class IndexDatabase {
             cleanupResources(doc);
             throw e;
         } catch (Exception e) {
-            LOGGER.log(Level.INFO,
-                    "Skipped file ''{0}'' because the analyzer didn''t "
-                    + "understand it.",
-                    path);
+            LOGGER.log(Level.INFO, "Skipped file ''{0}'' because the analyzer didn''t understand it.", path);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Exception from analyzer " +
-                    fa.getClass().getName(), e);
+                LOGGER.log(Level.FINE, String.format("Exception from analyzer %s", fa.getClass().getName()), e);
             }
             cleanupResources(doc);
             return;
@@ -1098,6 +1104,20 @@ public class IndexDatabase {
         }
 
         setDirty();
+
+        String lastRev = doc.get(QueryBuilder.LASTREV);
+        if (lastRev != null) {
+            try {
+                // The last revision should be fresh. Using LatestRevisionUtil#getLatestRevision()
+                // would not work here, because it uses IndexDatabase#getDocument() and the index searcher used therein
+                // does not know about updated document yet, so stale revision would be returned.
+                // Instead, use the last revision (retrieved from the history in the populateDocument()
+                // call above) directly.
+                HistoryGuru.getInstance().createAnnotationCache(file, lastRev);
+            } catch (AnnotationException e) {
+                LOGGER.log(e.getLevel(), "failed to create annotation", e);
+            }
+        }
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());
@@ -1696,7 +1716,7 @@ public class IndexDatabase {
 
                         progress.increment();
                         stats.report(LOGGER, Level.FINEST,
-                                String.format("file ''%s'' %s", x.file, ret ? "indexed" : "failed indexing"));
+                                String.format("file '%s' %s", x.file, ret ? "indexed" : "failed indexing"));
                         return ret;
                     }
                 }))).get();
