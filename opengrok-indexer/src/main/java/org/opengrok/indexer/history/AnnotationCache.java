@@ -37,6 +37,7 @@ public interface AnnotationCache extends Cache {
      * @param file file under source root to get the annotation for
      * @param rev requested revision
      * @return {@link Annotation} object or <code>null</code>
+     * @throws AnnotationException on error
      */
     @Nullable
     Annotation get(File file, String rev) throws AnnotationException;

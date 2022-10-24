@@ -579,12 +579,22 @@ public final class HistoryGuru {
     }
 
     /**
-     * Does this directory contain files with source control information ?
-     *
      * @param file File object
-     * @return true if the files in this directory have associated revision history
+     * @return whether it is possible to retrieve history for the file in any way
      */
     public boolean hasHistory(File file) {
+        // If there is a cache entry that is fresh, there is no need to check the repository,
+        // as the cache entry will be preferred in getHistory(), barring any time sensitive issues (TOUTOC).
+        if (hasHistoryCacheForFile(file)) {
+            try {
+                if (historyCache.isUpToDate(file)) {
+                    return true;
+                }
+            } catch (HistoryException | ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINEST, "cannot determine if history cache for ''{0}'' is fresh", file);
+            }
+        }
+
         Repository repo = getRepository(file);
         if (repo == null) {
             LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to check history presence", file);

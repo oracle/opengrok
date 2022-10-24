@@ -23,6 +23,7 @@
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 import java.io.File;
 import java.util.Collection;
@@ -91,4 +92,13 @@ public interface Cache {
      * @return {@code true} if the file is in the cache, {@code false} otherwise
      */
     boolean hasCacheForFile(File file) throws HistoryException;
+
+    /**
+     * @param file source file
+     * @return whether cache entry for given file is fresh
+     * @throws HistoryException on error
+     * @throws ForbiddenSymlinkException on error
+     * TODO: HistoryException -> CacheException
+     */
+    boolean isUpToDate(File file) throws HistoryException, ForbiddenSymlinkException;
 }
