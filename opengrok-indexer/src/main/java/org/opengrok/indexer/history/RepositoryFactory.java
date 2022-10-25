@@ -144,10 +144,17 @@ public final class RepositoryFactory {
     }
 
     /**
-     * Calls {@link #getRepository(File, CommandTimeoutType, boolean)} with {@code file}, {@code interactive}, and {@code false}.
+     * Calls {@link #getRepository(File, CommandTimeoutType, boolean)} with {@code file}, {@code interactive},
+     * and {@code false}.
      * @param file file
      * @param cmdType command timeout type
      * @return repository object
+     * @throws IllegalAccessException on error
+     * @throws InvocationTargetException on error
+     * @throws ForbiddenSymlinkException on error
+     * @throws InstantiationException on error
+     * @throws NoSuchMethodException on error
+     * @throws IOException on error
      */
     public static Repository getRepository(File file, CommandTimeoutType cmdType)
             throws IllegalAccessException, InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
