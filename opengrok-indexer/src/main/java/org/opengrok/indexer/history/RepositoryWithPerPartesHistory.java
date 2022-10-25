@@ -47,7 +47,7 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * Just like for {@link Repository#getHistory(File)} it is expected that the lists of (renamed) files
      * individual files (i.e. not directory) are empty.
      * @param file file to retrieve history for
-     * @param sinceRevision start revision (non inclusive)
+     * @param sinceRevision start revision (non-inclusive)
      * @param tillRevision end revision (inclusive)
      * @return history object
      * @throws HistoryException if history retrieval fails
@@ -70,7 +70,7 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
     public abstract void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException;
 
     @Override
-    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException, CacheException {
         if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);

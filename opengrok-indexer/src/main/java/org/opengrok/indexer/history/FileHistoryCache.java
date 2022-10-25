@@ -64,7 +64,6 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
@@ -303,7 +302,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
-        } catch (ForbiddenSymlinkException e) {
+        } catch (CacheException e) {
             LOGGER.log(Level.FINER, e.getMessage());
             return;
         }
@@ -352,7 +351,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public void store(History history, Repository repository) throws HistoryException {
+    public void store(History history, Repository repository) throws CacheException {
         store(history, repository, null);
     }
 
@@ -429,7 +428,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      * @param tillRevision end revision (can be null)
      */
     @Override
-    public void store(History history, Repository repository, String tillRevision) throws HistoryException {
+    public void store(History history, Repository repository, String tillRevision) throws CacheException {
 
         final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
@@ -514,7 +513,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      * @param repository repository
      * @param tillRevision end revision (can be null)
      */
-    public void storeRenamed(Set<String> renamedFiles, Repository repository, String tillRevision) throws HistoryException {
+    public void storeRenamed(Set<String> renamedFiles, Repository repository, String tillRevision) throws CacheException {
         final File root = env.getSourceRootFile();
         if (renamedFiles.isEmpty()) {
             return;
@@ -564,8 +563,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 
-    private void createDirectoriesForFiles(Set<String> files, Repository repository, String label)
-            throws HistoryException {
+    private void createDirectoriesForFiles(Set<String> files, Repository repository, String label) {
 
         // The directories for the files have to be created before
         // the actual files otherwise storeFile() might be racing for
@@ -578,7 +576,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             File cache;
             try {
                 cache = getCachedFile(new File(env.getSourceRootPath() + file));
-            } catch (ForbiddenSymlinkException ex) {
+            } catch (CacheException ex) {
                 LOGGER.log(Level.FINER, ex.getMessage());
                 continue;
             }
@@ -592,8 +590,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public History get(File file, Repository repository, boolean withFiles)
-            throws HistoryException, ForbiddenSymlinkException {
+    public History get(File file, Repository repository, boolean withFiles) throws CacheException {
 
         if (isUpToDate(file)) {
             File cacheFile = getCachedFile(file);
@@ -618,7 +615,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      * @param file the file to check
      * @return {@code true} if the cache is up-to-date for the file, {@code false} otherwise
      */
-    public boolean isUpToDate(File file) throws HistoryException, ForbiddenSymlinkException {
+    public boolean isUpToDate(File file) throws CacheException {
         File cachedFile = getCachedFile(file);
         return cachedFile != null && cachedFile.exists() && file.lastModified() <= cachedFile.lastModified();
     }

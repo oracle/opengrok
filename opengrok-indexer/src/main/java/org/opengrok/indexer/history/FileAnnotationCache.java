@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.Statistics;
 
 import java.beans.XMLDecoder;
@@ -81,11 +80,11 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     @VisibleForTesting
-    Annotation readAnnotation(File file) throws AnnotationException {
+    Annotation readAnnotation(File file) throws CacheException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
-        } catch (HistoryException | ForbiddenSymlinkException e) {
+        } catch (CacheException e) {
             LOGGER.log(Level.WARNING, "failed to get annotation cache file", e);
             return null;
         }
@@ -93,7 +92,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         try {
             return readCache(cacheFile);
         } catch (IOException e) {
-            throw new AnnotationException(String.format("failed to read annotation cache for '%s'", file), e);
+            throw new CacheException(String.format("failed to read annotation cache for '%s'", file), e);
         }
     }
 
@@ -106,12 +105,12 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     public boolean isUpToDate(File file) {
         try {
             return get(file, null) != null;
-        } catch (AnnotationException e) {
+        } catch (CacheException e) {
             return false;
         }
     }
 
-    public Annotation get(File file, @Nullable String rev) throws AnnotationException {
+    public Annotation get(File file, @Nullable String rev) throws CacheException {
         Annotation annotation = null;
         String latestRevision = LatestRevisionUtil.getLatestRevision(file);
         if (rev == null || (latestRevision != null && latestRevision.equals(rev))) {
@@ -157,15 +156,15 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         return annotation;
     }
 
-    public void store(File file, Annotation annotation) throws AnnotationException {
+    public void store(File file, Annotation annotation) throws CacheException {
         if (annotation.getRevision() == null || annotation.getRevision().isEmpty()) {
-            throw new AnnotationException(String.format("annotation for ''%s'' does not contain revision", file));
+            throw new CacheException(String.format("annotation for ''%s'' does not contain revision", file));
         }
 
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
-        } catch (ForbiddenSymlinkException | HistoryException e) {
+        } catch (CacheException e) {
             LOGGER.log(Level.FINER, e.getMessage());
             return;
         }
@@ -173,7 +172,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         File dir = cacheFile.getParentFile();
         // calling isDirectory() twice to prevent a race condition
         if (!dir.isDirectory() && !dir.mkdirs() && !dir.isDirectory()) {
-            throw new AnnotationException("Unable to create cache directory '" + dir + "'.");
+            throw new CacheException("Unable to create cache directory '" + dir + "'.");
         }
 
         Statistics statistics = new Statistics();

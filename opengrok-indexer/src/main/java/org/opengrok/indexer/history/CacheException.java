@@ -22,25 +22,55 @@
  */
 package org.opengrok.indexer.history;
 
-public class AnnotationException extends Exception {
+import java.util.logging.Level;
+
+/**
+ * Exception thrown when retrieval or manipulation of cache data fails.
+ */
+public class CacheException extends Exception {
     private static final long serialVersionUID = 1L;
 
+    private final Level level;
+
     /**
-     * Construct a {@code HistoryException} with the specified cause.
+     * Construct a {@code HistoryException} with the specified message.
      *
-     * @param cause the cause of the exception
+     * @param msg the message string
      */
-    public AnnotationException(Throwable cause) {
-        super(cause);
+    public CacheException(String msg) {
+        this(msg, Level.WARNING);
+    }
+
+    public CacheException(String msg, Level level) {
+        super(msg);
+        this.level = level;
     }
 
     /**
-     * Construct a {@code AnnotationException} with the specified message and cause.
+     * Construct a {@code CacheException} with the specified cause.
+     *
+     * @param cause the cause of the exception
+     */
+    public CacheException(Throwable cause) {
+        super(cause);
+        this.level = Level.WARNING;
+    }
+
+    /**
+     * Construct a {@code CacheException} with the specified message and cause.
      *
      * @param msg the message string
      * @param cause the cause of the exception
      */
-    public AnnotationException(String msg, Throwable cause) {
+    public CacheException(String msg, Throwable cause) {
         super(msg, cause);
+        this.level = Level.WARNING;
+    }
+
+    /**
+     * @return log {@link Level} to be used when logging the exception
+     */
+    public Level getLevel() {
+        return level;
     }
 }

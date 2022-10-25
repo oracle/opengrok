@@ -28,27 +28,22 @@ import java.io.File;
 
 public interface AnnotationCache extends Cache {
     /**
-     * Perform whatever initialization is needed for given cache implementation.
-     */
-    void initialize();
-
-    /**
      * Retrieve annotation from cache.
      * @param file file under source root to get the annotation for
      * @param rev requested revision
      * @return {@link Annotation} object or <code>null</code>
-     * @throws AnnotationException on error
+     * @throws CacheException on error
      */
     @Nullable
-    Annotation get(File file, String rev) throws AnnotationException;
+    Annotation get(File file, String rev) throws CacheException;
 
     /**
      * Store annotation for file into cache.
      * @param file file under source root to store the annotation for
      * @param annotation {@link Annotation} object
-     * @throws AnnotationException on error
+     * @throws CacheException on error
      */
-    void store(File file, Annotation annotation) throws AnnotationException;
+    void store(File file, Annotation annotation) throws CacheException;
 
     /**
      * Clear annotation cache entry for given file.

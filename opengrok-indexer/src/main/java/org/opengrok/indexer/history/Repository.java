@@ -363,7 +363,8 @@ public abstract class Repository extends RepositoryInfo {
         return historyRevision;
     }
 
-    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory)
+            throws CacheException, HistoryException {
         History history = getHistory(directory, sinceRevision);
         finishCreateCache(cache, history, null);
     }
@@ -381,7 +382,7 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @throws HistoryException on error
      */
-    final void createCache(HistoryCache cache, String sinceRevision) throws HistoryException {
+    final void createCache(HistoryCache cache, String sinceRevision) throws HistoryException, CacheException {
 
         if (!isWorking()) {
             return;
@@ -409,9 +410,9 @@ public abstract class Repository extends RepositoryInfo {
      * @param cache history cache object
      * @param history history to store
      * @param tillRevision end revision (matters only for renamed files), can be null
-     * @throws HistoryException on error
+     * @throws CacheException on error
      */
-    void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
+    void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws CacheException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {

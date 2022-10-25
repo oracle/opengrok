@@ -27,15 +27,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 interface HistoryCache extends Cache {
-    /**
-     * Create and initialize an empty history cache if one doesn't exist already.
-     *
-     * @throws HistoryException if initialization fails
-     */
-    void initialize() throws HistoryException;
 
     /**
      * Retrieve the history for the given file, either from the cache or by
@@ -46,41 +39,37 @@ interface HistoryCache extends Cache {
      * @param withFiles A flag saying whether the returned history should include a list of files
      *                  touched by each changeset. If false, the implementation is allowed to skip the file list,
      *                  but it doesn't have to.
-     * @throws HistoryException if the history cannot be fetched
-     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
-     * an ineligible link
+     * @throws CacheException if the history cache cannot be fetched
      */
-    History get(File file, @Nullable Repository repository, boolean withFiles)
-            throws HistoryException, ForbiddenSymlinkException;
+    History get(File file, @Nullable Repository repository, boolean withFiles) throws CacheException;
 
     /**
      * Store the history for a repository.
      *
      * @param history The history to store
      * @param repository The repository whose history to store
-     * @throws HistoryException if the history cannot be stored
+     * @throws CacheException if the history cannot be stored
      */
-    void store(History history, Repository repository) throws HistoryException;
+    void store(History history, Repository repository) throws CacheException;
 
     /**
      * Store potentially partial history for a repository.
      *
      * @param history The history to store
      * @param repository The repository whose history to store
-     * @param tillRevision end revision (can be null)
-     * @throws HistoryException if the history cannot be stored
+     * @param tillRevision end revision (can be {@code null})
+     * @throws CacheException if the history cannot be stored
      */
-    void store(History history, Repository repository, String tillRevision) throws HistoryException;
+    void store(History history, Repository repository, @Nullable String tillRevision) throws CacheException;
 
     /**
      * Get the revision identifier for the latest cached revision in a repository.
      *
      * @param repository the repository whose latest revision to return
-     * @return a string representing the latest revision in the cache,
-     * or {@code null} if it is unknown
-     * @throws HistoryException on error
+     * @return a string representing the latest revision in the cache, or {@code null} if it is unknown
+     * @throws CacheException on error
      */
-    String getLatestCachedRevision(Repository repository) throws HistoryException;
+    @Nullable String getLatestCachedRevision(Repository repository) throws CacheException;
 
     /**
      * Get the last modified times for all files and subdirectories in the
@@ -89,8 +78,9 @@ interface HistoryCache extends Cache {
      * @param directory which directory to fetch modification times for
      * @param repository the repository in which the directory lives
      * @return a map from file names to modification times
+     * @throws CacheException on error
      */
-    Map<String, Date> getLastModifiedTimes(File directory, Repository repository) throws HistoryException;
+    Map<String, Date> getLastModifiedTimes(File directory, Repository repository) throws CacheException;
 
     /**
      * Clear entry for single file from history cache.
