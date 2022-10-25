@@ -207,7 +207,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     @Override
-    public String getInfo() throws HistoryException {
+    public String getInfo() {
         return getClass().getSimpleName();
     }
 }
