@@ -278,9 +278,13 @@ public final class HistoryGuru {
 
     /**
      * Wrapper for {@link #annotate(File, String, boolean)}.
+     * @param file the file to annotate
+     * @param rev the revision to annotate (<code>null</code> means current revision)
+     * @return file annotation, or <code>null</code>
+     * @throws IOException on error
      */
     @Nullable
-    public Annotation annotate(File file, String rev) throws IOException {
+    public Annotation annotate(File file, @Nullable String rev) throws IOException {
         return annotate(file, rev, true);
     }
 
@@ -288,12 +292,13 @@ public final class HistoryGuru {
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate
-     * @param rev the revision to annotate (<code>null</code> means BASE)
-     * @return file annotation, or <code>null</code> if the <code>HistoryParser</code> does not support annotation
+     * @param rev the revision to annotate (<code>null</code> means current revision)
+     * @param fallback whether to fall back to repository method
+     * @return file annotation, or <code>null</code>
      * @throws IOException if I/O exception occurs
      */
     @Nullable
-    public Annotation annotate(File file, String rev, boolean fallback) throws IOException {
+    public Annotation annotate(File file, @Nullable String rev, boolean fallback) throws IOException {
         Annotation annotation = getAnnotation(file, rev, fallback);
         if (annotation == null) {
             LOGGER.log(Level.FINEST, "no annotation for ''{0}''", file);

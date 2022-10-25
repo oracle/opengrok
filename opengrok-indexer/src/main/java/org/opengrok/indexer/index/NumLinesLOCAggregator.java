@@ -52,6 +52,7 @@ public class NumLinesLOCAggregator {
      * Registers the specified counts. Values should be negative when deleting a
      * file or when updating a file's analysis to reverse former values before
      * re-registering.
+     * @param counts {@link NumLinesLOC} instance
      */
     public void register(NumLinesLOC counts) {
         File file = new File(counts.getPath());

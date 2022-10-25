@@ -35,6 +35,7 @@ public class NumLinesLOCUtil {
 
     /**
      * Reads data, if they exist, from the specified document.
+     * @param doc {@link Document} instance
      * @return a defined instance
      */
     public static NullableNumLinesLOC read(Document doc) {
