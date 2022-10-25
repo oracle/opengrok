@@ -36,11 +36,9 @@ public interface Cache {
 
     /**
      * Get a string with information about the cache.
-     *
      * @return a free form text string describing the history instance
-     * @throws HistoryException if an error occurred while getting the info
      */
-    String getInfo() throws HistoryException;
+    String getInfo();
 
     /**
      * Clear the cache for a repository.
