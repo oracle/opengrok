@@ -686,8 +686,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public Map<String, Date> getLastModifiedTimes(
-            File directory, Repository repository) {
+    public Map<String, Date> getLastModifiedTimes(File directory, Repository repository) {
         // We don't have a good way to get this information from the file
         // cache, so leave it to the caller to find a reasonable time to
         // display (typically the last modified time on the file system).
