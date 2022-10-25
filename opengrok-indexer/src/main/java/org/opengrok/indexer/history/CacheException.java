@@ -33,7 +33,7 @@ public class CacheException extends Exception {
     private final Level level;
 
     /**
-     * Construct a {@code HistoryException} with the specified message.
+     * Construct a {@code CacheException} with the specified message.
      *
      * @param msg the message string
      */
@@ -41,6 +41,11 @@ public class CacheException extends Exception {
         this(msg, Level.WARNING);
     }
 
+    /**
+     * Construct a {@code CacheException} with the specified message and log level.
+     * @param msg message
+     * @param level suggested log level
+     */
     public CacheException(String msg, Level level) {
         super(msg);
         this.level = level;
