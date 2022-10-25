@@ -306,7 +306,7 @@ public final class Configuration {
     private boolean historyBasedReindex;
 
     /**
-     * types of handling history for remote SCM repositories:
+     * History handling types for remote SCM repositories.
      * <ul>
      *  <li><code>ON</code> - index history and display it in webapp</li>
      *  <li><code>OFF</code> - do not index or display history in webapp</li>
