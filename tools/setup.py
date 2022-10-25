@@ -45,7 +45,6 @@ setup(
     tests_require=[
         'pytest',
         'GitPython',
-        'pytest-xdist',
         'mockito>=1.3.3',
         'pytest-mockito',
     ],
