@@ -305,13 +305,15 @@ public final class Configuration {
 
     private boolean historyBasedReindex;
 
-    /*
+    /**
      * types of handling history for remote SCM repositories:
-     *  ON - index history and display it in webapp
-     *  OFF - do not index or display history in webapp
-     *  DIRBASED - index history only for repositories capable
-     *             of getting history for directories
-     *  UIONLY - display history only in webapp (do not index it)
+     * <ul>
+     *  <li><code>ON</code> - index history and display it in webapp</li>
+     *  <li><code>OFF</code> - do not index or display history in webapp</li>
+     *  <li><code>DIRBASED</code> - index history only for repositories capable
+     *             of getting history for directories</li>
+     *  <li><code>UIONLY</code> - display history only in webapp (do not index it)</li>
+     * </ul>
      */
     public enum RemoteSCM {
         ON, OFF, DIRBASED, UIONLY
