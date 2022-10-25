@@ -26,6 +26,7 @@ import java.util.logging.Level;
 
 /**
  * Exception thrown when retrieval or manipulation of cache data fails.
+ * This is used for implementations of {@link HistoryCache} and {@link AnnotationCache}.
  */
 public class CacheException extends Exception {
     private static final long serialVersionUID = 1L;
