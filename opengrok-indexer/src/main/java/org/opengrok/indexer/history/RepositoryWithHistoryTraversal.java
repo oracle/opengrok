@@ -117,7 +117,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
     }
 
     @Override
-    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException, CacheException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         FileCollector fileCollector = null;

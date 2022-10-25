@@ -39,12 +39,13 @@ import java.util.logging.Level;
  */
 public abstract class AbstractCache implements Cache {
 
-    public boolean hasCacheForFile(File file) throws HistoryException {
+
+
+    public boolean hasCacheForFile(File file) throws CacheException {
         try {
             return getCachedFile(file).exists();
-        } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINER, ex.getMessage());
-            return false;
+        } catch (CacheException ex) {
+            throw new CacheException(ex);
         }
     }
 
@@ -53,8 +54,9 @@ public abstract class AbstractCache implements Cache {
      *
      * @param file the file to find the cache for
      * @return file that might contain cached object for <code>file</code>
+     * @throws CacheException on error
      */
-    File getCachedFile(File file) throws HistoryException, ForbiddenSymlinkException {
+    File getCachedFile(File file) throws CacheException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -69,8 +71,8 @@ public abstract class AbstractCache implements Cache {
                 add = File.separator;
             }
             sb.append(add);
-        } catch (IOException e) {
-            throw new HistoryException("Failed to get path relative to source root for " + file, e);
+        } catch (ForbiddenSymlinkException | IOException e) {
+            throw new CacheException("Failed to get path relative to source root for " + file, e);
         }
 
         return new File(TandemPath.join(sb.toString(), ".gz"));
@@ -85,7 +87,7 @@ public abstract class AbstractCache implements Cache {
                 clearedRepos.add(repo.getDirectoryNameRelative());
                 LOGGER.log(Level.INFO, "{1} cache for ''{0}'' cleared.",
                         new Object[]{repo.getDirectoryName(), this.getInfo()});
-            } catch (HistoryException e) {
+            } catch (CacheException e) {
                 LOGGER.log(Level.WARNING,
                         "Clearing cache for repository {0} failed: {1}",
                         new Object[]{repo.getDirectoryName(), e.getLocalizedMessage()});
@@ -115,11 +117,9 @@ public abstract class AbstractCache implements Cache {
         File historyFile;
         try {
             historyFile = getCachedFile(new File(RuntimeEnvironment.getInstance().getSourceRootPath() + path));
-        } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINER, ex.getMessage());
-            return;
-        } catch (HistoryException ex) {
-            LOGGER.log(Level.WARNING, String.format("cannot get history file for file %s", path), ex);
+        } catch (CacheException ex) {
+            LOGGER.log(Level.WARNING, String.format("cannot get cached file for file '%s'"
+                    + " - the cache entry will not be cleared", path), ex);
             return;
         }
 

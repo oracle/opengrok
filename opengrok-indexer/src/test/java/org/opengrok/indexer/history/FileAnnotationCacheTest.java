@@ -103,7 +103,7 @@ class FileAnnotationCacheTest {
         final String fileName = "nonexistent";
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertFalse(file.exists());
-        assertThrows(AnnotationException.class, () -> cache.readAnnotation(file));
+        assertThrows(CacheException.class, () -> cache.readAnnotation(file));
     }
 
     @Test
@@ -127,7 +127,7 @@ class FileAnnotationCacheTest {
         }
 
         // Try to read the annotation from cache.
-        assertThrows(AnnotationException.class, () -> cache.readAnnotation(file));
+        assertThrows(CacheException.class, () -> cache.readAnnotation(file));
     }
 
     @Test
@@ -183,7 +183,7 @@ class FileAnnotationCacheTest {
         // Make sure there is clean state. The file should not have any cache entry.
         FileAnnotationCache cache = new FileAnnotationCache();
         cache.clearFile(env.getPathRelativeToSourceRoot(file));
-        assertThrows(AnnotationException.class, () -> cache.get(file, null));
+        assertThrows(CacheException.class, () -> cache.get(file, null));
 
         // Store the annotation in the cache.
         HistoryGuru historyGuru = HistoryGuru.getInstance();
@@ -231,14 +231,14 @@ class FileAnnotationCacheTest {
         // Make sure there is clean state. The file should not have any cache entry.
         FileAnnotationCache cache = new FileAnnotationCache();
         cache.clearFile(env.getPathRelativeToSourceRoot(file));
-        assertThrows(AnnotationException.class, () -> cache.get(file, null));
+        assertThrows(CacheException.class, () -> cache.get(file, null));
 
         Repository repository = historyGuru.getRepository(file);
         assertNotNull(repository);
 
         repository.setAnnotationCacheEnabled(false);
         String latestRev = LatestRevisionUtil.getLatestRevision(file);
-        assertThrows(AnnotationException.class,
+        assertThrows(CacheException.class,
                 () -> historyGuru.createAnnotationCache(file, latestRev));
         repository.setAnnotationCacheEnabled(false);
     }

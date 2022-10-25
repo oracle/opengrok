@@ -77,7 +77,7 @@ class RepositoryWithPerPartesHistoryTest {
      * @throws HistoryException on error
      */
     @Test
-    void testChangesets() throws HistoryException {
+    void testChangesets() throws Exception {
         // To avoid calling getHistory() for individual files via createHistoryCache() below.
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
 
@@ -131,7 +131,7 @@ class RepositoryWithPerPartesHistoryTest {
     }
 
     @Test
-    void testPerPartesOff() throws HistoryException {
+    void testPerPartesOff() throws Exception {
         FileHistoryCache cache = new FileHistoryCache();
         FileHistoryCache spyCache = Mockito.spy(cache);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.CacheException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
@@ -138,11 +138,11 @@ public class DirectoryListing {
      * @param files list of files
      * @return see
      * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
-     * @throws HistoryException history exception
+     * @throws CacheException on error
      * @throws IOException I/O exception
      */
     public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
-            throws IOException, HistoryException {
+            throws IOException, CacheException {
         List<DirectoryEntry> filesExtra = null;
         if (files != null) {
             filesExtra = files.stream().map(f ->
@@ -163,10 +163,10 @@ public class DirectoryListing {
      *  but filtered by {@link PathAccepter}.
      * @return a possible empty list of README files included in the written listing.
      * @throws IOException when cannot write to the {@code out} parameter
-     * @throws HistoryException when failed to get last modified time for files in directory
+     * @throws CacheException when failed to get last modified time for files in directory
      */
     public List<String> extraListTo(String contextPath, File dir, Writer out,
-                                    String path, List<DirectoryEntry> entries) throws IOException, HistoryException {
+                                    String path, List<DirectoryEntry> entries) throws IOException, CacheException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<>();
         int offset = -1;

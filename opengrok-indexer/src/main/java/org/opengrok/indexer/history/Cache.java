@@ -23,7 +23,6 @@
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 import java.io.File;
 import java.util.Collection;
@@ -35,6 +34,13 @@ public interface Cache {
     Logger LOGGER = LoggerFactory.getLogger(Cache.class);
 
     /**
+     * Create and initialize an empty cache if one doesn't exist already.
+     *
+     * @throws CacheException if initialization fails
+     */
+    void initialize() throws CacheException;
+
+    /**
      * Get a string with information about the cache.
      * @return a free form text string describing the history instance
      */
@@ -44,9 +50,9 @@ public interface Cache {
      * Clear the cache for a repository.
      *
      * @param repository the repository whose cache to clear
-     * @throws HistoryException if the cache couldn't be cleared
+     * @throws CacheException if the cache couldn't be cleared
      */
-    void clear(RepositoryInfo repository) throws HistoryException;
+    void clear(RepositoryInfo repository) throws CacheException;
 
     /**
      * Optimize how the history is stored on disk. This method is typically
@@ -56,9 +62,9 @@ public interface Cache {
      * or reordering the disk image of the cache in order to optimize
      * performance or space usage.
      *
-     * @throws HistoryException if an error happens during optimization
+     * @throws CacheException if an error happens during optimization
      */
-    void optimize() throws HistoryException;
+    void optimize() throws CacheException;
 
     /**
      * Check whether this cache implementation can store history for the given repository.
@@ -89,14 +95,12 @@ public interface Cache {
      * @param file the file to check
      * @return {@code true} if the file is in the cache, {@code false} otherwise
      */
-    boolean hasCacheForFile(File file) throws HistoryException;
+    boolean hasCacheForFile(File file) throws CacheException;
 
     /**
      * @param file source file
      * @return whether cache entry for given file is fresh
-     * @throws HistoryException on error
-     * @throws ForbiddenSymlinkException on error
-     * TODO: HistoryException -> CacheException
+     * @throws CacheException on error
      */
-    boolean isUpToDate(File file) throws HistoryException, ForbiddenSymlinkException;
+    boolean isUpToDate(File file) throws CacheException;
 }

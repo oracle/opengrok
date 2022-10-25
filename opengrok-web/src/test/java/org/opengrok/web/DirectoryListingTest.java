@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -40,7 +40,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.web.EftarFileReader;
@@ -62,7 +61,7 @@ import static org.mockito.Mockito.verify;
 /**
  * JUnit test to test that the DirectoryListing produce the expected result.
  */
-public class DirectoryListingTest {
+class DirectoryListingTest {
 
     /**
      * Indication of that the file was a directory and so that the size given by
@@ -348,7 +347,7 @@ public class DirectoryListingTest {
      * @throws java.lang.Exception if an error occurs while generating the list.
      */
     @Test
-    public void directoryListing() throws Exception {
+    void directoryListing() throws Exception {
         StringWriter out = new StringWriter();
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
@@ -370,14 +369,14 @@ public class DirectoryListingTest {
         int len = nl.getLength();
         // Add one extra for header and one for parent directory link.
         assertEquals(entries.length + 2, len);
-        // Skip the the header and parent link.
+        // Skip the header and parent link.
         for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }
     }
 
     @Test
-    public void directoryListingWithEftarException() throws IOException, HistoryException {
+    void directoryListingWithEftarException() throws Exception {
         EftarFileReader mockReader = mock(EftarFileReader.class);
         when(mockReader.getNode(anyString())).thenThrow(IOException.class);
         DirectoryListing instance = new DirectoryListing(mockReader);

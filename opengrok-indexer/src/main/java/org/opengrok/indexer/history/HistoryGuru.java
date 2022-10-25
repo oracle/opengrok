@@ -159,7 +159,7 @@ public final class HistoryGuru {
 
             try {
                 historyCacheResult.initialize();
-            } catch (HistoryException he) {
+            } catch (CacheException he) {
                 LOGGER.log(Level.WARNING, "Failed to initialize the history cache", he);
                 // Failed to initialize, run without a history cache.
                 historyCacheResult = null;
@@ -235,7 +235,7 @@ public final class HistoryGuru {
                 if (annotation != null) {
                     return annotation;
                 }
-            } catch (AnnotationException e) {
+            } catch (CacheException e) {
                 LOGGER.log(e.getLevel(), e.toString());
             }
         }
@@ -404,7 +404,7 @@ public final class HistoryGuru {
 
     @Nullable
     private History getHistoryFromCache(File file, Repository repository, boolean withFiles)
-            throws HistoryException, ForbiddenSymlinkException {
+            throws CacheException {
 
         if (useHistoryCache() && historyCache.supportsRepository(repository)) {
             return historyCache.get(file, repository, withFiles);
@@ -439,9 +439,8 @@ public final class HistoryGuru {
                     return lastHistoryEntry;
                 }
             }
-        } catch (ForbiddenSymlinkException e) {
+        } catch (CacheException e) {
             LOGGER.log(Level.FINER, e.getMessage());
-            return null;
         }
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
@@ -494,7 +493,7 @@ public final class HistoryGuru {
             if (fallback) {
                 return getHistoryFromRepository(file, repository, ui);
             }
-        } catch (ForbiddenSymlinkException e) {
+        } catch (CacheException e) {
             LOGGER.log(Level.FINER, e.getMessage());
         }
 
@@ -590,7 +589,7 @@ public final class HistoryGuru {
                 if (historyCache.isUpToDate(file)) {
                     return true;
                 }
-            } catch (HistoryException | ForbiddenSymlinkException e) {
+            } catch (CacheException e) {
                 LOGGER.log(Level.FINEST, "cannot determine if history cache for ''{0}'' is fresh", file);
             }
         }
@@ -646,7 +645,7 @@ public final class HistoryGuru {
 
         try {
             return historyCache.hasCacheForFile(file);
-        } catch (HistoryException ex) {
+        } catch (CacheException ex) {
             LOGGER.log(Level.FINE,
                     String.format("failed to get history cache for file '%s' to check history cache presence", file),
                     ex);
@@ -695,7 +694,7 @@ public final class HistoryGuru {
 
         try {
             return annotationCache.hasCacheForFile(file);
-        } catch (HistoryException ex) {
+        } catch (CacheException ex) {
             LOGGER.log(Level.FINE,
                     String.format("failed to get annotation cache for file '%s' to check history cache presence", file),
                     ex);
@@ -704,15 +703,14 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the last modified times for all files and subdirectories in the
-     * specified directory.
+     * Get the last modified times for all files and subdirectories in the specified directory.
      *
      * @param directory the directory whose files to check
      * @return a map from file names to modification times for the files that
      * the history cache has information about
-     * @throws org.opengrok.indexer.history.HistoryException if history cannot be retrieved
+     * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public Map<String, Date> getLastModifiedTimes(File directory) throws HistoryException {
+    public Map<String, Date> getLastModifiedTimes(File directory) throws CacheException {
 
         Repository repository = getRepository(directory);
         if (repository == null) {
@@ -924,7 +922,7 @@ public final class HistoryGuru {
             try {
                 latestRev = historyCache.getLatestCachedRevision(repo);
                 repos2process.put(repo, latestRev);
-            } catch (HistoryException he) {
+            } catch (CacheException he) {
                 LOGGER.log(Level.WARNING,
                         String.format(
                                 "Failed to retrieve latest cached revision for %s",
@@ -964,7 +962,7 @@ public final class HistoryGuru {
         // disk to enhance performance and save space.
         try {
             historyCache.optimize();
-        } catch (HistoryException he) {
+        } catch (CacheException he) {
             LOGGER.log(Level.WARNING,
                     "Failed optimizing the history cache database", he);
         }
@@ -1002,21 +1000,21 @@ public final class HistoryGuru {
      * Retrieve and store the annotation cache entry for given file.
      * @param file file object under source root. Needs to have a repository associated for the cache to be created.
      * @param latestRev latest revision of the file
-     * @throws AnnotationException on error, otherwise the cache entry is created
+     * @throws CacheException on error, otherwise the cache entry is created
      */
-    public void createAnnotationCache(File file, String latestRev) throws AnnotationException {
+    public void createAnnotationCache(File file, String latestRev) throws CacheException {
         if (!useAnnotationCache()) {
-            throw new AnnotationException(String.format("annotation cache could not be used to create cache for '%s'",
+            throw new CacheException(String.format("annotation cache could not be used to create cache for '%s'",
                     file), Level.FINE);
         }
 
         Repository repository = getRepository(file);
         if (repository == null) {
-            throw new AnnotationException(String.format("no repository for '%s'", file), Level.FINE);
+            throw new CacheException(String.format("no repository for '%s'", file), Level.FINE);
         }
 
         if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
-            throw new AnnotationException(
+            throw new CacheException(
                     String.format("repository %s does not allow to create annotation cache for '%s'",
                             repository, file), Level.FINER);
         }
@@ -1035,7 +1033,7 @@ public final class HistoryGuru {
                 annotationCache.store(file, annotation);
             }
         } catch (IOException e) {
-            throw new AnnotationException(e);
+            throw new CacheException(e);
         }
     }
 

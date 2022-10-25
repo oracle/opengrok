@@ -370,10 +370,10 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void testGetLastHistoryEntryNonexistent() throws HistoryException {
+    void testGetLastHistoryEntryNonexistent() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         File file = new File("/nonexistent");
-        assertThrows(HistoryException.class, () -> instance.getLastHistoryEntry(file, true));
+        assertNull(instance.getLastHistoryEntry(file, true));
     }
 
     @ParameterizedTest
