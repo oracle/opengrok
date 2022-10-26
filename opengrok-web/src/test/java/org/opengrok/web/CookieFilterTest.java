@@ -51,7 +51,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-public class CookieFilterTest {
+class CookieFilterTest {
     static class DummyHttpServletResponse implements HttpServletResponse {
 
         @Override
@@ -71,18 +71,6 @@ public class CookieFilterTest {
 
         @Override
         public String encodeRedirectURL(String s) {
-            return null;
-        }
-
-        @Override
-        @Deprecated
-        public String encodeUrl(String s) {
-            return null;
-        }
-
-        @Override
-        @Deprecated
-        public String encodeRedirectUrl(String s) {
             return null;
         }
 
@@ -139,12 +127,6 @@ public class CookieFilterTest {
 
         @Override
         public void setStatus(int i) {
-
-        }
-
-        @Override
-        @Deprecated
-        public void setStatus(int i, String s) {
 
         }
 
