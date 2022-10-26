@@ -39,7 +39,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN mvn help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10-jdk11
+FROM tomcat:10.0-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # install dependencies and Python tools
