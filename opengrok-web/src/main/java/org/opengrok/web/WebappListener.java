@@ -89,6 +89,19 @@ public final class WebappListener implements ServletContextListener, ServletRequ
             }
         }
 
+        String serverInfo = context.getServerInfo();
+        LOGGER.log(Level.INFO, "running inside {0}", serverInfo);
+        if (serverInfo.startsWith("Apache Tomcat")) {
+            int idx;
+            if ((idx = serverInfo.indexOf('/')) > 0) {
+                String version = serverInfo.substring(idx + 1);
+                if (!version.startsWith("10.0")) {
+                    LOGGER.log(Level.SEVERE, "Unsupported Tomcat version: {0}", version);
+                    throw new Error("Unsupported Tomcat version");
+                }
+            }
+        }
+
         /*
          * Create a new instance of authorization framework. If the code above
          * (reading the configuration) failed then the plugin directory is
