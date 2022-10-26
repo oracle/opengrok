@@ -35,6 +35,7 @@ import java.util.Map;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConnection;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletRequest;
@@ -91,30 +92,12 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public jakarta.servlet.http.HttpSessionContext getSessionContext() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public Object getAttribute(String string) {
             return attrs.get(string);
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public Object getValue(String string) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public Enumeration<String> getAttributeNames() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public String[] getValueNames() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -124,18 +107,8 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public void putValue(String string, Object o) {
-        }
-
-        @Override
         public void removeAttribute(String string) {
             attrs.remove(string);
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public void removeValue(String string) {
         }
 
         @Override
@@ -270,12 +243,6 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
     @Override
     public boolean isRequestedSessionIdFromURL() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    @Deprecated
-    public boolean isRequestedSessionIdFromUrl() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -435,12 +402,6 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    @Deprecated
-    public String getRealPath(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public int getRemotePort() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -492,6 +453,21 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
     @Override
     public DispatcherType getDispatcherType() {
+        return null;
+    }
+
+    @Override
+    public String getRequestId() {
+        return "123";
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return null;
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
         return null;
     }
 }
