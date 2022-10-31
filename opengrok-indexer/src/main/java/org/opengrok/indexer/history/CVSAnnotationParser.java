@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -43,19 +43,21 @@ public class CVSAnnotationParser implements Executor.StreamHandler {
     /**
      * Pattern used to extract author/revision from {@code cvs annotate}.
      */
-    private static final Pattern ANNOTATE_PATTERN
-            = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
+    private static final Pattern ANNOTATE_PATTERN = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
 
+    private final String fileName;
+
     /**
      * @param fileName the name of the file being annotated
      */
     public CVSAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
+        this.fileName = fileName;
     }
 
     /**
@@ -76,8 +78,7 @@ public class CVSAnnotationParser implements Executor.StreamHandler {
         Matcher matcher = ANNOTATE_PATTERN.matcher(line);
         while ((line = in.readLine()) != null) {
             // Skip header
-            if (!hasStarted && (line.length() == 0
-                    || !Character.isDigit(line.charAt(0)))) {
+            if (!hasStarted && (line.length() == 0 || !Character.isDigit(line.charAt(0)))) {
                 continue;
             }
             hasStarted = true;
@@ -90,9 +91,9 @@ public class CVSAnnotationParser implements Executor.StreamHandler {
                 String author = matcher.group(2).trim();
                 annotation.addLine(rev, author, true);
             } else {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}]",
-                        new Object[]{String.valueOf(lineno), line});
+                LOGGER.log(Level.WARNING,
+                        "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
+                        new Object[]{String.valueOf(lineno), this.fileName, line});
             }
         }
     }

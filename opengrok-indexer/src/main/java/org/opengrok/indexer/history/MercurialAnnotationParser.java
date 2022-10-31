@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -50,8 +50,7 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
     /**
      * Pattern used to extract author/revision from {@code hg annotate}.
      */
-    private static final Pattern ANNOTATION_PATTERN
-            = Pattern.compile("^\\s*(\\d+):");
+    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^\\s*(\\d+):");
 
     MercurialAnnotationParser(File file, HashMap<String, HistoryEntry> revs) {
         this.file = file;
@@ -78,9 +77,9 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
                     }
                     annotation.addLine(rev, Util.getEmail(author.trim()), true);
                 } else {
-                    LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotation in line {0}: [{1}]",
-                            new Object[]{lineno, line});
+                    LOGGER.log(Level.WARNING,
+                            "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
+                            new Object[]{lineno, this.file, line});
                 }
             }
         }

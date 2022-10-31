@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -333,9 +333,9 @@ public class SSCMRepository extends Repository {
                 String author = matcher.group(1);
                 ret.addLine(rev, author, true);
             } else if (hasStarted) {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}]",
-                        new Object[]{String.valueOf(lineno), line});
+                LOGGER.log(Level.WARNING,
+                        "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
+                        new Object[]{String.valueOf(lineno), fileName, line});
             }
         }
         return ret;
