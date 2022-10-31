@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -67,9 +67,9 @@ public class RCSAnnotationParser implements Executor.StreamHandler {
                     String author = matcher.group(2);
                     annotation.addLine(rev, author, true);
                 } else {
-                    LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotation in line {0}: [{1}]",
-                            new Object[]{lineno, line});
+                    LOGGER.log(Level.WARNING,
+                            "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
+                            new Object[]{lineno, this.file, line});
                 }
             }
         }

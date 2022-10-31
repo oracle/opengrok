@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -49,11 +49,14 @@ public class AccuRevAnnotationParser implements Executor.StreamHandler {
      */
     private final Annotation annotation;
 
+    private final String fileName;
+
     /**
      * @param fileName the name of the file being annotated
      */
     public AccuRevAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
+        this.fileName = fileName;
     }
 
     /**
@@ -85,14 +88,14 @@ public class AccuRevAnnotationParser implements Executor.StreamHandler {
                         String author  = matcher.group(2);
                         annotation.addLine(version, author, true);
                     } else {
-                        LOGGER.log(Level.SEVERE,
-                                "Did not find annotation in line {0}: [{1}]",
-                                new Object[]{lineno, line});
+                        LOGGER.log(Level.WARNING,
+                                "Did not find annotation in line {0} for ''{1}'': [{2}]",
+                                new Object[]{lineno, this.fileName, line});
                     }
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                        "Could not read annotations for " + annotation.getFilename(), e);
+                LOGGER.log(Level.WARNING,
+                        String.format("Could not read annotations for '%s'", this.fileName), e);
             }
         }
     }

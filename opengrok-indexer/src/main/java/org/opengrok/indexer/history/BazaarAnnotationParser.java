@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -49,14 +49,16 @@ public class BazaarAnnotationParser implements Executor.StreamHandler {
     /**
      * Pattern used to extract author/revision.
      */
-    private static final Pattern BLAME_PATTERN
-            = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+    private static final Pattern BLAME_PATTERN = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+
+    private final String fileName;
 
     /**
      * @param fileName the name of the file being annotated
      */
     public BazaarAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
+        this.fileName = fileName;
     }
 
     /**
@@ -82,9 +84,9 @@ public class BazaarAnnotationParser implements Executor.StreamHandler {
                     String author = matcher.group(2).trim();
                     annotation.addLine(rev, author, true);
                 } else {
-                    LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotation in line {0}: [{1}]",
-                            new Object[]{String.valueOf(lineno), line});
+                    LOGGER.log(Level.WARNING,
+                            "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
+                            new Object[]{String.valueOf(lineno), this.fileName, line});
                 }
             }
         }
