@@ -248,7 +248,7 @@ public class IndexerParallelizer implements AutoCloseable {
 
     private void createLazyXrefWatcherExecutor() {
         lzXrefWatcherExecutor = LazilyInstantiate.using(() ->
-                new ScheduledThreadPoolExecutor(1,
+                new ScheduledThreadPoolExecutor(indexingParallelism,
                         new OpenGrokThreadFactory("xref-watcher")));
     }
 
