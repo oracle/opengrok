@@ -586,7 +586,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 LOGGER.log(Level.WARNING, "Unable to create cache directory ''{0}''.", dir);
             }
         }
-        elapsed.report(LOGGER, String.format("Done creating directories for %s (%s)", repository, label));
+        elapsed.report(LOGGER, Level.FINE, String.format("Done creating directories for %s (%s)", repository, label));
     }
 
     @Override
