@@ -242,7 +242,7 @@ public class IndexerParallelizer implements AutoCloseable {
 
     private void createLazyCtagsWatcherExecutor() {
         lzCtagsWatcherExecutor = LazilyInstantiate.using(() ->
-                new ScheduledThreadPoolExecutor(1,
+                new ScheduledThreadPoolExecutor(indexingParallelism,
                         new OpenGrokThreadFactory("ctags-watcher")));
     }
 
