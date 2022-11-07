@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +37,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.LazilyInstantiate;
 
 /**
  * Access to a Perforce repository.
@@ -55,6 +57,12 @@ public class PerforceRepository extends Repository {
      * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "p4";
+
+    /**
+     * This is a static replacement for 'working' field. Effectively, check if p4 is working once in a JVM
+     * instead of calling it for every {@code PerforceRepository} instance.
+     */
+    private static final Supplier<Boolean> P4_IS_WORKING = LazilyInstantiate.using(PerforceRepository::isP4Working);
 
     public PerforceRepository() {
         type = "Perforce";
@@ -200,11 +208,19 @@ public class PerforceRepository extends Repository {
         return isInP4Depot(file, cmdType);
     }
 
+    private static boolean isP4Working() {
+        String repoCommand = getCommand(PerforceRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
+        boolean works = checkCmd(repoCommand, "help");
+        LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
+                "Some operations with Perforce repositories will fail as a result.", repoCommand);
+        return works;
+    }
+
     @Override
     public boolean isWorking() {
         if (working == null) {
+            working = P4_IS_WORKING.get();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand, "help");
         }
         return working;
     }
