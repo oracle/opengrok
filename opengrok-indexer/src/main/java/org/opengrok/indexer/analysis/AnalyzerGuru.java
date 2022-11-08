@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -125,9 +125,9 @@ import org.opengrok.indexer.web.Util;
  * Manages and provides Analyzers as needed. Please see
  * <a href="https://github.com/oracle/opengrok/wiki/Internals">
  * this</a> page for a great description of the purpose of the AnalyzerGuru.
- *
+ * <p>
  * Created on September 22, 2005
- *
+ * </p>
  * @author Chandan
  */
 public class AnalyzerGuru {
@@ -550,9 +550,8 @@ public class AnalyzerGuru {
         if (factory == null) {
             AbstractAnalyzer defaultAnalyzer = getAnalyzer();
             if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "{0}: fallback {1}",
-                    new Object[]{file,
-                    defaultAnalyzer.getClass().getSimpleName() });
+                LOGGER.log(Level.FINEST, "''{0}'': fallback {1}",
+                    new Object[]{file, defaultAnalyzer.getClass().getSimpleName()});
             }
             return defaultAnalyzer;
         }
@@ -849,8 +848,7 @@ public class AnalyzerGuru {
      * @param factoryClass the factory class
      * @return a file analyzer factory
      *
-     * @throws ClassCastException if the class is not a subclass of {@code
-     * FileAnalyzerFactory}
+     * @throws ClassCastException if the class is not a subclass of {@code FileAnalyzerFactory}
      * @throws IllegalAccessException if the constructor cannot be accessed
      * @throws InstantiationException if the class cannot be instantiated
      * @throws NoSuchMethodException if no-argument constructor could not be found
@@ -871,7 +869,7 @@ public class AnalyzerGuru {
     /**
      * Finds a suitable analyzer class for file name. If the analyzer cannot be
      * determined by the file extension, try to look at the data in the
-     * InputStream to find a suitable analyzer.
+     * {@link InputStream} to find a suitable analyzer.
      * <p>
      * Use if you just want to find file type.
      * </p>
@@ -914,9 +912,8 @@ public class AnalyzerGuru {
                 factory = pre.get(path.substring(0, dotpos).toUpperCase(Locale.ROOT));
                 if (factory != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.log(Level.FINEST, "{0}: chosen by prefix: {1}",
-                            new Object[]{file,
-                            factory.getClass().getSimpleName() });
+                        LOGGER.log(Level.FINEST, "''{0}'': chosen by prefix: {1}",
+                            new Object[]{file, factory.getClass().getSimpleName()});
                     }
                     return factory;
                 }
@@ -928,9 +925,8 @@ public class AnalyzerGuru {
             factory = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.ROOT));
             if (factory != null) {
                 if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "{0}: chosen by suffix: {1}",
-                        new Object[]{file,
-                        factory.getClass().getSimpleName() });
+                    LOGGER.log(Level.FINEST, "''{0}'': chosen by suffix: {1}",
+                        new Object[]{file, factory.getClass().getSimpleName()});
                 }
                 return factory;
             }
@@ -959,8 +955,7 @@ public class AnalyzerGuru {
      * @param in The stream containing the data to analyze
      * @param file The file name to get the analyzer for
      * @return the analyzer factory to use
-     * @throws java.io.IOException if an error occurs while reading data from
-     * the stream
+     * @throws java.io.IOException if an error occurs while reading data from the stream
      */
     private static AnalyzerFactory findForStream(InputStream in,
         String file) throws IOException {
@@ -989,8 +984,8 @@ public class AnalyzerGuru {
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                            "{0}: chosen by precise magic: {1}", new Object[]{
-                            file, fac.getClass().getSimpleName() });
+                            "{0}: chosen by precise magic: {1}",
+                                new Object[]{file, fac.getClass().getSimpleName()});
                     }
                     return fac;
                 }
@@ -1011,9 +1006,8 @@ public class AnalyzerGuru {
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                            "{0}: chosen by imprecise magic: {1}",
-                            new Object[]{file,
-                            fac.getClass().getSimpleName() });
+                            "''{0}'': chosen by imprecise magic: {1}",
+                            new Object[]{file, fac.getClass().getSimpleName()});
                     }
                     return fac;
                 }
@@ -1030,9 +1024,8 @@ public class AnalyzerGuru {
         AnalyzerFactory fac = magics.get(fragment);
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{file, fac.getClass().getSimpleName(),
-                    fragment});
+                LOGGER.log(Level.FINEST, "''{0}'': chosen by magic {2}: {1}",
+                    new Object[]{file, fac.getClass().getSimpleName(), fragment});
             }
             return fac;
         }
@@ -1042,9 +1035,8 @@ public class AnalyzerGuru {
         fac = magics.get(fragment);
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{file, fac.getClass().getSimpleName(),
-                    fragment});
+                LOGGER.log(Level.FINEST, "''{0}'': chosen by magic {2}: {1}",
+                    new Object[]{file, fac.getClass().getSimpleName(), fragment});
             }
             return fac;
         }
@@ -1057,8 +1049,8 @@ public class AnalyzerGuru {
                 fac = entry.getValue();
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST,
-                        "{0}: chosen by magic(substr) {2}: {1}", new Object[]{
-                        file, fac.getClass().getSimpleName(), magic});
+                        "''{0}'': chosen by magic(substr) {2}: {1}",
+                            new Object[]{file, fac.getClass().getSimpleName(), magic});
                 }
                 return fac;
             }
