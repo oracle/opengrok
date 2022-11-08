@@ -984,7 +984,7 @@ public class AnalyzerGuru {
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                            "{0}: chosen by precise magic: {1}",
+                            "''{0}'': chosen by precise magic: {1}",
                                 new Object[]{file, fac.getClass().getSimpleName()});
                     }
                     return fac;
