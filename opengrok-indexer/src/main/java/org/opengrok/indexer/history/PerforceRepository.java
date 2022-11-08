@@ -210,7 +210,7 @@ public class PerforceRepository extends Repository {
 
     private static boolean isP4Working() {
         String repoCommand = getCommand(PerforceRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
-        boolean works = checkCmd(repoCommand, "help");
+        boolean works = checkCmd(repoCommand, "-V");
         LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
                 "Some operations with Perforce repositories will fail as a result.", repoCommand);
         return works;
