@@ -103,4 +103,9 @@ public interface Cache {
      * @throws CacheException on error
      */
     boolean isUpToDate(File file) throws CacheException;
+
+    /**
+     * @return suffix used for the cache files
+     */
+    String getCacheFileSuffix();
 }

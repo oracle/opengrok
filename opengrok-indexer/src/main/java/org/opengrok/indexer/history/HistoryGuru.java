@@ -311,7 +311,9 @@ public final class HistoryGuru {
             return null;
         }
 
+        Statistics statistics = new Statistics();
         completeAnnotationWithHistory(file, annotation, repo);
+        statistics.report(LOGGER, Level.FINEST, String.format("completed annotation with history for '%s'", file));
 
         return annotation;
     }

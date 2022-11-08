@@ -22,6 +22,8 @@
  */
 package org.opengrok.indexer.history;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -30,21 +32,14 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
 
 public class FileAnnotationCache extends AbstractCache implements AnnotationCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAnnotationCache.class);
-
-    private static final ClassLoader classLoader = new AnnotationDataClassLoader();
 
     private Counter fileAnnotationCacheHits;
     private Counter fileAnnotationCacheMisses;
@@ -65,18 +60,17 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         }
     }
 
-    private static XMLDecoder getDecoder(InputStream in) {
-        return new XMLDecoder(in, null, null, classLoader);
-    }
-
     /**
      * Read annotation from a file.
      */
     static Annotation readCache(File file) throws IOException {
-        try (FileInputStream in = new FileInputStream(file);
-             XMLDecoder d = getDecoder(new GZIPInputStream(new BufferedInputStream(in)))) {
-            return new Annotation((AnnotationData) d.readObject());
-        }
+        ObjectMapper mapper = new CBORMapper();
+        return new Annotation(mapper.readValue(file, AnnotationData.class));
+    }
+
+    @Override
+    public String getCacheFileSuffix() {
+        return "";
     }
 
     @VisibleForTesting
@@ -90,7 +84,10 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         }
 
         try {
-            return readCache(cacheFile);
+            Statistics statistics = new Statistics();
+            Annotation annotation = readCache(cacheFile);
+            statistics.report(LOGGER, Level.FINEST, String.format("deserialized annotation from cache for '%s'", file));
+            return annotation;
         } catch (IOException e) {
             throw new CacheException(String.format("failed to read annotation cache for '%s'", file), e);
         }
@@ -156,6 +153,11 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         return annotation;
     }
 
+    private void writeCache(AnnotationData annotationData, File outfile) throws IOException {
+        ObjectMapper mapper = new CBORMapper();
+        mapper.writeValue(outfile, annotationData);
+    }
+
     public void store(File file, Annotation annotation) throws CacheException {
         if (annotation.getRevision() == null || annotation.getRevision().isEmpty()) {
             throw new CacheException(String.format("annotation for ''%s'' does not contain revision", file));
@@ -177,7 +179,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
 
         Statistics statistics = new Statistics();
         try {
-            CacheUtil.writeCache(annotation.annotationData, cacheFile);
+            writeCache(annotation.annotationData, cacheFile);
             statistics.report(LOGGER, Level.FINEST, String.format("wrote annotation for '%s'", file),
                     "cache.annotation.file.store.latency");
         } catch (IOException e) {

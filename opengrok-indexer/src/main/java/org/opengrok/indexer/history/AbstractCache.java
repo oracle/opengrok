@@ -75,7 +75,12 @@ public abstract class AbstractCache implements Cache {
             throw new CacheException("Failed to get path relative to source root for " + file, e);
         }
 
-        return new File(TandemPath.join(sb.toString(), ".gz"));
+        String suffix = getCacheFileSuffix();
+        if (suffix != null && !suffix.isEmpty()) {
+            return new File(TandemPath.join(sb.toString(), suffix));
+        }
+
+        return new File(sb.toString());
     }
 
     public List<String> clearCache(Collection<RepositoryInfo> repositories) {
@@ -124,5 +129,9 @@ public abstract class AbstractCache implements Cache {
         }
 
         clearWithParent(historyFile);
+    }
+
+    public String getCacheFileSuffix() {
+        return ".gz";
     }
 }
