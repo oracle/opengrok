@@ -1919,7 +1919,7 @@ public class IndexDatabase {
         try {
             Statistics stat = new Statistics();
             TopDocs top = searcher.search(q, 1);
-            stat.report(LOGGER, Level.FINEST, "search via getDocument() done",
+            stat.report(LOGGER, Level.FINEST, String.format("search via getDocument(%s) done", file),
                     "search.latency", new String[]{"category", "getdocument",
                             "outcome", top.totalHits.value == 0 ? "empty" : "success"});
             if (top.totalHits.value == 0) {
