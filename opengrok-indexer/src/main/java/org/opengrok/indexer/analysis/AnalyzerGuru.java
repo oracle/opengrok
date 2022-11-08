@@ -869,12 +869,12 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Finds a suitable analyser class for file name. If the analyzer cannot be
+     * Finds a suitable analyzer class for file name. If the analyzer cannot be
      * determined by the file extension, try to look at the data in the
      * InputStream to find a suitable analyzer.
-     *
+     * <p>
      * Use if you just want to find file type.
-     *
+     * </p>
      * @param in The input stream containing the data
      * @param file The file name to get the analyzer for
      * @return the analyzer factory to use
