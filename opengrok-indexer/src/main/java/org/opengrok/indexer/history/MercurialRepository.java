@@ -540,8 +540,10 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
     private static boolean isHgWorking() {
         String repoCommand = getCommand(MercurialRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
         boolean works = checkCmd(repoCommand);
-        LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
-                "Some operations with Mercurial repositories will fail as a result.", repoCommand);
+        if (!works) {
+            LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
+                    "Some operations with Mercurial repositories will fail as a result.", repoCommand);
+        }
         return works;
     }
 
