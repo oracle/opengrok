@@ -210,21 +210,27 @@ class IndexDatabaseTest {
      */
     private void checkDataExistence(String fileName, boolean shouldExist) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
 
         for (String dirName : new String[] {"historycache", "annotationcache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
+            File file = new File(env.getServerName(), fileName);
             String cacheFile;
             if (dirName.equals("annotationcache")) {
-                cacheFile = fileName;
+                if (shouldExist) {
+                    assertTrue(historyGuru.hasAnnotationCacheForFile(file));
+                } else {
+                    assertFalse(historyGuru.hasAnnotationCacheForFile(file));
+                }
             } else {
                 cacheFile = TandemPath.join(fileName, ".gz");
-            }
-            File dataFile = new File(dataDir, cacheFile);
+                File dataFile = new File(dataDir, cacheFile);
 
-            if (shouldExist) {
-                assertTrue(dataFile.exists(), "file " + fileName + " not found in " + dirName);
-            } else {
-                assertFalse(dataFile.exists(), "file " + fileName + " found in " + dirName);
+                if (shouldExist) {
+                    assertTrue(dataFile.exists(), "file " + fileName + " not found in " + dirName);
+                } else {
+                    assertFalse(dataFile.exists(), "file " + fileName + " found in " + dirName);
+                }
             }
         }
     }
