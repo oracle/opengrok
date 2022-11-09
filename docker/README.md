@@ -44,9 +44,13 @@ is doing, use the `docker logs` command.
 
 ### Source Code Management systems supported
 
+- Bazaar
+- CVS
 - Mercurial
 - Git
 - Subversion
+- SCCS
+- RCS
 
 ### Tags and versioning
 
