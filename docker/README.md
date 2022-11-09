@@ -46,11 +46,12 @@ is doing, use the `docker logs` command.
 
 - Bazaar
 - CVS
-- Mercurial
 - Git
-- Subversion
-- SCCS
+- Mercurial
+- Perforce
 - RCS
+- SCCS
+- Subversion
 
 ### Tags and versioning
 
