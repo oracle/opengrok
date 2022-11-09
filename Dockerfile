@@ -44,7 +44,8 @@ LABEL maintainer="https://github.com/oracle/opengrok"
 
 # Add Perforce apt source.
 RUN apt-get update && \
-    apt-get install -y gnupg2
+    apt-get install --no-install-recommends -y gnupg2
+# hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
 RUN echo 'deb http://package.perforce.com/apt/ubuntu bionic release' > /etc/apt/sources.list.d/perforce.list
 
