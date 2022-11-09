@@ -43,9 +43,13 @@ FROM tomcat:10.0-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # Add Perforce apt source.
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install -y gnupg2
+    apt-get install --no-install-recommends -y gnupg2
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
+# hadolint ignore=DL3059
 RUN echo 'deb http://package.perforce.com/apt/ubuntu bionic release' > /etc/apt/sources.list.d/perforce.list
 
 # install dependencies and Python tools
