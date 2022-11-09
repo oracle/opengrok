@@ -196,7 +196,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
+            <artifactId>jackson-dataformat-smile</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>

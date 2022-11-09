@@ -23,7 +23,7 @@
 package org.opengrok.indexer.history;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +64,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
      * Read annotation from a file.
      */
     static Annotation readCache(File file) throws IOException {
-        ObjectMapper mapper = new CBORMapper();
+        ObjectMapper mapper = new SmileMapper();
         return new Annotation(mapper.readValue(file, AnnotationData.class));
     }
 
@@ -154,7 +154,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     private void writeCache(AnnotationData annotationData, File outfile) throws IOException {
-        ObjectMapper mapper = new CBORMapper();
+        ObjectMapper mapper = new SmileMapper();
         mapper.writeValue(outfile, annotationData);
     }
 
