@@ -47,6 +47,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y gnupg2
 # hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
+# hadolint ignore=DL3059
 RUN echo 'deb http://package.perforce.com/apt/ubuntu bionic release' > /etc/apt/sources.list.d/perforce.list
 
 # install dependencies and Python tools
