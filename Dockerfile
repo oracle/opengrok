@@ -45,7 +45,8 @@ LABEL maintainer="https://github.com/oracle/opengrok"
 # install dependencies and Python tools
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y git subversion mercurial unzip inotify-tools python3 python3-pip \
+    apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame \
+    unzip inotify-tools python3 python3-pip \
     python3-venv python3-setuptools openssh-client
 
 # compile and install universal-ctags
