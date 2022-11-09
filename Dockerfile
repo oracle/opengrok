@@ -43,6 +43,7 @@ FROM tomcat:10.0-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # Add Perforce apt source.
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
     apt-get install --no-install-recommends -y gnupg2
 # hadolint ignore=DL3059
