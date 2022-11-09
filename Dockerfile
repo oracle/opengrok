@@ -42,10 +42,16 @@ RUN mvn help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSI
 FROM tomcat:10.0-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
+# Add Perforce apt source.
+RUN apt-get update && \
+    apt-get install -y gnupg2
+RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
+RUN echo 'deb http://package.perforce.com/apt/ubuntu bionic release' > /etc/apt/sources.list.d/perforce.list
+
 # install dependencies and Python tools
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame \
+    apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
     unzip inotify-tools python3 python3-pip \
     python3-venv python3-setuptools openssh-client
 
