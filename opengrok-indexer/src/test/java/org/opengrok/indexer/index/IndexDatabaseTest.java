@@ -213,7 +213,13 @@ class IndexDatabaseTest {
 
         for (String dirName : new String[] {"historycache", "annotationcache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
-            File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
+            String cacheFile;
+            if (dirName.equals("annotationcache")) {
+                cacheFile = fileName;
+            } else {
+                cacheFile = TandemPath.join(fileName, ".gz");
+            }
+            File dataFile = new File(dataDir, cacheFile);
 
             if (shouldExist) {
                 assertTrue(dataFile.exists(), "file " + fileName + " not found in " + dirName);
