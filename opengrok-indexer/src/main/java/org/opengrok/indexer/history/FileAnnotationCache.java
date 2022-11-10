@@ -100,11 +100,13 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
             if (parser.getCurrentName().equals("revision")) {
                 parser.nextToken();
                 if (!parser.getCurrentToken().equals(JsonToken.VALUE_STRING)) {
-                    LOGGER.log(Level.WARNING, "failed to get revision from ''{0}''", cacheFile);
+                    LOGGER.log(Level.WARNING, "the value of the ''revision'' field in ''{0}'' is not string",
+                            cacheFile);
                     return null;
                 }
                 return parser.getValueAsString();
             } else {
+                LOGGER.log(Level.WARNING, "the first serialized field is not ''revision'' in ''{0}''", cacheFile);
                 return null;
             }
         } catch (IOException e) {
