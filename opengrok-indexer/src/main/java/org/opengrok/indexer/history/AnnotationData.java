@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.history;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 /**
  * Holds serializable content for {@link Annotation}.
  */
+@JsonPropertyOrder({"revision", "filename"})
 public class AnnotationData implements Serializable {
 
     private static final long serialVersionUID = -1;
