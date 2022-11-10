@@ -22,7 +22,10 @@
  */
 package org.opengrok.indexer.history;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -61,11 +64,52 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
     }
 
     /**
-     * Read annotation from a file.
+     * Read serialized {@link AnnotationData} from a file and create {@link Annotation} instance out of it.
      */
     static Annotation readCache(File file) throws IOException {
         ObjectMapper mapper = new SmileMapper();
         return new Annotation(mapper.readValue(file, AnnotationData.class));
+    }
+
+    /**
+     * Retrieve revision from the cache for given file. This is done in a fashion that keeps I/O low.
+     * Assumes that {@link AnnotationData#revision} is serialized in the cache file as the first member.
+     * @param file source root file
+     * @return revision from the cache file or {@code null}
+     * @throws CacheException on error
+     */
+    @Nullable
+    String getRevision(File file) throws CacheException {
+        File cacheFile;
+        try {
+            cacheFile = getCachedFile(file);
+        } catch (CacheException e) {
+            throw new CacheException("failed to get annotation cache file", e);
+        }
+
+        SmileFactory factory = new SmileFactory();
+        try (SmileParser parser = factory.createParser(cacheFile)) {
+            parser.nextToken();
+            while (parser.getCurrentToken() != null) {
+                if (parser.getCurrentToken().equals(JsonToken.FIELD_NAME)) {
+                    break;
+                }
+                parser.nextToken();
+            }
+
+            if (parser.getCurrentName().equals("revision")) {
+                parser.nextToken();
+                if (!parser.getCurrentToken().equals(JsonToken.VALUE_STRING)) {
+                    LOGGER.log(Level.WARNING, "failed to get revision from ''{0}''", cacheFile);
+                    return null;
+                }
+                return parser.getValueAsString();
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            throw new CacheException(e);
+        }
     }
 
     @Override
@@ -111,29 +155,26 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         Annotation annotation = null;
         String latestRevision = LatestRevisionUtil.getLatestRevision(file);
         if (rev == null || (latestRevision != null && latestRevision.equals(rev))) {
-            // read from the cache
-            annotation = readAnnotation(file);
-            if (annotation != null) {
-                /*
-                 * Double check that the cached annotation is not stale by comparing the stored revision
-                 * with revision to be fetched.
-                 * This should be more robust than the file time stamp based check performed by history cache,
-                 * at the expense of having to read from the annotation cache.
-                 */
-                final String storedRevision = annotation.getRevision();
-                /*
-                 * Even though store() does not allow to store annotation with null revision, the check
-                 * should be present to catch weird cases of someone not using the store() or general badness.
-                 */
-                if (storedRevision == null) {
-                    LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''", file);
-                    annotation = null;
-                } else if (!storedRevision.equals(latestRevision)) {
-                    LOGGER.log(Level.FINER,
-                            "stored revision {0} for ''{1}'' does not match latest revision {2}",
-                            new Object[]{storedRevision, file, rev});
-                    annotation = null;
-                }
+            /*
+             * Double check that the cached annotation is not stale by comparing the stored revision
+             * with revision to be fetched.
+             * This should be more robust than the file time stamp based check performed by history cache,
+             * at the expense of having to read some content from the annotation cache.
+             */
+            final String storedRevision = getRevision(file);
+            /*
+             * Even though store() does not allow to store annotation with null revision, the check
+             * should be present to catch weird cases of someone not using the store() or general badness.
+             */
+            if (storedRevision == null) {
+                LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''", file);
+            } else if (!storedRevision.equals(latestRevision)) {
+                LOGGER.log(Level.FINER,
+                        "stored revision {0} for ''{1}'' does not match latest revision {2}",
+                        new Object[]{storedRevision, file, rev});
+            } else {
+                // read from the cache
+                annotation = readAnnotation(file);
             }
         }
 
