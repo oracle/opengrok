@@ -60,7 +60,7 @@ public class AnnotationData implements Serializable {
      * shortening with very long filenames), on the other hand it is necessary to deserialize the object
      * to tell whether it is stale.
      */
-    private String revision;
+    String revision;
 
     public List<AnnotationLine> getLines() {
         return annotationLines;
