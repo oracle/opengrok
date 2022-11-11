@@ -102,7 +102,7 @@ public class LatestRevisionUtil {
                 }
                 Date fileDate = new Date(file.lastModified());
                 if (docDate.compareTo(fileDate) < 0) {
-                    LOGGER.log(Level.FINER, "document for '{0}' is out of sync", file);
+                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", file);
                     return null;
                 }
             }
