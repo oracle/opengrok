@@ -200,9 +200,8 @@ public final class HistoryGuru {
      * Get a string with information about the history cache.
      *
      * @return a free form text string describing the history cache instance
-     * @throws HistoryException if an error occurred while getting the info
      */
-    public String getHistoryCacheInfo() throws HistoryException {
+    public String getHistoryCacheInfo() {
         return historyCache == null ? "No history cache" : historyCache.getInfo();
     }
 
@@ -210,9 +209,8 @@ public final class HistoryGuru {
      * Get a string with information about the annotation cache.
      *
      * @return a free form text string describing the history cache instance
-     * @throws HistoryException if an error occurred while getting the info
      */
-    public String getAnnotationCacheInfo() throws HistoryException {
+    public String getAnnotationCacheInfo() {
         return annotationCache == null ? "No annotation cache" : annotationCache.getInfo();
     }
 
