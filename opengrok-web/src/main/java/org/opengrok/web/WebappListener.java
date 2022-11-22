@@ -95,7 +95,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
             int idx;
             if ((idx = serverInfo.indexOf('/')) > 0) {
                 String version = serverInfo.substring(idx + 1);
-                if (!version.startsWith("10.0")) {
+                if (!version.startsWith("10.")) {
                     LOGGER.log(Level.SEVERE, "Unsupported Tomcat version: {0}", version);
                     throw new Error("Unsupported Tomcat version");
                 }
