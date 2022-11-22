@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -26,6 +26,12 @@ package org.opengrok.web.api.v1.controller;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.Response;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.ServletDeploymentContext;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -49,13 +55,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SystemControllerTest extends OGKJerseyTest {
+class SystemControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Override
-    protected Application configure() {
-        return new RestApp();
+    protected DeploymentContext configureDeployment() {
+        return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
+    }
+
+    @Override
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new GrizzlyWebTestContainerFactory();
     }
 
     /**
