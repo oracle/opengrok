@@ -68,6 +68,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>3.1.0</jersey.version>
         <!-- Jackson version needs to match the version of Jackson which Jersey
+        (notably the jersey-media-json-jackson artifact used in opengrok-web)
         depends on or otherwise weird things will happen. -->
         <jackson.version>2.14.1</jackson.version>
         <junit.version>5.7.2</junit.version>
