@@ -24,7 +24,6 @@
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
