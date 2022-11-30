@@ -138,17 +138,17 @@ include file="/httpheader.jspf"
     History hist;
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
 
-        int start = cfg.getStartIndex();
+        int startIndex = cfg.getStartIndex();
         int max = cfg.getMaxItems();
         long totalHits = hist.getHistoryEntries().size();
-        long thispage = Math.min(totalHits - start, max);
+        long thisPageIndex = Math.min(totalHits - startIndex, max);
 
         // We have a lots of results to show: create a slider for them
-        request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
+        request.setAttribute("history.jsp-slider", Util.createSlider(startIndex, max, totalHits, request));
 %>
         <div id="Masthead">History log of 
         <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-        (Results <span class="bold"> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start
+        (Results <span class="bold"> <%= totalHits != 0 ? startIndex + 1 : 0 %> – <%= startIndex + thisPageIndex
             %></span> of <span class="bold"><%= totalHits %></span>)
         </div>
 <%
