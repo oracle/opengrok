@@ -1697,13 +1697,14 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
+     * </p>
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
      * <li>last timestamp for index</li>
      * <li>OpenGrok current deployed version</li>
      * </ul>
-     * </p>
+     *
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
      * </p>
