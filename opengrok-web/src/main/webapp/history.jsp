@@ -263,11 +263,11 @@ document.domReady.push(function() {domReadyHistory();});
                 String tags = hist.getTags().get(rev);
 
                 if (tags != null) {
-			int colspan;
-			if (cfg.isDir())
-				colspan = 4;
-			else
-				colspan = 5;
+                    int colspan;
+                    if (cfg.isDir())
+                        colspan = 4;
+                    else
+                        colspan = 5;
                     %>
         <tr class="revtags-hidden">
             <td colspan="<%= colspan %>" class="revtags">
