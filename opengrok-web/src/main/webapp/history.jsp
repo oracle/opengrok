@@ -374,10 +374,10 @@ document.domReady.push(function() {domReadyHistory();});
                     showSummary = true;
                     coutSummary = coutSummary.substring(0, summaryLength - 1);
                     coutSummary = Util.htmlize(coutSummary);
-                    if (bugPage != null && bugPage.length() > 0) {
+                    if (bugPage != null && bugPage.length() > 0 && bugPattern != null) {
                         coutSummary = Util.linkifyPattern(coutSummary, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
                     }
-                    if (reviewPage != null && reviewPage.length() > 0) {
+                    if (reviewPage != null && reviewPage.length() > 0 && reviewPattern != null) {
                         coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
                     }
                 }
