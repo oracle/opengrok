@@ -526,11 +526,11 @@ public final class PageConfig {
     }
 
     /**
-     * Get the int value of the given request parameter.
+     * Get the integer value of the given request parameter.
      *
      * @param name name of the parameter to lookup.
      * @param defaultValue value to return, if the parameter is not set, is not a number, or is &lt; 0.
-     * @return the parsed int value on success, the given default value otherwise.
+     * @return the parsed integer value on success, the given default value otherwise.
      */
     public int getIntParam(String name, int defaultValue) {
         int ret = defaultValue;
@@ -552,8 +552,7 @@ public final class PageConfig {
      * Get the <b>start</b> index for a search result or history listing to return by looking up
      * the {@code start} request parameter.
      *
-     * @return 0 if the corresponding start parameter is not set or not a
-     * number, the number found otherwise.
+     * @return 0 if the corresponding start parameter is not set or not a number, the number found otherwise.
      */
     public int getStartIndex() {
         return getIntParam(QueryParameters.START_PARAM, 0);
