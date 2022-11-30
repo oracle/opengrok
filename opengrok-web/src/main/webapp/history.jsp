@@ -195,10 +195,10 @@ include file="/minisearch.jspf"
 
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
 
-        int revision2 = Math.max(cfg.getIntParam(QueryParameters.REVISION_2_PARAM, -1), 0);
-        int revision1 = cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1) < revision2 ?
-                revision2 + 1 : cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1);
-        revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2;
+        int revision2Index = Math.max(cfg.getIntParam(QueryParameters.REVISION_2_PARAM, -1), 0);
+        int revision1Index = cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1) < revision2Index ?
+                revision2Index + 1 : cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1);
+        revision2Index = revision2Index >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2Index;
 
         int startIndex = cfg.getStartIndex();
         int maxItems = cfg.getMaxItems();
@@ -229,13 +229,13 @@ document.domReady.push(function() {domReadyHistory();});
             if (!cfg.isDir()) {
             %>
             <th><input type="submit" value=" Compare "/>
-            <% if (hist.getHistoryEntries().size() > revision1 && revision1 >= 0) { %>
+            <% if (hist.getHistoryEntries().size() > revision1Index && revision1Index >= 0) { %>
                 <input type="hidden" id="input_r1" name="<%= QueryParameters.REVISION_1_PARAM %>"
-                value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>"/>
+                value="<%= path + '@' + hist.getHistoryEntries().get(revision1Index).getRevision() %>"/>
             <% } %>
-            <% if (hist.getHistoryEntries().size() > revision2 && revision2 >= 0) { %>
+            <% if (hist.getHistoryEntries().size() > revision2Index && revision2Index >= 0) { %>
                 <input type="hidden" id="input_r2" name="<%= QueryParameters.REVISION_2_PARAM %>"
-                value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>"/>
+                value="<%= path + '@' + hist.getHistoryEntries().get(revision2Index).getRevision() %>"/>
             <% } %>
             </th><%
             }
@@ -299,16 +299,16 @@ document.domReady.push(function() {domReadyHistory();});
                 %><input type="radio"
                         aria-label="From"
                         data-revision-1="<%= (startIndex + count) %>"
-                        data-revision-2="<%= revision2 %>"
+                        data-revision-2="<%= revision2Index %>"
                         data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
                         data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision()%>"
                 <%
-                if (count + startIndex > revision1 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1)) {
+                if (count + startIndex > revision1Index || (count + startIndex > revision2Index && count + startIndex <= revision1Index - 1)) {
                     // revision1 enabled
-                } else if (count + startIndex == revision1) {
+                } else if (count + startIndex == revision1Index) {
                     // revision1 selected
                     %> checked="checked"<%
-                } else if (count + startIndex <= revision2) {
+                } else if (count + startIndex <= revision2Index) {
                     // revision1 disabled
                     %> disabled="disabled" <%
                 }
@@ -316,17 +316,17 @@ document.domReady.push(function() {domReadyHistory();});
 
                 %><input type="radio"
                         aria-label="To"
-                        data-revision-1="<%= revision1 %>"
+                        data-revision-1="<%= revision1Index %>"
                         data-revision-2="<%= (startIndex + count) %>"
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"
                         data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision() %>"
                 <%
-                if (count + startIndex < revision2 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1)) {
+                if (count + startIndex < revision2Index || (count + startIndex > revision2Index && count + startIndex <= revision1Index - 1)) {
                     // revision2 enabled
-                } else if (count + startIndex == revision2) {
+                } else if (count + startIndex == revision2Index) {
                     // revision2 selected
                     %> checked="checked" <%
-                } else if (count + startIndex >= revision1) {
+                } else if (count + startIndex >= revision1Index) {
                     // revision2 disabled
                     %> disabled="disabled" <%
                 }
