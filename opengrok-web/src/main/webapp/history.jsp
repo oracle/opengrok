@@ -98,7 +98,7 @@ org.opengrok.indexer.web.Util"
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        request.setAttribute(PageConfig.HISTORY_JSP_ATTR_NAME, hist);
+        request.setAttribute(cfg.getHistoryAttrName(), hist);
     }
 }
 %>
@@ -109,7 +109,8 @@ include file="/httpheader.jspf"
 %>
 <%
 {
-    if ((request.getAttribute(PageConfig.HISTORY_JSP_ATTR_NAME)) != null) {
+    PageConfig cfg = PageConfig.get(request);
+    if ((request.getAttribute(cfg.getHistoryAttrName())) != null) {
 %>
 <body>
 <script type="text/javascript">/* <![CDATA[ */
@@ -124,7 +125,8 @@ include file="/httpheader.jspf"
     }
 }
 {
-    if (request.getAttribute(PageConfig.HISTORY_JSP_ATTR_NAME) != null) {
+    PageConfig cfg = PageConfig.get(request);
+    if (request.getAttribute(cfg.getHistoryAttrName()) != null) {
 %>
     <%@include file="/pageheader.jspf" %>
 <%
@@ -136,7 +138,7 @@ include file="/httpheader.jspf"
     String path = cfg.getPath();
 
     History hist;
-    if ((hist = (History) request.getAttribute(PageConfig.HISTORY_JSP_ATTR_NAME)) != null) {
+    if ((hist = (History) request.getAttribute(cfg.getHistoryAttrName())) != null) {
 
         int startIndex = cfg.getStartIndex();
         int max = cfg.getMaxItems();
@@ -155,7 +157,8 @@ include file="/httpheader.jspf"
     }
 }
 {
-    if (request.getAttribute(PageConfig.HISTORY_JSP_ATTR_NAME) != null) {
+    PageConfig cfg = PageConfig.get(request);
+    if (request.getAttribute(cfg.getHistoryAttrName()) != null) {
 %>
         <%@
 
@@ -170,7 +173,8 @@ include file="/minisearch.jspf"
     String context = request.getContextPath();
     String path = cfg.getPath();
     History hist;
-    if ((hist = (History) request.getAttribute(PageConfig.HISTORY_JSP_ATTR_NAME)) != null) {
+
+    if ((hist = (History) request.getAttribute(cfg.getHistoryAttrName())) != null) {
         RuntimeEnvironment env = cfg.getEnv();
         String uriEncodedName = cfg.getUriEncodedPath();
         Project project = cfg.getProject();
