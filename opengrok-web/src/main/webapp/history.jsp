@@ -303,10 +303,10 @@ document.domReady.push(function() {domReadyHistory();});
                 <%
                 if (count + startIndex > revision1 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1)) {
                     // revision1 enabled
-                } else if (count + startIndex == revision1 ) {
+                } else if (count + startIndex == revision1) {
                     // revision1 selected
                     %> checked="checked"<%
-                } else if( count + startIndex <= revision2 ) {
+                } else if (count + startIndex <= revision2) {
                     // revision1 disabled
                     %> disabled="disabled" <%
                 }
@@ -319,12 +319,12 @@ document.domReady.push(function() {domReadyHistory();});
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"
                         data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision() %>"
                 <%
-                if( count + startIndex < revision2 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1) ) {
+                if (count + startIndex < revision2 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1)) {
                     // revision2 enabled
-                } else if( count + startIndex == revision2 ) {
+                } else if (count + startIndex == revision2) {
                     // revision2 selected
                     %> checked="checked" <%
-                } else if (count + startIndex >= revision1 ) {
+                } else if (count + startIndex >= revision1) {
                     // revision2 disabled
                     %> disabled="disabled" <%
                 }
