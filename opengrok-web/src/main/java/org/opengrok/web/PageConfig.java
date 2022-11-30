@@ -556,24 +556,24 @@ public final class PageConfig {
     }
 
     /**
-     * Get the <b>start</b> index for a search result to return by looking up
+     * Get the <b>start</b> index for a search result or history listing to return by looking up
      * the {@code start} request parameter.
      *
      * @return 0 if the corresponding start parameter is not set or not a
      * number, the number found otherwise.
      */
-    public int getSearchStart() {
+    public int getStartIndex() {
         return getIntParam(QueryParameters.START_PARAM, 0);
     }
 
     /**
-     * Get the number of search results to max. return by looking up the
+     * Get the number of search results or history entries to display by looking up the
      * {@code n} request parameter.
      *
-     * @return the default number of hits if the corresponding start parameter
+     * @return the default number of items if the corresponding start parameter
      * is not set or not a number, the number found otherwise.
      */
-    public int getSearchMaxItems() {
+    public int getMaxItems() {
         return getIntParam(QueryParameters.COUNT_PARAM, getEnv().getHitsPerPage());
     }
 
@@ -1482,8 +1482,8 @@ public final class PageConfig {
      */
     public SearchHelper prepareInternalSearch(SortOrder sortOrder) {
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
-        return new SearchHelper(getSearchStart(), sortOrder, getDataRoot(), new File(getSourceRootPath()),
-                getSearchMaxItems(), getEftarReader(), getQueryBuilder(), getPrefix() == Prefix.SEARCH_R,
+        return new SearchHelper(getStartIndex(), sortOrder, getDataRoot(), new File(getSourceRootPath()),
+                getMaxItems(), getEftarReader(), getQueryBuilder(), getPrefix() == Prefix.SEARCH_R,
                 req.getContextPath(), getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P,
                 xrValue != null && !xrValue.isEmpty());
     }
