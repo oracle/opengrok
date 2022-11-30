@@ -98,7 +98,7 @@ org.opengrok.indexer.web.Util"
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        request.setAttribute("history.jsp-hist", hist);
+        request.setAttribute(PageConfig.historyJspAttrName, hist);
     }
 }
 %>
@@ -109,7 +109,7 @@ include file="/httpheader.jspf"
 %>
 <%
 {
-    if ((request.getAttribute("history.jsp-hist")) != null) {
+    if ((request.getAttribute(PageConfig.historyJspAttrName)) != null) {
 %>
 <body>
 <script type="text/javascript">/* <![CDATA[ */
@@ -124,7 +124,7 @@ include file="/httpheader.jspf"
     }
 }
 {
-    if (request.getAttribute("history.jsp-hist") != null) {
+    if (request.getAttribute(PageConfig.historyJspAttrName) != null) {
 %>
     <%@include file="/pageheader.jspf" %>
 <%
@@ -136,7 +136,7 @@ include file="/httpheader.jspf"
     String path = cfg.getPath();
 
     History hist;
-    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
+    if ((hist = (History) request.getAttribute(PageConfig.historyJspAttrName)) != null) {
 
         int startIndex = cfg.getStartIndex();
         int max = cfg.getMaxItems();
@@ -155,7 +155,7 @@ include file="/httpheader.jspf"
     }
 }
 {
-    if (request.getAttribute("history.jsp-hist") != null) {
+    if (request.getAttribute(PageConfig.historyJspAttrName) != null) {
 %>
         <%@
 
@@ -170,7 +170,7 @@ include file="/minisearch.jspf"
     String context = request.getContextPath();
     String path = cfg.getPath();
     History hist;
-    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
+    if ((hist = (History) request.getAttribute(PageConfig.historyJspAttrName)) != null) {
         RuntimeEnvironment env = cfg.getEnv();
         String uriEncodedName = cfg.getUriEncodedPath();
         Project project = cfg.getProject();
