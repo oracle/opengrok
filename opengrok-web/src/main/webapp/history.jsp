@@ -143,7 +143,7 @@ include file="/httpheader.jspf"
         long totalHits = hist.getHistoryEntries().size();
         long thisPageIndex = Math.min(totalHits - startIndex, max);
 
-        // We have a lots of results to show: create a slider for them
+        // We have potentially a lots of results to show: create a slider for them
         request.setAttribute("history.jsp-slider", Util.createSlider(startIndex, max, totalHits, request));
 %>
         <div id="Masthead">History log of 
