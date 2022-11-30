@@ -118,7 +118,7 @@ public final class PageConfig {
 
     public static final String DUMMY_REVISION = "unknown";
 
-    public static final String HISTORY_JSP_ATTR_NAME = "history.jsp-hist";
+    private static final String HISTORY_JSP_ATTR_NAME = "history.jsp-hist";
 
     // query parameters
     static final String PROJECT_PARAM_NAME = "project";
@@ -181,6 +181,13 @@ public final class PageConfig {
      */
     public Object getRequestAttribute(String attr) {
         return this.req.getAttribute(attr);
+    }
+
+    /**
+     * @return name of the JSP attribute to store the {@link org.opengrok.indexer.history.History} object.
+     */
+    public String getHistoryAttrName() {
+        return HISTORY_JSP_ATTR_NAME;
     }
 
     /**
