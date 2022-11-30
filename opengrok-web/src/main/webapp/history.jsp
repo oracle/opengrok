@@ -125,8 +125,7 @@ include file="/httpheader.jspf"
     }
 }
 {
-    PageConfig cfg = PageConfig.get(request);
-    if (request.getAttribute(cfg.getHistoryAttrName()) != null) {
+    if (request.getAttribute(PageConfig.get(request).getHistoryAttrName()) != null) {
 %>
     <%@include file="/pageheader.jspf" %>
 <%
@@ -157,8 +156,7 @@ include file="/httpheader.jspf"
     }
 }
 {
-    PageConfig cfg = PageConfig.get(request);
-    if (request.getAttribute(cfg.getHistoryAttrName()) != null) {
+    if (request.getAttribute(PageConfig.get(request).getHistoryAttrName()) != null) {
 %>
         <%@
 
