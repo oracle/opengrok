@@ -138,8 +138,8 @@ include file="/httpheader.jspf"
     History hist;
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
 
-        int start = cfg.getSearchStart();
-        int max = cfg.getSearchMaxItems();
+        int start = cfg.getStartIndex();
+        int max = cfg.getMaxItems();
         long totalHits = hist.getHistoryEntries().size();
         long thispage = Math.min(totalHits - start, max);
 
@@ -198,8 +198,8 @@ include file="/minisearch.jspf"
                 revision2 + 1 : cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1);
         revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2;
 
-        int start = cfg.getSearchStart();
-        int max = cfg.getSearchMaxItems();
+        int startIndex = cfg.getStartIndex();
+        int maxItems = cfg.getMaxItems();
 %>
 <script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() {domReadyHistory();});
@@ -255,7 +255,7 @@ document.domReady.push(function() {domReadyHistory();});
     <tbody>
             <%
             int count=0;
-            for (HistoryEntry entry : hist.getHistoryEntries(max, start)) {
+            for (HistoryEntry entry : hist.getHistoryEntries(maxItems, startIndex)) {
                 String rev = entry.getRevision();
                 if (rev == null || rev.length() == 0) {
                     rev = "";
@@ -296,17 +296,17 @@ document.domReady.push(function() {domReadyHistory();});
             <td><%
                 %><input type="radio"
                         aria-label="From"
-                        data-revision-1="<%= (start + count) %>"
+                        data-revision-1="<%= (startIndex + count) %>"
                         data-revision-2="<%= revision2 %>"
                         data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
-                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision()%>"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision()%>"
                 <%
-                if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
+                if (count + startIndex > revision1 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1)) {
                     // revision1 enabled
-                } else if (count + start == revision1 ) {
+                } else if (count + startIndex == revision1 ) {
                     // revision1 selected
                     %> checked="checked"<%
-                } else if( count + start <= revision2 ) {
+                } else if( count + startIndex <= revision2 ) {
                     // revision1 disabled
                     %> disabled="disabled" <%
                 }
@@ -315,16 +315,16 @@ document.domReady.push(function() {domReadyHistory();});
                 %><input type="radio"
                         aria-label="To"
                         data-revision-1="<%= revision1 %>"
-                        data-revision-2="<%= (start + count) %>"
+                        data-revision-2="<%= (startIndex + count) %>"
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"
-                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision() %>"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision() %>"
                 <%
-                if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
+                if( count + startIndex < revision2 || (count + startIndex > revision2 && count + startIndex <= revision1 - 1) ) {
                     // revision2 enabled
-                } else if( count + start == revision2 ) {
+                } else if( count + startIndex == revision2 ) {
                     // revision2 selected
                     %> checked="checked" <%
-                } else if (count + start >= revision1 ) {
+                } else if (count + startIndex >= revision1 ) {
                     // revision2 disabled
                     %> disabled="disabled" <%
                 }
