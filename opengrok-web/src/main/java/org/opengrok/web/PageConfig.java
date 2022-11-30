@@ -1477,6 +1477,7 @@ public final class PageConfig {
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
+     * @param sortOrder instance of {@link SortOrder}
      * @return a search helper.
      */
     public SearchHelper prepareInternalSearch(SortOrder sortOrder) {
