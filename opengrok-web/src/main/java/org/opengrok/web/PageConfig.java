@@ -118,6 +118,8 @@ public final class PageConfig {
 
     public static final String DUMMY_REVISION = "unknown";
 
+    public static final String historyJspAttrName = "history.jsp-hist";
+
     // query parameters
     static final String PROJECT_PARAM_NAME = "project";
     static final String GROUP_PARAM_NAME = "group";
