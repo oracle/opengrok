@@ -190,8 +190,7 @@ public final class PageConfig {
     }
 
     /**
-     * Add the given data to the &lt;head&gt; section of the html page to
-     * generate.
+     * Add the given data to the &lt;head&gt; section of the html page to generate.
      *
      * @param data data to add. It is copied as is, so remember to escape
      * special characters ...
@@ -207,8 +206,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get addition data, which should be added as is to the &lt;head&gt;
-     * section of the html page.
+     * Get addition data, which should be added as is to the &lt;head&gt; section of the HTML page.
      *
      * @return an empty string if nothing to add, the data otherwise.
      */
@@ -432,10 +430,10 @@ public final class PageConfig {
      * @return an empty list, if the resource does not exist, is not a directory
      * or an error occurred when reading it, otherwise a list of filenames in
      * that directory, sorted alphabetically
-     *
      * <p>
      * For the root directory (/xref/), authorization check is performed for each
      * project in case that projects are used.
+     * </p>
      *
      * @see #getResourceFile()
      * @see #isDir()
@@ -499,8 +497,6 @@ public final class PageConfig {
     }
 
     /**
-     * Get the time of last modification of the related file or directory.
-     *
      * @return the last modification time of the related file or directory.
      * @see File#lastModified()
      */
@@ -509,11 +505,10 @@ public final class PageConfig {
     }
 
     /**
-     * Get all RSS related directories from the request using its {@code also}
-     * parameter.
+     * Get all RSS related directories from the request using its {@code also} parameter.
      *
      * @return an empty string if the requested resource is not a directory, a
-     * space (' ') separated list of unchecked directory names otherwise.
+     * space (<code>' '</code>) separated list of unchecked directory names otherwise.
      */
     public String getHistoryDirs() {
         if (!isDir()) {
@@ -534,10 +529,8 @@ public final class PageConfig {
      * Get the int value of the given request parameter.
      *
      * @param name name of the parameter to lookup.
-     * @param defaultValue value to return, if the parameter is not set, is not
-     * a number, or is &lt; 0.
-     * @return the parsed int value on success, the given default value
-     * otherwise.
+     * @param defaultValue value to return, if the parameter is not set, is not a number, or is &lt; 0.
+     * @return the parsed int value on success, the given default value otherwise.
      */
     public int getIntParam(String name, int defaultValue) {
         int ret = defaultValue;
@@ -1107,10 +1100,10 @@ public final class PageConfig {
 
     /**
      * Get the file object for the given path.
-     *
+     * <p>
      * NOTE: If a repository contains hard or symbolic links, the returned file
      * may finally point to a file outside the source root directory.
-     *
+     * </p>
      * @param path the path to the file relatively to the source root
      * @return null if the related file or directory is not
      * available (can not be found below the source root directory), the readable file or directory otherwise.
@@ -1127,10 +1120,10 @@ public final class PageConfig {
 
     /**
      * Get the on disk file to the request related file or directory.
-     *
+     * <p>
      * NOTE: If a repository contains hard or symbolic links, the returned file
      * may finally point to a file outside the source root directory.
-     *
+     * </p>
      * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })}
      * if the related file or directory is not available (can not be find below the source root directory),
      * the readable file or directory otherwise.
@@ -1426,10 +1419,8 @@ public final class PageConfig {
     }
 
     /**
-     * Play nice in reverse proxy environment by using pre-configured hostname
-     * request to construct the URLs.
-     * Will not work well if the scheme or port is different for proxied server
-     * and original server.
+     * Play nice in reverse proxy environment by using pre-configured hostname request to construct the URLs.
+     * Will not work well if the scheme or port is different for proxied server and original server.
      * @return server name
      */
     public String getServerName() {
@@ -1698,17 +1689,16 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
-     *
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
      * <li>last timestamp for index</li>
      * <li>OpenGrok current deployed version</li>
      * </ul>
-     *
+     * </p>
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
-     *
+     * </p>
      *
      * @param request the http request containing the headers
      * @param response the http response for setting the headers
@@ -1753,9 +1743,8 @@ public final class PageConfig {
     }
 
     /**
-     * Determines whether a match offset from a search result has been
-     * indicated, and if so tries to calculate a translated xref fragment
-     * identifier.
+     * Determines whether a match offset from a search result has been indicated,
+     * and if so tries to calculate a translated xref fragment identifier.
      * @return {@code true} if a xref fragment identifier was calculated by the call to this method
      */
     public boolean evaluateMatchOffset() {

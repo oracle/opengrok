@@ -1360,13 +1360,12 @@ public final class Util {
     }
 
     /**
-     * Creates a HTML slider for pagination.
+     * Creates HTML slider for pagination.
      *
      * @param offset start of the current page
      * @param limit max number of items per page
      * @param size number of total hits to paginate
-     * @param request request containing URL parameters which should be appended
-     * to the page URL
+     * @param request request containing URL parameters which should be appended to the page URL
      * @return string containing slider html
      */
     public static String createSlider(int offset, int limit, long size, HttpServletRequest request) {
