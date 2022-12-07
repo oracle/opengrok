@@ -571,6 +571,11 @@ def main():
 
         start_rest_thread(logger)
 
+    # Ideally the signal handlers should be installed as early as possible,
+    # however that does not play well with the worker pool communication used by do_sync().
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
     global tomcat_popen
@@ -592,7 +597,4 @@ def signal_handler(signum, frame):
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-
     main()
