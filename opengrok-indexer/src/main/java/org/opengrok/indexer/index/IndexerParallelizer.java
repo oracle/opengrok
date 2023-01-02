@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -33,7 +33,6 @@ import org.opengrok.indexer.analysis.CtagsValidator;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.BoundedBlockingObjectPool;
-import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.ObjectFactory;
 import org.opengrok.indexer.util.ObjectPool;
@@ -273,7 +272,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {
 
         public Ctags createNew() {
-            return CtagsUtil.newInstance(env);
+            return new Ctags();
         }
     }
 }

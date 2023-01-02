@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -586,8 +586,7 @@ public final class RuntimeEnvironment {
      * Gets the name of the ctags program to use: either the last value passed
      * successfully to {@link #setCtags(java.lang.String)}, or
      * {@link Configuration#getCtags()}, or the system property for
-     * {@code "org.opengrok.indexer.analysis.Ctags"}, or "ctags" as a
-     * default.
+     * {@code "org.opengrok.indexer.analysis.Ctags"}, or "{@code ctags}" as a default.
      * @return a defined value
      */
     public String getCtags() {
@@ -663,35 +662,42 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Validate that there is a Universal ctags program.
+     * Validate that there is a Universal ctags program that can actually process input files
+     * under source root.
+     * <br>
+     * As a side effect, this sets the set of ctags languages that is used by the ctags program.
      *
      * @return true if success, false otherwise
      */
     public boolean validateUniversalCtags() {
         if (ctagsFound == null) {
-            String ctagsBinary = getCtags();
             try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
                 //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
                 assert resourceLock != null;
                 if (ctagsFound == null) {
-                    ctagsFound = CtagsUtil.validate(ctagsBinary);
-                    if (ctagsFound) {
-                        List<String> languages = CtagsUtil.getLanguages(ctagsBinary);
-                        if (languages != null) {
-                            ctagsLanguages.addAll(languages);
-                        }
+                    String ctagsBinary = getCtags();
+                    if (ctagsLanguages.isEmpty()) {
+                        // The ctagsLanguages are necessary for the call to validate() below.
+                        Set<String> languages = CtagsUtil.getLanguages(ctagsBinary);
+                        ctagsLanguages.addAll(languages);
                     }
+
+                    ctagsFound = CtagsUtil.validate(ctagsBinary);
                 }
             }
         }
+
+        if (ctagsFound) {
+            LOGGER.log(Level.INFO, "Using ctags: {0}", CtagsUtil.getCtagsVersion(getCtags()));
+        }
+
         return ctagsFound;
     }
 
     /**
      * Gets the base set of supported Ctags languages.
      * @return a defined set which may be empty if
-     * {@link #validateUniversalCtags()} has not yet been called or if the call
-     * fails
+     * {@link #validateUniversalCtags()} has not yet been called or if the call fails
      */
     public Set<String> getCtagsLanguages() {
         return Collections.unmodifiableSet(ctagsLanguages);
@@ -1112,6 +1118,10 @@ public final class RuntimeEnvironment {
 
     public void setWebappLAF(String webappLAF) {
         syncWriteConfiguration(webappLAF, Configuration::setWebappLAF);
+    }
+
+    public void setWebappCtags(boolean ctags) {
+        syncWriteConfiguration(ctags, Configuration::setWebappCtags);
     }
 
     /**
@@ -1757,10 +1767,10 @@ public final class RuntimeEnvironment {
      * Set configuration from the incoming parameter. The configuration could
      * have come from the Indexer (in which case some extra work is needed) or
      * is it just a request to set new configuration in place.
-     *
+     * <p>
      * The classes that have registered their listener will be pinged here.
      * @see ConfigurationChangedListener
-     *
+     * </p>
      * @param config the incoming configuration
      * @param reindex is the message result of reindex
      * @param cmdType command timeout type

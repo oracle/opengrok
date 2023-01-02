@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -26,16 +26,22 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRequestEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebappListenerTest {
+class WebappListenerTest {
     /**
      * Simple smoke test for WebappListener request handling.
      */
     @Test
-    public void testRequest() {
+    void testRequest() {
         WebappListener wl = new WebappListener();
         final HttpServletRequest req = mock(HttpServletRequest.class);
         final ServletContext servletContext = mock(ServletContext.class);
@@ -44,5 +50,19 @@ public class WebappListenerTest {
 
         wl.requestInitialized(event);
         wl.requestDestroyed(event);
+    }
+
+    @Test
+    void testCtags() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        Path tmpSourceRoot = Files.createTempDirectory("srcRootCtagsValidationTest");
+        env.setSourceRoot(tmpSourceRoot.toString());
+        assertTrue(env.getSourceRootFile().exists());
+
+        // Right now, this is not needed, however is used to simulate the environment.
+        env.setWebappCtags(true);
+
+        env.validateUniversalCtags();
     }
 }

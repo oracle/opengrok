@@ -1014,7 +1014,8 @@ public final class Indexer {
                                List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
-            throw new IndexerException("Didn't find Universal Ctags");
+            throw new IndexerException("Could not find working Universal ctags. " +
+                    "Pro tip: avoid installing Universal ctags from snap packages.");
         }
 
         // Projects need to be created first since when adding repositories below,
@@ -1235,7 +1236,7 @@ public final class Indexer {
     }
 
     private static String getCtagsCommand() {
-        Ctags ctags = CtagsUtil.newInstance(env);
+        Ctags ctags = new Ctags();
         return Executor.escapeForShell(ctags.getArgv(), true, SystemUtils.IS_OS_WINDOWS);
     }
 
