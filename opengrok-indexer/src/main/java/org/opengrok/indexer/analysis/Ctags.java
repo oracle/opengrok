@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -35,7 +35,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -48,6 +50,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.SourceSplitter;
@@ -65,15 +68,17 @@ public class Ctags implements Resettable {
     private volatile boolean closing;
     private LangMap langMap;
     private List<String> command;
-    private Process ctags;
+    private Process ctagsProcess;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
-    private String CTagsExtraOptionsFile = null;
+    private String cTagsExtraOptionsFile = null;
     private int tabSize;
     private Duration timeout = Duration.ofSeconds(10);
 
-    private boolean junit_testing = false;
+    private final Set<String> ctagsLanguages = new HashSet<>();
+
+    private boolean junitTesting = false;
 
     /**
      * Initializes an instance with the current
@@ -82,16 +87,15 @@ public class Ctags implements Resettable {
     public Ctags() {
         env = RuntimeEnvironment.getInstance();
         langMap = AnalyzerGuru.getLangMap();
+        cTagsExtraOptionsFile = env.getCTagsExtraOptionsFile();
     }
 
     /**
-     * Gets a value indicating if a subprocess of ctags was started and it is
-     * not alive.
-     * @return {@code true} if the instance should be considered closed and no
-     * longer usable.
+     * Gets a value indicating if a subprocess of ctags was started, and it is not alive.
+     * @return {@code true} if the instance should be considered closed and no longer usable.
      */
     public boolean isClosed() {
-        return ctags != null && !ctags.isAlive();
+        return ctagsProcess != null && !ctagsProcess.isAlive();
     }
 
     public void setLangMap(LangMap langMap) {
@@ -107,7 +111,7 @@ public class Ctags implements Resettable {
     }
 
     public void setCTagsExtraOptionsFile(String ctagsExtraOptionsFile) {
-        this.CTagsExtraOptionsFile = ctagsExtraOptionsFile;
+        this.cTagsExtraOptionsFile = ctagsExtraOptionsFile;
     }
 
     public void setTimeout(long timeout) {
@@ -133,10 +137,10 @@ public class Ctags implements Resettable {
     public void close() {
         reset();
         IOUtils.close(ctagsIn);
-        if (ctags != null) {
+        if (ctagsProcess != null) {
             closing = true;
             LOGGER.log(Level.FINE, "Destroying ctags command");
-            ctags.destroyForcibly();
+            ctagsProcess.destroyForcibly();
         }
     }
 
@@ -150,15 +154,19 @@ public class Ctags implements Resettable {
     }
 
     private void initialize() {
-        /*
-         * Call the following principally to properly initialize when running
-         * JUnit tests. opengrok-indexer and opengrok-web call it too but
-         * validating its return code and logging (and possibly aborting).
-         */
-        env.validateUniversalCtags();
-
         command = new ArrayList<>();
-        command.add(env.getCtags());
+        String ctagsCommand = env.getCtags();
+        command.add(ctagsCommand);
+
+        // Normally, the indexer or the webapp will call validateUniversalCtags()
+        // that would set the set of ctags languages returned by env.getCtagsLanguages(),
+        // however for tests this might not be always the case so do it here.
+        if (env.getCtagsLanguages().isEmpty()) {
+            ctagsLanguages.addAll(CtagsUtil.getLanguages(ctagsCommand));
+        } else {
+            ctagsLanguages.addAll(env.getCtagsLanguages());
+        }
+
         command.add("--kinds-c=+l");
 
         // Workaround for bug #14924: Don't get local variables in Java
@@ -203,9 +211,9 @@ public class Ctags implements Resettable {
         }
 
         /* Add extra command line options for ctags. */
-        if (CTagsExtraOptionsFile != null) {
+        if (cTagsExtraOptionsFile != null) {
             LOGGER.log(Level.FINER, "Adding extra options to ctags");
-            command.add("--options=" + CTagsExtraOptionsFile);
+            command.add("--options=" + cTagsExtraOptionsFile);
         }
     }
 
@@ -215,20 +223,19 @@ public class Ctags implements Resettable {
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-        ctags = processBuilder.start();
+        ctagsProcess = processBuilder.start();
         ctagsIn = new OutputStreamWriter(
-            ctags.getOutputStream(), StandardCharsets.UTF_8);
-        ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream(),
+            ctagsProcess.getOutputStream(), StandardCharsets.UTF_8);
+        ctagsOut = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream(),
             StandardCharsets.UTF_8));
 
         Thread errThread = new Thread(() -> {
-            try (BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream(),
+            try (BufferedReader error = new BufferedReader(new InputStreamReader(ctagsProcess.getErrorStream(),
                     StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     if (s.length() > 0) {
-                        LOGGER.log(Level.WARNING, "Error from ctags: {0}",
-                                s);
+                        LOGGER.log(Level.WARNING, "Error from ctags: {0}", s);
                     }
                     if (closing) {
                         break;
@@ -243,7 +250,7 @@ public class Ctags implements Resettable {
     }
 
     private void addRustSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Rust")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Rust")) { // Built-in would be capitalized.
             command.add("--langdef=rust"); // Lower-case if user-defined.
         }
 
@@ -262,7 +269,7 @@ public class Ctags implements Resettable {
     }
 
     private void addPowerShellSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("PowerShell")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("PowerShell")) { // Built-in would be capitalized.
             command.add("--langdef=powershell"); // Lower-case if user-defined.
         }
 
@@ -282,7 +289,7 @@ public class Ctags implements Resettable {
     }
 
     private void addPascalSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Pascal")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Pascal")) { // Built-in would be capitalized.
             command.add("--langdef=pascal"); // Lower-case if user-defined.
         }
 
@@ -307,7 +314,7 @@ public class Ctags implements Resettable {
     }
 
     private void addSwiftSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Swift")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Swift")) { // Built-in would be capitalized.
             command.add("--langdef=swift"); // Lower-case if user-defined.
         }
         command.add("--kinddef-swift=n,enum,Enums");
@@ -330,7 +337,7 @@ public class Ctags implements Resettable {
     }
 
     private void addKotlinSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Kotlin")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Kotlin")) { // Built-in would be capitalized.
             command.add("--langdef=kotlin"); // Lower-case if user-defined.
         }
         command.add("--kinddef-kotlin=d,dataClass,Data\\ classes");
@@ -360,7 +367,7 @@ public class Ctags implements Resettable {
      * Override Clojure support with patterns from https://gist.github.com/kul/8704283.
      */
     private void addClojureSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Clojure")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Clojure")) { // Built-in would be capitalized.
             command.add("--langdef=clojure"); // Lower-case if user-defined.
         }
         command.add("--kinddef-clojure=d,definition,Definitions");
@@ -386,7 +393,7 @@ public class Ctags implements Resettable {
     }
 
     private void addHaskellSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Haskell")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Haskell")) { // Built-in would be capitalized.
             command.add("--langdef=haskell"); // below added with #912. Lowercase if user-defined.
         }
 
@@ -401,7 +408,7 @@ public class Ctags implements Resettable {
     }
 
     private void addScalaSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Scala")) { // Built-in would be capitalized.
             command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
         }
         command.add("--kinddef-scala=c,class,Classes");
@@ -436,7 +443,7 @@ public class Ctags implements Resettable {
     }
 
     private void addTerraformSupport(List<String> command) {
-        if (!env.getCtagsLanguages().contains("Terraform")) { // Built-in would be capitalized.
+        if (!ctagsLanguages.contains("Terraform")) { // Built-in would be capitalized.
             command.add("--langdef=terraform"); // Lower-case if user-defined.
         }
 
@@ -494,9 +501,9 @@ public class Ctags implements Resettable {
             return null;
         }
 
-        if (ctags != null) {
+        if (ctagsProcess != null) {
             try {
-                int exitValue = ctags.exitValue();
+                int exitValue = ctagsProcess.exitValue();
                 // If it is possible to retrieve exit value without exception
                 // this means the ctags process is dead.
                 LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
@@ -583,9 +590,9 @@ public class Ctags implements Resettable {
         tagsBuilder.append("\n");
         bufferTags = tagsBuilder.toString();
 
-        junit_testing = true;
+        junitTesting = true;
         ctagsOut = new BufferedReader(new StringReader(bufferTags));
-        ctags = new Process() {
+        ctagsProcess = new Process() {
             @Override
             public OutputStream getOutputStream() {
                 return null;
@@ -632,20 +639,20 @@ public class Ctags implements Resettable {
 
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
-                    if (!junit_testing) {
+                    if (!junitTesting) {
                         LOGGER.warning("ctags: Unexpected end of file!");
                     }
                     try {
-                        int val = ctags.exitValue();
-                        if (!junit_testing) {
+                        int val = ctagsProcess.exitValue();
+                        if (!junitTesting) {
                             LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
                         }
                     } catch (IllegalThreadStateException e) {
                         LOGGER.log(Level.WARNING, "ctags EOF but did not exit");
-                        ctags.destroyForcibly();
+                        ctagsProcess.destroyForcibly();
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "ctags problem:", e);
-                        ctags.destroyForcibly();
+                        ctagsProcess.destroyForcibly();
                     }
                     // Throw the following to indicate non-I/O error for retry.
                     throw new InterruptedException("tagLine == null");

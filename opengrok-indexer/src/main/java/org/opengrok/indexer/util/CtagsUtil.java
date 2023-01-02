@@ -18,22 +18,28 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,12 +52,101 @@ public class CtagsUtil {
 
     public static final String SYSTEM_CTAGS_PROPERTY = "org.opengrok.indexer.analysis.Ctags";
 
+    /**
+     * Check that {@code ctags} program exists and is working.
+     * @param ctagsBinary name of the ctags program or path
+     * @return true if the program works, false otherwise
+     */
     public static boolean validate(String ctagsBinary) {
+        if (!isUniversalCtags(ctagsBinary)) {
+            return false;
+        }
+
+        return canProcessFiles(RuntimeEnvironment.getInstance().getSourceRootPath());
+    }
+
+    /**
+     * Run ctags program on a known temporary file to be created under given path and see if it was possible
+     * to get some symbols.
+     * @param basePath path to use for storing the temporary file
+     * @return true if at least one symbol was found, false otherwise
+     */
+    private static boolean canProcessFiles(String basePath) {
+        Path inputPath = Path.of(basePath, "ctagsValidationTemporaryFile.c");
+        final String resourceFileName = "sample.c";
+        Path resourcePath = getResourceFile(resourceFileName);
+        if (resourcePath == null) {
+            return false;
+        }
+
+        try {
+            if (inputPath.toFile().exists()) {
+                Files.delete(inputPath);
+            }
+            Files.copy(resourcePath, inputPath);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "cannot copy ''{0}'' to ''{1}'' for ctags check: {2}",
+                    new Object[]{resourcePath, inputPath, e});
+            return false;
+        }
+
+        Ctags ctags = new Ctags();
+        try {
+            Definitions definitions = ctags.doCtags(inputPath.toString());
+            if (definitions.numberOfSymbols() > 1) {
+                return true;
+            }
+        } catch (IOException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "cannot determine whether ctags can produce definitions", e);
+        } finally {
+            ctags.close();
+            try {
+                Files.delete(inputPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "cannot delete ''{0}''", inputPath);
+            }
+        }
+
+        return false;
+    }
+
+    @Nullable
+    private static Path getResourceFile(String resourceFileName) {
+        ClassLoader classLoader = CtagsUtil.class.getClassLoader();
+        URI resourceURI;
+        try {
+            URL resourceURL = classLoader.getResource(resourceFileName);
+            if (resourceURL == null) {
+                LOGGER.log(Level.SEVERE, "cannot get resource URL of ''{0}'' for ctags check",
+                        resourceFileName);
+                return null;
+            }
+            resourceURI = resourceURL.toURI();
+        } catch (URISyntaxException e) {
+            LOGGER.log(Level.SEVERE, "cannot perform ctags check due to missing resource file ''{0}''",
+                    resourceFileName);
+            return null;
+        }
+
+        return Path.of(resourceURI);
+    }
+
+    @Nullable
+    public static String getCtagsVersion(String ctagsBinary) {
         Executor executor = new Executor(new String[]{ctagsBinary, "--version"});
         executor.exec(false);
         String output = executor.getOutputString();
-        boolean isUnivCtags = output != null && output.contains("Universal Ctags");
-        if (output == null || !isUnivCtags) {
+        if (output != null) {
+            output = output.trim();
+        }
+
+        return output;
+    }
+
+    private static boolean isUniversalCtags(String ctagsBinary) {
+        String version = getCtagsVersion(ctagsBinary);
+        boolean isUniversalCtags = version != null && version.contains("Universal Ctags");
+        if (version == null || !isUniversalCtags) {
             LOGGER.log(Level.SEVERE, "Error: No Universal Ctags found !\n"
                             + "(tried running " + "{0}" + ")\n"
                             + "Please use the -c option to specify path to a "
@@ -61,28 +156,25 @@ public class CtagsUtil {
             return false;
         }
 
-        LOGGER.log(Level.INFO, "Using ctags: {0}", output.trim());
-
         return true;
     }
 
     /**
-     * Gets the base set of languages by executing {@code --list-languages} for
-     * the specified binary.
-     * @return {@code null} on failure to run, or a defined list
+     * Gets the base set of languages by executing {@code --list-languages} for the specified binary.
+     * @return empty list on failure to run, or a defined list
      */
-    public static List<String> getLanguages(String ctagsBinary) {
+    public static Set<String> getLanguages(String ctagsBinary) {
         Executor executor = new Executor(new String[]{ctagsBinary, "--list-languages"});
         int rc = executor.exec(false);
         String output = executor.getOutputString();
         if (output == null || rc != 0) {
             LOGGER.log(Level.WARNING, "Failed to get Ctags languages");
-            return null;
+            return Collections.emptySet();
         }
 
         output = output.replaceAll("\\s+\\[disabled]", "");
         String[] split = output.split("(?m)$");
-        List<String> result = new ArrayList<>();
+        Set<String> result = new HashSet<>();
         for (String lang : split) {
             lang = lang.trim();
             if (lang.length() > 0) {
@@ -133,22 +225,6 @@ public class CtagsUtil {
                 LOGGER.log(Level.WARNING, "cannot delete file {0}", file);
             }
         }
-    }
-
-    /**
-     * Creates a new instance, and attempts to configure it from the
-     * environment.
-     * @return a defined instance
-     */
-    public static Ctags newInstance(RuntimeEnvironment env) {
-        Ctags ctags = new Ctags();
-        ctags.setLangMap(AnalyzerGuru.getLangMap());
-
-        String filename = env.getCTagsExtraOptionsFile();
-        if (filename != null) {
-            ctags.setCTagsExtraOptionsFile(filename);
-        }
-        return ctags;
     }
 
     /** Private to enforce static. */

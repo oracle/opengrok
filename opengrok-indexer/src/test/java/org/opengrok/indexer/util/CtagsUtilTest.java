@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -25,23 +26,61 @@ package org.opengrok.indexer.util;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link CtagsUtil}.
  */
-public class CtagsUtilTest {
+class CtagsUtilTest {
 
     @Test
-    public void getLanguages() {
+    void getLanguages() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<String> result = CtagsUtil.getLanguages(env.getCtags());
-        assertNotNull(result, "should get Ctags languages");
-        assertTrue(result.contains("C++"), "Ctags languages should contains C++");
+        Set<String> result = CtagsUtil.getLanguages(env.getCtags());
+        assertNotNull(result, "getLanguages() should always return non null");
+        assertFalse(result.isEmpty(), "should get Ctags languages");
+        assertTrue(result.contains("C++"), "Ctags languages should contain C++");
         // Test that the [disabled] tag is stripped for OldC.
-        assertTrue(result.contains("OldC"), "Ctags languages should contains OldC");
+        assertTrue(result.contains("OldC"), "Ctags languages should contain OldC");
+    }
+
+    @Test
+    void validate() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        Path tmpSourceRoot = Files.createTempDirectory("srcRootCtagsValidationTest");
+        env.setSourceRoot(tmpSourceRoot.toString());
+        assertTrue(env.getSourceRootFile().exists());
+
+        assertTrue(CtagsUtil.validate(env.getCtags()));
+
+        Files.delete(tmpSourceRoot);
+    }
+
+    @Test
+    void testValidateWithInvalidExtraOptions() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        Path tmpSourceRoot = Files.createTempDirectory("srcRootCtagsValidationTestExtraArgs");
+        env.setSourceRoot(tmpSourceRoot.toString());
+        assertTrue(env.getSourceRootFile().exists());
+
+        Path extraOptionsPath = Path.of(env.getSourceRootPath(), "extra.config");
+        Files.write(extraOptionsPath, List.of("--fooBar"));
+        String extraOptionsAbsPath = extraOptionsPath.toAbsolutePath().toString();
+
+        env.setCTagsExtraOptionsFile(extraOptionsAbsPath);
+        assertFalse(CtagsUtil.validate(env.getCtags()));
+
+        // cleanup
+        env.setCTagsExtraOptionsFile(null);
+        Files.delete(extraOptionsPath);
+        Files.delete(tmpSourceRoot);
     }
 }

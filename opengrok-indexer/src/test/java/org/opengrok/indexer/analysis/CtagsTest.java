@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -59,8 +59,7 @@ public class CtagsTest {
          * The config file contains assembly specific settings so it should
          * not be harmful to other test cases.
          */
-        String extraOptionsFile =
-                repository.getSourceRoot() + "/bug19195/ctags.config";
+        String extraOptionsFile = repository.getSourceRoot() + "/bug19195/ctags.config";
         ctags.setCTagsExtraOptionsFile(extraOptionsFile);
     }
 
