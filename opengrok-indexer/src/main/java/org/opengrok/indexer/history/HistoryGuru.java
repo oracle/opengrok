@@ -760,11 +760,12 @@ public final class HistoryGuru {
                 try {
                     repository = RepositoryFactory.getRepository(file, CommandTimeoutType.INDEXER, isNested);
                 } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', could not instantiate the repository.", e);
+                    LOGGER.log(Level.WARNING,
+                            String.format("Could not create repository for '%s': could not instantiate the repository.",
+                                    file), e);
                 } catch (IllegalAccessException iae) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', missing access rights.", iae);
+                    LOGGER.log(Level.WARNING,
+                            String.format("Could not create repository for '%s': missing access rights.", file), iae);
                     continue;
                 } catch (ForbiddenSymlinkException e) {
                     LOGGER.log(Level.WARNING, "Could not create repository for ''{0}'': {1}",
