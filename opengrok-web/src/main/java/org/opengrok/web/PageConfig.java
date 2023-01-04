@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -56,6 +56,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,6 +66,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
@@ -1199,13 +1202,31 @@ public final class PageConfig {
 
     @Nullable
     private File checkFileInner(File file, File dir, String name) {
-        File f = new File(dir, name);
-        if (f.exists() && f.isFile()) {
-            if (f.lastModified() >= file.lastModified()) {
-                return f;
+
+        MeterRegistry meterRegistry = Metrics.getRegistry();
+
+        File xrefFile = new File(dir, name);
+        if (xrefFile.exists() && xrefFile.isFile()) {
+            if (xrefFile.lastModified() >= file.lastModified()) {
+                if (meterRegistry != null) {
+                    Counter.builder("xref.file.get").
+                            description("xref file get hits").
+                            tag("what", "hits").
+                            register(meterRegistry).
+                            increment();
+                }
+                return xrefFile;
             } else {
-                LOGGER.log(Level.WARNING, "file ''{0}'' is newer than ''{1}''", new Object[]{file, f});
+                LOGGER.log(Level.WARNING, "file ''{0}'' is newer than ''{1}''", new Object[]{file, xrefFile});
             }
+        }
+
+        if (meterRegistry != null) {
+            Counter.builder("xref.file.get").
+                    description("xref file get misses").
+                    tag("what", "miss").
+                    register(meterRegistry).
+                    increment();
         }
 
         return null;
