@@ -1197,6 +1197,7 @@ public final class PageConfig {
                 : "";
     }
 
+    @Nullable
     private File checkFileInner(File file, File dir, String name) {
         File f = new File(dir, name);
         if (f.exists() && f.isFile()) {
@@ -1210,6 +1211,7 @@ public final class PageConfig {
         return null;
     }
 
+    @Nullable
     private File checkFile(File file, File dir, String name, boolean compressed) {
         File f;
         if (compressed) {
@@ -1222,6 +1224,7 @@ public final class PageConfig {
         return checkFileInner(file, dir, name);
     }
 
+    @Nullable
     private File checkFileResolve(File dir, String name, boolean compressed) {
         File lresourceFile = new File(getSourceRootPath() + getPath(), name);
         if (!lresourceFile.canRead()) {
