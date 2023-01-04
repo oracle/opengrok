@@ -126,7 +126,7 @@ org.opengrok.indexer.web.QueryParameters"
                         r = IOUtils.createBOMStrippedReader(in, StandardCharsets.UTF_8.name());
                         AnalyzerGuru.writeDumpedXref(request.getContextPath(),
                             a, r, out,
-                            defs, annotation, project);
+                            defs, annotation, project, resourceFile);
                     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
     <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="Image from Source Repository"/>
