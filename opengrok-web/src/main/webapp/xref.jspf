@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -133,16 +133,14 @@ org.opengrok.indexer.web.QueryParameters"
     <pre><%
                     } else if (g == AbstractAnalyzer.Genre.HTML) {
                         /*
-                         * For backward compatibility, read the
-                         * OpenGrok-produced document using the system
-                         * default charset.
+                         * For backward compatibility, read the OpenGrok-produced document
+                         * using the system default charset.
                          */
                         r = new InputStreamReader(in);
                         /*
-                         * dumpXref() is also useful here for
-                         * translating links.
+                         * dumpXref() is also useful here for translating links.
                          */
-                        Util.dumpXref(out, r, request.getContextPath());
+                        Util.dumpXref(out, r, request.getContextPath(), resourceFile);
                     } else {
     %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.uriEncode(rev) %>"><%= basename %></a><%

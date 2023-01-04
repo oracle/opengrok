@@ -66,6 +66,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Statistics;
 
 /**
  * Class for useful functions.
@@ -1208,7 +1209,7 @@ public final class Util {
          */
         try (InputStream iss = new BufferedInputStream(new FileInputStream(file));
             Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) : new InputStreamReader(iss)) {
-                dumpXref(out, in, contextPath);
+                dumpXref(out, in, contextPath, file);
                 return true;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, String.format("An error occurred while piping file '%s'", file), e);
@@ -1222,21 +1223,24 @@ public final class Util {
      * @param out dump destination
      * @param in source to read
      * @param contextPath an optional override of "/source/" as the context path
+     * @param file file related to the {@code in}, used for logging only
      * @throws IOException as defined by the given reader/writer
      * @throws NullPointerException if a parameter is {@code null}
      */
-    public static void dumpXref(Writer out, Reader in, String contextPath) throws IOException {
+    public static void dumpXref(Writer out, Reader in, String contextPath, File file) throws IOException {
 
         if (in == null || out == null) {
             return;
         }
 
+        Statistics stat = new Statistics();
         XrefSourceTransformer xform = new XrefSourceTransformer(in);
         xform.setWriter(out);
         xform.setContextPath(contextPath);
         while (xform.yylex()) {
             // Nothing else to do.
         }
+        stat.report(LOGGER, Level.FINEST, String.format("dumped xref '%s'", file), "xref.dump.latency");
     }
 
     /**

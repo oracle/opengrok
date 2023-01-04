@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 
@@ -251,7 +251,7 @@ document.pageReady.push(function() { pageReadyList();});
                          */
                         r = new InputStreamReader(bin);
                         // dumpXref() is also useful here for translating links.
-                        Util.dumpXref(out, r, request.getContextPath());
+                        Util.dumpXref(out, r, request.getContextPath(), resourceFile);
                     } else if (g == AbstractAnalyzer.Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
@@ -303,7 +303,7 @@ include file="/xref.jspf"
 <%
         }
     } else {
-        // Requesting cross referenced file with no known revision.
+        // Requesting cross-referenced file with no known revision.
         File xrefFile = cfg.findDataFile();
         if (xrefFile != null) {
 %>
