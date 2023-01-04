@@ -1086,10 +1086,9 @@ public final class Util {
      *
      * @param out destination for the HTML output
      * @throws IOException if an error happens while writing to {@code out}
-     * @throws HistoryException if the history guru cannot be accesses
      */
     @SuppressWarnings("boxing")
-    public static void dumpConfiguration(Appendable out) throws IOException, HistoryException {
+    public static void dumpConfiguration(Appendable out) throws IOException {
         out.append("<table border=\"1\" width=\"100%\">");
         out.append("<tr><th>Variable</th><th>Value</th></tr>");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -1122,8 +1121,8 @@ public final class Util {
     }
 
     /**
-     * Just read the given source and dump as is to the given destination. Does
-     * nothing, if one or more of the parameters is {@code null}.
+     * Just read the given source and dump as is to the given destination.
+     * Does nothing, if one or more of the parameters is {@code null}.
      *
      * @param out write destination
      * @param in source to read
@@ -1134,6 +1133,7 @@ public final class Util {
         if (in == null || out == null) {
             return;
         }
+
         char[] buf = new char[8192];
         int len = 0;
         while ((len = in.read(buf)) >= 0) {
@@ -1148,13 +1148,11 @@ public final class Util {
      * @param out dump destination
      * @param dir directory, which should contains the file.
      * @param filename the basename of the file to dump.
-     * @param compressed if {@code true} the denoted file is assumed to be
-     * gzipped.
+     * @param compressed if {@code true} the denoted file is assumed to be gzipped.
      * @return {@code true} on success (everything read and written).
      * @throws NullPointerException if a parameter is {@code null}.
      */
-    public static boolean dump(Writer out, File dir, String filename,
-            boolean compressed) {
+    public static boolean dump(Writer out, File dir, String filename, boolean compressed) {
         return dump(out, new File(dir, filename), compressed);
     }
 
@@ -1163,17 +1161,17 @@ public final class Util {
      * gets caught and logged, but not re-thrown.
      *
      * @param out dump destination
-     * @param file file to dump.
-     * @param compressed if {@code true} the denoted file is assumed to be
-     * gzipped.
-     * @return {@code true} on success (everything read and written).
-     * @throws NullPointerException if a parameter is {@code null}.
+     * @param file file to dump
+     * @param compressed if {@code true} the denoted file is assumed to be gzipped
+     * @return {@code true} on success (everything read and written)
+     * @throws NullPointerException if a parameter is {@code null}
      */
     public static boolean dump(Writer out, File file, boolean compressed) {
         if (!file.exists()) {
             return false;
         }
-        /**
+
+        /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
@@ -1183,21 +1181,21 @@ public final class Util {
             }
             return true;
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING,
-                    "An error occurred while piping file " + file + ": ", e);
+            LOGGER.log(Level.WARNING, String.format("An error occurred while piping file '%s': ", file), e);
         }
+
         return false;
     }
 
     /**
-     * Silently dump an xref file to the given destination. All
-     * {@link IOException}s get caught and logged, but not re-thrown.
+     * Silently dump a xref file to the given destination.
+     * All {@link IOException}s get caught and logged, but not re-thrown.
      * @param out dump destination
      * @param file file to dump
      * @param compressed if {@code true} the denoted file is assumed to be gzipped
      * @param contextPath an optional override of "/source/" as the context path
      * @return {@code true} on success (everything read and written)
-     * @throws NullPointerException if a parameter is {@code null}.
+     * @throws NullPointerException if a parameter is {@code null}
      */
     public static boolean dumpXref(Writer out, File file, boolean compressed, String contextPath) {
 
@@ -1214,26 +1212,26 @@ public final class Util {
                 dumpXref(out, in, contextPath);
                 return true;
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "An error occurred while piping file " + file, e);
+            LOGGER.log(Level.WARNING, String.format("An error occurred while piping file '%s'", file), e);
         }
 
         return false;
     }
 
     /**
-     * Silently dump an xref file to the given destination. All
-     * {@link IOException}s get caught and logged, but not re-thrown.
+     * Dump a xref file to the given destination.
      * @param out dump destination
      * @param in source to read
      * @param contextPath an optional override of "/source/" as the context path
      * @throws IOException as defined by the given reader/writer
-     * @throws NullPointerException if a parameter is {@code null}.
+     * @throws NullPointerException if a parameter is {@code null}
      */
-    public static void dumpXref(Writer out, Reader in, String contextPath)
-            throws IOException {
+    public static void dumpXref(Writer out, Reader in, String contextPath) throws IOException {
+
         if (in == null || out == null) {
             return;
         }
+
         XrefSourceTransformer xform = new XrefSourceTransformer(in);
         xform.setWriter(out);
         xform.setContextPath(contextPath);
