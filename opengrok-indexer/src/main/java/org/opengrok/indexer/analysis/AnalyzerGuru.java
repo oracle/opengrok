@@ -699,6 +699,7 @@ public class AnalyzerGuru {
      * @param defs definitions for the source file, if available
      * @param annotation annotation information for the file
      * @param project project the file belongs to
+     * @param file file object, used for logging only
      * @throws java.io.IOException if an error occurs while creating the output
      */
     public static void writeDumpedXref(String contextPath,
