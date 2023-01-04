@@ -119,6 +119,7 @@ import org.opengrok.indexer.history.HistoryReader;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -658,12 +659,15 @@ public class AnalyzerGuru {
      * @param defs definitions for the source file, if available
      * @param annotation Annotation information for the file
      * @param project Project the file belongs to
+     * @param file file object, used only for logging
      * @throws java.io.IOException If an error occurs while creating the output
      */
     public static void writeXref(AnalyzerFactory factory, Reader in,
             Writer out, Definitions defs,
-            Annotation annotation, Project project)
+            Annotation annotation, Project project, File file)
             throws IOException {
+
+        Statistics stat = new Statistics();
         Reader input = in;
         if (factory.getGenre() == AbstractAnalyzer.Genre.PLAIN) {
             // This is some kind of text file, so we need to expand tabs to
@@ -681,13 +685,14 @@ public class AnalyzerGuru {
         analyzer.setScopesEnabled(env.isScopesEnabled());
         analyzer.setFoldingEnabled(env.isFoldingEnabled());
         analyzer.writeXref(args);
+
+        stat.report(LOGGER, Level.FINEST, String.format("wrote xref for '%s'", file), "xref.write.latency");
     }
 
     /**
-     * Writes a browse-able version of the file transformed for immediate
-     * serving to a web client.
+     * Writes a browse-able version of the file transformed for immediate serving to a web client.
      * @param contextPath the web context path for
-     * {@link Util#dumpXref(java.io.Writer, java.io.Reader, java.lang.String)}
+     * {@link Util#dumpXref(java.io.Writer, java.io.Reader, java.lang.String, File)}
      * @param factory the analyzer factory for this file type
      * @param in the input stream containing the data
      * @param out a defined instance to write
@@ -698,13 +703,12 @@ public class AnalyzerGuru {
      */
     public static void writeDumpedXref(String contextPath,
             AnalyzerFactory factory, Reader in, Writer out,
-            Definitions defs, Annotation annotation, Project project)
-            throws IOException {
+            Definitions defs, Annotation annotation, Project project, File file) throws IOException {
 
         File xrefTemp = File.createTempFile("ogxref", ".html");
         try {
             try (FileWriter tmpout = new FileWriter(xrefTemp)) {
-                writeXref(factory, in, tmpout, defs, annotation, project);
+                writeXref(factory, in, tmpout, defs, annotation, project, file);
             }
             Util.dumpXref(out, xrefTemp, false, contextPath);
         } finally {

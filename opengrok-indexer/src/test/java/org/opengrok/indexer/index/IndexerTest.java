@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -400,7 +400,7 @@ public class IndexerTest {
             }
             try (FileReader in = new FileReader(f); StringWriter out = new StringWriter()) {
                 try {
-                    AnalyzerGuru.writeXref(factory, in, out, null, null, null);
+                    AnalyzerGuru.writeXref(factory, in, out, null, null, null, f);
                 } catch (UnsupportedOperationException exp) {
                     // ignore
                 }

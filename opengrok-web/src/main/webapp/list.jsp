@@ -264,7 +264,7 @@ document.pageReady.push(function() { pageReadyList();});
                         r = IOUtils.createBOMStrippedReader(bin,
                             StandardCharsets.UTF_8.name());
                         AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
-                                r, out, defs, annotation, project);
+                                r, out, defs, annotation, project, resourceFile);
     %></pre>
 </div><%
                     } else {
