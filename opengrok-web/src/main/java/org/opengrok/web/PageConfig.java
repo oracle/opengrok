@@ -1236,11 +1236,10 @@ public final class PageConfig {
 
     /**
      * Find the files with the given names in the {@link #getPath()} directory
-     * relative to the cross-file directory of the opengrok data directory. It is
-     * tried to find the compressed file first by appending the file extension
-     * ".gz" to the filename. If that fails or an uncompressed version of the
-     * file is younger than its compressed version, the uncompressed file gets
-     * used.
+     * relative to the cross-file directory of the opengrok data directory. It will
+     * try to find the compressed file first by appending the file extension
+     * {@code ".gz"} to the filename. If that fails or an uncompressed version of the
+     * file is younger than its compressed version, the uncompressed file gets used.
      *
      * @param filenames filenames to lookup.
      * @return an empty array if the related directory does not exist or the
