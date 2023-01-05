@@ -492,7 +492,7 @@ public class Ctags implements Resettable {
     /**
      * Run ctags on a file.
      * @param file file path to process
-     * @return Definitions
+     * @return valid instance of {@link Definitions} or {@code null} on error
      * @throws IOException I/O exception
      * @throws InterruptedException interrupted command
      */
