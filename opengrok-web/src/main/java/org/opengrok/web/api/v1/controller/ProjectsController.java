@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -156,8 +156,7 @@ public class ProjectsController {
         HistoryGuru histGuru = HistoryGuru.getInstance();
 
         // There is no need to perform the work of invalidateRepositories(),
-        // since addRepositories() calls getRepository() for each of
-        // the repos.
+        // since addRepositories() calls getRepository() for each of the repositories.
         return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}));
     }
 

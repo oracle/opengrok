@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -352,20 +352,24 @@ public class HistoryGuruTest {
         certainlyMkdirs(sub3);
 
         int originalScanDepth = env.getScanningDepth();
-        env.setScanningDepth(0);
 
+        // Test default scan depth value.
         HistoryGuru instance = HistoryGuru.getInstance();
         Collection<RepositoryInfo> addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
-        assertEquals(1, addedRepos.size(), "should add to max depth");
+        assertEquals(2, addedRepos.size(),
+                "2 repositories should be discovered with default scan depth setting");
 
-        env.setScanningDepth(1);
+        // Reduction of scan depth should cause reduction of repositories.
         List<String> repoDirs = addedRepos.stream().map(RepositoryInfo::getDirectoryName).collect(Collectors.toList());
         instance.removeRepositories(repoDirs);
+        env.setScanningDepth(originalScanDepth - 1);
         addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
-        assertEquals(2, addedRepos.size(), "should add to increased max depth");
+        assertEquals(1, addedRepos.size(),
+                "1 repository should be discovered with reduced scan depth");
 
+        // cleanup
         env.setScanningDepth(originalScanDepth);
     }
 

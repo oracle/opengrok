@@ -804,11 +804,18 @@ public final class RuntimeEnvironment {
      * Search through the directory for repositories and use the result to replace
      * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.
      *
-     * @param dir the directories to start the search in
+     * @param dir paths of directories to start the search in
      */
     public void setRepositories(String... dir) {
+        int scanDepth = RuntimeEnvironment.getInstance().getScanningDepth();
+        if (scanDepth == 0) {
+            LOGGER.log(Level.INFO, "maximum scan depth is set to 0, will not scan for repositories");
+            return;
+        }
+
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
                 addRepositories(Arrays.stream(dir).map(File::new).toArray(File[]::new)));
+
         setRepositories(repos);
     }
 

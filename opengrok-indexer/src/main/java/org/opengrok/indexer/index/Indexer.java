@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -86,12 +87,14 @@ import org.opengrok.indexer.util.Statistics;
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
  * stats etc., if specified in the options.
- *
+ * <p>
  * We shall use / as path delimiter in whole opengrok for uuids and paths
  * from Windows systems, the path shall be converted when entering the index or web
  * and converted back if needed* to access original file
- *
- * *Windows already supports opening /var/opengrok as C:\var\opengrok
+ * </p>
+ * <p>
+ * Windows already supports opening {@code /var/opengrok} as {@code C:\var\opengrok}
+ * </p>
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
@@ -361,6 +364,12 @@ public final class Indexer {
             // Create history cache first.
             if (searchRepositories) {
                 if (searchPaths.isEmpty()) {
+                    /*
+                     * No search paths were specified. This means searching for the repositories under source root.
+                     * To speed the process up, gather the directories directly underneath source root.
+                     * The HistoryGuru#addRepositories(File[], int) will search for the repositories
+                     * in these directories in parallel.
+                     */
                     String[] dirs = env.getSourceRootFile().
                             list((f, name) -> f.isDirectory() && env.getPathAccepter().accept(f));
                     if (dirs != null) {
@@ -583,7 +592,7 @@ public final class Indexer {
 
             parser.on("--depth", "=number", Integer.class,
                 "Scanning depth for repositories in directory structure relative to",
-                "source root. Default is " + Configuration.defaultScanningDepth + ".").execute(depth ->
+                "source root. Default is " + Configuration.DEFAULT_SCANNING_DEPTH + ".").execute(depth ->
                     cfg.setScanningDepth((Integer) depth));
 
             parser.on("--disableRepository", "=type_name",
@@ -785,9 +794,9 @@ public final class Indexer {
                 .execute(v -> handlePathParameter(repositories, ((String) v).trim()));
 
             parser.on("-S", "--search", "=[path/to/repository|@file_with_paths]",
-                    "Search for source repositories under -s,--source, and add them. Path",
-                    "(relative to the source root) is optional. ",
-                    "File containing paths can be specified via @path syntax.",
+                    "Search for source repositories under source root (-s,--source),",
+                    "and add them. Path (relative to the source root) is optional. ",
+                    "File containing the paths can be specified via @path syntax.",
                     "Option may be repeated.")
                 .execute(v -> {
                         searchRepositories = true;
@@ -979,6 +988,7 @@ public final class Indexer {
     /**
      * Wrapper for prepareIndexer() that always generates history cache.
      */
+    @TestOnly
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,
@@ -998,7 +1008,7 @@ public final class Indexer {
      * history per directory).
      * </p>
      * @param env runtime environment
-     * @param searchPaths list of paths in which to search for repositories
+     * @param searchPaths list of paths relative to source root in which to search for repositories
      * @param addProjects if true, add projects
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
