@@ -734,15 +734,20 @@ public final class HistoryGuru {
     }
 
     /**
-     * recursively search for repositories with a depth limit, add those found to the internally used map.
+     * Recursively search for repositories with a depth limit, add those found to the internally used map.
+     * @see #putRepository(Repository)
      *
-     * @param files list of files to check if they contain a repository
+     * @param files list of directories to check if they contain a repository
      * @param allowedNesting number of levels of nested repos to allow
-     * @param depth current depth - using global scanningDepth - one can limit this to improve scanning performance
+     * @param depth maximum scanning depth
      * @param isNested a value indicating if a parent {@link Repository} was already found above the {@code files}
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files, int allowedNesting, int depth, boolean isNested) {
+
+        if (depth < 0) {
+            throw new IllegalArgumentException("depth is negative");
+        }
 
         List<RepositoryInfo> repoList = new ArrayList<>();
         PathAccepter pathAccepter = env.getPathAccepter();
@@ -772,27 +777,28 @@ public final class HistoryGuru {
                             new Object[] {file, e.getMessage()});
                     continue;
                 }
+
                 if (repository == null) {
-                    if (depth > env.getScanningDepth()) {
-                        // we reached our search max depth, skip looking through the children
+                    if (depth == 0) {
+                        // Reached maximum depth, skip looking through the children.
                         continue;
                     }
+
                     // Not a repository, search its sub-dirs.
                     if (pathAccepter.accept(file)) {
                         File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
-                                    "Failed to get sub directories for ''{0}'', " +
-                                    "check access permissions.",
+                                    "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
                         } else {
                             // Recursive call to scan next depth
                             repoList.addAll(addRepositories(subFiles,
-                                    allowedNesting, depth + 1, isNested));
+                                    allowedNesting, depth - 1, isNested));
                         }
                     }
                 } else {
-                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
+                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository for ''{1}''",
                             new Object[]{repository.getClass().getName(), path});
 
                     repoList.add(new RepositoryInfo(repository));
@@ -804,17 +810,15 @@ public final class HistoryGuru {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
-                        } else if (depth <= env.getScanningDepth()) {
-                            // Search down to a limit -- if not: too much
-                            // stat'ing for huge Mercurial repositories
+                        } else if (depth > 0) {
                             repoList.addAll(addRepositories(subFiles,
-                                    allowedNesting - 1, depth + 1, true));
+                                    allowedNesting - 1, depth - 1, true));
                         }
                     }
                 }
             } catch (IOException exp) {
                 LOGGER.log(Level.WARNING,
-                        "Failed to get canonical path for {0}: {1}",
+                        "Failed to get canonical path for ''{0}'': {1}",
                         new Object[]{file.getAbsolutePath(), exp.getMessage()});
                 LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
             }
@@ -824,8 +828,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * Recursively search for repositories in given directories, add those found
-     * to the internally used repository map.
+     * Recursively search for repositories in given directories, add those found to the internally used map.
      *
      * @param files list of directories to check if they contain a repository
      * @return collection of added repositories
@@ -833,12 +836,28 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(File[] files) {
         ExecutorService executor = env.getIndexerParallelizer().getFixedExecutor();
         List<Future<Collection<RepositoryInfo>>> futures = new ArrayList<>();
+        List<RepositoryInfo> repoList = new ArrayList<>();
+
         for (File file: files) {
+            /*
+             * Adjust scan depth based on source root path. Some directories can be symbolic links pointing
+             * outside source root so avoid constructing canonical paths for the computation to work.
+             */
+            int levelsBelowSourceRoot;
+            try {
+                String relativePath = env.getPathRelativeToSourceRoot(file);
+                levelsBelowSourceRoot = Path.of(relativePath).getNameCount();
+            } catch (IOException | ForbiddenSymlinkException e) {
+                LOGGER.log(Level.WARNING, "cannot get path relative to source root for ''{0}'', " +
+                        "skipping repository scan for this directory", file);
+                continue;
+            }
+            final int scanDepth = env.getScanningDepth() - levelsBelowSourceRoot;
+
             futures.add(executor.submit(() -> addRepositories(new File[]{file},
-                    env.getNestingMaximum(), 0, false)));
+                    env.getNestingMaximum(), scanDepth, false)));
         }
 
-        List<RepositoryInfo> repoList = new ArrayList<>();
         futures.forEach(future -> {
             try {
                 repoList.addAll(future.get());
@@ -853,11 +872,10 @@ public final class HistoryGuru {
     }
 
     /**
-     * Recursively search for repositories in given directories, add those found
-     * to the internally used repository map.
+     * Recursively search for repositories in given directories, add those found to the internally used map.
      *
      * @param repos collection of repository paths
-     * @return collection of added repositories
+     * @return collection of {@link RepositoryInfo} objects
      */
     public Collection<RepositoryInfo> addRepositories(Collection<String> repos) {
         return addRepositories(repos.stream().map(File::new).toArray(File[]::new));
@@ -865,11 +883,10 @@ public final class HistoryGuru {
 
     /**
      * Get collection of repositories used internally by HistoryGuru.
-     * @return collection of repositories
+     * @return collection of {@link RepositoryInfo} objects
      */
     public Collection<RepositoryInfo> getRepositories() {
-        return repositories.values().stream().
-                map(RepositoryInfo::new).collect(Collectors.toSet());
+        return repositories.values().stream().map(RepositoryInfo::new).collect(Collectors.toSet());
     }
 
     private void createHistoryCache(Repository repository, String sinceRevision) {

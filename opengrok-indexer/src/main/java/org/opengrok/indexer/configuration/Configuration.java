@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -226,9 +226,9 @@ public final class Configuration {
      * The directory hierarchy depth to limit the scanning for repositories.
      * E.g. if the /mercurial/ directory (relative to source root) is a repository
      * and /mercurial/usr/closed/ is sub-repository, the latter will be discovered
-     * only if the depth is set to 2 or greater.
+     * only if the depth is set to 3 or greater.
      */
-    public static final int defaultScanningDepth = 2;
+    public static final int DEFAULT_SCANNING_DEPTH = 3;
 
     /**
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
@@ -576,7 +576,7 @@ public final class Configuration {
         //setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setRevisionMessageCollapseThreshold(200);
-        setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
+        setScanningDepth(DEFAULT_SCANNING_DEPTH); // default depth of scanning for repositories
         setScopesEnabled(true);
         setSourceRoot(null);
         //setTabSize(4);
