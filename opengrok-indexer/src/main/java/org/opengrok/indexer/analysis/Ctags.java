@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -495,6 +496,7 @@ public class Ctags implements Resettable {
      * @throws IOException I/O exception
      * @throws InterruptedException interrupted command
      */
+    @Nullable
     public Definitions doCtags(String file) throws IOException, InterruptedException {
 
         if (file.length() < 1 || "\n".equals(file)) {

@@ -93,7 +93,7 @@ public class CtagsUtil {
         Ctags ctags = new Ctags();
         try {
             Definitions definitions = ctags.doCtags(inputPath.toString());
-            if (definitions.numberOfSymbols() > 1) {
+            if (definitions != null && definitions.numberOfSymbols() > 1) {
                 return true;
             }
         } catch (IOException | InterruptedException e) {
