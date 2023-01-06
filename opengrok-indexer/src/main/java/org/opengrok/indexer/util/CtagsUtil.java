@@ -72,7 +72,14 @@ public class CtagsUtil {
      * @return true if at least one symbol was found, false otherwise
      */
     private static boolean canProcessFiles(String basePath) {
-        Path inputPath = Path.of(basePath, "ctagsValidationTemporaryFile.c");
+        Path inputPath;
+        try {
+            inputPath = File.createTempFile("ctagsValidation", ".c",
+                    new File(basePath)).toPath();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "cannot create temporary file in ''{0}''", basePath);
+            return false;
+        }
         final String resourceFileName = "sample.c";
         ClassLoader classLoader = CtagsUtil.class.getClassLoader();
         try (InputStream inputStream = classLoader.getResourceAsStream(resourceFileName)) {
