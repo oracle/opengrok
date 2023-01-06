@@ -32,11 +32,11 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.InputStream;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,19 +74,18 @@ public class CtagsUtil {
     private static boolean canProcessFiles(String basePath) {
         Path inputPath = Path.of(basePath, "ctagsValidationTemporaryFile.c");
         final String resourceFileName = "sample.c";
-        Path resourcePath = getResourceFile(resourceFileName);
-        if (resourcePath == null) {
-            return false;
-        }
-
-        try {
-            if (inputPath.toFile().exists()) {
-                Files.delete(inputPath);
+        ClassLoader classLoader = CtagsUtil.class.getClassLoader();
+        try (InputStream inputStream = classLoader.getResourceAsStream(resourceFileName)) {
+            if (inputStream == null) {
+                LOGGER.log(Level.SEVERE, "cannot get resource URL of ''{0}'' for ctags check",
+                        resourceFileName);
+                return false;
             }
-            Files.copy(resourcePath, inputPath);
+
+            Files.copy(inputStream, inputPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "cannot copy ''{0}'' to ''{1}'' for ctags check: {2}",
-                    new Object[]{resourcePath, inputPath, e});
+                    new Object[]{resourceFileName, inputPath, e});
             return false;
         }
 
@@ -108,27 +107,6 @@ public class CtagsUtil {
         }
 
         return false;
-    }
-
-    @Nullable
-    private static Path getResourceFile(String resourceFileName) {
-        ClassLoader classLoader = CtagsUtil.class.getClassLoader();
-        URI resourceURI;
-        try {
-            URL resourceURL = classLoader.getResource(resourceFileName);
-            if (resourceURL == null) {
-                LOGGER.log(Level.SEVERE, "cannot get resource URL of ''{0}'' for ctags check",
-                        resourceFileName);
-                return null;
-            }
-            resourceURI = resourceURL.toURI();
-        } catch (URISyntaxException e) {
-            LOGGER.log(Level.SEVERE, "cannot perform ctags check due to missing resource file ''{0}''",
-                    resourceFileName);
-            return null;
-        }
-
-        return Path.of(resourceURI);
     }
 
     @Nullable
