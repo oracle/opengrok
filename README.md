@@ -35,7 +35,7 @@ See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
 OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is *major.minor.micro* and change in any component is interpreted as:
 
- - major - major backwards incompatible update
+ - major - major backwards incompatible update, will require full reindex as well as configuration changes
  - minor - full clean reindex of your repositories is needed (e. g. index format has changed)
  - micro - redeploy web application
 
