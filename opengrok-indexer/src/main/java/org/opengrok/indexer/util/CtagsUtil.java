@@ -62,22 +62,21 @@ public class CtagsUtil {
             return false;
         }
 
-        return canProcessFiles(RuntimeEnvironment.getInstance().getSourceRootPath());
+        return canProcessFiles(RuntimeEnvironment.getInstance().getSourceRootFile());
     }
 
     /**
      * Run ctags program on a known temporary file to be created under given path and see if it was possible
      * to get some symbols.
-     * @param basePath path to use for storing the temporary file
+     * @param baseDir directory to use for storing the temporary file
      * @return true if at least one symbol was found, false otherwise
      */
-    private static boolean canProcessFiles(String basePath) {
+    private static boolean canProcessFiles(File baseDir) {
         Path inputPath;
         try {
-            inputPath = File.createTempFile("ctagsValidation", ".c",
-                    new File(basePath)).toPath();
+            inputPath = File.createTempFile("ctagsValidation", ".c", baseDir).toPath();
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "cannot create temporary file in ''{0}''", basePath);
+            LOGGER.log(Level.WARNING, "cannot create temporary file in ''{0}''", baseDir);
             return false;
         }
         final String resourceFileName = "sample.c";
