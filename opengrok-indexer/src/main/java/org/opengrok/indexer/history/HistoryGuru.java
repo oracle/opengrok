@@ -439,29 +439,30 @@ public final class HistoryGuru {
             if (history != null) {
                 HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
                 if (lastHistoryEntry != null) {
-                    LOGGER.log(Level.FINEST, "got latest history entry {0} for ''{1}'' from history cache",
-                            new Object[]{lastHistoryEntry, file});
+                    statistics.report(LOGGER, Level.FINEST,
+                            String.format("got latest history entry %s for ''%s'' from history cache",
+                            lastHistoryEntry, file), "history.entry.latest");
                     return lastHistoryEntry;
                 }
             }
         } catch (CacheException e) {
-            LOGGER.log(Level.FINER, e.getMessage());
+            LOGGER.log(Level.FINER,
+                    String.format("failed to retrieve last history entry for ''%s'' in %s using history cache",
+                            file, repository),
+                            e.getMessage());
         }
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
-            LOGGER.log(Level.FINER, "cannot retrieve the last history entry for ''{0}'' in {1} because of settings",
-                    new Object[]{file, repository});
+            statistics.report(LOGGER, Level.FINEST,
+                    String.format("cannot retrieve the last history entry for ''%s'' in %s because of settings",
+                    file, repository), "history.entry.latest");
             return null;
         }
 
         // Fallback to the repository method.
         HistoryEntry lastHistoryEntry = repository.getLastHistoryEntry(file, ui);
-        if (lastHistoryEntry != null) {
-            LOGGER.log(Level.FINEST, "got latest history entry {0} for ''{1}'' using repository {2}",
-                    new Object[]{lastHistoryEntry, file, repository});
-        }
         statistics.report(LOGGER, Level.FINEST,
-                String.format("finished retrieval of last history entry for '%s' (%s)",
+                String.format("finished retrieval of last history entry for '%s' using repository method (%s)",
                         file, lastHistoryEntry != null ? "success" : "fail"), "history.entry.latest");
         return lastHistoryEntry;
     }
