@@ -523,7 +523,8 @@ public final class HistoryGuru {
          * fetched in the first phase of indexing.
          */
         if (env.isIndexer() && isHistoryIndexDone() &&
-                repository.isHistoryEnabled() && repository.hasHistoryForDirectories()) {
+                repository.isHistoryEnabled() && repository.hasHistoryForDirectories() &&
+                !env.isFetchHistoryWhenNotInCache()) {
             LOGGER.log(Level.FINE, "not getting the history for ''{0}'' in repository {1} as the it supports "
                     + "history for directories",
                     new Object[]{file, repository});
