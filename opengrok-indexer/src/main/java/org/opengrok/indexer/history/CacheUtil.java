@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -64,7 +65,15 @@ public class CacheUtil {
         }
     }
 
+    /**
+     *
+     * @param repository {@link RepositoryInfo} instance
+     * @param cache {@link Cache} instance
+     * @return absolute directory path for top level cache directory of given repository.
+     * Will return {@code null} on error.
+     */
     @VisibleForTesting
+    @Nullable
     public static String getRepositoryCacheDataDirname(RepositoryInfo repository, Cache cache) {
         String repoDirBasename;
 
