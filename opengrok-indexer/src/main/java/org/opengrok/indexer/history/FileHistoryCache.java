@@ -446,10 +446,14 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         // File based history cache does not store files for individual changesets so strip them.
         history.strip();
 
-        File histDataDir = new File(CacheUtil.getRepositoryCacheDataDirname(repository, this));
+        String repoCachePath = CacheUtil.getRepositoryCacheDataDirname(repository, this);
+        if (repoCachePath == null) {
+            throw new CacheException(String.format("failed to get cache directory path for %s", repository));
+        }
+        File histDataDir = new File(repoCachePath);
         // Check the directory again in case of races (might happen in the presence of sub-repositories).
         if (!histDataDir.isDirectory() && !histDataDir.mkdirs() && !histDataDir.isDirectory()) {
-            LOGGER.log(Level.WARNING, "cannot create history cache directory for ''{0}''", histDataDir);
+            throw new CacheException(String.format("cannot create history cache directory for '%s'", histDataDir));
         }
 
         Set<String> regularFiles = map.keySet().stream().
