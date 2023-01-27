@@ -40,6 +40,7 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -403,14 +404,13 @@ class IndexerVsDeletedDocumentsTest {
 
                 // Check the commit contain fooPath.
                 RevTree tree = commit.getTree();
-                try (TreeWalk treeWalk = new TreeWalk(gitRepo.getRepository())) {
+                try (Repository repo = gitRepo.getRepository(); TreeWalk treeWalk = new TreeWalk(repo)) {
                     treeWalk.addTree(tree);
                     treeWalk.setRecursive(true);
                     // Should be sufficient to check just one of the paths expected to be changed.
                     treeWalk.setFilter(PathFilter.create(fooFileName));
                     assertTrue(treeWalk.next());
                 }
-
             }
             assertTrue(commits > 0);
         }
