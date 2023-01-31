@@ -30,6 +30,7 @@ import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -122,9 +123,10 @@ class NumLinesLOCAccessor {
         HashMap<String, Integer> byDir = new HashMap<>();
         int intMaximum = Integer.MAX_VALUE < searchResult.hits.totalHits.value ?
                 Integer.MAX_VALUE : (int) searchResult.hits.totalHits.value;
+        StoredFields storedFields = searchResult.searcher.storedFields();
         for (int i = 0; i < intMaximum; ++i) {
             int docID = searchResult.hits.scoreDocs[i].doc;
-            Document doc = searchResult.searcher.doc(docID);
+            Document doc = storedFields.document(docID);
             String dirPath = doc.get(QueryBuilder.D);
             byDir.put(dirPath, docID);
         }
@@ -168,7 +170,7 @@ class NumLinesLOCAccessor {
         long extantLines = 0;
 
         if (docID != null) {
-            Document doc = searcher.doc(docID);
+            Document doc = searcher.storedFields().document(docID);
             if (isAggregatingDeltas) {
                 extantLines = NumberUtils.toLong(doc.get(QueryBuilder.NUML));
                 extantLOC = NumberUtils.toLong(doc.get(QueryBuilder.LOC));
@@ -191,8 +193,9 @@ class NumLinesLOCAccessor {
             IndexSearcher searcher, TopDocs hits) throws IOException {
 
         boolean hasDefinedNumLines = false;
+        StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc sd : hits.scoreDocs) {
-            Document d = searcher.doc(sd.doc);
+            Document d = storedFields.document(sd.doc);
             NullableNumLinesLOC counts = NumLinesLOCUtil.read(d);
             if (counts.getNumLines() != null && counts.getLOC() != null) {
                 NumLinesLOC defCounts = new NumLinesLOC(counts.getPath(),

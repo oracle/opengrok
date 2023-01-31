@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -96,8 +97,9 @@ public class DirectoryExtraReader {
 
         List<NullableNumLinesLOC> results = new ArrayList<>();
 
+        StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc sd : hits.scoreDocs) {
-            Document d = searcher.doc(sd.doc);
+            Document d = storedFields.document(sd.doc);
             NullableNumLinesLOC extra = NumLinesLOCUtil.read(d);
             results.add(extra);
         }

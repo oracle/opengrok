@@ -71,6 +71,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -1003,9 +1004,10 @@ public class IndexDatabase {
         // Determine if a reversal of counts is necessary, and execute if so.
         if (isCountingDeltas) {
             postsIter = uidIter.postings(postsIter);
+            StoredFields storedFields = reader.storedFields();
             while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
                 // Read a limited-fields version of the document.
-                Document doc = reader.document(postsIter.docID(), REVERT_COUNTS_FIELDS);
+                Document doc = storedFields.document(postsIter.docID(), REVERT_COUNTS_FIELDS);
                 if (doc != null) {
                     decrementLOCforDoc(path, doc);
                     break;
@@ -1926,7 +1928,7 @@ public class IndexDatabase {
                 // No hits, no document...
                 return null;
             }
-            doc = searcher.doc(top.scoreDocs[0].doc);
+            doc = searcher.storedFields().document(top.scoreDocs[0].doc);
             String foundPath = doc.get(QueryBuilder.PATH);
 
             // Only use the document if we found an exact match.
@@ -2078,10 +2080,11 @@ public class IndexDatabase {
 
         int n = 0;
         postsIter = uidIter.postings(postsIter);
+        StoredFields storedFields = reader.storedFields();
         while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
             ++n;
             // Read a limited-fields version of the document.
-            Document doc = reader.document(postsIter.docID(), CHECK_FIELDS);
+            Document doc = storedFields.document(postsIter.docID(), CHECK_FIELDS);
             if (doc == null) {
                 LOGGER.log(Level.FINER, "No Document: {0}", path);
                 continue;
