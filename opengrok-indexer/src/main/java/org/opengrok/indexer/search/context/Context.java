@@ -140,7 +140,7 @@ public class Context {
 
         Document doc;
         try {
-            doc = searcher.doc(docId);
+            doc = searcher.storedFields().document(docId);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "ERROR getting searcher doc(int)", e);
             return false;

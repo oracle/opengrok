@@ -46,6 +46,7 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -91,9 +92,10 @@ public final class Results {
 
         LinkedHashMap<String, ArrayList<Integer>> dirHash =
                 new LinkedHashMap<>();
+        StoredFields storedFields = searcher.storedFields();
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
-            Document doc = searcher.doc(docId);
+            Document doc = storedFields.document(docId);
 
             String rpath = doc.get(QueryBuilder.PATH);
             if (rpath == null) {
@@ -202,8 +204,9 @@ public final class Results {
                 xrefPrefix, tabSize, morePrefix);
 
             out.write("</td></tr>");
+            StoredFields storedFields = sh.getSearcher().storedFields();
             for (int docId : entry.getValue()) {
-                Document doc = sh.getSearcher().doc(docId);
+                Document doc = storedFields.document(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.uriEncodePath(rpath);
                 if (evenRow) {
