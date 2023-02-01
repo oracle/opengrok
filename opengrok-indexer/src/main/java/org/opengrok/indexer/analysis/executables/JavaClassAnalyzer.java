@@ -60,6 +60,7 @@ import org.apache.lucene.document.Field.Store;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.OGKTextVecField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -153,7 +154,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         if (jfbuilder == null) {
             String dstr = dout.toString();
-            doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.YES));
+            doc.add(new OGKTextVecField(QueryBuilder.DEFS, dstr, Store.NO));
 
             String rstr = rout.toString();
             doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.NO));
