@@ -420,7 +420,6 @@ public class SearchEngine {
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
             hits = collector.topDocs().scoreDocs;
-            Document d = null;
             StoredFields storedFields = null;
             try {
                 storedFields = searcher.storedFields();
@@ -428,13 +427,16 @@ public class SearchEngine {
                 LOGGER.log(
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
-            for (ScoreDoc hit : hits) {
-                try {
-                    d = storedFields.document(hit.doc);
-                    docs.add(d);
-                } catch (Exception e) {
-                    LOGGER.log(
-                            Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+            if (storedFields != null) {
+                Document d;
+                for (ScoreDoc hit : hits) {
+                    try {
+                        d = storedFields.document(hit.doc);
+                        docs.add(d);
+                    } catch (Exception e) {
+                        LOGGER.log(
+                                Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+                    }
                 }
             }
             allCollected = true;
