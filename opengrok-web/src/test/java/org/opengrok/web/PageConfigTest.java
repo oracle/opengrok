@@ -70,6 +70,8 @@ import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
  * Unit tests for the {@code PageConfig} class.
  */
 public class PageConfigTest {
+    private static final String HASH_BB74B7E8 = "bb74b7e849170c31dc1b1b5801c83bf0094a3b10";
+    private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
@@ -317,7 +319,7 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req1);
         String rev = getLatestRevision(cfg.getResourceFile());
 
-        assertEquals("aa35c258", rev);
+        assertEquals(HASH_AA35C258, rev);
     }
 
     @Test
@@ -352,7 +354,7 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req1);
         String rev = LatestRevisionUtil.getLastRevFromIndex(new File(repository.getSourceRoot(), filePath));
         assertNotNull(rev);
-        assertEquals("aa35c258", rev);
+        assertEquals(HASH_AA35C258, rev);
     }
 
     @Test
@@ -378,7 +380,7 @@ public class PageConfigTest {
 
         String location = cfg.getRevisionLocation(getLatestRevision(cfg.getResourceFile()));
         assertNotNull(location);
-        assertEquals("source/xref/git/main.c?r=aa35c258&a=true", location);
+        assertEquals("source/xref/git/main.c?r=" + HASH_AA35C258 + "&a=true", location);
     }
 
     @Test
@@ -404,7 +406,7 @@ public class PageConfigTest {
 
         String location = cfg.getRevisionLocation(getLatestRevision(cfg.getResourceFile()));
         assertNotNull(location);
-        assertEquals("source/xref/git/main.c?r=aa35c258", location);
+        assertEquals("source/xref/git/main.c?r=" + HASH_AA35C258, location);
     }
 
     @Test
@@ -449,7 +451,7 @@ public class PageConfigTest {
 
     @Test
     void testGetAnnotation() {
-        final String[] revisions = {"aa35c258", "bb74b7e8"};
+        final String[] revisions = {HASH_AA35C258, HASH_BB74B7E8};
 
         for (int i = 0; i < revisions.length; i++) {
             final int index = i;
