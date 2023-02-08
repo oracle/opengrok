@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
