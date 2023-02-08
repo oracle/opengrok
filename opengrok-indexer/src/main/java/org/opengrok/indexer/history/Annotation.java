@@ -21,6 +21,7 @@
  * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -66,7 +67,11 @@ public class Annotation {
     }
 
     void addLine(String revision, String author, boolean enabled) {
-        annotationData.addLine(revision, author, enabled);
+        annotationData.addLine(revision, author, enabled, null);
+    }
+
+    void addLine(String revision, String author, boolean enabled, String displayRevision) {
+      annotationData.addLine(revision, author, enabled, displayRevision);
     }
 
     public String getFilename() {
@@ -102,6 +107,17 @@ public class Annotation {
      */
     public String getRevision(int line) {
         return annotationData.getRevision(line);
+    }
+
+    /**
+     * Gets the revision for the last change to the specified line in a format that may be specifically for display purposes.
+     *
+     * @param line line number (counting from 1)
+     * @return revision string, or an empty string if there is no information
+     * about the specified line
+     */
+    public String getRevisionForDisplay(int line) {
+      return annotationData.getRevisionForDisplay(line);
     }
 
     /**

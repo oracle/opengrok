@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -40,14 +41,17 @@ public class AnnotationLine implements Serializable {
     private String author;
     private boolean enabled;
 
+    private String displayRevision;
+
     public AnnotationLine() {
         // for serialization
     }
 
-    AnnotationLine(String revision, String author, boolean enabled) {
-        this.revision = (revision == null) ? "" : revision;
-        this.author = (author == null) ? "" : author;
+    AnnotationLine(String revision, String author, boolean enabled, String displayRevision) {
+        this.revision = revision == null ? "" : revision;
+        this.author = author == null ? "" : author;
         this.enabled = enabled;
+        this.setDisplayRevision(displayRevision);
     }
 
     public String getRevision() {
@@ -72,6 +76,19 @@ public class AnnotationLine implements Serializable {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * A specialised revision for display purposes.
+     *
+     * @return the display revision if not null, otherwise the revision.
+     */
+    public String getDisplayRevision() {
+      return displayRevision == null ? revision : displayRevision;
+    }
+
+    public void setDisplayRevision(String displayRevision) {
+      this.displayRevision = displayRevision;
     }
 
     @Override

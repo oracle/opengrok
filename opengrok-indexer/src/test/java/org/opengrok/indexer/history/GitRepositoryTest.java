@@ -21,6 +21,7 @@
  * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -73,6 +74,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class GitRepositoryTest {
 
+    private static final String HASH_84821564 = "8482156421620efbb44a7b6f0eb19d1f191163c7";
+    private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
+    private static final String HASH_BB74B7E8 = "bb74b7e849170c31dc1b1b5801c83bf0094a3b10";
+    private static final String HASH_CE4C98EC = "ce4c98ec1d22473d4aa799c046c2a90ae05832f1";
+    private static final String HASH_B6413947 = "b6413947a59f481ddc0a05e0d181731233557f6e";
+    private static final String HASH_1086EAF5 = "1086eaf5bca6d5a056097aa76017a8ab0eade20f";
+    private static final String HASH_67DFBE26 = "67dfbe2648c94a8825671b0f2c132828d0d43079";
+    private static final String HASH_84599B3C = "84599b3cccb3eeb5aa9aec64771678d6526bcecb";
     private static TestRepository repository = new TestRepository();
     private GitRepository instance;
 
@@ -103,7 +112,7 @@ public class GitRepositoryTest {
         assertNotNull(gitrepo);
         String ver = gitrepo.determineCurrentVersion();
         assertNotNull(ver);
-        Date date = new Date((long) (timestamp) * 1000);
+        Date date = new Date((long) timestamp * 1000);
         assertEquals(Repository.format(date) + " " + commitId + " " + shortComment, ver);
     }
 
@@ -126,7 +135,7 @@ public class GitRepositoryTest {
         assertNotNull(gitrepo);
         String ver = gitrepo.determineCurrentVersion();
         assertNotNull(ver);
-        Date date = new Date((long) (1485438707) * 1000);
+        Date date = new Date((long) 1485438707 * 1000);
         assertEquals(Repository.format(date) + " 84599b3 Kryštof Tulinger renaming directories", ver);
     }
 
@@ -312,13 +321,13 @@ public class GitRepositoryTest {
     @Test
     void testRenamedFiles() throws Exception {
         String[][] tests = new String[][] {
-                {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", Paths.get("moved2", "renamed2.c").toString()},
-                {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
-                {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
-                {Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", Paths.get("moved", "renamed.c").toString()},
-                {Paths.get("moved2", "renamed2.c").toString(), "b6413947", Paths.get("moved", "renamed.c").toString()},
-                {Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", "renamed.c"},
-                {Paths.get("moved2", "renamed2.c").toString(), "bb74b7e8", "renamed.c"}
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_84599B3C, Paths.get("moved2", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_67DFBE26, Paths.get("moved", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_67DFBE26, Paths.get("moved", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_1086EAF5, Paths.get("moved", "renamed.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_B6413947, Paths.get("moved", "renamed.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_CE4C98EC, "renamed.c"},
+                {Paths.get("moved2", "renamed2.c").toString(), HASH_BB74B7E8, "renamed.c"}
         };
 
         File root = new File(repository.getSourceRoot(), "git");
@@ -344,7 +353,7 @@ public class GitRepositoryTest {
 
     @Test
     void testAnnotationOfRenamedFileWithHandlingOff() throws Exception {
-        String[] revisions = {"84599b3c"};
+        String[] revisions = {HASH_84599B3C};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
 
@@ -357,7 +366,7 @@ public class GitRepositoryTest {
 
     @Test
     void testAnnotationOfRenamedFileWithHandlingOn() throws Exception {
-        String[] revisions = {"1086eaf5", "ce4c98ec"};
+        String[] revisions = {HASH_1086EAF5, HASH_CE4C98EC};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
 
@@ -370,7 +379,7 @@ public class GitRepositoryTest {
 
     @Test
     void testAnnotationOfRenamedFilePastWithHandlingOn() throws Exception {
-        String[] revisions = {"1086eaf5", "ce4c98ec"};
+        String[] revisions = {HASH_1086EAF5, HASH_CE4C98EC};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
 
@@ -378,16 +387,16 @@ public class GitRepositoryTest {
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
         File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
-        testAnnotationOfFile(gitrepo, renamedFile, "1086eaf5", revSet);
+        testAnnotationOfFile(gitrepo, renamedFile, HASH_1086EAF5, revSet);
     }
 
     @Test
     void testInvalidRenamedFiles() throws Exception {
         String[][] tests = new String[][] {
-                {"", "67dfbe26"},
+                {"", HASH_67DFBE26},
                 {"moved/renamed2.c", ""},
                 {"", ""},
-                {null, "67dfbe26"},
+                {null, HASH_67DFBE26},
                 {"moved/renamed2.c", null}
 
         };
@@ -453,23 +462,23 @@ public class GitRepositoryTest {
 
         final List<String[]> tests = Arrays.asList(
                 // old content (after revision 1086eaf5 inclusively)
-                new String[] {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content},
-                new String[] {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content},
-                new String[] {Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), HASH_84599B3C, new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), HASH_67DFBE26, new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), HASH_1086EAF5, new_content},
 
-                new String[] {Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content},
-                new String[] {Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), HASH_67DFBE26, new_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), HASH_1086EAF5, new_content},
 
-                new String[] {Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), HASH_1086EAF5, new_content},
 
-                // old content (before revision b6413947 inclusively)
-                new String[] {Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content},
-                new String[] {Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content},
-                new String[] {Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content},
-                new String[] {Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content},
-                new String[] {Paths.get("moved", "renamed.c").toString(), "b6413947", old_content},
-                new String[] {Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content},
-                new String[] {Paths.get("renamed.c").toString(), "ce4c98ec", old_content}
+                // old content (before revision b6413947a59f481ddc0a05e0d181731233557f6e inclusively)
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), HASH_B6413947, old_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), HASH_CE4C98EC, old_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), HASH_B6413947, old_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), HASH_CE4C98EC, old_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), HASH_B6413947, old_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), HASH_CE4C98EC, old_content},
+                new String[] {Paths.get("renamed.c").toString(), HASH_CE4C98EC, old_content}
         );
 
         for (String[] params : tests) {
@@ -485,15 +494,15 @@ public class GitRepositoryTest {
     @Test
     void testGetHistoryForNonExistentRenamed() throws Exception {
         final List<String[]> tests = Arrays.asList(
-                new String[] {Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), HASH_84599B3C},
 
-                new String[] {Paths.get("moved", "renamed.c").toString(), "84599b3c"},
-                new String[] {Paths.get("moved", "renamed.c").toString(), "67dfbe26"},
+                new String[] {Paths.get("moved", "renamed.c").toString(), HASH_84599B3C},
+                new String[] {Paths.get("moved", "renamed.c").toString(), HASH_67DFBE26},
 
-                new String[] {Paths.get("renamed.c").toString(), "84599b3c"},
-                new String[] {Paths.get("renamed.c").toString(), "67dfbe26"},
-                new String[] {Paths.get("renamed.c").toString(), "1086eaf5"},
-                new String[] {Paths.get("renamed.c").toString(), "b6413947"}
+                new String[] {Paths.get("renamed.c").toString(), HASH_84599B3C},
+                new String[] {Paths.get("renamed.c").toString(), HASH_67DFBE26},
+                new String[] {Paths.get("renamed.c").toString(), HASH_1086EAF5},
+                new String[] {Paths.get("renamed.c").toString(), HASH_B6413947}
         );
 
         for (String[] params : tests) {
@@ -526,37 +535,37 @@ public class GitRepositoryTest {
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
         List<HistoryEntry> entries = List.of(
-                new HistoryEntry("84599b3c", new Date(1485438707000L),
+                new HistoryEntry(HASH_84599B3C, new Date(1485438707000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    renaming directories\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved2", "renamed2.c"))),
-                new HistoryEntry("67dfbe26", new Date(1485263397000L),
+                new HistoryEntry(HASH_67DFBE26, new Date(1485263397000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    renaming renamed -> renamed2\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))),
-                new HistoryEntry("1086eaf5", new Date(1485263368000L),
+                new HistoryEntry(HASH_1086EAF5, new Date(1485263368000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "     adding some lines into renamed.c\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed.c"))),
-                new HistoryEntry("b6413947", new Date(1485263264000L),
+                new HistoryEntry(HASH_B6413947, new Date(1485263264000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    moved renamed.c to new location\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed.c"))),
-                new HistoryEntry("ce4c98ec", new Date(1485263232000L),  // start in the sub-test below
+                new HistoryEntry(HASH_CE4C98EC, new Date(1485263232000L),  // start in the sub-test below
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    adding simple file for renamed file testing\n\n", true,
                         Set.of(File.separator + Paths.get("git", "renamed.c"))),
-                new HistoryEntry("aa35c258", new Date(1218571965000L),
+                new HistoryEntry(HASH_AA35C258, new Date(1218571965000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Add lint make target and fix lint warnings\n\n", true,
                         Set.of(File.separator + Paths.get("git", "Makefile"),
                                 File.separator + Paths.get("git", "main.c"))),
-                new HistoryEntry("84821564", new Date(1218571643000L),
+                new HistoryEntry(HASH_84821564, new Date(1218571643000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Add the result of a make on Solaris x86\n\n", true,
                         Set.of(File.separator + Paths.get("git", "main.o"),
                                 File.separator + Paths.get("git", "testsprog"))),
-                new HistoryEntry("bb74b7e8", new Date(1218571573000L),
+                new HistoryEntry(HASH_BB74B7E8, new Date(1218571573000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Added a small test program\n\n", true,
                         Set.of(File.separator + Paths.get("git", "Makefile"),
@@ -582,7 +591,7 @@ public class GitRepositoryTest {
         assertEquals(expectedHistory, history);
 
         // Retry with start changeset.
-        history = gitrepo.getHistory(root, "ce4c98ec");
+        history = gitrepo.getHistory(root, HASH_CE4C98EC);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(4, history.getHistoryEntries().size());
@@ -607,7 +616,7 @@ public class GitRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(1, history.getHistoryEntries().size());
-        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
+        assertEquals(HASH_84599B3C, history.getHistoryEntries().get(0).getRevision());
     }
 
     @Test
@@ -624,11 +633,11 @@ public class GitRepositoryTest {
         assertNotNull(history.getRenamedFiles());
         assertEquals(0, history.getRenamedFiles().size());
 
-        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
-        assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
-        assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
-        assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
-        assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+        assertEquals(HASH_84599B3C, history.getHistoryEntries().get(0).getRevision());
+        assertEquals(HASH_67DFBE26, history.getHistoryEntries().get(1).getRevision());
+        assertEquals(HASH_1086EAF5, history.getHistoryEntries().get(2).getRevision());
+        assertEquals(HASH_B6413947, history.getHistoryEntries().get(3).getRevision());
+        assertEquals(HASH_CE4C98EC, history.getHistoryEntries().get(4).getRevision());
     }
 
     @Test
@@ -642,8 +651,8 @@ public class GitRepositoryTest {
         assertEquals(8, history.getHistoryEntries().size());
         List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
                 collect(Collectors.toList());
-        assertEquals(List.of("84599b3c", "67dfbe26", "1086eaf5", "b6413947", "ce4c98ec", "aa35c258", "84821564",
-                "bb74b7e8"), revisions);
+        assertEquals(List.of(HASH_84599B3C, HASH_67DFBE26, HASH_1086EAF5, HASH_B6413947, HASH_CE4C98EC, HASH_AA35C258, HASH_84821564,
+                HASH_BB74B7E8), revisions);
     }
 
     @Test
@@ -651,13 +660,13 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(root, null, "ce4c98ec");
+        History history = gitrepo.getHistory(root, null, HASH_CE4C98EC);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(4, history.getHistoryEntries().size());
         List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
                 collect(Collectors.toList());
-        assertEquals(List.of("ce4c98ec", "aa35c258", "84821564", "bb74b7e8"), revisions);
+        assertEquals(List.of(HASH_CE4C98EC, HASH_AA35C258, HASH_84821564, HASH_BB74B7E8), revisions);
     }
 
     @Test
@@ -665,13 +674,13 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(root, "aa35c258", null);
+        History history = gitrepo.getHistory(root, HASH_AA35C258, null);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(5, history.getHistoryEntries().size());
         List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
                 collect(Collectors.toList());
-        assertEquals(List.of("84599b3c", "67dfbe26", "1086eaf5", "b6413947", "ce4c98ec"), revisions);
+        assertEquals(List.of(HASH_84599B3C, HASH_67DFBE26, HASH_1086EAF5, HASH_B6413947, HASH_CE4C98EC), revisions);
     }
 
     @Test
@@ -679,13 +688,13 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(root, "ce4c98ec", "1086eaf5");
+        History history = gitrepo.getHistory(root, HASH_CE4C98EC, HASH_1086EAF5);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(2, history.getHistoryEntries().size());
         List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
                 collect(Collectors.toList());
-        assertEquals(List.of("1086eaf5", "b6413947"), revisions);
+        assertEquals(List.of(HASH_1086EAF5, HASH_B6413947), revisions);
     }
 
     @Test
@@ -729,8 +738,8 @@ public class GitRepositoryTest {
             gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
             Set<TagEntry> tags = gitrepo.getTagList();
             assertEquals(1, tags.size());
-            Date date = new Date((long) (1485438707) * 1000);
-            TagEntry tagEntry = new GitTagEntry("84599b3cccb3eeb5aa9aec64771678d6526bcecb", date, "one");
+            Date date = new Date((long) 1485438707 * 1000);
+            TagEntry tagEntry = new GitTagEntry(HASH_84599B3C, date, "one");
             assertEquals(tagEntry, tags.toArray()[0]);
 
             // Tag again so that single changeset has multiple tags.
@@ -740,8 +749,8 @@ public class GitRepositoryTest {
             tags = gitrepo.getTagList();
             assertEquals(1, tags.size());
             Set<TagEntry> expectedTags = new TreeSet<>();
-            date = new Date((long) (1485438707) * 1000);
-            tagEntry = new GitTagEntry("84599b3cccb3eeb5aa9aec64771678d6526bcecb", date, "one, two");
+            date = new Date((long) 1485438707 * 1000);
+            tagEntry = new GitTagEntry(HASH_84599B3C, date, "one, two");
             expectedTags.add(tagEntry);
             assertEquals(expectedTags, tags);
 
@@ -766,7 +775,7 @@ public class GitRepositoryTest {
             // Tag specific changeset (not HEAD) and recheck.
             org.eclipse.jgit.lib.Repository repo = gitClone.getRepository();
             RevCommit commit;
-            ObjectId objectId = repo.resolve("b6413947a5");
+            ObjectId objectId = repo.resolve(HASH_B6413947);
             try (RevWalk walk = new RevWalk(repo)) {
                 commit = walk.parseCommit(objectId);
             }
@@ -776,9 +785,9 @@ public class GitRepositoryTest {
             gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
             Set<TagEntry> tags = gitrepo.getTagList();
             assertEquals(1, tags.size());
-            Date date = new Date((long) (1485263264) * 1000);
+            Date date = new Date((long) 1485263264 * 1000);
             Set<TagEntry> expectedTags = new TreeSet<>();
-            TagEntry tagEntry = new GitTagEntry("b6413947a59f481ddc0a05e0d181731233557f6e", date, "three");
+            TagEntry tagEntry = new GitTagEntry(HASH_B6413947, date, "three");
             expectedTags.add(tagEntry);
             assertEquals(expectedTags, tags);
 

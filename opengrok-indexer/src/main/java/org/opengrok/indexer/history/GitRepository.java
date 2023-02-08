@@ -21,6 +21,7 @@
  * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -376,8 +377,10 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 for (int i = 0; i < rawText.size(); i++) {
                     final PersonIdent sourceAuthor = result.getSourceAuthor(i);
                     final RevCommit sourceCommit = result.getSourceCommit(i);
-                    annotation.addLine(sourceCommit.getId().abbreviate(GIT_ABBREV_LEN).
-                            name(), sourceAuthor.getName(), true);
+                    annotation.addLine(
+                      sourceCommit.getId().name(),
+                      sourceAuthor.getName(), true,
+                      sourceCommit.getId().abbreviate(GIT_ABBREV_LEN).name());
                 }
             }
         } catch (GitAPIException e) {
@@ -448,6 +451,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return MAX_CHANGESETS;
     }
 
+    @Override
     public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
@@ -473,10 +477,12 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return hist.getLastHistoryEntry();
     }
 
+    @Override
     public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
+    @Override
     public void traverseHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits, List<ChangesetVisitor> visitors) throws HistoryException {
 
@@ -493,7 +499,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
             int num = 0;
             for (RevCommit commit : walk) {
-                CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                CommitInfo commitInfo = new CommitInfo(commit.getId().name(),
                         commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 
@@ -736,7 +742,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
                 for (Map.Entry<RevCommit, String> entry : commit2Tags.entrySet()) {
                     int commitTime = entry.getKey().getCommitTime();
-                    Date date = new Date((long) (commitTime) * 1000);
+                    Date date = new Date((long) commitTime * 1000);
                     GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getName(),
                             date, entry.getValue());
                     this.tagList.add(tagEntry);
@@ -837,7 +843,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 try (RevWalk walk = new RevWalk(repository); ObjectReader reader = repository.newObjectReader()) {
                     RevCommit commit = walk.parseCommit(head.getObjectId());
                     int commitTime = commit.getCommitTime();
-                    Date date = new Date((long) (commitTime) * 1000);
+                    Date date = new Date((long) commitTime * 1000);
                     return String.format("%s %s %s %s",
                             format(date),
                             reader.abbreviate(head.getObjectId()).name(),

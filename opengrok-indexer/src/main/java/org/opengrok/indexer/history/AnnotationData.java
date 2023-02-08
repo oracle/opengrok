@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -111,6 +112,23 @@ public class AnnotationData implements Serializable {
     }
 
     /**
+     * Gets the revision for the last change to the specified line.
+     *
+     * @param line line number (counting from 1)
+     * @return revision string, or an empty string if there is no information
+     * about the specified line
+     */
+    public String getRevisionForDisplay(int line) {
+        try {
+            AnnotationLine annotationLine = annotationLines.get(line - 1);
+            return annotationLine.getRevision();
+        } catch (IndexOutOfBoundsException e) {
+            return "";
+        }
+    }
+
+
+    /**
      * Gets the enabled state for the last change to the specified line.
      *
      * @param line line number (counting from 1)
@@ -177,7 +195,7 @@ public class AnnotationData implements Serializable {
      */
     void addLine(final AnnotationLine annotationLine) {
         annotationLines.add(annotationLine);
-        widestRevision = Math.max(widestRevision, annotationLine.getRevision().length());
+        widestRevision = Math.max(widestRevision, annotationLine.getDisplayRevision().length());
         widestAuthor = Math.max(widestAuthor, annotationLine.getAuthor().length());
     }
 
@@ -185,10 +203,11 @@ public class AnnotationData implements Serializable {
      * @param revision revision number
      * @param author author name
      * @param enabled whether the line is enabled
+     * @param displayRevision a specialised revision number of display purposes. Can be null in which case the revision number will be used.
      * @see #addLine(AnnotationLine)
      */
-    void addLine(String revision, String author, boolean enabled) {
-        final AnnotationLine annotationLine = new AnnotationLine(revision, author, enabled);
+    void addLine(String revision, String author, boolean enabled, String displayRevision) {
+        final AnnotationLine annotationLine = new AnnotationLine(revision, author, enabled, displayRevision);
         addLine(annotationLine);
     }
 
