@@ -32,8 +32,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +67,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     private static class Handler extends DefaultHandler2 {
 
+        private static final String COPYFROM_PATH = "copyfrom-path";
+
         /**
          * Example of the longest date format that we should accept - SimpleDateFormat cannot cope with micro/nano seconds.
          */
@@ -74,10 +79,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         final int length;
         final List<HistoryEntry> entries = new ArrayList<>();
         final Set<String> renamedFiles = new HashSet<>();
+        final Map<String, String> renamedToDirectoryRevisions = new HashMap<>();
         final SubversionRepository repository;
         HistoryEntry entry;
         StringBuilder sb;
-        boolean isRenamed;
+        boolean isRenamedFile;
+        boolean isRenamedDir;
 
         Handler(String home, String prefix, int length, SubversionRepository repository) {
             this.home = home;
@@ -87,19 +94,31 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             sb = new StringBuilder();
         }
 
-        List<String> getRenamedFiles() {
-            return new ArrayList<>(renamedFiles);
+        Set<String> getRenamedFiles() {
+            return renamedFiles;
+        }
+
+        Map<String, String> getRenamedDirectories() {
+          return renamedToDirectoryRevisions;
         }
 
         @Override
         public void startElement(String uri, String localName, String qname, Attributes attr) {
-            isRenamed = false;
+            isRenamedFile = false;
+            isRenamedDir = false;
             if ("logentry".equals(qname)) {
                 entry = new HistoryEntry();
                 entry.setActive(true);
                 entry.setRevision(attr.getValue("revision"));
             } else if ("path".equals(qname)) {
-                isRenamed = attr.getIndex("copyfrom-path") != -1;
+                if (attr.getIndex(COPYFROM_PATH) != -1) {
+                  LOGGER.info("rename for:" + attr.getValue(COPYFROM_PATH) );
+                  if ("dir".equals(attr.getValue("kind"))) {
+                    isRenamedDir = true;
+                  } else {
+                    isRenamedFile = true;
+                  }
+                }
             }
             sb.setLength(0);
         }
@@ -132,8 +151,11 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     // The same file names may be repeated in many commits,
                     // so intern them to reduce the memory footprint.
                     entry.addFile(path.intern());
-                    if (isRenamed) {
+                    if (isRenamedFile) {
                         renamedFiles.add(path.intern());
+                    }
+                    if (isRenamedDir) {
+                      renamedToDirectoryRevisions.put(path.intern(), entry.getRevision());
                     }
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);
@@ -209,10 +231,26 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             repos.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
-        return new History(entries, handler.getRenamedFiles());
+        Set<String> allRenamedFiles = findRenamedFilesFromDirectories(handler.getRenamedDirectories(), repos, cmdType);
+        allRenamedFiles.addAll(handler.getRenamedFiles());
+
+        return new History(entries, new ArrayList<>(allRenamedFiles));
     }
 
-   /**
+    /**
+     * @return a set of files that were present in the directories at the given revisions.
+     */
+    private Set<String> findRenamedFilesFromDirectories(Map<String, String> renamedDirectories, SubversionRepository repos,
+       CommandTimeoutType cmdType) {
+
+      Set<String> renamedFiles = new HashSet<>();
+      for (Entry<String, String> entry : renamedDirectories.entrySet()) {
+        renamedFiles.addAll(repos.getFilesInDirectoryAtRevision(entry.getKey(), entry.getValue(), cmdType));
+      }
+      return renamedFiles;
+    }
+
+    /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
      *

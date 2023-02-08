@@ -23,14 +23,21 @@
  */
 package org.opengrok.indexer.history;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +48,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.Executor.StreamHandler;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -249,7 +257,7 @@ public class SubversionRepository extends Repository {
 
         String filepath;
         try {
-            filepath = (new File(parent, basename)).getCanonicalPath();
+            filepath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get canonical path: {0}", exp.getClass().toString());
@@ -281,6 +289,73 @@ public class SubversionRepository extends Repository {
 
         return false;
     }
+
+    /**
+     * Get an executor to be used for retrieving the history log for the named
+     * file.
+     *
+     * @param dir The repository relative directory to retrieve file list for
+     * @param atRevision the revision number at which we want the directory contents
+     * @param cmdType command timeout type
+     * @return An Executor ready to be started
+     */
+    private Executor getDirectoryListExecutor(final String dir, String atRevision, CommandTimeoutType cmdType) {
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("ls");
+        cmd.add(escapeFileName(dir));
+        cmd.add("-r" + atRevision);
+
+        return new Executor(cmd, new File(getDirectoryName()),
+                    RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
+    }
+
+
+    /**
+     * Provides a list of files that were in a directory at a given revision.
+     * This is useful for finding files that will need special renamed file history
+     * handling because they were in a directory when it was renamed.
+     *
+     * Note that this doesn't throw an exception even if the command was not completed
+     * because we will still be able to get the file history up to this point.
+     *
+     * @param directory the directory to check
+     * @param revision the revision to check at
+     * @param cmdType the timeout setting.
+     * @return the files that were in the directory at that revision
+     */
+    Set<String> getFilesInDirectoryAtRevision(String directory, String revision,
+        CommandTimeoutType cmdType) {
+
+      Executor executor = getDirectoryListExecutor(
+            RuntimeEnvironment.getInstance().getSourceRootPath() + File.separator + directory,
+            revision, cmdType);
+
+      Set<String> files = new HashSet<>();
+
+      StreamHandler directoryLogStreamHandler = new StreamHandler() {
+
+       @Override
+       public void processStream(InputStream in) throws IOException {
+         new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+             .lines()
+             .filter(s -> !s.isBlank())
+             .map(s -> directory + File.separator + s)
+             .forEach(files::add);
+       }
+      };
+
+      int status = executor.exec(true, directoryLogStreamHandler);
+      if (status != 0) {
+        LOGGER.warning("Failed to get history for: \"" + directory + "\" Exit code: " + status);
+      }
+      LOGGER.info("log from directory / revision [" + directory + "] [" + revision + "]\n" + files);
+
+      return files;
+    }
+
 
     @Override
     boolean hasHistoryForDirectories() {

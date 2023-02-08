@@ -319,3 +319,117 @@ Node-path: FileB.txt
 Node-action: delete
 
 
+Revision-number: 11
+Prop-content-length: 119
+Content-length: 119
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2021-03-02T08:53:07.271547Z
+K 7
+svn:log
+V 16
+add a new folder
+PROPS-END
+
+Node-path: folderToRename
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Revision-number: 12
+Prop-content-length: 127
+Content-length: 127
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2021-03-02T08:54:30.615600Z
+K 7
+svn:log
+V 24
+added file to new folder
+PROPS-END
+
+Node-path: folderToRename/FileInRenamedFolder.txt
+Node-kind: file
+Node-action: add
+Text-content-md5: 7dbc9f235835a899880f3e9a7ae1f393
+Text-content-sha1: b2c9fc8a263b9ffce7315ac747c7d03fc2d22ef3
+Prop-content-length: 10
+Text-content-length: 14
+Content-length: 24
+
+PROPS-END
+A sample file.
+
+Revision-number: 13
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2021-03-02T08:54:54.693901Z
+K 7
+svn:log
+V 13
+rename folder
+PROPS-END
+
+Node-path: renamedFolder
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 12
+Node-copyfrom-path: folderToRename
+
+
+Node-path: folderToRename
+Node-action: delete
+
+
+Revision-number: 14
+Prop-content-length: 126
+Content-length: 126
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2021-03-02T11:34:28.030163Z
+K 7
+svn:log
+V 23
+Update to renamed file.
+PROPS-END
+
+Node-path: renamedFolder/FileInRenamedFolder.txt
+Node-kind: file
+Node-action: change
+Text-content-md5: ccf9163ea7a31346cbeea040c3cbb4a5
+Text-content-sha1: b9dbd526251d3309741de3d1bf037ac386738788
+Text-content-length: 23
+Content-length: 23
+
+A sample file. Amended.
+
