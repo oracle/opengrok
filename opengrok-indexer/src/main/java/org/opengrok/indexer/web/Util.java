@@ -22,6 +22,7 @@
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
+ * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -762,7 +763,7 @@ public final class Util {
             buf.append("<span class=\"most_recent_revision\">");
             buf.append('*');
         }
-        htmlize(r, buf);
+        htmlize(annotation.getRevisionForDisplay(num), buf);
         if (most_recent_revision) {
             buf.append("</span>"); // recent revision span
         }

@@ -304,7 +304,7 @@ class IndexDatabaseTest {
         Document doc = IndexDatabase.getDocument(Paths.get(repository.getSourceRoot(),
                 "git", "main.c").toFile());
         assertNotNull(doc);
-        assertEquals("aa35c258", doc.get(QueryBuilder.LASTREV));
+        assertEquals("aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a", doc.get(QueryBuilder.LASTREV));
     }
 
     static void changeFileAndCommit(Git git, File file, String comment) throws Exception {

@@ -181,7 +181,7 @@ public class GitRepositoryOctopusTest {
         assertEquals(4, allFiles.size(), "git-octopus files from log");
 
         HistoryEntry first = entries.get(0);
-        assertEquals("206f862b", first.getRevision(), "should be merge commit hash");
+        assertEquals("206f862b18a4e1a73025e6c0c82883cb92a89b1d", first.getRevision(), "should be merge commit hash");
         assertEquals("Merge branches 'file_a', 'file_b' and 'file_c' into master, and add d",
                 first.getMessage(),
                 "should be merge commit message");

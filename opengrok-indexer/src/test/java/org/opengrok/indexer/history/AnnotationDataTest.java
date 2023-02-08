@@ -66,9 +66,9 @@ class AnnotationDataTest {
      */
     @Test
     void testEqualsNegative() {
-        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
-        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
-        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true);
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true, null);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true, null);
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true, null);
 
         AnnotationData annotationData1 = new AnnotationData();
         annotationData1.addLine(annotationLine1);
@@ -88,8 +88,8 @@ class AnnotationDataTest {
      */
     @Test
     void testEqualsNegativeStoredRevision() {
-        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
-        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true, null);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true, null);
 
         AnnotationData annotationData1 = new AnnotationData();
         annotationData1.addLine(annotationLine1);
@@ -111,9 +111,9 @@ class AnnotationDataTest {
     @Test
     void testEqualsPositive() {
         final String fileName = "foo.txt";
-        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
-        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
-        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true);
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true, null);
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true, null);
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true, null);
 
         AnnotationData annotationData1 = new AnnotationData(fileName);
         annotationData1.addLine(annotationLine1);
