@@ -52,6 +52,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AnnotationControllerTest extends OGKJerseyTest {
 
+    private static final String HASH_BB74B7E8 = "bb74b7e849170c31dc1b1b5801c83bf0094a3b10";
+    private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
+
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
@@ -121,8 +124,8 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         List<String> ids = annotations.stream().
                 map(AnnotationController.AnnotationDTO::getRevision).
                 collect(Collectors.toList());
-        assertEquals(Arrays.asList("bb74b7e8", "bb74b7e8", "bb74b7e8", "bb74b7e8", "bb74b7e8",
-                "bb74b7e8", "bb74b7e8", "bb74b7e8", "aa35c258", "aa35c258", "aa35c258"), ids);
+        assertEquals(Arrays.asList(HASH_BB74B7E8, HASH_BB74B7E8, HASH_BB74B7E8, HASH_BB74B7E8, HASH_BB74B7E8,
+                HASH_BB74B7E8, HASH_BB74B7E8, HASH_BB74B7E8, HASH_AA35C258, HASH_AA35C258, HASH_AA35C258), ids);
         List<String> versions = annotations.stream().
                 map(AnnotationController.AnnotationDTO::getVersion).
                 collect(Collectors.toList());
@@ -136,7 +139,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         final String path = "git/Makefile";
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)
-                .queryParam("revision", "bb74b7e8")
+                .queryParam("revision", HASH_BB74B7E8)
                 .request()
                 .get(new GenericType<>() {
                 });
@@ -150,6 +153,6 @@ public class AnnotationControllerTest extends OGKJerseyTest {
                 collect(Collectors.toList());
         assertEquals(Arrays.asList("1/1", "1/1", "1/1", "1/1", "1/1", "1/1", "1/1", "1/1"),
                 versions);
-        assertEquals(Collections.singleton("bb74b7e8"), ids);
+        assertEquals(Collections.singleton(HASH_BB74B7E8), ids);
     }
 }
