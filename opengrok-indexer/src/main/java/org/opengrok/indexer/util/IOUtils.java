@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.io.FileUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -81,32 +83,7 @@ public final class IOUtils {
      * @throws IOException if any read error
      */
     public static void removeRecursive(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                // Try to delete the file anyway.
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                if (exc == null) {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    // Directory traversal failed.
-                    throw exc;
-                }
-            }
-        });
+        FileUtils.deleteDirectory(path.toFile());
     }
 
     /**
