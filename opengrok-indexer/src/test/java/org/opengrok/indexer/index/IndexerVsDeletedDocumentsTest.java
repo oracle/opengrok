@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.index;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -245,7 +246,7 @@ class IndexerVsDeletedDocumentsTest {
 
     @AfterEach
     void cleanup() throws IOException {
-        IOUtils.removeRecursive(Path.of(env.getDataRootPath()));
+        FileUtils.deleteDirectory(env.getDataRootFile());
         IOUtils.removeRecursive(Path.of(env.getSourceRootPath()));
     }
 
