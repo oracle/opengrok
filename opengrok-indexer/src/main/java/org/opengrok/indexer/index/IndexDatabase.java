@@ -2117,7 +2117,7 @@ public class IndexDatabase {
         try {
             writeAnalysisSettings();
 
-            LOGGER.log(Level.FINE, "preparing to commit changes to Lucene index"); // TODO add info about which database
+            LOGGER.log(Level.FINE, "preparing to commit changes to {0}", this);
             writer.prepareCommit();
             hasPendingCommit = true;
 
@@ -2282,5 +2282,14 @@ public class IndexDatabase {
 
     private static class AcceptSymlinkRet {
         String localRelPath;
+    }
+
+    @Override
+    public String toString() {
+        if (this.project != null) {
+            return "index database for project '" + this.project.getName() + "'";
+        }
+
+        return "global index database";
     }
 }
