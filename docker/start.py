@@ -219,7 +219,7 @@ def refresh_projects(logger, uri):
     Ensure each immediate source root subdirectory is a project.
     """
     webapp_projects = list_projects(logger, uri)
-    if not webapp_projects:
+    if webapp_projects is None:
         return
 
     logger.debug('Projects from the web app: {}'.format(webapp_projects))
