@@ -799,13 +799,17 @@ public class IndexDatabase {
                 deletedUids.size(), indexDirectory));
     }
 
+    private void logIgnoredUid(String uid) {
+        LOGGER.log(Level.FINEST, "ignoring deleted document for {0} at {1}",
+                new Object[]{Util.uid2url(uid), Util.uid2date(uid)});
+    }
+
     private void processTrailingTerms(String startUid, boolean usedHistory, IndexDownArgs args) throws IOException {
         while (uidIter != null && uidIter.term() != null
                 && uidIter.term().utf8ToString().startsWith(startUid)) {
 
             if (deletedUids.contains(uidIter.term().utf8ToString())) {
-                // TODO: check that path and date are logged in readable form
-                LOGGER.log(Level.FINEST, "ignoring deleted document for {0}", uidIter.term().utf8ToString());
+                logIgnoredUid(uidIter.term().utf8ToString());
                 BytesRef next = uidIter.next();
                 if (next == null) {
                     uidIter = null;
@@ -1610,7 +1614,7 @@ public class IndexDatabase {
                 && Util.uid2url(uidIter.term().utf8ToString()).compareTo(path) <= 0) {
 
             if (deletedUids.contains(uidIter.term().utf8ToString())) {
-                LOGGER.log(Level.FINEST, "ignoring deleted document for {0}", uidIter.term().utf8ToString());
+                logIgnoredUid(uidIter.term().utf8ToString());
                 BytesRef next = uidIter.next();
                 if (next == null) {
                     uidIter = null;
@@ -1673,7 +1677,7 @@ public class IndexDatabase {
                     && uidIter.term().compareTo(buid) < 0) {
 
                 if (deletedUids.contains(uidIter.term().utf8ToString())) {
-                    LOGGER.log(Level.FINEST, "ignoring deleted document for {0}", uidIter.term().utf8ToString());
+                    logIgnoredUid(uidIter.term().utf8ToString());
                     BytesRef next = uidIter.next();
                     if (next == null) {
                         uidIter = null;
@@ -1699,7 +1703,7 @@ public class IndexDatabase {
             // If the file was not modified, probably skip to the next one.
             if (uidIter != null && uidIter.term() != null && uidIter.term().bytesEquals(buid)) {
                 if (deletedUids.contains(uidIter.term().utf8ToString())) {
-                    LOGGER.log(Level.FINEST, "ignoring deleted document for {0}", uidIter.term().utf8ToString());
+                    logIgnoredUid(uidIter.term().utf8ToString());
                     BytesRef next = uidIter.next();
                     if (next == null) {
                         uidIter = null;
