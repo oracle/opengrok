@@ -172,7 +172,7 @@ public class IndexDatabase {
     private List<String> directories;
     private LockFactory lockFactory;
     private final BytesRef emptyBR = new BytesRef("");
-    private Set<String> deletedUids = new HashSet<>();
+    private final Set<String> deletedUids = new HashSet<>();
 
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
