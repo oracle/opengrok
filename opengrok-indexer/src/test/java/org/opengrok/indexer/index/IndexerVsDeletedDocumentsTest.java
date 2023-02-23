@@ -247,6 +247,7 @@ class IndexerVsDeletedDocumentsTest {
     @AfterEach
     void cleanup() throws IOException {
         IOUtils.removeRecursive(Path.of(env.getDataRootPath()));
+        // FileUtils.deleteDirectory() avoids AccessDeniedException on Windows.
         FileUtils.deleteDirectory(env.getSourceRootFile());
     }
 
