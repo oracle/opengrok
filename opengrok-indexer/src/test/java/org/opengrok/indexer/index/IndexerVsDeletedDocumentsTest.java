@@ -246,8 +246,8 @@ class IndexerVsDeletedDocumentsTest {
 
     @AfterEach
     void cleanup() throws IOException {
-        FileUtils.deleteDirectory(env.getDataRootFile());
-        IOUtils.removeRecursive(Path.of(env.getSourceRootPath()));
+        IOUtils.removeRecursive(Path.of(env.getDataRootPath()));
+        FileUtils.deleteDirectory(env.getSourceRootFile());
     }
 
     private static Stream<Arguments> provideAguments() {
