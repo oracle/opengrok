@@ -50,6 +50,7 @@ public class RestfulClient {
      * @return HTTP status or -1
      */
     public static int postIt(String uri, String input) {
+        int result;
         try {
             try (Client client = ClientBuilder.newClient()) {
                 LOGGER.log(Level.FINEST, "sending REST POST request to {0}: {1}",
@@ -63,12 +64,13 @@ public class RestfulClient {
                         LOGGER.log(Level.WARNING, "REST request failed: HTTP error code : {0}", status);
                     }
 
-                    return status;
+                    result = status;
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "REST request failed", e);
-            return -1;
+            result = -1;
         }
+        return result;
     }
 }
