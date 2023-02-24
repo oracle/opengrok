@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
+import jakarta.ws.rs.client.Client;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import jakarta.ws.rs.ProcessingException;
@@ -68,19 +69,23 @@ public class IndexerUtil {
             ResponseProcessingException,
             ProcessingException,
             WebApplicationException {
-        final Invocation.Builder request = ClientBuilder.newClient()
-                                                        .target(host)
-                                                        .path("api")
-                                                        .path("v1")
-                                                        .path("configuration")
-                                                        .path("projectsEnabled")
-                                                        .request()
-                                                        .headers(getWebAppHeaders());
-        final String enabled = request.get(String.class);
-        if (!Boolean.parseBoolean(enabled)) {
-            final Response r = request.put(Entity.text(Boolean.TRUE.toString()));
-            if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                throw new WebApplicationException(String.format("Unable to enable projects: %s", r.getStatusInfo().getReasonPhrase()), r.getStatus());
+
+        try (Client client = ClientBuilder.newClient()) {
+            final Invocation.Builder request = client.target(host)
+                    .path("api")
+                    .path("v1")
+                    .path("configuration")
+                    .path("projectsEnabled")
+                    .request()
+                    .headers(getWebAppHeaders());
+            final String enabled = request.get(String.class);
+            if (!Boolean.parseBoolean(enabled)) {
+                try (final Response r = request.put(Entity.text(Boolean.TRUE.toString()))) {
+                    if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                        throw new WebApplicationException(String.format("Unable to enable projects: %s",
+                                r.getStatusInfo().getReasonPhrase()), r.getStatus());
+                    }
+                }
             }
         }
     }
