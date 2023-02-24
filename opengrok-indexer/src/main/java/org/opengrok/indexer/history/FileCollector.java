@@ -22,6 +22,8 @@
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.VisibleForTesting;
+
 import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -62,5 +64,10 @@ public class FileCollector extends ChangesetVisitor {
 
     void addFiles(Collection<String> files) {
         this.files.addAll(files);
+    }
+
+    @VisibleForTesting
+    public void reset() {
+        files.clear();
     }
 }

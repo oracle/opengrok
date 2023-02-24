@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -508,7 +508,7 @@ class SuggesterProjectData implements Closeable {
         }
 
         try {
-            String str = FileUtils.readFileToString(versionFile, StandardCharsets.UTF_8);
+            String str = FileUtils.readFileToString(versionFile, StandardCharsets.UTF_8.toString());
             return Long.parseLong(str);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not read suggester data version", e);
@@ -518,7 +518,8 @@ class SuggesterProjectData implements Closeable {
 
     private void storeDataVersion(final long version) {
         try {
-            FileUtils.writeStringToFile(getFile(VERSION_FILE_NAME), "" + version, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(getFile(VERSION_FILE_NAME), "" + version,
+                    StandardCharsets.UTF_8.toString());
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not store version", e);
         }

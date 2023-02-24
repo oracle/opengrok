@@ -69,6 +69,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.MultiBits;
 import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.StoredFields;
@@ -85,6 +86,7 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -136,6 +138,8 @@ public class IndexDatabase {
 
     private static final Set<String> REVERT_COUNTS_FIELDS;
 
+    private static final Set<String> LIVE_CHECK_FIELDS;
+
     private static final Object INSTANCE_LOCK = new Object();
 
     /**
@@ -169,6 +173,7 @@ public class IndexDatabase {
     private List<String> directories;
     private LockFactory lockFactory;
     private final BytesRef emptyBR = new BytesRef("");
+    private final Set<String> deletedUids = new HashSet<>();
 
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
@@ -176,6 +181,8 @@ public class IndexDatabase {
     public static final String SUGGESTER_DIR = "suggester";
 
     private final IndexDownArgsFactory indexDownArgsFactory;
+
+    private final IndexWriterConfigFactory indexWriterConfigFactory;
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -198,6 +205,24 @@ public class IndexDatabase {
         indexDownArgsFactory = factory;
         this.project = project;
         lockFactory = NoLockFactory.INSTANCE;
+        indexWriterConfigFactory = new IndexWriterConfigFactory();
+        initialize();
+    }
+
+    /**
+     * Create a new instance of an Index Database for a given project.
+     *
+     * @param project the project to create the database for
+     * @param indexDownArgsFactory {@link IndexDownArgsFactory} instance
+     * @param indexWriterConfigFactory {@link IndexWriterConfigFactory} instance
+     * @throws java.io.IOException if an error occurs while creating directories
+     */
+    public IndexDatabase(Project project, IndexDownArgsFactory indexDownArgsFactory,
+                         IndexWriterConfigFactory indexWriterConfigFactory) throws IOException {
+        this.indexDownArgsFactory = indexDownArgsFactory;
+        this.project = project;
+        lockFactory = NoLockFactory.INSTANCE;
+        this.indexWriterConfigFactory = indexWriterConfigFactory;
         initialize();
     }
 
@@ -215,6 +240,10 @@ public class IndexDatabase {
         REVERT_COUNTS_FIELDS.add(QueryBuilder.PATH);
         REVERT_COUNTS_FIELDS.add(QueryBuilder.NUML);
         REVERT_COUNTS_FIELDS.add(QueryBuilder.LOC);
+
+        LIVE_CHECK_FIELDS = new HashSet<>();
+        LIVE_CHECK_FIELDS.add(QueryBuilder.U);
+        LIVE_CHECK_FIELDS.add(QueryBuilder.PATH);
     }
 
     /**
@@ -582,11 +611,7 @@ public class IndexDatabase {
 
         IOException finishingException = null;
         try {
-            Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setRAMBufferSizeMB(env.getRamBufferSize());
-            writer = new IndexWriter(indexDirectory, iwc);
+            writer = new IndexWriter(indexDirectory, indexWriterConfigFactory.get());
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();
 
@@ -610,6 +635,7 @@ public class IndexDatabase {
 
                 String startUid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
+                setupDeletedUids();
                 countsAggregator = new NumLinesLOCAggregator();
                 settings = readAnalysisSettings();
                 if (settings == null) {
@@ -735,9 +761,62 @@ public class IndexDatabase {
         }
     }
 
+    /**
+     * The traversal of the uid terms done in {@link #processFile(IndexDownArgs, File, String)}
+     * and {@link #processFileIncremental(IndexDownArgs, File, String)} needs to skip over deleted documents
+     * that are often found in multi-segment indexes. This method stores the uids of these documents
+     * and is expected to be called before the traversal for the top level directory is started.
+     * @throws IOException if the index cannot be read for some reason
+     */
+    private void setupDeletedUids() throws IOException {
+        // This method might be called repeatedly from within the same IndexDatabase instance
+        // for various directories so the map needs to be reset so that it does not contain unrelated uids.
+        deletedUids.clear();
+
+        Bits liveDocs = MultiBits.getLiveDocs(reader);  // Will return null if there are no deletions.
+        if (liveDocs == null) {
+            LOGGER.log(Level.FINEST, "no deletions found in {0}", reader);
+            return;
+        }
+
+        Statistics stat = new Statistics();
+        LOGGER.log(Level.FINEST, "traversing the documents in {0} to collect uids of deleted documents",
+                indexDirectory);
+        for (int i = 0; i < reader.maxDoc(); i++) {
+            if (!liveDocs.get(i)) {
+                Document doc = reader.document(i, LIVE_CHECK_FIELDS);  // use limited-field version
+                IndexableField field = doc.getField(QueryBuilder.U);
+                if (field != null) {
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        String uidString = field.stringValue();
+                        LOGGER.log(Level.FINEST, "adding ''{0}'' at {1} to deleted uid set",
+                                new Object[]{Util.uid2url(uidString), Util.uid2date(uidString)});
+                    }
+                    deletedUids.add(field.stringValue());
+                }
+            }
+        }
+        stat.report(LOGGER, Level.FINEST, String.format("found %s deleted documents in %s",
+                deletedUids.size(), indexDirectory));
+    }
+
+    private void logIgnoredUid(String uid) {
+        LOGGER.log(Level.FINEST, "ignoring deleted document for {0} at {1}",
+                new Object[]{Util.uid2url(uid), Util.uid2date(uid)});
+    }
+
     private void processTrailingTerms(String startUid, boolean usedHistory, IndexDownArgs args) throws IOException {
         while (uidIter != null && uidIter.term() != null
                 && uidIter.term().utf8ToString().startsWith(startUid)) {
+
+            if (deletedUids.contains(uidIter.term().utf8ToString())) {
+                logIgnoredUid(uidIter.term().utf8ToString());
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+                continue;
+            }
 
             if (usedHistory) {
                 // Allow for forced reindex. For history based reindex the trailing terms
@@ -1526,19 +1605,31 @@ public class IndexDatabase {
      * @param path path of the file argument relative to source root (with leading slash)
      * @throws IOException on error
      */
-    private void processFileIncremental(IndexDownArgs args, File file, String path) throws IOException {
-        if (uidIter != null) {
-            path = Util.fixPathIfWindows(path);
-            // Traverse terms until reaching one that matches the path of given file.
-            while (uidIter != null && uidIter.term() != null
-                    && uidIter.term().compareTo(emptyBR) != 0
-                    && Util.uid2url(uidIter.term().utf8ToString()).compareTo(path) < 0) {
+    @VisibleForTesting
+    void processFileIncremental(IndexDownArgs args, File file, String path) throws IOException {
+        final boolean fileExists = file.exists();
 
+        path = Util.fixPathIfWindows(path);
+        // Traverse terms until reaching document beyond path of given file.
+        while (uidIter != null && uidIter.term() != null
+                && uidIter.term().compareTo(emptyBR) != 0
+                && Util.uid2url(uidIter.term().utf8ToString()).compareTo(path) <= 0) {
+
+            if (deletedUids.contains(uidIter.term().utf8ToString())) {
+                logIgnoredUid(uidIter.term().utf8ToString());
+                BytesRef next = uidIter.next();
+                if (next == null) {
+                    uidIter = null;
+                }
+                continue;
+            }
+
+            /*
+             * Possibly short-circuit to force reindexing of prior-version indexes.
+             */
+            String termPath = Util.uid2url(uidIter.term().utf8ToString());
+            if (!termPath.equals(path)) {
                 // A file that was not changed.
-                /*
-                 * Possibly short-circuit to force reindexing of prior-version indexes.
-                 */
-                String termPath = Util.uid2url(uidIter.term().utf8ToString());
                 File termFile = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), termPath);
                 boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
                         checkSettings(termFile, termPath);
@@ -1548,45 +1639,20 @@ public class IndexDatabase {
                     args.curCount++;
                     args.works.add(new IndexFileWork(termFile, termPath));
                 }
-
-                BytesRef next = uidIter.next();
-                if (next == null) {
-                    uidIter = null;
-                }
-            }
-
-            if (uidIter != null && uidIter.term() != null
-                    && Util.uid2url(uidIter.term().utf8ToString()).equals(path)) {
-                /*
-                 * At this point we know that the file has corresponding term in the index
-                 * and has changed in some way. Either it was deleted or it was changed.
-                 */
-                if (!file.exists()) {
-                    removeFile(true);
-                } else {
-                    removeFile(false);
-
-                    args.curCount++;
-                    args.works.add(new IndexFileWork(file, path));
-                }
-
-                BytesRef next = uidIter.next();
-                if (next == null) {
-                    uidIter = null;
-                }
             } else {
-                // Potentially new file. A file might be added and then deleted,
-                // so it is necessary to check its existence.
-                if (file.exists()) {
-                    args.curCount++;
-                    args.works.add(new IndexFileWork(file, path));
-                }
+                removeFile(!fileExists);
             }
-        } else {
-            if (file.exists()) {
-                args.curCount++;
-                args.works.add(new IndexFileWork(file, path));
+
+            BytesRef next = uidIter.next();
+            if (next == null) {
+                uidIter = null;
             }
+        }
+
+        // The function would not be called if the file was not changed in some way.
+        if (fileExists) {
+            args.curCount++;
+            args.works.add(new IndexFileWork(file, path));
         }
     }
 
@@ -1597,7 +1663,8 @@ public class IndexDatabase {
      * @param path path corresponding to the file parameter, relative to source root (with leading slash)
      * @throws IOException on error
      */
-    private void processFile(IndexDownArgs args, File file, String path) throws IOException {
+    @VisibleForTesting
+    void processFile(IndexDownArgs args, File file, String path) throws IOException {
         if (uidIter != null) {
             path = Util.fixPathIfWindows(path);
             String uid = Util.path2uid(path,
@@ -1610,6 +1677,15 @@ public class IndexDatabase {
             while (uidIter != null && uidIter.term() != null
                     && uidIter.term().compareTo(emptyBR) != 0
                     && uidIter.term().compareTo(buid) < 0) {
+
+                if (deletedUids.contains(uidIter.term().utf8ToString())) {
+                    logIgnoredUid(uidIter.term().utf8ToString());
+                    BytesRef next = uidIter.next();
+                    if (next == null) {
+                        uidIter = null;
+                    }
+                    continue;
+                }
 
                 // If the term's path matches path of currently processed file,
                 // it is clear that the file has been modified and thus
@@ -1628,6 +1704,14 @@ public class IndexDatabase {
 
             // If the file was not modified, probably skip to the next one.
             if (uidIter != null && uidIter.term() != null && uidIter.term().bytesEquals(buid)) {
+                if (deletedUids.contains(uidIter.term().utf8ToString())) {
+                    logIgnoredUid(uidIter.term().utf8ToString());
+                    BytesRef next = uidIter.next();
+                    if (next == null) {
+                        uidIter = null;
+                    }
+                    return;
+                }
 
                 /*
                  * Possibly short-circuit to force reindexing of prior-version indexes.
@@ -2035,13 +2119,13 @@ public class IndexDatabase {
         try {
             writeAnalysisSettings();
 
-            LOGGER.log(Level.FINE, "preparing to commit changes to Lucene index"); // TODO add info about which database
+            LOGGER.log(Level.FINE, "preparing to commit changes to {0}", this);
             writer.prepareCommit();
             hasPendingCommit = true;
 
+            Statistics completerStat = new Statistics();
             int n = completer.complete();
-            // TODO: add elapsed
-            LOGGER.log(Level.FINE, "completed {0} object(s)", n);
+            completerStat.report(LOGGER, Level.FINE, String.format("completed %d object(s)", n));
 
             // Just before commit(), reset the `hasPendingCommit' flag,
             // since after commit() is called, there is no need for
@@ -2201,5 +2285,14 @@ public class IndexDatabase {
 
     private static class AcceptSymlinkRet {
         String localRelPath;
+    }
+
+    @Override
+    public String toString() {
+        if (this.project != null) {
+            return "index database for project '" + this.project.getName() + "'";
+        }
+
+        return "global index database";
     }
 }

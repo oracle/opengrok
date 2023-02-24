@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
@@ -56,6 +56,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
