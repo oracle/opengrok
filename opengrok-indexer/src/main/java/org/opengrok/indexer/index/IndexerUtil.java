@@ -80,7 +80,7 @@ public class IndexerUtil {
                     .headers(getWebAppHeaders());
             final String enabled = request.get(String.class);
             if (!Boolean.parseBoolean(enabled)) {
-                try (final Response r = request.put(Entity.text(Boolean.TRUE.toString()))) {
+                try (Response r = request.put(Entity.text(Boolean.TRUE.toString()))) {
                     if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                         throw new WebApplicationException(String.format("Unable to enable projects: %s",
                                 r.getStatusInfo().getReasonPhrase()), r.getStatus());
