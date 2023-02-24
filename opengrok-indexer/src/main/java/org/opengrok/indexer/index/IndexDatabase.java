@@ -784,7 +784,8 @@ public class IndexDatabase {
                 indexDirectory);
         for (int i = 0; i < reader.maxDoc(); i++) {
             if (!liveDocs.get(i)) {
-                Document doc = reader.document(i, LIVE_CHECK_FIELDS);  // use limited-field version
+                StoredFields storedFields = reader.storedFields();
+                Document doc = storedFields.document(i, LIVE_CHECK_FIELDS);  // use limited-field version
                 IndexableField field = doc.getField(QueryBuilder.U);
                 if (field != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
