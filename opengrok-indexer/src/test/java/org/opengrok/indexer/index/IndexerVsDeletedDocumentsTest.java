@@ -219,7 +219,7 @@ class IndexerVsDeletedDocumentsTest {
             }
 
             for (int i = 0; i < indexReader.maxDoc(); i++) {
-                Document doc = indexReader.document(i);
+                Document doc = indexReader.storedFields().document(i);
                 // This should avoid the special LOC documents.
                 IndexableField field = doc.getField(QueryBuilder.U);
                 if (field != null) {
