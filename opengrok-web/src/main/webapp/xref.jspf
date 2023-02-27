@@ -63,6 +63,8 @@ org.opengrok.indexer.web.QueryParameters"
                 if (HistoryGuru.getInstance().getRevision(tempf, resourceFile.getParent(), basename, rev)) {
                     in = new BufferedInputStream(new FileInputStream(tempf));
                 } else {
+                    LOGGER.log(Level.WARNING, "failed to retrieve history contents of ''{0}'' in revision {1}",
+                            new Object[]{resourceFile, rev});
                     tempf.delete();
                     tempf = null;
                 }
@@ -96,7 +98,7 @@ org.opengrok.indexer.web.QueryParameters"
                         Definitions defs = null;
                         ObjectPool<Ctags> ctagsPool = cfg.getEnv().getIndexerParallelizer().getCtagsPool();
                         int tries = 2;
-                        while (cfg.getEnv().isWebappCtags()) {
+                        while (cfg.getEnv().isWebappCtags() && tempf != null) {
                             Ctags ctags = ctagsPool.get();
                             try {
                                 ctags.setTabSize(project != null ?
