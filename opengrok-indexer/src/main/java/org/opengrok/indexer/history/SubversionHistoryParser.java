@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -112,7 +112,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry.setRevision(attr.getValue("revision"));
             } else if ("path".equals(qname)) {
                 if (attr.getIndex(COPYFROM_PATH) != -1) {
-                  LOGGER.info("rename for:" + attr.getValue(COPYFROM_PATH) );
+                  LOGGER.log(Level.FINER, "rename for {0}", attr.getValue(COPYFROM_PATH));
                   if ("dir".equals(attr.getValue("kind"))) {
                     isRenamedDir = true;
                   } else {
@@ -158,7 +158,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                       renamedToDirectoryRevisions.put(path.intern(), entry.getRevision());
                     }
                 } else {
-                    LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);
+                    LOGGER.log(Level.FINER, "Skipping file ''{0}'' outside repository ''{1}''",
+                            new Object[]{s, this.home});
                 }
             } else if ("msg".equals(qname)) {
                 entry.setMessage(s);
