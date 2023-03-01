@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
- * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
+ * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
@@ -60,6 +61,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -72,6 +74,8 @@ import org.opengrok.indexer.util.TestRepository;
  * @author Vladimir Kotal
  */
 class FileHistoryCacheTest {
+
+    private static final String SUBVERSION_REPO_LOC = "subversion";
 
     private static final String SVN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -633,7 +637,7 @@ class FileHistoryCacheTest {
     void testMultipleRenamedFiles() throws Exception {
         createSvnRepository();
 
-        File reposRoot = new File(repositories.getSourceRoot(), "subversion");
+        File reposRoot = new File(repositories.getSourceRoot(), SUBVERSION_REPO_LOC);
         History updatedHistory;
 
         // The test expects support for renamed files.
@@ -645,7 +649,7 @@ class FileHistoryCacheTest {
         cache.store(historyToStore, repo);
 
         // Check complete list of history entries for the renamed file.
-        File testFile = new File(reposRoot.toString() + File.separatorChar + "FileZ.txt");
+        File testFile = new File(reposRoot.toString(), "FileZ.txt");
         updatedHistory = cache.get(testFile, repo, false);
         assertEquals(3, updatedHistory.getHistoryEntries().size());
 
@@ -677,6 +681,82 @@ class FileHistoryCacheTest {
         assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
     }
 
+
+    /**
+     * For an Subversion repository, verify we can get a list of files that were in a directory
+     * at the point it was renamed.
+     */
+    @EnabledForRepository(SUBVERSION)
+    @Test
+    void testSubversionFilesInDirectoryLog() throws Exception {
+        createSvnRepository();
+
+        File reposRoot = new File(repositories.getSourceRoot(), SUBVERSION_REPO_LOC);
+
+        // The test expects support for renamed files.
+        env.setHandleHistoryOfRenamedFiles(true);
+
+        // Generate history index.
+        SubversionRepository svnRepo = (SubversionRepository) RepositoryFactory.getRepository(reposRoot);
+        Set<String> files = svnRepo.getFilesInDirectoryAtRevision(
+          Path.of(SUBVERSION_REPO_LOC, "renamedFolder").toString(), "12", CommandTimeoutType.INDEXER);
+        assertEquals(
+          Set.of(Path.of(SUBVERSION_REPO_LOC, "renamedFolder", "FileInRenamedFolder.txt").toString()), files);
+    }
+
+
+    /**
+     * Make sure produces correct history for a file which was in a directory that was renamed.
+     */
+    @EnabledForRepository(SUBVERSION)
+    @Test
+    void testRenamedDirectory() throws Exception {
+        createSvnRepository();
+
+        File reposRoot = new File(repositories.getSourceRoot(), SUBVERSION_REPO_LOC);
+        History updatedHistory;
+
+        // The test expects support for renamed files.
+        env.setHandleHistoryOfRenamedFiles(true);
+
+        // Generate history index.
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+        cache.store(historyToStore, repo);
+
+        // Check complete list of history entries for the file in the renamed folder.
+        File testFile = Path.of(reposRoot.toString(), "renamedFolder", "FileInRenamedFolder.txt").toFile();
+        updatedHistory = cache.get(testFile, repo, false);
+        assertEquals(3, updatedHistory.getHistoryEntries().size());
+
+        HistoryEntry e0 = new HistoryEntry(
+                "14",
+                DateUtils.parseDate("2021-03-02T11:34:28.030Z", SVN_DATE_FORMAT),
+                "RichardH",
+                "Update to renamed file.",
+                true);
+        HistoryEntry e1 = new HistoryEntry(
+                "13",
+                DateUtils.parseDate("2021-03-02T08:54:54.693Z", SVN_DATE_FORMAT),
+                "RichardH",
+                "rename folder",
+                true);
+        HistoryEntry e2 = new HistoryEntry(
+                "12",
+                DateUtils.parseDate("2021-03-02T08:54:30.615Z", SVN_DATE_FORMAT),
+                "RichardH",
+                "added file to new folder",
+                true);
+
+        History histConstruct = new History();
+        LinkedList<HistoryEntry> entriesConstruct = new LinkedList<>();
+        entriesConstruct.add(e0);
+        entriesConstruct.add(e1);
+        entriesConstruct.add(e2);
+        histConstruct.setHistoryEntries(entriesConstruct);
+        assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
+    }
+
     private void createSvnRepository() throws Exception {
         var svnLog = FileHistoryCacheTest.class.getResource("/history/svnlog.dump");
         Path tempDir = Files.createTempDirectory("opengrok");
@@ -697,7 +777,7 @@ class FileHistoryCacheTest {
         assertEquals(0, svnLoadRepoFromDumpProcess.waitFor());
 
         var svnCheckoutProcess = new ProcessBuilder("svn", "checkout", Path.of(repo).toUri().toString(),
-                Path.of(repositories.getSourceRoot()).resolve("subversion").toString())
+                Path.of(repositories.getSourceRoot()).resolve(SUBVERSION_REPO_LOC).toString())
                 .start();
         assertEquals(0, svnCheckoutProcess.waitFor());
     }
@@ -784,7 +864,7 @@ class FileHistoryCacheTest {
     void testRenamedFile() throws Exception {
         createSvnRepository();
 
-        File reposRoot = new File(repositories.getSourceRoot(), "subversion");
+        File reposRoot = new File(repositories.getSourceRoot(), SUBVERSION_REPO_LOC);
         History updatedHistory;
 
         // The test expects support for renamed files.
@@ -796,8 +876,7 @@ class FileHistoryCacheTest {
         cache.store(historyToStore, repo);
 
         // Check complete list of history entries for the renamed file.
-        File testFile = new File(reposRoot.toString() + File.separatorChar
-                            + "subfolder" + File.separatorChar + "TestFileRenamedAgain.txt");
+        File testFile = Path.of(reposRoot.toString(), "subfolder", "TestFileRenamedAgain.txt").toFile();
         updatedHistory = cache.get(testFile, repo, false);
         assertEquals(4, updatedHistory.getHistoryEntries().size());
 

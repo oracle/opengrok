@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -57,6 +57,7 @@ import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory.Matcher;
 import org.opengrok.indexer.analysis.ada.AdaAnalyzerFactory;
 import org.opengrok.indexer.analysis.archive.BZip2AnalyzerFactory;
@@ -663,7 +664,7 @@ public class AnalyzerGuru {
      * @throws java.io.IOException If an error occurs while creating the output
      */
     public static void writeXref(AnalyzerFactory factory, Reader in,
-            Writer out, Definitions defs,
+            Writer out, @Nullable Definitions defs,
             Annotation annotation, Project project, File file)
             throws IOException {
 
@@ -704,7 +705,7 @@ public class AnalyzerGuru {
      */
     public static void writeDumpedXref(String contextPath,
             AnalyzerFactory factory, Reader in, Writer out,
-            Definitions defs, Annotation annotation, Project project, File file) throws IOException {
+            @Nullable Definitions defs, Annotation annotation, Project project, File file) throws IOException {
 
         File xrefTemp = File.createTempFile("ogxref", ".html");
         try {

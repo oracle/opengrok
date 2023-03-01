@@ -821,7 +821,7 @@ public final class Util {
     /**
      * Generate a string from the given path and date in a way that allows
      * stable lexicographic sorting (i.e. gives always the same results) as a
-     * walk of the file hierarchy. Thus null character (\u0000) is used both to
+     * walk of the file hierarchy. Thus, null character (\u0000) is used both to
      * separate directory components and to separate the path from the date.
      *
      * @param path path to mangle.
@@ -842,6 +842,16 @@ public final class Util {
     public static String uid2url(String uid) {
         String url = uid.replace('\u0000', PATH_SEPARATOR);
         return url.substring(0, url.lastIndexOf(PATH_SEPARATOR)); // remove date from end
+    }
+
+    /**
+     * Extracts the date embedded in the uid.
+     *
+     * @param uid uid
+     * @return date embedded in the uid
+     */
+    public static String uid2date(String uid) {
+        return uid.substring(uid.lastIndexOf('\u0000') + 1);
     }
 
     /**

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -37,6 +37,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.Scopes;
@@ -139,7 +140,7 @@ public class Context {
 
         Document doc;
         try {
-            doc = searcher.doc(docId);
+            doc = searcher.storedFields().document(docId);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "ERROR getting searcher doc(int)", e);
             return false;
@@ -196,9 +197,13 @@ public class Context {
         formatter.setMoreUrl(moreURL);
         formatter.setMoreLimit(linelimit);
 
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, searcher, anz);
-        uhi.setBreakIterator(StrictLineBreakIterator::new);
-        uhi.setFormatter(formatter);
+        UnifiedHighlighter.Builder uhBuilder =  new UnifiedHighlighter.Builder(searcher, anz)
+//                .withMaxLength(maxDocCharsToAnalyze)
+//                .withHighlightPhrasesStrictly(true)
+//                .withHandleMultiTermQuery(true)
+                .withBreakIterator(StrictLineBreakIterator::new)
+                .withFormatter(formatter);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, uhBuilder);
         uhi.setTabSize(tabSize);
 
         try {

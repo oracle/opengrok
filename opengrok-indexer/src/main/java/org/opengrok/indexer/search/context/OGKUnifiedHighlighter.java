@@ -34,8 +34,8 @@ import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.uhighlight.UHComponents;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
@@ -64,16 +64,16 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
 
     /**
      * Initializes an instance with
-     * {@link UnifiedHighlighter#UnifiedHighlighter(org.apache.lucene.search.IndexSearcher, org.apache.lucene.analysis.Analyzer)}
+     * {@link UnifiedHighlighter#UnifiedHighlighter(UnifiedHighlighter.Builder)}
      * for the specified {@code indexSearcher} and {@code indexAnalyzer}, and
      * stores the {@code env} for later use.
      * @param env a required instance
-     * @param indexSearcher a required instance
-     * @param indexAnalyzer a required instance
      * @throws IllegalArgumentException if any argument is null
+     * @param uhBuilder a required instance
      */
-    public OGKUnifiedHighlighter(RuntimeEnvironment env, IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
-        super(indexSearcher, indexAnalyzer);
+    public OGKUnifiedHighlighter(RuntimeEnvironment env,
+                                 UnifiedHighlighter.Builder uhBuilder) {
+        super(uhBuilder);
 
         if (env == null) {
             throw new IllegalArgumentException("env is null");
@@ -124,7 +124,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
          * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
          * influenced by fileTypeName.
          */
-        Document doc = searcher.doc(docId);
+        Document doc = searcher.storedFields().document(docId);
         fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
         try {
             return highlightFieldsUnionWork(fields, query, docId, lineLimit);
@@ -208,12 +208,13 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             cacheCharsThreshold == 0 ? 1 : (int) Math.min(64, docIter.cost()));
 
         int sumChars = 0;
+        StoredFields storedFields = searcher.storedFields();
         do {
             int docId = docIter.nextDoc();
             if (docId == DocIdSetIterator.NO_MORE_DOCS) {
                 break;
             }
-            Document doc = searcher.doc(docId);
+            Document doc = storedFields.document(docId);
 
             String path = doc.get(QueryBuilder.PATH);
             String storedU = doc.get(QueryBuilder.U);

@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
@@ -29,11 +29,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.7.42</version>
+        <version>1.8.1</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.7.42</version>
+    <version>1.8.1</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -58,12 +58,17 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <version>1.21</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
+            <artifactId>lucene-analysis-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>

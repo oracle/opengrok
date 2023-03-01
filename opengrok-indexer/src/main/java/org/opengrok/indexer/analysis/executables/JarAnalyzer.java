@@ -35,6 +35,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.OGKTextVecField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
@@ -46,8 +47,8 @@ import org.opengrok.indexer.web.Util;
  */
 public class JarAnalyzer extends FileAnalyzer {
 
-    private static final String[] FIELD_NAMES = new String[]
-            {QueryBuilder.FULL, QueryBuilder.REFS, QueryBuilder.DEFS};
+    private static final String[] UNSTORED_FIELD_NAMES = new String[]
+            {QueryBuilder.FULL, QueryBuilder.REFS};
 
     protected JarAnalyzer(AnalyzerFactory factory) {
         super(factory);
@@ -103,11 +104,16 @@ public class JarAnalyzer extends FileAnalyzer {
             }
         }
 
-        for (String name : FIELD_NAMES) {
+        for (String name : UNSTORED_FIELD_NAMES) {
             if (jfbuilder.hasField(name)) {
                 String fstr = jfbuilder.write(name).toString();
                 doc.add(new OGKTextField(name, fstr, Store.NO));
             }
+        }
+        String name = QueryBuilder.DEFS;
+        if (jfbuilder.hasField(name)) {
+            String fstr = jfbuilder.write(name).toString();
+            doc.add(new OGKTextVecField(name, fstr, Store.NO));
         }
     }
 }

@@ -31,6 +31,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -92,8 +93,9 @@ public class IndexAnalysisSettingsAccessor {
         IndexAnalysisSettings3[] res = new IndexAnalysisSettings3[nres];
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();
+        StoredFields storedFields = searcher.storedFields();
         for (int i = 0; i < nres; ++i) {
-            Document doc = searcher.doc(top.scoreDocs[i].doc);
+            Document doc = storedFields.document(top.scoreDocs[i].doc);
             IndexableField objser = doc.getField(QueryBuilder.OBJSER);
             int objver = readObjectVersion(doc);
             try {

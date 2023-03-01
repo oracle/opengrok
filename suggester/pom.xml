@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -28,7 +28,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <artifactId>opengrok-top</artifactId>
         <groupId>org.opengrok</groupId>
-        <version>1.7.42</version>
+        <version>1.8.1</version>
     </parent>
 
     <artifactId>suggester</artifactId>
@@ -48,7 +48,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
+            <artifactId>lucene-analysis-common</artifactId>
         </dependency>
 
         <dependency>
@@ -62,9 +62,9 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
 
         <dependency>
-            <groupId>commons-io</groupId>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>${commons-io.version}</version>
         </dependency>
 
         <dependency>

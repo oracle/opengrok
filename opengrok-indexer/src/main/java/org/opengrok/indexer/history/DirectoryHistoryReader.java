@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
@@ -113,9 +114,10 @@ public class DirectoryHistoryReader {
             }
             if (hits != null) {
                 // Get maximum MAX_RESULTS (why ? XXX) files which were changed recently.
+                StoredFields storedFields = searcher.storedFields();
                 for (int i = 0; i < MAX_RESULTS && i < hits.length; i++) {
                     int docId = hits[i].doc;
-                    Document doc = searcher.doc(docId);
+                    Document doc = storedFields.document(docId);
                     String rpath = doc.get(QueryBuilder.PATH);
                     if (!rpath.startsWith(path)) {
                         continue;

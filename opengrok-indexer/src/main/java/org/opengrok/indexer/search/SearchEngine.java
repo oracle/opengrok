@@ -43,6 +43,7 @@ import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -216,9 +217,10 @@ public class SearchEngine {
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
+        StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc hit : hits) {
             int docId = hit.doc;
-            Document d = searcher.doc(docId);
+            Document d = storedFields.document(docId);
             docs.add(d);
         }
     }
@@ -383,7 +385,7 @@ public class SearchEngine {
         if (searcher == null) {
             throw new IllegalStateException("search(...) did not succeed");
         }
-        return searcher.doc(docId);
+        return searcher.storedFields().document(docId);
     }
 
     /**
@@ -418,16 +420,24 @@ public class SearchEngine {
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
             hits = collector.topDocs().scoreDocs;
-            Document d = null;
-            for (int i = start; i < hits.length; i++) {
-                int docId = hits[i].doc;
-                try {
-                    d = searcher.doc(docId);
-                } catch (Exception e) {
-                    LOGGER.log(
-                            Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+            StoredFields storedFields = null;
+            try {
+                storedFields = searcher.storedFields();
+            } catch (Exception e) {
+                LOGGER.log(
+                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+            }
+            if (storedFields != null) {
+                Document d;
+                for (ScoreDoc hit : hits) {
+                    try {
+                        d = storedFields.document(hit.doc);
+                        docs.add(d);
+                    } catch (Exception e) {
+                        LOGGER.log(
+                                Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+                    }
                 }
-                docs.add(d);
             }
             allCollected = true;
         }

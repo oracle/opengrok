@@ -509,7 +509,7 @@ public class SearchHelper {
         // Attempt to create a direct link to the definition if we search for
         // one single definition term AND we have exactly one match AND there
         // is only one definition of that symbol in the document that matches.
-        Document doc = searcher.doc(docID);
+        Document doc = searcher.storedFields().document(docID);
         IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
         if (tagsField != null) {
             byte[] rawTags = tagsField.binaryValue().bytes;
@@ -532,7 +532,7 @@ public class SearchHelper {
          * must be subsequently converted to a line number and that is tractable
          * only from plain text.
          */
-        Document doc = searcher.doc(docID);
+        Document doc = searcher.storedFields().document(docID);
         String genre = doc.get(QueryBuilder.T);
         if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(genre)) {
             return;
@@ -569,7 +569,7 @@ public class SearchHelper {
     }
 
     private void redirectToFile(int docID) throws IOException {
-        Document doc = searcher.doc(docID);
+        Document doc = searcher.storedFields().document(docID);
         redirect = contextPath + Prefix.XREF_P + Util.uriEncodePath(doc.get(QueryBuilder.PATH));
     }
 
@@ -746,7 +746,7 @@ public class SearchHelper {
         }
 
         int docID = top.scoreDocs[0].doc;
-        Document doc = searcher.doc(docID);
+        Document doc = searcher.storedFields().document(docID);
 
         String foundPath = doc.get(QueryBuilder.PATH);
         // Only use the result if PATH matches exactly.
