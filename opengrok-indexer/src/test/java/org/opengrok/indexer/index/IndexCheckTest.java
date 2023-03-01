@@ -99,12 +99,12 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
-        IndexCheck.check(configuration, subFiles);
+        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, subFiles);
     }
 
     @Test
     void testIndexVersionNoIndex() {
-        IndexCheck.check(configuration, new ArrayList<>());
+        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
     }
 
     @Test
@@ -138,14 +138,15 @@ class IndexCheckTest {
         configuration.setDataRoot(oldIndexDataDir.toString());
         env.setProjectsEnabled(false);
         configuration.setProjectsEnabled(false);
-        assertFalse(IndexCheck.check(configuration, new ArrayList<>()));
+        assertFalse(IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
 
-        assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexPath, ""));
+        assertThrows(IndexCheck.IndexVersionException.class, () ->
+                IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION, ""));
     }
 
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(tempDir, "");
+        IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION, "");
     }
 }

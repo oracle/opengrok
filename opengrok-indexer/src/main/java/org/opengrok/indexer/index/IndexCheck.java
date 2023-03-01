@@ -67,6 +67,15 @@ public class IndexCheck {
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexCheck.class);
 
     /**
+     * Index check modes. Ordered from least to most extensive.
+     */
+    public enum IndexCheckMode {
+        NO_CHECK,
+        VERSION,
+        DOCUMENTS
+    }
+
+    /**
      * Exception thrown when index version does not match Lucene version.
      */
     public static class IndexVersionException extends Exception {
@@ -97,36 +106,41 @@ public class IndexCheck {
     /**
      * Check index(es).
      * @param configuration configuration based on which to perform the check
-     * @param subFilesList collection of paths. If non-empty, only projects matching these paths will be checked.
+     * @param mode index check mode
+     * @param projectNames collection of project names. If non-empty, only projects matching these paths will be checked.
      *                     Otherwise, either the sole index or all project indexes will be checked, depending
      *                     on whether projects are enabled in the configuration.
      * @return true on success, false on failure
      */
-    public static boolean check(@NotNull Configuration configuration, Collection<String> subFilesList) {
+    public static boolean check(@NotNull Configuration configuration, IndexCheckMode mode,
+                                Collection<String> projectNames) {
+
+        if (mode.equals(IndexCheckMode.NO_CHECK)) {
+            LOGGER.log(Level.FINE, "no check mode selected");
+            return true;
+        }
+
         Path indexRoot = Path.of(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
-        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}", indexRoot);
+        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in ''{0}''", indexRoot);
         int ret = 0;
 
-        if (!subFilesList.isEmpty()) {
+        if (!projectNames.isEmpty()) {
             // Assumes projects are enabled.
-            for (String projectName : subFilesList) {
-                LOGGER.log(Level.FINER,
-                        "Checking Lucene index version in project {0}",
+            for (String projectName : projectNames) {
+                LOGGER.log(Level.FINER, "Checking Lucene index version in project ''{0}''",
                         projectName);
-                ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), projectName);
+                ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
             }
         } else {
             if (configuration.isProjectsEnabled()) {
                 for (String projectName : configuration.getProjects().keySet()) {
-                    LOGGER.log(Level.FINER,
-                            "Checking Lucene index version in project {0}",
+                    LOGGER.log(Level.FINER, "Checking Lucene index version in project ''{0}''",
                             projectName);
-                    ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), projectName);
+                    ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
                 }
             } else {
-                LOGGER.log(Level.FINER, "Checking Lucene index version in {0}",
-                        indexRoot);
-                ret |= checkDirNoExceptions(indexRoot, "");
+                LOGGER.log(Level.FINER, "Checking Lucene index version in ''{0}''", indexRoot);
+                ret |= checkDirNoExceptions(indexRoot, mode, "");
             }
         }
 
@@ -137,9 +151,9 @@ public class IndexCheck {
      * @param indexPath directory with index
      * @return 0 on success, 1 on failure
      */
-    private static int checkDirNoExceptions(Path indexPath, String projectName) {
+    private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode, String projectName) {
         try {
-            checkDir(indexPath, projectName);
+            checkDir(indexPath, mode, projectName);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
             return 1;
@@ -153,10 +167,12 @@ public class IndexCheck {
      * in the Lucene segment file were done with the same version.
      *
      * @param indexPath directory with index to check
+     * @param mode index check mode
+     * @param projectName name of the project, can be empty
      * @throws IOException if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
      */
-    public static void checkDir(Path indexPath, String projectName) throws IndexVersionException, IOException {
+    public static void checkDir(Path indexPath, IndexCheckMode mode, String projectName) throws IndexVersionException, IOException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -176,13 +192,14 @@ public class IndexCheck {
                     Version.LATEST.major, segVersion);
         }
 
-        // TODO: make this optional (based on configuration/CLI switch ?)
-        LOGGER.log(Level.FINE, "checking duplicate documents in ''{0}''", indexPath);
-        Statistics stat = new Statistics();
-        if (hasDuplicateDocuments(indexPath, projectName)) {
-            LOGGER.log(Level.WARNING, "index in ''{0}'' contains duplicate live documents", indexPath);
+        if (mode.ordinal() >= IndexCheckMode.DOCUMENTS.ordinal()) {
+            LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
+            Statistics stat = new Statistics();
+            if (hasDuplicateDocuments(indexPath, projectName)) {
+                LOGGER.log(Level.WARNING, "index in ''{0}'' contains duplicate live documents", indexPath);
+            }
+            stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
         }
-        stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
     }
 
     public static IndexReader getIndexReader(Path indexPath) throws IOException {

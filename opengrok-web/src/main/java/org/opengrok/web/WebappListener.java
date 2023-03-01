@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -148,7 +148,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 LOGGER.log(Level.FINE, "Checking indexes for all projects");
                 for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
                     try {
-                        IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()), projectEntry.getKey());
+                        IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()),
+                                IndexCheck.IndexCheckMode.VERSION, projectEntry.getKey());
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING,
                                 String.format("Project %s index check failed, marking as not indexed",
@@ -161,7 +162,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         } else {
             LOGGER.log(Level.FINE, "Checking index");
             try {
-                IndexCheck.checkDir(Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR), "");
+                IndexCheck.checkDir(Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR),
+                        IndexCheck.IndexCheckMode.VERSION, "");
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "index check failed", e);
             }
