@@ -239,6 +239,12 @@ public class IndexCheck {
         return deletedUids;
     }
 
+    /**
+     * @param indexPath path to index
+     * @param projectName project name, can be empty
+     * @return list of live document paths
+     * @throws IOException on I/O error
+     */
     public static List<String> getLiveDocumentPaths(Path indexPath, String projectName) throws IOException {
         try (IndexReader indexReader = getIndexReader(indexPath)) {
             Terms terms = MultiTerms.getTerms(indexReader, QueryBuilder.U);
