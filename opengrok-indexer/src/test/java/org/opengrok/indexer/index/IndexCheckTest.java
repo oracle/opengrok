@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -140,12 +140,12 @@ class IndexCheckTest {
         configuration.setProjectsEnabled(false);
         assertFalse(IndexCheck.check(configuration, new ArrayList<>()));
 
-        assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexDir));
+        assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexPath, ""));
     }
 
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(tempDir.toFile());
+        IndexCheck.checkDir(tempDir, "");
     }
 }
