@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -47,6 +47,7 @@ import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactor
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -142,12 +143,13 @@ public final class WebappListener implements ServletContextListener, ServletRequ
     private void checkIndex(RuntimeEnvironment env) {
         if (env.isProjectsEnabled()) {
             Map<String, Project> projects = env.getProjects();
-            File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
-            if (indexRoot.exists()) {
+            Path indexRoot = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
+            if (indexRoot.toFile().exists()) {
                 LOGGER.log(Level.FINE, "Checking indexes for all projects");
                 for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
                     try {
-                        IndexCheck.checkDir(new File(indexRoot, projectEntry.getKey()));
+                        IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()),
+                                IndexCheck.IndexCheckMode.VERSION, projectEntry.getKey());
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING,
                                 String.format("Project %s index check failed, marking as not indexed",
@@ -160,7 +162,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         } else {
             LOGGER.log(Level.FINE, "Checking index");
             try {
-                IndexCheck.checkDir(new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR));
+                IndexCheck.checkDir(Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR),
+                        IndexCheck.IndexCheckMode.VERSION, "");
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "index check failed", e);
             }

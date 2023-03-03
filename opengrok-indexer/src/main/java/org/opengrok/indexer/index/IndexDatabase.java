@@ -802,7 +802,7 @@ public class IndexDatabase {
     }
 
     private void logIgnoredUid(String uid) {
-        LOGGER.log(Level.FINEST, "ignoring deleted document for {0} at {1}",
+        LOGGER.log(Level.FINEST, "ignoring deleted document for ''{0}'' at {1}",
                 new Object[]{Util.uid2url(uid), Util.uid2date(uid)});
     }
 

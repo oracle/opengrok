@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -99,12 +99,12 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
-        IndexCheck.check(configuration, subFiles);
+        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, subFiles);
     }
 
     @Test
     void testIndexVersionNoIndex() {
-        IndexCheck.check(configuration, new ArrayList<>());
+        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
     }
 
     @Test
@@ -138,14 +138,15 @@ class IndexCheckTest {
         configuration.setDataRoot(oldIndexDataDir.toString());
         env.setProjectsEnabled(false);
         configuration.setProjectsEnabled(false);
-        assertFalse(IndexCheck.check(configuration, new ArrayList<>()));
+        assertFalse(IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
 
-        assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexDir));
+        assertThrows(IndexCheck.IndexVersionException.class, () ->
+                IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION, ""));
     }
 
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(tempDir.toFile());
+        IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION, "");
     }
 }

@@ -117,7 +117,7 @@ public final class Indexer {
 
     private static final Indexer indexer = new Indexer();
     private static Configuration cfg = null;
-    private static boolean checkIndex = false;
+    private static IndexCheck.IndexCheckMode indexCheckMode = IndexCheck.IndexCheckMode.NO_CHECK;
     private static boolean runIndex = true;
     private static boolean reduceSegmentCount = false;
     private static boolean addProjects = false;
@@ -167,7 +167,8 @@ public final class Indexer {
 
         Executor.registerErrorHandler();
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
-        Set<String> subFilesArgs = new HashSet<>();
+        Set<String> subFilePaths = new HashSet<>();
+        Set<String> subFileArgs = new HashSet<>();
 
         try {
             argv = parseOptions(argv);
@@ -246,7 +247,8 @@ public final class Indexer {
             // called from the setConfiguration() below.
             for (String arg : argv) {
                 String path = Paths.get(cfg.getSourceRoot(), arg).toString();
-                subFilesArgs.add(path);
+                subFilePaths.add(path);
+                subFileArgs.add(arg);
             }
 
             // If a user used customizations for projects he perhaps just
@@ -259,18 +261,17 @@ public final class Indexer {
                 }
             }
 
-            // Check version of index(es) versus current Lucene version and exit
-            // with return code upon failure.
-            if (checkIndex) {
+            // Check index(es). Exit with return code upon failure.
+            if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
                 if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
                     System.err.println("Need data root in configuration for index check (use -R)");
                     System.exit(1);
                 }
 
-                if (!IndexCheck.check(cfg, subFilesArgs)) {
+                if (!IndexCheck.check(cfg, indexCheckMode, subFileArgs)) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
-                            (!subFilesArgs.isEmpty() ? "data for projects " + String.join(",", subFilesArgs) :
+                            (!subFilePaths.isEmpty() ? "data for projects " + String.join(",", subFilePaths) :
                                     "all data") + " under the data root and reindex\n");
                     System.exit(1);
                 }
@@ -280,7 +281,7 @@ public final class Indexer {
 
             // Set updated configuration in RuntimeEnvironment. This is called so that the tunables set
             // via command line options are available.
-            env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+            env.setConfiguration(cfg, subFilePaths, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
@@ -289,7 +290,7 @@ public final class Indexer {
 
             if (bareConfig) {
                 // Set updated configuration in RuntimeEnvironment.
-                env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+                env.setConfiguration(cfg, subFilePaths, CommandTimeoutType.INDEXER);
 
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
@@ -304,7 +305,7 @@ public final class Indexer {
              * directory and not per project data root directory).
              * For the check we need to have 'env' already set.
              */
-            for (String path : subFilesArgs) {
+            for (String path : subFilePaths) {
                 String srcPath = env.getSourceRootPath();
                 if (srcPath == null) {
                     System.err.println("Error getting source root from environment. Exiting.");
@@ -331,7 +332,7 @@ public final class Indexer {
                 }
             }
 
-            if (!subFilesArgs.isEmpty() && subFiles.isEmpty()) {
+            if (!subFilePaths.isEmpty() && subFiles.isEmpty()) {
                 System.err.println("None of the paths were added, exiting");
                 System.exit(1);
             }
@@ -386,7 +387,7 @@ public final class Indexer {
 
             // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
             // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesArgs, CommandTimeoutType.INDEXER);
+            env.setConfiguration(cfg, subFilePaths, CommandTimeoutType.INDEXER);
 
             // prepareIndexer() populated the list of projects so now default projects can be set.
             env.setDefaultProjectsFromNames(defaultProjects);
@@ -569,8 +570,24 @@ public final class Indexer {
                 canonicalRoots.add(root);
             });
 
-            parser.on("--checkIndex", "Check index, exit with 0 on success,",
-                    "with 1 on failure.").execute(v -> checkIndex = true);
+            parser.on("--checkIndex", "=[mode]",
+                    "Check index, exit with 0 on success,",
+                    "with 1 on failure.",
+                    "With no mode specified, performs basic index check.",
+                    "Selectable modes (performs given test on top of the basic check):",
+                    "  documents - checks duplicate documents in the index"
+                    ).execute(v -> {
+                        indexCheckMode = IndexCheck.IndexCheckMode.VERSION;
+                        String mode = (String) v;
+                        if (mode != null && !mode.isEmpty()) {
+                            if (mode.equals("documents")) {
+                                indexCheckMode = IndexCheck.IndexCheckMode.DOCUMENTS;
+                            } else {
+                                die("mode '" + mode + "' is not valid.");
+                            }
+                        }
+                    }
+            );
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
