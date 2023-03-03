@@ -138,7 +138,7 @@ public class IndexCheck {
                                 Collection<String> projectNames) {
 
         if (mode.equals(IndexCheckMode.NO_CHECK)) {
-            LOGGER.log(Level.WARNING, "no check mode selected");
+            LOGGER.log(Level.WARNING, "no index check mode selected");
             return true;
         }
 
