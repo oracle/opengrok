@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,9 +107,9 @@ public class IndexCheck {
     public static class IndexDocumentException extends Exception {
         private static final long serialVersionUID = 5693446916108385595L;
 
-        private final HashMap<String, Integer> fileMap;
+        private final Map<String, Integer> fileMap;
 
-        public IndexDocumentException(String s, HashMap<String, Integer> fileMap) {
+        public IndexDocumentException(String s, Map<String, Integer> fileMap) {
             super(s);
 
             this.fileMap = fileMap;
