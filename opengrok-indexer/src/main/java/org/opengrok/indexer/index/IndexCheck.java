@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +100,26 @@ public class IndexCheck {
         }
     }
 
+    /**
+     * Exception thrown when index contains duplicate live documents.
+     */
+    public static class IndexDocumentException extends Exception {
+        private static final long serialVersionUID = 5693446916108385595L;
+
+        private final HashMap<String, Integer> fileMap;
+
+        public IndexDocumentException(String s, HashMap<String, Integer> fileMap) {
+            super(s);
+
+            this.fileMap = fileMap;
+        }
+
+        @Override
+        public String toString() {
+            return getMessage() + ": " + fileMap;
+        }
+    }
+
     private IndexCheck() {
         // utility class
     }
@@ -116,30 +137,24 @@ public class IndexCheck {
                                 Collection<String> projectNames) {
 
         if (mode.equals(IndexCheckMode.NO_CHECK)) {
-            LOGGER.log(Level.FINE, "no check mode selected");
+            LOGGER.log(Level.WARNING, "no check mode selected");
             return true;
         }
 
         Path indexRoot = Path.of(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
-        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in ''{0}''", indexRoot);
         int ret = 0;
 
         if (!projectNames.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : projectNames) {
-                LOGGER.log(Level.FINER, "Checking Lucene index version in project ''{0}''",
-                        projectName);
                 ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
             }
         } else {
             if (configuration.isProjectsEnabled()) {
                 for (String projectName : configuration.getProjects().keySet()) {
-                    LOGGER.log(Level.FINER, "Checking Lucene index version in project ''{0}''",
-                            projectName);
                     ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
                 }
             } else {
-                LOGGER.log(Level.FINER, "Checking Lucene index version in ''{0}''", indexRoot);
                 ret |= checkDirNoExceptions(indexRoot, mode, "");
             }
         }
@@ -172,7 +187,9 @@ public class IndexCheck {
      * @throws IOException if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
      */
-    public static void checkDir(Path indexPath, IndexCheckMode mode, String projectName) throws IndexVersionException, IOException {
+    public static void checkDir(Path indexPath, IndexCheckMode mode, String projectName)
+            throws IndexVersionException, IndexDocumentException, IOException {
+
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -186,6 +203,7 @@ public class IndexCheck {
             }
         }
 
+        LOGGER.log(Level.FINE, "Checking index version in ''{0}''", indexPath);
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
                 String.format("Directory '%s' has index version discrepancy", indexPath),
@@ -193,12 +211,7 @@ public class IndexCheck {
         }
 
         if (mode.ordinal() >= IndexCheckMode.DOCUMENTS.ordinal()) {
-            LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
-            Statistics stat = new Statistics();
-            if (hasDuplicateDocuments(indexPath, projectName)) {
-                LOGGER.log(Level.WARNING, "index in ''{0}'' contains duplicate live documents", indexPath);
-            }
-            stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
+            checkDuplicateDocuments(indexPath, projectName);
         }
     }
 
@@ -281,21 +294,31 @@ public class IndexCheck {
         }
     }
 
-    private static boolean hasDuplicateDocuments(Path indexPath, String projectName) throws IOException {
+    private static void checkDuplicateDocuments(Path indexPath, String projectName)
+            throws IOException, IndexDocumentException {
+
+        LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
+        Statistics stat = new Statistics();
         List<String> livePaths = getLiveDocumentPaths(indexPath, projectName);
         HashSet<String> pathSet = new HashSet<>(livePaths);
+        HashMap<String, Integer> fileMap = new HashMap<>();
         if (pathSet.size() != livePaths.size()) {
-            LOGGER.log(Level.WARNING, "index in ''{0}'' has document path set ({1}) vs document list ({2}) discrepancy",
+            LOGGER.log(Level.FINE,
+                    "index in ''{0}'' has document path set ({1}) vs document list ({2}) discrepancy",
                     new Object[]{indexPath, pathSet.size(), livePaths.size()});
             for (String path : livePaths) {
                 if (pathSet.contains(path)) {
-                    LOGGER.log(Level.WARNING, "duplicate path: ''{0}''", path);
+                    LOGGER.log(Level.FINE, "duplicate path: ''{0}''", path);
+                    fileMap.putIfAbsent(path, 0);
+                    fileMap.put(path, fileMap.get(path) + 1);
                 }
             }
 
-            return true;
         }
-
-        return false;
+        stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
+        if (!fileMap.isEmpty()) {
+            throw new IndexDocumentException(String.format("index in '%s' contains duplicate live documents",
+                    indexPath), fileMap);
+        }
     }
 }
