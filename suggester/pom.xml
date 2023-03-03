@@ -62,7 +62,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
