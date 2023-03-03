@@ -169,12 +169,14 @@ public class IndexCheck {
      */
     private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode, String projectName) {
         try {
+            LOGGER.log(Level.INFO, "Checking index in ''{0}''", indexPath);
             checkDir(indexPath, mode, projectName);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
             return 1;
         }
 
+        LOGGER.log(Level.INFO, "Index check for directory ''{0}'' passed", indexPath);
         return 0;
     }
 
@@ -199,7 +201,7 @@ public class IndexCheck {
                 SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
                 segVersion = segInfos.getIndexCreatedVersionMajor();
             } catch (IndexNotFoundException e) {
-                LOGGER.log(Level.FINE, "no index found in ''{0}''", indexDirectory);
+                LOGGER.log(Level.WARNING, "no index found in ''{0}''", indexDirectory);
                 return;
             }
         }
