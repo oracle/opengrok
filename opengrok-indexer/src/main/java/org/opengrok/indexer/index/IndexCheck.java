@@ -311,7 +311,7 @@ public class IndexCheck {
                     new Object[]{indexPath, pathSet.size(), livePaths.size()});
             for (String path : livePaths) {
                 if (pathSet.contains(path)) {
-                    LOGGER.log(Level.FINE, "duplicate path: ''{0}''", path);
+                    LOGGER.log(Level.FINER, "duplicate path: ''{0}''", path);
                     fileMap.putIfAbsent(path, 0);
                     fileMap.put(path, fileMap.get(path) + 1);
                 }
