@@ -122,15 +122,13 @@ public final class Results {
         } catch (Exception e) {
             String fnm = compressed ? TandemPath.join(basedir + path, ".gz") :
                     basedir + path;
-            LOGGER.log(Level.WARNING, "An error reading tags from " + fnm, e);
+            LOGGER.log(Level.WARNING, String.format("An error reading tags from '%s'", fnm), e);
         }
         return "";
     }
 
     /** Return a reader for the specified xref file. */
-    private static Reader getXrefReader(
-                    File basedir, String path, boolean compressed)
-            throws IOException {
+    private static Reader getXrefReader(File basedir, String path, boolean compressed) throws IOException {
         /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
@@ -165,9 +163,9 @@ public final class Results {
      * @throws IOException I/O exception
      * @throws ClassNotFoundException class not found
      */
-    public static void prettyPrint(Writer out, SearchHelper sh, int start,
-            long end)
+    public static void prettyPrint(Writer out, SearchHelper sh, int start, long end)
             throws HistoryException, IOException, ClassNotFoundException {
+
         Project p;
         String contextPath = sh.getContextPath();
         String ctxE = Util.uriEncodePath(contextPath);
