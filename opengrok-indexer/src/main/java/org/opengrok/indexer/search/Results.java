@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -44,7 +44,6 @@ import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.search.IndexSearcher;
@@ -76,22 +75,22 @@ public final class Results {
     }
 
     /**
-     * Create a has map keyed by the directory of the document found.
+     * Create a hash map keyed by the directory of the document found.
      *
      * @param searcher searcher to use.
      * @param hits hits produced by the given searcher's search
      * @param startIdx the index of the first hit to check
      * @param stopIdx the index of the last hit to check
-     * @return a (directory, hitDocument) hashmap
-     * @throws CorruptIndexException
-     * @throws IOException
+     * @return a (directory, list of hitDocument) hashmap
+     * @throws IOException when index cannot be read
      */
     private static Map<String, ArrayList<Integer>> createMap(
-        IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
-            throws CorruptIndexException, IOException {
+        IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx) throws IOException {
 
-        LinkedHashMap<String, ArrayList<Integer>> dirHash =
-                new LinkedHashMap<>();
+        LOGGER.log(Level.FINEST, "directory hash contents for search hits ({0},{1}):",
+                new Object[]{startIdx, stopIdx});
+
+        LinkedHashMap<String, ArrayList<Integer>> dirHash = new LinkedHashMap<>();
         StoredFields storedFields = searcher.storedFields();
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
@@ -102,10 +101,16 @@ public final class Results {
                 continue;
             }
 
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "{0}: {1}", new Object[]{docId, rpath});
+            }
+
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Integer> dirDocs = dirHash.computeIfAbsent(parent, k -> new ArrayList<>());
             dirDocs.add(docId);
         }
+
+
         return dirHash;
     }
 
