@@ -41,6 +41,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.LazilyInstantiate;
 
 /**
  * This class gives access to repositories built on top of SCCS (including TeamWare).
@@ -62,6 +63,12 @@ public class SCCSRepository extends Repository {
     @VisibleForTesting
     static final String CODEMGR_WSDATA = "Codemgr_wsdata";
 
+     /**
+     * This is a static replacement for 'working' field. Effectively, check if hg is working once in a JVM
+     * instead of calling it for every SCCSRepository instance.
+     */
+    private static final Supplier<Boolean> HG_IS_WORKING = LazilyInstantiate.using(SCCSRepository::isHgWorking);
+    
     public SCCSRepository() {
         type = "SCCS";
         /*
@@ -171,15 +178,22 @@ public class SCCSRepository extends Repository {
         }
         return false;
     }
+    
+    private static boolean isHgWorking() {
+        String repoCommand = getCommand(SCCSRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
+        boolean works = checkCmd(repoCommand);
+        if (!works) {
+            LOGGER.log(Level.WARNING, "Command ''{0}'' does not work. " +
+                    "Some operations with SCCSRepository will fail as a result.", repoCommand);
+        }
+        return works;
+    }
 
     @Override
     public boolean isWorking() {
         if (working == null) {
+            working = HG_IS_WORKING.get();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand, "help", "help");
-            if (!working) {
-                working = checkCmd(RepoCommand, "--version");
-            }
         }
         return working;
     }
