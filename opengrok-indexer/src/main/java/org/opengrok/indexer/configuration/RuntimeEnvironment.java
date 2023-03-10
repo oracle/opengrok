@@ -1178,7 +1178,7 @@ public final class RuntimeEnvironment {
      */
     public int getRepositoryInvalidationParallelism() {
         int parallelism = syncReadConfiguration(Configuration::getRepositoryInvalidationParallelism);
-        return parallelism < 1 ? (max(Runtime.getRuntime().availableProcessors() / 2, 1)) : parallelism;
+        return parallelism < 1 ? max(Runtime.getRuntime().availableProcessors() / 2, 1) : parallelism;
     }
 
     /**
