@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.configuration;
 
+import static java.lang.Integer.max;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 
@@ -1177,7 +1178,7 @@ public final class RuntimeEnvironment {
      */
     public int getRepositoryInvalidationParallelism() {
         int parallelism = syncReadConfiguration(Configuration::getRepositoryInvalidationParallelism);
-        return parallelism < 1 ? (Runtime.getRuntime().availableProcessors() / 2) : parallelism;
+        return parallelism < 1 ? (max(Runtime.getRuntime().availableProcessors() / 2, 1)) : parallelism;
     }
 
     /**
