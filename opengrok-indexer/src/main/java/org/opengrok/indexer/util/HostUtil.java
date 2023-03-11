@@ -25,19 +25,11 @@ package org.opengrok.indexer.util;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.web.ApiUtils;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,32 +55,6 @@ public class HostUtil {
     public static int urlToPort(String urlStr) throws URISyntaxException {
         URI uri = new URI(urlStr);
         return uri.getPort();
-    }
-
-    /**
-     * @param urlStr URI
-     * @return hostname
-     * @throws URISyntaxException on error
-     */
-    public static String urlToHostname(String urlStr) throws URISyntaxException {
-        URI uri = new URI(urlStr);
-        return uri.getHost();
-    }
-
-    /**
-     * @param addr IP address
-     * @param port port number
-     * @param timeOutMillis timeout in milliseconds
-     * @return true if TCP connect works, false otherwise
-     */
-    public static boolean isReachable(InetAddress addr, int port, int timeOutMillis) {
-        try (Socket soc = new Socket()) {
-            soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
-        } catch (IOException e) {
-            return false;
-        }
-
-        return true;
     }
 
     private static boolean isWebAppReachable(String webappURI, int timeOutMillis) {
