@@ -173,7 +173,8 @@ public final class Indexer {
         try {
             argv = parseOptions(argv);
 
-            if (webappURI != null && !HostUtil.isReachable(webappURI, WEBAPP_CONNECT_TIMEOUT)) {
+            if (webappURI != null && !HostUtil.isReachable(webappURI, WEBAPP_CONNECT_TIMEOUT,
+                    cfg.getIndexerAuthenticationToken())) {
                 System.err.println(webappURI + " is not reachable and the -U option was specified, exiting.");
                 System.exit(1);
             }

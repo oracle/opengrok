@@ -25,7 +25,11 @@ package org.opengrok.indexer.util;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.net.URI;
@@ -33,8 +37,6 @@ import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 
 /**
  * Utility class to provide simple host/address methods.
@@ -57,11 +59,17 @@ public class HostUtil {
         return uri.getPort();
     }
 
-    private static boolean isWebAppReachable(String webappURI, int timeOutMillis) {
-        // TODO: token
+    private static boolean isWebAppReachable(String webappURI, int timeOutMillis, @Nullable String token) {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
         clientBuilder.connectTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
         clientBuilder.readTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
+
+        // Here, IndexerUtil#getWebAppHeaders() is not used because at the point this method is called,
+        // the RuntimeEnvironment configuration used by getWebAppHeaders() is not set yet.
+        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        if (token != null) {
+            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
 
         try (Client client = clientBuilder.build()) {
             Response response = client
@@ -70,7 +78,7 @@ public class HostUtil {
                     .path("v1")
                     .path("configuration")
                     .request()
-                    .headers(getWebAppHeaders())
+                    .headers(headers)
                     .get();
 
             if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
@@ -86,7 +94,14 @@ public class HostUtil {
         return true;
     }
 
-    public static boolean isReachable(String webappURI, int timeOutMillis) {
+    /**
+     *
+     * @param webappURI URI of the web app
+     * @param timeOutMillis connect/read timeout in milliseconds
+     * @param token authentication token, can be {@code null}
+     * @return whether web app is reachable within given timeout on given URI
+     */
+    public static boolean isReachable(String webappURI, int timeOutMillis, @Nullable String token) {
         boolean connectWorks = false;
 
         try {
@@ -96,7 +111,7 @@ public class HostUtil {
                 return false;
             }
 
-            return isWebAppReachable(webappURI, timeOutMillis);
+            return isWebAppReachable(webappURI, timeOutMillis, token);
         } catch (URISyntaxException e) {
             LOGGER.log(Level.SEVERE, String.format("URI not valid: %s", webappURI), e);
         }
