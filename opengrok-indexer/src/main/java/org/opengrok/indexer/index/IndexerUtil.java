@@ -46,7 +46,7 @@ public class IndexerUtil {
      */
     public static MultivaluedMap<String, Object> getWebAppHeaders() {
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        String token = null;
+        String token;
         if ((token = RuntimeEnvironment.getInstance().getIndexerAuthenticationToken()) != null) {
             headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
