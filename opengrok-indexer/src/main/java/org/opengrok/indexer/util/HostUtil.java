@@ -18,21 +18,31 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.ApiUtils;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 
 /**
  * Utility class to provide simple host/address methods.
@@ -81,6 +91,35 @@ public class HostUtil {
         return true;
     }
 
+    private static boolean isWebAppReachable(String webappURI, int timeOutMillis) {
+        // TODO: token
+        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+        clientBuilder.connectTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
+        clientBuilder.readTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
+
+        try (Client client = clientBuilder.build()) {
+            Response response = client
+                .target(webappURI)
+                    .path("api")
+                    .path("v1")
+                    .path("configuration")
+                    .request()
+                    .headers(getWebAppHeaders())
+                    .get();
+
+            if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                LOGGER.log(Level.SEVERE, "cannot reach OpenGrok web application on {0}: {1}",
+                        new Object[]{webappURI, response.getStatusInfo()});
+                return false;
+            }
+        } catch (ProcessingException e) {
+            LOGGER.log(Level.SEVERE, String.format("could not connect to %s", webappURI), e);
+            return false;
+        }
+
+        return true;
+    }
+
     public static boolean isReachable(String webappURI, int timeOutMillis) {
         boolean connectWorks = false;
 
@@ -91,15 +130,9 @@ public class HostUtil {
                 return false;
             }
 
-            for (InetAddress addr : InetAddress.getAllByName(HostUtil.urlToHostname(webappURI))) {
-                if (HostUtil.isReachable(addr, port, timeOutMillis)) {
-                    LOGGER.log(Level.FINE, "URI " + webappURI + " is reachable via " + addr.toString());
-                    connectWorks = true;
-                    break;
-                }
-            }
-        } catch (URISyntaxException | UnknownHostException e) {
-            LOGGER.log(Level.WARNING, String.format("URI not valid: %s", webappURI), e);
+            return isWebAppReachable(webappURI, timeOutMillis);
+        } catch (URISyntaxException e) {
+            LOGGER.log(Level.SEVERE, String.format("URI not valid: %s", webappURI), e);
         }
 
         return connectWorks;

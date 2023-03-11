@@ -149,7 +149,7 @@ public final class Indexer {
     private static final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
     private static final String OPENGROK_JAR = "opengrok.jar";
 
-    private static final int WEBAPP_CONNECT_TIMEOUT = 1000;  // in milliseconds
+    private static final int WEBAPP_CONNECT_TIMEOUT = 3000;  // in milliseconds
 
     public static Indexer getInstance() {
         return indexer;
@@ -174,7 +174,7 @@ public final class Indexer {
             argv = parseOptions(argv);
 
             if (webappURI != null && !HostUtil.isReachable(webappURI, WEBAPP_CONNECT_TIMEOUT)) {
-                System.err.println(webappURI + " is not reachable.");
+                System.err.println(webappURI + " is not reachable and the -U option was specified, exiting.");
                 System.exit(1);
             }
 
