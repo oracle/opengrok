@@ -1555,7 +1555,8 @@ public final class RuntimeEnvironment {
     public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
-        Response response = ClientBuilder.newClient()
+        try (Response response = ClientBuilder.newBuilder().
+                connectTimeout(getConnectTimeout(), TimeUnit.SECONDS).build()
                 .target(host)
                 .path("api")
                 .path("v1")
@@ -1563,14 +1564,18 @@ public final class RuntimeEnvironment {
                 .queryParam("reindex", true)
                 .request()
                 .headers(getWebAppHeaders())
-                .put(Entity.xml(configXML));
+                .put(Entity.xml(configXML))) {
 
-        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-            response = ApiUtils.waitForAsyncApi(response);
-        }
+            Response.StatusType statusType = response.getStatusInfo();
 
-        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            throw new IOException(response.toString());
+            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                Response apiResponse = ApiUtils.waitForAsyncApi(response);
+                statusType = apiResponse.getStatusInfo();
+            }
+
+            if (statusType.getFamily() != Response.Status.Family.SUCCESSFUL) {
+                throw new IOException(response.toString());
+            }
         }
     }
 

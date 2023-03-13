@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 public class ApiUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiUtils.class);
+
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private ApiUtils() {
         // utility class
@@ -66,9 +68,9 @@ public class ApiUtils {
         }
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
-        for (int i = 0; i < RuntimeEnvironment.getInstance().getApiTimeout(); i++) {
+        for (int i = 0; i < env.getApiTimeout(); i++) {
             response = ClientBuilder.newBuilder().
-                    connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build().
+                    connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
                     target(location).request().get();
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
                 Thread.sleep(1000);
@@ -83,11 +85,13 @@ public class ApiUtils {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
-        Response deleteResponse = ClientBuilder.newBuilder().connectTimeout(3, TimeUnit.SECONDS).build().
-                target(location).request().delete();
-        if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
-                    new Object[]{location, response.getStatusInfo()});
+        try (Response deleteResponse = ClientBuilder.newBuilder().
+                connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
+                target(location).request().delete()) {
+            if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
+                        new Object[]{location, response.getStatusInfo()});
+            }
         }
 
         return response;
