@@ -688,9 +688,9 @@ public class IndexDatabase {
 
                     args.curCount = 0;
                     Statistics elapsed = new Statistics();
-                    LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
+                    LOGGER.log(Level.INFO, "Starting indexing of directory ''{0}''", dir);
                     indexParallel(dir, args);
-                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
+                    elapsed.report(LOGGER, String.format("Done indexing of directory '%s'", dir),
                             "indexer.db.directory.index");
 
                     /*

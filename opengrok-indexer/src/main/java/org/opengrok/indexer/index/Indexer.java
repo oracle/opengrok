@@ -997,9 +997,9 @@ public final class Indexer {
      */
     public static void writeConfigToFile(RuntimeEnvironment env, String filename) throws IOException {
         if (filename != null) {
-            LOGGER.log(Level.INFO, "Writing configuration to {0}", filename);
+            LOGGER.log(Level.INFO, "Writing configuration to ''{0}''", filename);
             env.writeConfiguration(new File(filename));
-            LOGGER.log(Level.INFO, "Done writing configuration to {0}", filename);
+            LOGGER.log(Level.INFO, "Done writing configuration to ''{0}''", filename);
         }
     }
 
