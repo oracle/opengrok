@@ -29,7 +29,9 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +54,8 @@ public class RestfulClient {
     public static int postIt(String uri, String input) {
         int result;
         try {
-            try (Client client = ClientBuilder.newClient()) {
+            try (Client client = ClientBuilder.newBuilder().
+                    connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build()) {
                 LOGGER.log(Level.FINEST, "sending REST POST request to {0}: {1}",
                         new Object[]{uri, input});
                 try (Response response = client.target(uri)
