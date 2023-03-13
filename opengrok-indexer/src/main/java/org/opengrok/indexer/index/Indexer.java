@@ -117,6 +117,7 @@ public final class Indexer {
 
     private static final Indexer indexer = new Indexer();
     private static Configuration cfg = null;
+    private static boolean gotReadonlyConfiguration = false;
     private static IndexCheck.IndexCheckMode indexCheckMode = IndexCheck.IndexCheckMode.NO_CHECK;
     private static boolean runIndex = true;
     private static boolean reduceSegmentCount = false;
@@ -265,7 +266,7 @@ public final class Indexer {
             // Check index(es). Exit with return code upon failure.
             if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
                 if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
-                    System.err.println("Need data root in configuration for index check (use -R)");
+                    System.err.println("Empty data root in configuration");
                     System.exit(1);
                 }
 
@@ -485,6 +486,7 @@ public final class Indexer {
                 parser.on("-R configPath").execute(cfgFile -> {
             try {
                 cfg = Configuration.read(new File((String) cfgFile));
+                gotReadonlyConfiguration = true;
             } catch (IOException e) {
                 if (!preHelp) {
                     die(e.getMessage());
@@ -575,9 +577,15 @@ public final class Indexer {
                     "Check index, exit with 0 on success,",
                     "with 1 on failure.",
                     "With no mode specified, performs basic index check.",
+                    "Has to be used with the -R option to read the configuration ",
+                    "saved by previous indexer run via the -W option.",
                     "Selectable modes (performs given test on top of the basic check):",
                     "  documents - checks duplicate documents in the index"
                     ).execute(v -> {
+                        if (!gotReadonlyConfiguration) {
+                            die("option --checkIndex requires -R");
+                        }
+
                         indexCheckMode = IndexCheck.IndexCheckMode.VERSION;
                         String mode = (String) v;
                         if (mode != null && !mode.isEmpty()) {
