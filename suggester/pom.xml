@@ -91,6 +91,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <artifactId>annotations</artifactId>
         </dependency>
 
+        <!-- This specific version is used to disable reporting. -->
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-analytics</artifactId>
