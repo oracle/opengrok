@@ -93,6 +93,12 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
         <dependency>
             <groupId>net.openhft</groupId>
+            <artifactId>chronicle-analytics</artifactId>
+            <version>0.EMPTY</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
             <version>3.21.85</version>
             <exclusions>
