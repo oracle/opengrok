@@ -192,7 +192,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
             finishCreateCache(cache, history, tillRevision);
             sinceRevision = tillRevision;
-            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
+            stat.report(LOGGER, Level.FINE, String.format("Finished chunk %d/%d of history cache for repository '%s'",
                     ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }
 

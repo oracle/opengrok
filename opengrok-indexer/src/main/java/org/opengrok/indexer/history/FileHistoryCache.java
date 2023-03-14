@@ -568,7 +568,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
+        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository {1}",
                 new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 
