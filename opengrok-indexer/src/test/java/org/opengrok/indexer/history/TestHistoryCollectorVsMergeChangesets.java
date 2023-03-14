@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class TestHistoryCollectorVsMergeChangesets {
     private static TestRepository repository = new TestRepository();
 
-    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @BeforeAll
     public static void setUpClass() throws Exception {
