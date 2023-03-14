@@ -389,7 +389,7 @@ class IndexerVsDeletedDocumentsTest {
      * similar to what is done in {@link IndexDatabase#update()}.
      */
     private void checkLiveDocs(String projectName) throws IOException {
-        List<String> livePaths = getLiveDocumentPaths(getIndexPath(projectName), projectName);
+        List<String> livePaths = getLiveDocumentPaths(getIndexPath(projectName));
 
         assertTrue(livePaths.size() > 0);
         assertEquals(new HashSet<>(livePaths).size(), livePaths.size());

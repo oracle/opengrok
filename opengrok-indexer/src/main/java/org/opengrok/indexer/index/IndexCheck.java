@@ -217,7 +217,7 @@ public class IndexCheck {
         }
 
         if (mode.ordinal() >= IndexCheckMode.DOCUMENTS.ordinal()) {
-            checkDuplicateDocuments(indexPath, projectName);
+            checkDuplicateDocuments(indexPath);
         }
     }
 
@@ -260,13 +260,12 @@ public class IndexCheck {
 
     /**
      * @param indexPath path to index
-     * @param projectName project name, can be empty
      * @return list of live document paths (some of them can be duplicate if the index is corrupted)
      * or {@code null} if live documents cannot be retrieved.
      * @throws IOException on I/O error
      */
     @Nullable
-    public static List<String> getLiveDocumentPaths(Path indexPath, String projectName) throws IOException {
+    public static List<String> getLiveDocumentPaths(Path indexPath) throws IOException {
         try (IndexReader indexReader = getIndexReader(indexPath)) {
             List<String> livePaths = new ArrayList<>();
 
@@ -294,12 +293,12 @@ public class IndexCheck {
         }
     }
 
-    private static void checkDuplicateDocuments(Path indexPath, String projectName)
+    private static void checkDuplicateDocuments(Path indexPath)
             throws IOException, IndexDocumentException {
 
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
         Statistics stat = new Statistics();
-        List<String> livePaths = getLiveDocumentPaths(indexPath, projectName);
+        List<String> livePaths = getLiveDocumentPaths(indexPath);
         if (livePaths == null) {
             throw new IndexDocumentException(String.format("cannot determine live paths for '%s'", indexPath));
         }
