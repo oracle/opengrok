@@ -50,6 +50,8 @@ public class TestHistoryCollectorVsMergeChangesets {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    private static final String lastRevision = "4d1b7cfb";
+
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
@@ -78,8 +80,10 @@ public class TestHistoryCollectorVsMergeChangesets {
                 .setDirectory(localPath)
                 .call()) {
 
+            final String intermediateRevision = "f3ddb4ba";
+
             gitClone.reset().setMode(ResetCommand.ResetType.HARD).
-                    setRef("f3ddb4ba").call();
+                    setRef(intermediateRevision).call();
 
             // Reset hard to certain changeset.
             File repositoryRoot = gitClone.getRepository().getWorkTree();
@@ -90,13 +94,13 @@ public class TestHistoryCollectorVsMergeChangesets {
             cache.initialize();
 
             repo.doCreateCache(cache, null, repositoryRoot);
-            assertEquals("f3ddb4ba", cache.getLatestCachedRevision(repo));
+            assertEquals(intermediateRevision, cache.getLatestCachedRevision(repo));
 
             // Pull the remaining changesets from the origin.
             gitClone.pull().call();
 
             repo.doCreateCache(cache, null, repositoryRoot);
-            assertEquals("4d1b7cfb", cache.getLatestCachedRevision(repo));
+            assertEquals(lastRevision, cache.getLatestCachedRevision(repo));
         }
     }
 
@@ -114,6 +118,6 @@ public class TestHistoryCollectorVsMergeChangesets {
         History history = repo.getHistory(repositoryRoot);
         assertNotNull(history);
         cache.store(history, repo);
-        assertEquals("4d1b7cfb", cache.getLatestCachedRevision(repo));
+        assertEquals(lastRevision, cache.getLatestCachedRevision(repo));
     }
 }
