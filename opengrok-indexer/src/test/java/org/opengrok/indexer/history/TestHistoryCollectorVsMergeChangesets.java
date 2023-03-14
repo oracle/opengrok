@@ -27,6 +27,8 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -46,12 +48,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class TestHistoryCollectorVsMergeChangesets {
     private static TestRepository repository = new TestRepository();
 
+    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(TestHistoryCollectorVsMergeChangesets.class.getResourceAsStream(
                 "/history/git-merge.zip"));
-        RuntimeEnvironment.getInstance().setMergeCommitsEnabled(false);
+        env.setMergeCommitsEnabled(false);
     }
 
     @AfterAll
@@ -60,11 +64,14 @@ public class TestHistoryCollectorVsMergeChangesets {
         repository = null;
     }
 
-    // TODO: parametrize based on env.isHistoryCachePerPartesEnabled()
-    @Test
-    void testReindexWithHistoryBasedRepository() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testReindexWithHistoryBasedRepository(boolean usePerPartes) throws Exception {
+        env.setHistoryCachePerPartesEnabled(usePerPartes);
+
         File origRepositoryRoot = new File(repository.getSourceRoot(), "git-merge");
-        File localPath = new File(repository.getSourceRoot(), "gitCloneTestHistoryCollector");
+        File localPath = new File(repository.getSourceRoot(),
+                "gitCloneTestHistoryCollector" + (usePerPartes ? "-perPartes" : ""));
         String cloneUrl = origRepositoryRoot.toURI().toString();
         try (Git gitClone = Git.cloneRepository()
                 .setURI(cloneUrl)
@@ -102,7 +109,8 @@ public class TestHistoryCollectorVsMergeChangesets {
         FileHistoryCache cache = new FileHistoryCache();
         cache.initialize();
 
-        // Use the getHistory() + cache.store() so that different code path for traverseHistory() is exercised.
+        // Use the getHistory() + cache.store() instead of repo.doCreateCache(),
+        // so that different code path for traverseHistory() is exercised.
         History history = repo.getHistory(repositoryRoot);
         assertNotNull(history);
         cache.store(history, repo);
