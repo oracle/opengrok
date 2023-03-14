@@ -150,8 +150,6 @@ public final class Indexer {
     private static final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
     private static final String OPENGROK_JAR = "opengrok.jar";
 
-    private static final int WEBAPP_CONNECT_TIMEOUT = 3000;  // in milliseconds
-
     public static Indexer getInstance() {
         return indexer;
     }
