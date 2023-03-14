@@ -22,6 +22,8 @@
  */
 package org.opengrok.indexer.history;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -58,9 +60,41 @@ public class TestHistoryCollectorVsMergeChangesets {
         repository = null;
     }
 
-    // TODO: test also subsequent reindex + parametrize based on env.isHistoryCachePerPartesEnabled()
+    // TODO: parametrize based on env.isHistoryCachePerPartesEnabled()
     @Test
-    void testHistoryCollectorVsMergeChangeset() throws Exception {
+    void testReindexWithHistoryBasedRepository() throws Exception {
+        File origRepositoryRoot = new File(repository.getSourceRoot(), "git-merge");
+        File localPath = new File(repository.getSourceRoot(), "gitCloneTestHistoryCollector");
+        String cloneUrl = origRepositoryRoot.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath)
+                .call()) {
+
+            gitClone.reset().setMode(ResetCommand.ResetType.HARD).
+                    setRef("f3ddb4ba").call();
+
+            // Reset hard to certain changeset.
+            File repositoryRoot = gitClone.getRepository().getWorkTree();
+            GitRepository repo = (GitRepository) RepositoryFactory.getRepository(repositoryRoot);
+            assertFalse(repo.isMergeCommitsEnabled());
+
+            FileHistoryCache cache = new FileHistoryCache();
+            cache.initialize();
+
+            repo.doCreateCache(cache, null, repositoryRoot);
+            assertEquals("f3ddb4ba", cache.getLatestCachedRevision(repo));
+
+            // Pull the remaining changesets from the origin.
+            gitClone.pull().call();
+
+            repo.doCreateCache(cache, null, repositoryRoot);
+            assertEquals("4d1b7cfb", cache.getLatestCachedRevision(repo));
+        }
+    }
+
+    @Test
+    void testCacheStore() throws Exception {
         File repositoryRoot = new File(repository.getSourceRoot(), "git-merge");
         GitRepository repo = (GitRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertFalse(repo.isMergeCommitsEnabled());
@@ -68,9 +102,10 @@ public class TestHistoryCollectorVsMergeChangesets {
         FileHistoryCache cache = new FileHistoryCache();
         cache.initialize();
 
-        History historyToStore = repo.getHistory(repositoryRoot);
-        assertNotNull(historyToStore);
-        cache.store(historyToStore, repo);
+        // Use the getHistory() + cache.store() so that different code path for traverseHistory() is exercised.
+        History history = repo.getHistory(repositoryRoot);
+        assertNotNull(history);
+        cache.store(history, repo);
         assertEquals("4d1b7cfb", cache.getLatestCachedRevision(repo));
     }
 }
