@@ -58,6 +58,7 @@ public class TestHistoryCollectorVsMergeChangesets {
         repository = null;
     }
 
+    // TODO: test also subsequent reindex + parametrize based on env.isHistoryCachePerPartesEnabled()
     @Test
     void testHistoryCollectorVsMergeChangeset() throws Exception {
         File repositoryRoot = new File(repository.getSourceRoot(), "git-merge");

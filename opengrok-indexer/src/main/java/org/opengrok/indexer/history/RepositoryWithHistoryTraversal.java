@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -69,6 +69,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         public SortedSet<String> files;
         public Set<String> renamedFiles;
         public Set<String> deletedFiles;
+        public Boolean isMerge;
 
         ChangesetInfo(CommitInfo commit) {
             this.commit = commit;
@@ -78,10 +79,16 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         }
 
         ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles) {
+            this(commit, files, renamedFiles, deletedFiles, null);
+        }
+
+        ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles,
+                      Boolean isMerge) {
             this.commit = commit;
             this.files = files;
             this.renamedFiles = renamedFiles;
             this.deletedFiles = deletedFiles;
+            this.isMerge = isMerge;
         }
     }
 
@@ -106,7 +113,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
         HistoryCollector historyCollector = new HistoryCollector(isMergeCommitsEnabled());
         traverseHistory(file, sinceRevision, tillRevision, numCommits, List.of(historyCollector));
-        History history = new History(historyCollector.entries, historyCollector.renamedFiles);
+        History history = new History(historyCollector.entries, historyCollector.renamedFiles,
+                historyCollector.latestRev);
 
         // Assign tags to changesets they represent.
         if (RuntimeEnvironment.getInstance().isTagsEnabled() && hasFileBasedTags()) {
@@ -139,7 +147,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                 visitors.add(fileCollector);
             }
             traverseHistory(directory, sinceRevision, null, null, visitors);
-            History history = new History(historyCollector.entries, historyCollector.renamedFiles);
+            History history = new History(historyCollector.entries, historyCollector.renamedFiles,
+                    historyCollector.latestRev);
 
             // Assign tags to changesets they represent.
             if (env.isTagsEnabled() && hasFileBasedTags()) {
@@ -173,7 +182,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                 visitors.add(fileCollector);
             }
             traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
-            History history = new History(historyCollector.entries, historyCollector.renamedFiles);
+            History history = new History(historyCollector.entries, historyCollector.renamedFiles,
+                    historyCollector.latestRev);
 
             // Assign tags to changesets they represent.
             if (env.isTagsEnabled() && hasFileBasedTags()) {
