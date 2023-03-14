@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,7 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -109,6 +111,12 @@ public class IndexCheck {
 
         private final Map<String, Integer> fileMap;
 
+        public IndexDocumentException(String s) {
+            super(s);
+
+            this.fileMap = null;
+        }
+
         public IndexDocumentException(String s, Map<String, Integer> fileMap) {
             super(s);
 
@@ -117,7 +125,7 @@ public class IndexCheck {
 
         @Override
         public String toString() {
-            return getMessage() + ": " + fileMap;
+            return getMessage() + ": " + (fileMap == null ? "" : fileMap);
         }
     }
 
@@ -258,38 +266,32 @@ public class IndexCheck {
     /**
      * @param indexPath path to index
      * @param projectName project name, can be empty
-     * @return list of live document paths
+     * @return list of live document paths (some of them can be duplicate if the index is corrupted)
+     * or {@code null} if live documents cannot be retrieved.
      * @throws IOException on I/O error
      */
+    @Nullable
     public static List<String> getLiveDocumentPaths(Path indexPath, String projectName) throws IOException {
         try (IndexReader indexReader = getIndexReader(indexPath)) {
-            Terms terms = MultiTerms.getTerms(indexReader, QueryBuilder.U);
-            TermsEnum uidIter = terms.iterator();
-            String dir = "/" + projectName;
-            String startUid = Util.path2uid(dir, "");
-            uidIter.seekCeil(new BytesRef(startUid));
-            final BytesRef emptyBR = new BytesRef("");
-            // paths of live (i.e. not deleted) documents. Must be a list so that duplicate documents can be checked.
             List<String> livePaths = new ArrayList<>();
-            Set<String> deletedUids = getDeletedUids(indexPath);
 
-            while (uidIter != null && uidIter.term() != null && uidIter.term().compareTo(emptyBR) != 0) {
-                String termValue = uidIter.term().utf8ToString();
-                String termPath = Util.uid2url(termValue);
+            Bits liveDocs = MultiBits.getLiveDocs(indexReader);
+            if (liveDocs == null) { // the index has no deletions
+                return null;
+            }
 
-                if (deletedUids.contains(termValue)) {
-                    BytesRef next = uidIter.next();
-                    if (next == null) {
-                        uidIter = null;
-                    }
+            for (int i = 0; i < indexReader.maxDoc(); i++) {
+                Document doc = indexReader.storedFields().document(i);
+
+                if (!liveDocs.get(i)) {
                     continue;
                 }
 
-                livePaths.add(termPath);
-
-                BytesRef next = uidIter.next();
-                if (next == null) {
-                    uidIter = null;
+                // This should avoid the special LOC documents.
+                IndexableField field = doc.getField(QueryBuilder.U);
+                if (field != null) {
+                    String uid = field.stringValue();
+                    livePaths.add(Util.uid2url(uid));
                 }
             }
 
@@ -303,21 +305,32 @@ public class IndexCheck {
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
         Statistics stat = new Statistics();
         List<String> livePaths = getLiveDocumentPaths(indexPath, projectName);
+        if (livePaths == null) {
+            throw new IndexDocumentException(String.format("cannot determine live paths for '%s'", indexPath));
+        }
         HashSet<String> pathSet = new HashSet<>(livePaths);
-        HashMap<String, Integer> fileMap = new HashMap<>();
+        Map<String, Integer> fileMap = new ConcurrentHashMap<>();
         if (pathSet.size() != livePaths.size()) {
             LOGGER.log(Level.FINE,
                     "index in ''{0}'' has document path set ({1}) vs document list ({2}) discrepancy",
                     new Object[]{indexPath, pathSet.size(), livePaths.size()});
             for (String path : livePaths) {
                 if (pathSet.contains(path)) {
-                    LOGGER.log(Level.FINER, "duplicate path: ''{0}''", path);
                     fileMap.putIfAbsent(path, 0);
                     fileMap.put(path, fileMap.get(path) + 1);
                 }
             }
-
         }
+
+        // Traverse the file map and leave only duplicate entries.
+        for (String path: fileMap.keySet()) {
+            if (fileMap.get(path) > 1) {
+                LOGGER.log(Level.FINER, "duplicate path: ''{0}''", path);
+            } else {
+                fileMap.remove(path);
+            }
+        }
+
         stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
         if (!fileMap.isEmpty()) {
             throw new IndexDocumentException(String.format("index in '%s' contains duplicate live documents",
