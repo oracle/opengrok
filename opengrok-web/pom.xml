@@ -132,7 +132,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.webjars.npm</groupId>
             <artifactId>xss</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.10</version>
             <!-- dependencies not required -->
             <exclusions>
                 <exclusion>
