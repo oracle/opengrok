@@ -238,14 +238,14 @@ public class ProjectsController {
         LOGGER.log(Level.INFO, "deleting data for project ''{0}''", projectName);
 
         // Delete index and xrefs.
-        for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
-            java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
-            try {
-                IOUtils.removeRecursive(path);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not delete ''{0}''", path);
-            }
-        }
+//        for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
+//            java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
+//            try {
+//                IOUtils.removeRecursive(path);
+//            } catch (IOException e) {
+//                LOGGER.log(Level.WARNING, "Could not delete ''{0}''", path);
+//            }
+//        }
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
