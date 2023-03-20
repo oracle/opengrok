@@ -33,21 +33,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class HostUtilTest {
     @Test
     void testInvalidURI() {
-        assertFalse(HostUtil.isReachable("htt://localhost:8080/source/", 1000, null));
+        assertFalse(HostUtil.isReachable("htt://localhost:8080/source/", 10, null));
     }
 
     @Test
     void testInvalidHost() {
-        assertFalse(HostUtil.isReachable("http://localhosta:8080/source/", 1000, null));
+        assertFalse(HostUtil.isReachable("http://localhosta:8080/source/", 10, null));
     }
 
     @Test
     void testInvalidPort() {
-        assertFalse(HostUtil.isReachable("http://localhost:zzzz/source/", 1000, null));
+        assertFalse(HostUtil.isReachable("http://localhost:zzzz/source/", 10, null));
     }
 
     @Test
     void testNotReachableWebApp() {
-        assertFalse(HostUtil.isReachable("http://localhost:4444/source/", 1000, null));
+        assertFalse(HostUtil.isReachable("http://localhost:4444/source/", 10, null));
     }
 }
