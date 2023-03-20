@@ -71,6 +71,8 @@ public class HostUtil {
             headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
 
+        LOGGER.log(Level.FINE, "checking reachability of {0} with connect/read timeout of {1} seconds",
+                new Object[]{webappURI, timeOutSeconds});
         try (Client client = clientBuilder.build()) {
             Response response = client
                 .target(webappURI)
