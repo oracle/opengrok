@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -48,11 +48,15 @@ public class History implements Serializable {
     /** Entries in the log. The first entry is the most recent one. */
     private List<HistoryEntry> entries;
     /**
-     * track renamed files so they can be treated in special way (for some
-     * SCMs) during cache creation.
+     * Track renamed files, so they can be treated in special way (for some SCMs) during cache creation.
      * These are relative to repository root.
      */
     private final Set<String> renamedFiles;
+
+    /**
+     * Revision of the newest change. Used in history cache.
+     */
+    private String latestRev;
 
     // revision to tag list. Individual tags are joined via TAGS_SEPARATOR.
     private Map<String, String> tags = new HashMap<>();
@@ -73,6 +77,15 @@ public class History implements Serializable {
     History(List<HistoryEntry> entries, Set<String> renamed) {
         this.entries = entries;
         this.renamedFiles = renamed;
+    }
+
+    History(List<HistoryEntry> entries, Set<String> renamed, String latestRev) {
+        this(entries, renamed);
+        this.latestRev = latestRev;
+    }
+
+    public String getLatestRev() {
+        return latestRev;
     }
 
     // Needed for serialization.

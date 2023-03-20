@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -31,6 +31,8 @@ class HistoryCollector extends ChangesetVisitor {
     List<HistoryEntry> entries;
     Set<String> renamedFiles;
 
+    String latestRev;
+
     HistoryCollector(boolean consumeMergeChangesets) {
         super(consumeMergeChangesets);
         entries = new ArrayList<>();
@@ -39,6 +41,17 @@ class HistoryCollector extends ChangesetVisitor {
 
     public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
         RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
+
+        // Make sure to record the revision even though this is a merge changeset
+        // and the collector does not want to consume these.
+        // The changesets are visited from newest to oldest, so record just the first one.
+        if (latestRev == null) {
+            latestRev = commit.revision;
+        }
+
+        if (changesetInfo.isMerge != null && changesetInfo.isMerge && !consumeMergeChangesets) {
+            return;
+        }
 
         // TODO: add a test for this
         String author;

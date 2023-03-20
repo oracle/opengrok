@@ -441,7 +441,12 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         }
 
         HashMap<String, List<HistoryEntry>> map = new HashMap<>();
-        latestRev = createFileMap(history, map);
+        String fileMapLatestRev = createFileMap(history, map);
+        if (history.getLatestRev() != null) {
+            latestRev = history.getLatestRev();
+        } else {
+            latestRev = fileMapLatestRev;
+        }
 
         // File based history cache does not store files for individual changesets so strip them.
         history.strip();
@@ -563,7 +568,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
+        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository {1}",
                 new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 

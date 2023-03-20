@@ -498,18 +498,13 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 
                 for (ChangesetVisitor visitor : visitors) {
-                    // Even though the repository itself is set (not) to consume the merge changesets,
-                    // it should be up to the visitor to have the say. This is because of the history based reindex.
-                    if (commit.getParentCount() > 1 && !visitor.consumeMergeChangesets) {
-                        continue;
-                    }
-
                     if (isDirectory) {
                         SortedSet<String> files = new TreeSet<>();
                         final Set<String> renamedFiles = new HashSet<>();
                         final Set<String> deletedFiles = new HashSet<>();
                         getFilesForCommit(renamedFiles, files, deletedFiles, commit, repository);
-                        visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles));
+                        visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles,
+                                commit.getParentCount() > 1));
                     } else {
                         visitor.accept(new ChangesetInfo(commitInfo));
                     }
