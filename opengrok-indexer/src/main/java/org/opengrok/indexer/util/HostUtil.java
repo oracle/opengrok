@@ -59,10 +59,10 @@ public class HostUtil {
         return uri.getPort();
     }
 
-    private static boolean isWebAppReachable(String webappURI, int timeOutMillis, @Nullable String token) {
+    private static boolean isWebAppReachable(String webappURI, int timeOutSeconds, @Nullable String token) {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-        clientBuilder.connectTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
-        clientBuilder.readTimeout(timeOutMillis, TimeUnit.MILLISECONDS);
+        clientBuilder.connectTimeout(timeOutSeconds, TimeUnit.SECONDS);
+        clientBuilder.readTimeout(timeOutSeconds, TimeUnit.SECONDS);
 
         // Here, IndexerUtil#getWebAppHeaders() is not used because at the point this method is called,
         // the RuntimeEnvironment configuration used by getWebAppHeaders() is not set yet.
@@ -71,6 +71,8 @@ public class HostUtil {
             headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
 
+        LOGGER.log(Level.FINE, "checking reachability of {0} with connect/read timeout of {1} seconds",
+                new Object[]{webappURI, timeOutSeconds});
         try (Client client = clientBuilder.build()) {
             Response response = client
                 .target(webappURI)
@@ -97,11 +99,11 @@ public class HostUtil {
     /**
      *
      * @param webappURI URI of the web app
-     * @param timeOutMillis connect/read timeout in milliseconds
+     * @param timeOutSeconds connect/read timeout in seconds
      * @param token authentication token, can be {@code null}
      * @return whether web app is reachable within given timeout on given URI
      */
-    public static boolean isReachable(String webappURI, int timeOutMillis, @Nullable String token) {
+    public static boolean isReachable(String webappURI, int timeOutSeconds, @Nullable String token) {
         boolean connectWorks = false;
 
         try {
@@ -111,7 +113,7 @@ public class HostUtil {
                 return false;
             }
 
-            return isWebAppReachable(webappURI, timeOutMillis, token);
+            return isWebAppReachable(webappURI, timeOutSeconds, token);
         } catch (URISyntaxException e) {
             LOGGER.log(Level.SEVERE, String.format("URI not valid: %s", webappURI), e);
         }
