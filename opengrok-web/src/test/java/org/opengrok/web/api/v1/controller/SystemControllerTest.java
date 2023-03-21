@@ -99,10 +99,11 @@ class SystemControllerTest extends OGKJerseyTest {
         }
 
         // Reload the contents via API call.
-        Response r = target("system")
+        try (Response r = target("system")
                 .path("includes").path("reload")
-                .request().put(Entity.text(""));
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+                .request().put(Entity.text(""))) {
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+        }
 
         // Check that the content was reloaded.
         String after = env.getIncludeFiles().getFooterIncludeFileContent(false);
@@ -121,7 +122,6 @@ class SystemControllerTest extends OGKJerseyTest {
         assertTrue(Paths.get(dataRoot.toString(), "index").toFile().mkdir());
 
         // Create path descriptions string.
-        StringBuilder sb = new StringBuilder();
         PathDescription[] descriptions = {
                 new PathDescription("/path1", "foo foo"),
                 new PathDescription("/path2", "bar bar")
