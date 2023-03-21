@@ -129,5 +129,48 @@ class AnnotationDataTest {
 
         assertNotEquals(annotationData1, annotationData2);
     }
+
+
+
+    /**
+     * Test retrieval of the revision from annotation data lines.
+     */
+    @Test
+    void testRevisionFromLine() {
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0.aaaaaaaaa", "Me", true, "1.0");
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1.aaaaaaaaa", "Me", true, "1.1");
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2.aaaaaaaaa", "Me", true, "1.2");
+
+        AnnotationData annotationData1 = new AnnotationData();
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.addLine(annotationLine3);
+
+        assertEquals("1.0.aaaaaaaaa", annotationData1.getRevision(1));
+        assertEquals("1.2.aaaaaaaaa", annotationData1.getRevision(3));
+        assertEquals("", annotationData1.getRevision(0), "Line not present, return empty string");
+        assertEquals("", annotationData1.getRevision(4), "Line not present, return empty string");
+    }
+
+
+    /**
+     * Test retrieval of the revision from annotation data lines.
+     */
+    @Test
+    void testDisplayRevisionFromLine() {
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0.aaaaaaaaa", "Me", true, "1.0");
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1.aaaaaaaaa", "Me", true, "1.1");
+        final AnnotationLine annotationLine3 = new AnnotationLine("1.2.aaaaaaaaa", "Me", true, "1.2");
+
+        AnnotationData annotationData1 = new AnnotationData();
+        annotationData1.addLine(annotationLine1);
+        annotationData1.addLine(annotationLine2);
+        annotationData1.addLine(annotationLine3);
+
+        assertEquals("1.0", annotationData1.getRevisionForDisplay(1));
+        assertEquals("1.2", annotationData1.getRevisionForDisplay(3));
+        assertEquals("", annotationData1.getRevisionForDisplay(0), "Line not present, return empty string");
+        assertEquals("", annotationData1.getRevisionForDisplay(4), "Line not present, return empty string");
+    }
 }
 

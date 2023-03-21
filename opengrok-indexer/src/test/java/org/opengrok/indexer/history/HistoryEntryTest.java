@@ -48,14 +48,15 @@ public class HistoryEntryTest {
 
     private HistoryEntry instance;
     private final Date historyDate = new Date();
-    private final String historyRevision = "1.0";
+    private final String historyRevision = "1.0.aaaaaa";
+    private final String historyDisplayRevision = "1.0";
     private final String historyAuthor = "test author";
     private final String historyMessage = "history entry message";
 
     @BeforeEach
     public void setUp() {
-        instance = new HistoryEntry(historyRevision, historyDate,
-            historyAuthor, historyMessage, true);
+        instance = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
+            historyAuthor, historyMessage, true, null);
     }
 
     @AfterEach
@@ -119,6 +120,14 @@ public class HistoryEntryTest {
     }
 
     /**
+     * Test of getDisplayRevision method, of class HistoryEntry.
+     */
+    @Test
+    public void getDisplayRevision() {
+        assertEquals(historyDisplayRevision, instance.getDisplayRevision());
+    }
+
+    /**
      * Test of setAuthor method, of class HistoryEntry.
      */
     @Test
@@ -177,6 +186,18 @@ public class HistoryEntryTest {
         String revision = "1.2";
         instance.setRevision(revision);
         assertEquals(revision, instance.getRevision());
+    }
+
+    /**
+     * Test of setDisplayRevision method, of class HistoryEntry.
+     */
+    @Test
+    public void setDisplayRevision() {
+        String displayRevision = "1.2";
+        instance.setDisplayRevision(displayRevision);
+        assertEquals(displayRevision, instance.getDisplayRevision());
+        instance.setDisplayRevision(null);
+        assertEquals(historyRevision, instance.getDisplayRevision());
     }
 
     /**
@@ -265,15 +286,15 @@ public class HistoryEntryTest {
 
     @Test
     public void testEquals() {
-        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, historyMessage, true);
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
+                historyAuthor, historyMessage, true, null);
         assertNotSame(e, instance);
         assertEquals(e, instance);
     }
 
     @Test
     public void testEqualsWithFilesInstance() {
-        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true,
                 Set.of(File.separator + Paths.get("foo", "main.o"),
                         File.separator + Paths.get("foo", "testsprog")));
@@ -285,9 +306,9 @@ public class HistoryEntryTest {
     public void testEqualsWithFilesPositive() {
         Set<String> files = Set.of(File.separator + Paths.get("foo", "main.o"),
                 File.separator + Paths.get("foo", "testsprog"));
-        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true, files);
-        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true, files);
         assertNotSame(e1, e2);
         assertEquals(e1, e2);
@@ -297,10 +318,10 @@ public class HistoryEntryTest {
     public void testEqualsWithFilesNegative() {
         String file1 = File.separator + Paths.get("foo", "main.o");
         String file2 = File.separator + Paths.get("foo", "testsprog");
-        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true,
                 Set.of(file1, file2));
-        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true,
                 Set.of(file1, file2 + "X"));
         assertNotSame(e1, e2);
