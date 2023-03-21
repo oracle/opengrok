@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -32,6 +32,7 @@ import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.Info;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
@@ -70,7 +71,7 @@ class SystemControllerTest extends OGKJerseyTest {
 
     /**
      * This method tests include files reload by testing it for one specific file out of the whole set.
-     * @throws IOException
+     * @throws IOException on error
      */
     @Test
     public void testIncludeReload() throws IOException {
@@ -165,5 +166,27 @@ class SystemControllerTest extends OGKJerseyTest {
 
         // Cleanup
         IOUtils.removeRecursive(dataRoot);
+    }
+
+    @Test
+    void testVersion() {
+        Response r = target("system")
+                .path("version")
+                .request().get();
+        String result = r.readEntity(String.class);
+
+        assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());
+        assertEquals(String.format("%s (%s)", Info.getVersion(), Info.getRevision()), result);
+    }
+
+    @Test
+    void testPing() {
+        Response r = target("system")
+                .path("ping")
+                .request().get();
+        String result = r.readEntity(String.class);
+
+        assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());
+        assertTrue(result.isEmpty());
     }
 }

@@ -588,7 +588,7 @@ public final class Configuration {
         // webappCtags is default(boolean)
         setXrefTimeout(30);
         setApiTimeout(300); // 5 minutes
-        setConnectTimeout(3);
+        setConnectTimeout(10);
     }
 
     public String getRepoCmd(String clazzName) {
