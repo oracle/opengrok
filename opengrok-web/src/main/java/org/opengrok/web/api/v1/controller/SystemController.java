@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 import jakarta.inject.Inject;
@@ -33,6 +33,7 @@ import jakarta.ws.rs.core.MediaType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import org.opengrok.indexer.Info;
 import org.opengrok.indexer.configuration.IndexTimestamp;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.EftarFile;
@@ -80,5 +81,18 @@ public class SystemController {
         // StdDateFormat is ISO8601 since jackson 2.9
         mapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
         return mapper.writeValueAsString(date);
+    }
+
+    @GET
+    @Path("/version")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getVersion() {
+        return String.format("%s (%s)", Info.getVersion(), Info.getRevision());
+    }
+
+    @GET
+    @Path("/ping")
+    public String ping() {
+        return "";
     }
 }

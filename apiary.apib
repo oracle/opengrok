@@ -296,6 +296,25 @@ The paths are relative to source root, starting with /.
 
 + Response 204
 
+## Web app version [/system/version]
+
+### get web app version as string [GET]
+
++ Request (text/plain)
+  + Body
+
+            1.9.0 (a5ac05426bc5029158fedffee1cd44abf033bb61)
+
++ Response 200
+
+## Ping the webapp [/system/ping]
+
+This endpoint is used by the indexer when running with the -U option.
+
+### Check if web app is deployed and alive [GET]
+
++ Response 200
+
 ## Groups [/groups]
 
 ### returns a list of all groups [GET]

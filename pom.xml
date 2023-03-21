@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.8.1</version>
+    <version>1.9.1</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
@@ -361,7 +361,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>7.4.4</version>
+                <version>8.1.2</version>
                 <configuration>
                     <skipSystemScope>true</skipSystemScope>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>

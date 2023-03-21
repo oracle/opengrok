@@ -55,6 +55,10 @@
         <fileSet>
           <directory>${project.build.directory}/dist</directory>
           <outputDirectory>lib</outputDirectory>
+          <excludes>
+            <!-- Already included above with version-less name. -->
+            <exclude>opengrok-${version}.jar</exclude>
+          </excludes>
           <includes>
             <include>*.jar</include>
           </includes>

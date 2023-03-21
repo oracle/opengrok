@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.configuration;
 
+import static java.lang.Integer.max;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 
@@ -1177,7 +1178,7 @@ public final class RuntimeEnvironment {
      */
     public int getRepositoryInvalidationParallelism() {
         int parallelism = syncReadConfiguration(Configuration::getRepositoryInvalidationParallelism);
-        return parallelism < 1 ? (Runtime.getRuntime().availableProcessors() / 2) : parallelism;
+        return parallelism < 1 ? max(Runtime.getRuntime().availableProcessors() / 2, 1) : parallelism;
     }
 
     /**
@@ -1554,7 +1555,8 @@ public final class RuntimeEnvironment {
     public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
-        Response response = ClientBuilder.newClient()
+        try (Response response = ClientBuilder.newBuilder().
+                connectTimeout(getConnectTimeout(), TimeUnit.SECONDS).build()
                 .target(host)
                 .path("api")
                 .path("v1")
@@ -1562,14 +1564,18 @@ public final class RuntimeEnvironment {
                 .queryParam("reindex", true)
                 .request()
                 .headers(getWebAppHeaders())
-                .put(Entity.xml(configXML));
+                .put(Entity.xml(configXML))) {
 
-        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-            response = ApiUtils.waitForAsyncApi(response);
-        }
+            Response.StatusType statusType = response.getStatusInfo();
 
-        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            throw new IOException(response.toString());
+            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                Response apiResponse = ApiUtils.waitForAsyncApi(response);
+                statusType = apiResponse.getStatusInfo();
+            }
+
+            if (statusType.getFamily() != Response.Status.Family.SUCCESSFUL) {
+                throw new IOException(response.toString());
+            }
         }
     }
 

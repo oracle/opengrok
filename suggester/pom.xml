@@ -28,7 +28,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <artifactId>opengrok-top</artifactId>
         <groupId>org.opengrok</groupId>
-        <version>1.8.1</version>
+        <version>1.9.1</version>
     </parent>
 
     <artifactId>suggester</artifactId>
@@ -62,7 +62,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
@@ -91,6 +91,13 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <artifactId>annotations</artifactId>
         </dependency>
 
+        <!-- This specific version is used to disable reporting via chronicle-map. -->
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>chronicle-analytics</artifactId>
+            <version>0.EMPTY</version>
+        </dependency>
+
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
@@ -114,7 +121,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.19</version>
+            <version>1.4.20</version>
         </dependency>
 
         <dependency>

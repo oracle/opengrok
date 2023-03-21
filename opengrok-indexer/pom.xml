@@ -29,11 +29,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.8.1</version>
+        <version>1.9.1</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.8.1</version>
+    <version>1.9.1</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -58,7 +58,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <version>1.21</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>

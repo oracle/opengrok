@@ -363,9 +363,9 @@ class PendingFileCompleter {
 
     private void doDelete(File f) {
         if (f.delete()) {
-            LOGGER.log(Level.FINER, "Deleted obsolete file: {0}", f.getPath());
+            LOGGER.log(Level.FINER, "Deleted obsolete file: ''{0}''", f.getPath());
         } else if (f.exists()) {
-            LOGGER.log(Level.WARNING, "Failed to delete obsolete file: {0}",
+            LOGGER.log(Level.WARNING, "Failed to delete obsolete file: ''{0}''",
                     f.getPath());
         }
     }
@@ -375,12 +375,12 @@ class PendingFileCompleter {
             Files.move(Paths.get(ren.source), Paths.get(ren.target),
                 StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to move file: {0} -> {1}",
+            LOGGER.log(Level.WARNING, "Failed to move file: ''{0}'' -> ''{1}''",
                 new Object[]{ren.source, ren.target});
             throw e;
         }
         if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "Moved pending as file: {0}",
+            LOGGER.log(Level.FINEST, "Moved pending as file: ''{0}''",
                 ren.target);
         }
     }
@@ -411,13 +411,13 @@ class PendingFileCompleter {
             // there is no need to worry.
             return;
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to link: {0} -> {1}",
+            LOGGER.log(Level.WARNING, "Failed to link: ''{0}'' -> ''{1}''",
                     new Object[]{lnk.source, lnk.targetRel});
             throw e;
         }
 
         if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "Linked pending: {0} -> {1}",
+            LOGGER.log(Level.FINEST, "Linked pending: ''{0}'' -> ''{1}''",
                     new Object[]{lnk.source, lnk.targetRel});
         }
     }
@@ -499,7 +499,7 @@ class PendingFileCompleter {
 
     private void tryDeleteDirectory(File dir) {
         if (dir.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty parent dir: {0}",
+            LOGGER.log(Level.FINE, "Removed empty parent directory: ''{0}''",
                 dir.getAbsolutePath());
         }
     }
@@ -525,7 +525,7 @@ class PendingFileCompleter {
                     if (!didLogFileTopLevelIneligible && LOGGER.isLoggable(
                         Level.FINEST)) {
                         didLogFileTopLevelIneligible = true; // just once is OK
-                        LOGGER.log(Level.FINEST, "not file-less due to: {0}",
+                        LOGGER.log(Level.FINEST, "not file-less due to: ''{0}''",
                             f.getAbsolutePath());
                     }
                 } else {
@@ -536,7 +536,7 @@ class PendingFileCompleter {
                         topLevelIneligible = true;
                         if (LOGGER.isLoggable(Level.FINEST)) {
                             LOGGER.log(Level.FINEST,
-                                "its children prevent delete: {0}",
+                                "its children prevent delete: ''{0}''",
                                 f.getAbsolutePath());
                         }
                     }
@@ -549,8 +549,7 @@ class PendingFileCompleter {
         } catch (IOException ex) {
             topLevelIneligible = true;
             if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "Failed to stream directory:" +
-                    directory, ex);
+                LOGGER.log(Level.FINEST, String.format("Failed to stream directory '%s'", directory), ex);
             }
         }
 

@@ -24,21 +24,10 @@ package org.opengrok.indexer.index;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.MultiBits;
-import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.NoMergePolicy;
 import org.apache.lucene.index.NoMergeScheduler;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.NoLockFactory;
-import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.BytesRef;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.lib.Repository;
@@ -57,10 +46,8 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
-import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
-import org.opengrok.indexer.web.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +59,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,6 +68,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.opengrok.indexer.index.IndexCheck.getDeletedUids;
+import static org.opengrok.indexer.index.IndexCheck.getIndexReader;
+import static org.opengrok.indexer.index.IndexCheck.getLiveDocumentPaths;
 
 /**
  * This class provides tests that verify the indexer correctly jumps over deleted documents in the index,
@@ -194,45 +183,11 @@ class IndexerVsDeletedDocumentsTest {
         }
     }
 
-    private IndexReader getIndexReader(String projectName) throws IOException {
+    private Path getIndexPath(String projectName) throws IOException {
         Path indexPath = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR,
                 env.isProjectsEnabled() ? projectName : "");
         assertTrue(indexPath.toFile().isDirectory());
-
-        try (FSDirectory indexDirectory = FSDirectory.open(indexPath, NoLockFactory.INSTANCE)) {
-            return DirectoryReader.open(indexDirectory);
-        }
-    }
-
-    /**
-     * @param projectName project name, can be empty
-     * @return set of deleted uids in the index related to the project name
-     * @throws IOException if the index cannot be read
-     */
-    private Set<String> getDeletedUids(String projectName) throws IOException {
-        Set<String> deletedUids = new HashSet<>();
-
-        try (IndexReader indexReader = getIndexReader(projectName)) {
-            Bits liveDocs = MultiBits.getLiveDocs(indexReader);
-            if (liveDocs == null) { // the index has no deletions
-                return deletedUids;
-            }
-
-            for (int i = 0; i < indexReader.maxDoc(); i++) {
-                Document doc = indexReader.storedFields().document(i);
-                // This should avoid the special LOC documents.
-                IndexableField field = doc.getField(QueryBuilder.U);
-                if (field != null) {
-                    String uid = field.stringValue();
-
-                    if (!liveDocs.get(i)) {
-                        deletedUids.add(uid);
-                    }
-                }
-            }
-        }
-
-        return deletedUids;
+        return indexPath;
     }
 
     @BeforeEach
@@ -390,7 +345,7 @@ class IndexerVsDeletedDocumentsTest {
             // At most one fileRemove() should be called for each path.
             assertEquals(new HashSet<>(listener.removedPaths).size(), listener.removedPaths.size());
 
-            if (getDeletedUids(projectName).size() > 0) {
+            if (getDeletedUids(getIndexPath(projectName)).size() > 0) {
                 break;
             }
         }
@@ -418,7 +373,7 @@ class IndexerVsDeletedDocumentsTest {
         }
 
         // Make sure there are some deleted documents.
-        try (IndexReader indexReader = getIndexReader(projectName)) {
+        try (IndexReader indexReader = getIndexReader(getIndexPath(projectName))) {
             assertTrue(indexReader.numDeletedDocs() > 0);
         }
 
@@ -431,42 +386,12 @@ class IndexerVsDeletedDocumentsTest {
 
     /**
      * Check there is at most one live document for each path by doing terms traversal,
-     * similar to what is done in {@link IndexDatabase}.
+     * similar to what is done in {@link IndexDatabase#update()}.
      */
     private void checkLiveDocs(String projectName) throws IOException {
-        try (IndexReader indexReader = getIndexReader(projectName)) {
-            Terms terms = MultiTerms.getTerms(indexReader, QueryBuilder.U);
-            TermsEnum uidIter = terms.iterator();
-            String dir = "/" + projectName;
-            String startUid = Util.path2uid(dir, "");
-            uidIter.seekCeil(new BytesRef(startUid));
-            final BytesRef emptyBR = new BytesRef("");
-            // paths of live (i.e. not deleted) documents. Must be a list for the asserts below to work.
-            List<String> livePaths = new ArrayList<>();
-            Set<String> deletedUids = getDeletedUids(projectName);
+        List<String> livePaths = getLiveDocumentPaths(getIndexPath(projectName));
 
-            while (uidIter != null && uidIter.term() != null && uidIter.term().compareTo(emptyBR) != 0) {
-                String termValue = uidIter.term().utf8ToString();
-                String termPath = Util.uid2url(termValue);
-
-                if (deletedUids.contains(termValue)) {
-                    BytesRef next = uidIter.next();
-                    if (next == null) {
-                        uidIter = null;
-                    }
-                    continue;
-                }
-
-                livePaths.add(termPath);
-
-                BytesRef next = uidIter.next();
-                if (next == null) {
-                    uidIter = null;
-                }
-            }
-
-            assertTrue(livePaths.size() > 0);
-            assertEquals(new HashSet<>(livePaths).size(), livePaths.size());
-        }
+        assertTrue(livePaths.size() > 0);
+        assertEquals(new HashSet<>(livePaths).size(), livePaths.size());
     }
 }

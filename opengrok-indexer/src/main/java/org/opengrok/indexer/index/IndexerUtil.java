@@ -36,6 +36,8 @@ import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 
+import java.util.concurrent.TimeUnit;
+
 public class IndexerUtil {
 
     private IndexerUtil() {
@@ -46,7 +48,7 @@ public class IndexerUtil {
      */
     public static MultivaluedMap<String, Object> getWebAppHeaders() {
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        String token = null;
+        String token;
         if ((token = RuntimeEnvironment.getInstance().getIndexerAuthenticationToken()) != null) {
             headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
@@ -70,7 +72,8 @@ public class IndexerUtil {
             ProcessingException,
             WebApplicationException {
 
-        try (Client client = ClientBuilder.newClient()) {
+        try (Client client = ClientBuilder.newBuilder().
+                connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build()) {
             final Invocation.Builder request = client.target(host)
                     .path("api")
                     .path("v1")
