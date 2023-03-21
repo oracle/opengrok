@@ -278,7 +278,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                     continue;
                 }
 
-                if (commit.getId().getName().startsWith(changeset)) {
+                if (commit.getId().getName().startsWith(changeset)) { // suspicious? - should be an exact match on revision Id
                     break;
                 }
 
@@ -503,6 +503,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
             int num = 0;
             for (RevCommit commit : walk) {
                 CommitInfo commitInfo = new CommitInfo(commit.getId().name(),
+                        commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
                         commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 

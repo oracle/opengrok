@@ -68,7 +68,7 @@ public class DirectoryHistoryReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryHistoryReader.class);
 
     // This is a giant hash constructed in this class.
-    // It maps date -> author -> (comment, revision) -> [ list of files ]
+    // It maps date -> author -> (comment, revision, displayRevision) -> [ list of files ]
     private final Map<Date, Map<String, Map<List<String>, SortedSet<String>>>> hash
             = new LinkedHashMap<>(); // set in put()
     Iterator<Date> diter;
@@ -142,7 +142,7 @@ public class DirectoryHistoryReader {
                                     String.format("An error occurred while getting history reader for '%s'", f), e);
                         }
                         if (hist == null) {
-                            put(cdate, "", "-", "", rpath);
+                            put(cdate, "", null, "-", "", rpath);
                         } else {
                             // Put all history entries for this file into the giant hash.
                             readFromHistory(hist, rpath);
@@ -177,9 +177,9 @@ public class DirectoryHistoryReader {
     }
 
     // Fill the giant hash with some data from one history entry.
-    private void put(Date date, String revision, String author, String comment, String path) {
+    private void put(Date date, String revision, String displayRevision, String author, String comment, String path) {
         long time = date.getTime();
-        date.setTime(time - (time % 3600000L));
+        date.setTime(time - time % 3600000L);
 
         Map<String, Map<List<String>, SortedSet<String>>> ac = hash.computeIfAbsent(date, k -> new HashMap<>());
 
@@ -189,6 +189,7 @@ public class DirectoryHistoryReader {
         List<String> cr = new ArrayList<>();
         cr.add(comment);
         cr.add(revision);
+        cr.add(displayRevision);
         SortedSet<String> fls = cf.computeIfAbsent(cr, k -> new TreeSet<>());
 
         fls.add(path);
@@ -219,8 +220,8 @@ public class DirectoryHistoryReader {
 
         icomment = citer.next();
 
-        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, icomment.get(0), true);
-        currentEntry.setFiles(hash.get(idate).get(iauthor).get(icomment));
+        currentEntry = new HistoryEntry(icomment.get(1), icomment.get(2), idate, iauthor, icomment.get(0), true,
+          hash.get(idate).get(iauthor).get(icomment));
 
         return true;
     }
@@ -239,7 +240,8 @@ public class DirectoryHistoryReader {
                 String cauthor = entry.getAuthor();
                 Date cdate = entry.getDate();
                 String revision = entry.getRevision();
-                put(cdate, revision, cauthor, comment, rpath);
+                String displayRevision = entry.getDisplayRevision();
+                put(cdate, revision, displayRevision, cauthor, comment, rpath);
                 break;
             }
         }

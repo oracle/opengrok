@@ -48,6 +48,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
 
     public static class CommitInfo {
         String revision;
+        String displayRevision;
         Date date;
         String authorName;
         String authorEmail;
@@ -56,8 +57,9 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
         CommitInfo() {
         }
 
-        CommitInfo(String revision, Date date, String authorName, String authorEmail, String message) {
+        CommitInfo(String revision, String displayRevision, Date date, String authorName, String authorEmail, String message) {
             this.revision = revision;
+            this.displayRevision = displayRevision;
             this.date = date;
             this.authorName = authorName;
             this.authorEmail = authorEmail;

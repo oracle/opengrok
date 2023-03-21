@@ -82,6 +82,14 @@ public class GitRepositoryTest {
     private static final String HASH_1086EAF5 = "1086eaf5bca6d5a056097aa76017a8ab0eade20f";
     private static final String HASH_67DFBE26 = "67dfbe2648c94a8825671b0f2c132828d0d43079";
     private static final String HASH_84599B3C = "84599b3cccb3eeb5aa9aec64771678d6526bcecb";
+    private static final String ABRV_HASH_84821564 = HASH_84821564.substring(0, 8);
+    private static final String ABRV_HASH_AA35C258 = HASH_AA35C258.substring(0, 8);
+    private static final String ABRV_HASH_BB74B7E8 = HASH_BB74B7E8.substring(0, 8);
+    private static final String ABRV_HASH_CE4C98EC = HASH_CE4C98EC.substring(0, 8);
+    private static final String ABRV_HASH_B6413947 = HASH_B6413947.substring(0, 8);
+    private static final String ABRV_HASH_1086EAF5 = HASH_1086EAF5.substring(0, 8);
+    private static final String ABRV_HASH_67DFBE26 = HASH_67DFBE26.substring(0, 8);
+    private static final String ABRV_HASH_84599B3C = HASH_84599B3C.substring(0, 8);
     private static TestRepository repository = new TestRepository();
     private GitRepository instance;
 
@@ -535,37 +543,37 @@ public class GitRepositoryTest {
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
         List<HistoryEntry> entries = List.of(
-                new HistoryEntry(HASH_84599B3C, new Date(1485438707000L),
+                new HistoryEntry(HASH_84599B3C, ABRV_HASH_84599B3C, new Date(1485438707000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    renaming directories\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved2", "renamed2.c"))),
-                new HistoryEntry(HASH_67DFBE26, new Date(1485263397000L),
+                new HistoryEntry(HASH_67DFBE26, ABRV_HASH_67DFBE26, new Date(1485263397000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    renaming renamed -> renamed2\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))),
-                new HistoryEntry(HASH_1086EAF5, new Date(1485263368000L),
+                new HistoryEntry(HASH_1086EAF5, ABRV_HASH_1086EAF5, new Date(1485263368000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "     adding some lines into renamed.c\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed.c"))),
-                new HistoryEntry(HASH_B6413947, new Date(1485263264000L),
+                new HistoryEntry(HASH_B6413947, ABRV_HASH_B6413947, new Date(1485263264000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    moved renamed.c to new location\n\n", true,
                         Set.of(File.separator + Paths.get("git", "moved", "renamed.c"))),
-                new HistoryEntry(HASH_CE4C98EC, new Date(1485263232000L),  // start in the sub-test below
+                new HistoryEntry(HASH_CE4C98EC, ABRV_HASH_CE4C98EC, new Date(1485263232000L),  // start in the sub-test below
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                         "    adding simple file for renamed file testing\n\n", true,
                         Set.of(File.separator + Paths.get("git", "renamed.c"))),
-                new HistoryEntry(HASH_AA35C258, new Date(1218571965000L),
+                new HistoryEntry(HASH_AA35C258, ABRV_HASH_AA35C258, new Date(1218571965000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Add lint make target and fix lint warnings\n\n", true,
                         Set.of(File.separator + Paths.get("git", "Makefile"),
                                 File.separator + Paths.get("git", "main.c"))),
-                new HistoryEntry(HASH_84821564, new Date(1218571643000L),
+                new HistoryEntry(HASH_84821564, ABRV_HASH_84821564, new Date(1218571643000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Add the result of a make on Solaris x86\n\n", true,
                         Set.of(File.separator + Paths.get("git", "main.o"),
                                 File.separator + Paths.get("git", "testsprog"))),
-                new HistoryEntry(HASH_BB74B7E8, new Date(1218571573000L),
+                new HistoryEntry(HASH_BB74B7E8, ABRV_HASH_BB74B7E8, new Date(1218571573000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>",
                         "    Added a small test program\n\n", true,
                         Set.of(File.separator + Paths.get("git", "Makefile"),
