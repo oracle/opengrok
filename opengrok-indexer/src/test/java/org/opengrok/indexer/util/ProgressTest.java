@@ -84,7 +84,7 @@ public class ProgressTest {
         }
         assertSame(loggerThread.getState(), Thread.State.TERMINATED);
 
-        Mockito.verify(logger, times(totalCount)).log(any(), anyString(), any(Object[].class));
+        Mockito.verify(logger, times(totalCount)).log(any(), anyString());
     }
 
     @Test
@@ -118,6 +118,6 @@ public class ProgressTest {
 
         executor.shutdown();
         System.out.println("Verifying");
-        Mockito.verify(logger, atLeast(1)).log(any(), anyString(), any(Object[].class));
+        Mockito.verify(logger, atLeast(1)).log(any(), anyString());
     }
 }

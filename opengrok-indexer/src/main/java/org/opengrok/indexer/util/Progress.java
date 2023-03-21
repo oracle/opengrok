@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 public class Progress implements AutoCloseable {
     private final Logger logger;
-    private final long totalCount;
+    private final Long totalCount;
     private final String suffix;
 
     private final AtomicLong currentCount = new AtomicLong();
@@ -41,6 +41,20 @@ public class Progress implements AutoCloseable {
     private volatile boolean run;
 
     private final Object sync = new Object();
+
+    /**
+     * @param logger logger instance
+     * @param suffix string suffix to identify the operation
+     */
+    public Progress(Logger logger, String suffix) {
+        this.logger = logger;
+        this.suffix = suffix;
+        this.totalCount = null;
+
+        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            spawnLogThread();
+        }
+    }
 
     /**
      * @param logger logger instance
@@ -54,12 +68,16 @@ public class Progress implements AutoCloseable {
 
         // Assuming printProgress configuration setting cannot be changed on the fly.
         if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
-            // spawn a logger thread.
-            run = true;
-            loggerThread = new Thread(this::logLoop,
-                    "progress-thread-" + suffix.replaceAll(" ", "_"));
-            loggerThread.start();
+            spawnLogThread();
         }
+    }
+
+    private void spawnLogThread() {
+        // spawn a logger thread.
+        run = true;
+        loggerThread = new Thread(this::logLoop,
+                "progress-thread-" + suffix.replaceAll(" ", "_"));
+        loggerThread.start();
     }
 
     // for testing
@@ -84,7 +102,7 @@ public class Progress implements AutoCloseable {
     private void logLoop() {
         long cachedCount = 0;
         Map<Level, Long> lastLoggedChunk = new HashMap<>();
-        Map<Level, Integer> levelCount = Map.of(Level.INFO, 100,
+        final Map<Level, Integer> levelCount = Map.of(Level.INFO, 100,
                 Level.FINE, 50,
                 Level.FINER, 10,
                 Level.FINEST, 1);
@@ -95,7 +113,7 @@ public class Progress implements AutoCloseable {
 
             // Do not log if there was no progress.
             if (cachedCount < currentCount) {
-                if (currentCount <= 1 || currentCount == totalCount) {
+                if (currentCount <= 1 || (totalCount != null && currentCount == totalCount)) {
                     currentLevel = Level.INFO;
                 } else {
                     if (lastLoggedChunk.getOrDefault(Level.INFO, -1L) <
@@ -112,8 +130,17 @@ public class Progress implements AutoCloseable {
 
                 if (logger.isLoggable(currentLevel)) {
                     lastLoggedChunk.put(currentLevel, currentCount / levelCount.get(currentLevel));
-                    logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                            new Object[]{currentCount, currentCount * 100.0f / totalCount, suffix});
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("Progress: ");
+                    stringBuilder.append(currentCount);
+                    stringBuilder.append(" ");
+                    if (totalCount != null) {
+                        stringBuilder.append("(");
+                        stringBuilder.append(String.format("%.2f", currentCount * 100.0f / totalCount));
+                        stringBuilder.append("%) ");
+                    }
+                    stringBuilder.append(suffix);
+                    logger.log(currentLevel, stringBuilder.toString());
                 }
             }
 
