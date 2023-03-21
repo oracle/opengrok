@@ -79,10 +79,6 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             this.deletedFiles = new HashSet<>();
         }
 
-        ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles) {
-            this(commit, files, renamedFiles, deletedFiles, null);
-        }
-
         ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles,
                       Boolean isMerge) {
             this.commit = commit;
