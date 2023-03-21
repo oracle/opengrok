@@ -50,7 +50,7 @@ public class TestHistoryCollectorVsMergeChangesets {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private static final String lastRevision = "4d1b7cfb";
+    private static final String lastRevision = "4d1b7cfb1e7f3fc7360bd2f213d9e634e6a40cf8";
 
     @BeforeAll
     public static void setUpClass() throws Exception {
@@ -80,7 +80,7 @@ public class TestHistoryCollectorVsMergeChangesets {
                 .setDirectory(localPath)
                 .call()) {
 
-            final String intermediateRevision = "f3ddb4ba";
+            final String intermediateRevision = "f3ddb4ba641598015e04701fc3a598b882775644";
 
             gitClone.reset().setMode(ResetCommand.ResetType.HARD).
                     setRef(intermediateRevision).call();
