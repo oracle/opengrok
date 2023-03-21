@@ -37,6 +37,7 @@ class HistoryCollector extends ChangesetVisitor {
         renamedFiles = new HashSet<>();
     }
 
+    @Override
     public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
         RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
 
@@ -48,17 +49,13 @@ class HistoryCollector extends ChangesetVisitor {
             author = commit.authorName;
         }
 
-        HistoryEntry historyEntry = new HistoryEntry(commit.revision,
+        HistoryEntry historyEntry = new HistoryEntry(
+                commit.revision, commit.displayRevision,
                 commit.date, author,
-                commit.message, true);
+                commit.message, true, changesetInfo.files);
 
         if (changesetInfo.renamedFiles != null) {
             renamedFiles.addAll(changesetInfo.renamedFiles);
-        }
-        if (changesetInfo.files != null) {
-            historyEntry.setFiles(changesetInfo.files);
-        }
-        if (changesetInfo.renamedFiles != null) {
             // TODO: hack
             historyEntry.getFiles().addAll(changesetInfo.renamedFiles);
         }

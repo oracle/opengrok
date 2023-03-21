@@ -47,6 +47,7 @@ public class HistoryEntry implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
 
     private String revision;
+    private String displayRevision;
     private Date date;
     private String author;
 
@@ -67,27 +68,29 @@ public class HistoryEntry implements Serializable {
      * @param that HistoryEntry object
      */
     public HistoryEntry(HistoryEntry that) {
-        this.revision = that.revision;
-        this.date = that.date;
-        this.author = that.author;
-        this.message = that.message;
-        this.active = that.active;
-        this.files = that.files;
+        this(that.revision, that.displayRevision, that.date, that.author, that.message.toString(), that.active, that.files);
     }
 
-    public HistoryEntry(String revision, Date date, String author, String message, boolean active) {
+    public HistoryEntry(String revision, String displayRevision, Date date, String author, String message, boolean active, Collection<String> files) {
         this.revision = revision;
+        this.displayRevision = displayRevision;
         setDate(date);
         this.author = author;
         this.message = new StringBuffer(message);
         this.active = active;
         this.files = new TreeSet<>();
+        if (files != null) {
+          this.files.addAll(files);
+        }
+    }
+
+    public HistoryEntry(String revision, Date date, String author, String message, boolean active) {
+        this(revision, null, date, author, message, active, null);
     }
 
     public HistoryEntry(String revision, Date date, String author,
                         String message, boolean active, Collection<String> files) {
-        this(revision, date, author, message, active);
-        this.files.addAll(files);
+        this(revision, null, date, author, message, active, files);
     }
 
     @VisibleForTesting
@@ -103,11 +106,12 @@ public class HistoryEntry implements Serializable {
 
     public void dump() {
 
-        LOGGER.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
-        LOGGER.log(Level.FINE, "HistoryEntry : date           = {0}", date);
-        LOGGER.log(Level.FINE, "HistoryEntry : author         = {0}", author);
-        LOGGER.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
-                "True" : "False"));
+        LOGGER.log(Level.FINE, "HistoryEntry : revision        = {0}", revision);
+        LOGGER.log(Level.FINE, "HistoryEntry : displayRevision = {0}", displayRevision);
+        LOGGER.log(Level.FINE, "HistoryEntry : date            = {0}", date);
+        LOGGER.log(Level.FINE, "HistoryEntry : author          = {0}", author);
+        LOGGER.log(Level.FINE, "HistoryEntry : active          = {0}", active ?
+                "True" : "False");
         String[] lines = message.toString().split("\n");
         String separator = "=";
         for (String line : lines) {
@@ -128,7 +132,7 @@ public class HistoryEntry implements Serializable {
     }
 
     public Date getDate() {
-        return (date == null) ? null : (Date) date.clone();
+        return date == null ? null : (Date) date.clone();
     }
 
     public String getMessage() {
@@ -138,6 +142,10 @@ public class HistoryEntry implements Serializable {
     public String getRevision() {
         return revision;
     }
+
+    public String getDisplayRevision() {
+      return displayRevision == null ? revision : displayRevision;
+  }
 
     public void setAuthor(String author) {
         this.author = author;
@@ -228,6 +236,7 @@ public class HistoryEntry implements Serializable {
 
         return Objects.equals(this.getAuthor(), that.getAuthor()) &&
                 Objects.equals(this.getRevision(), that.getRevision()) &&
+                Objects.equals(this.getDisplayRevision(), that.getDisplayRevision()) &&
                 Objects.equals(this.getDate(), that.getDate()) &&
                 Objects.equals(this.getMessage(), that.getMessage()) &&
                 Objects.equals(this.getFiles(), that.getFiles());
@@ -235,6 +244,6 @@ public class HistoryEntry implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAuthor(), getRevision(), getDate(), getMessage(), getFiles());
+        return Objects.hash(getAuthor(), getRevision(), getDisplayRevision(), getDate(), getMessage(), getFiles());
     }
 }
