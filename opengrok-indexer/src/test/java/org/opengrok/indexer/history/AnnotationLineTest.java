@@ -37,8 +37,8 @@ class AnnotationLineTest {
      */
     @Test
     void testEqualsNegative1() {
-        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true, null);
-        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "barX", true, null);
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true);
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "barX", true);
         assertNotEquals(annotationLine1, annotationLine2);
     }
 
@@ -47,8 +47,8 @@ class AnnotationLineTest {
      */
     @Test
     void testEqualsNegative2() {
-        AnnotationLine annotationLine1 = new AnnotationLine("1.0.1", "bar", true, null);
-        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", true, null);
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0.1", "bar", true);
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", true);
         assertNotEquals(annotationLine1, annotationLine2);
     }
 
@@ -57,8 +57,8 @@ class AnnotationLineTest {
      */
     @Test
     void testEqualsNegative3() {
-        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true, null);
-        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", false, null);
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true);
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", false);
         assertNotEquals(annotationLine1, annotationLine2);
     }
 
@@ -67,8 +67,8 @@ class AnnotationLineTest {
      */
     @Test
     void testEqualsPositive() {
-        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true, null);
-        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", true, null);
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true);
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", true);
         assertEquals(annotationLine1, annotationLine2);
     }
 
@@ -77,7 +77,7 @@ class AnnotationLineTest {
      */
     @Test
     void testDisplayRevisionFallBack() {
-        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true, null);
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true);
         assertEquals("1.0", annotationLine1.getDisplayRevision());
     }
 
