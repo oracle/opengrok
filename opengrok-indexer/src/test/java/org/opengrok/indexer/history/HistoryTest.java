@@ -23,9 +23,13 @@
 package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +43,26 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HistoryTest {
+
+
+    private static final String HASH_67DFBE26 = "67dfbe26somethinglonger";
+    private static final String HASH_84599B3C = "84599b3canotherstring11";
+    private static final String ABBREV_HASH_67DFBE26 = "67dfbe26";
+    private static final String ABBREV_HASH_84599B3C = "84599b3c";
+
     private final List<HistoryEntry> entries = List.of(
-            new HistoryEntry("84599b3c", new Date(1485438707000L),
+            new HistoryEntry(HASH_84599B3C, ABBREV_HASH_84599B3C,  new Date(1485438707000L),
                     "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                     "    renaming directories\n\n", true,
                     Set.of(File.separator + Paths.get("git", "moved2", "renamed2.c"))),
-            new HistoryEntry("67dfbe26", new Date(1485263397000L),
+            new HistoryEntry(HASH_67DFBE26, ABBREV_HASH_67DFBE26, new Date(1485263397000L),
                     "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                     "    renaming renamed -> renamed2\n\n", true,
                     Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))));
+
+    @TempDir
+    Path temporaryPath;
+
 
     @Test
     void testEqualsRenamed() {
@@ -127,5 +142,18 @@ class HistoryTest {
     void testGetLastHistoryEntry() {
         History history = new History(entries);
         assertEquals(entries.get(0), history.getLastHistoryEntry());
+    }
+
+    /**
+     * Serialises and then deserialises a history and checks for equality.
+     */
+    @Test
+    void testSerialisation() throws IOException {
+        ArrayList<HistoryEntry> serialisableEntryList = new ArrayList<>(entries);
+        History history = new History(serialisableEntryList);
+        File tempFile = File.createTempFile("tmpHistory1", "gz", temporaryPath.toFile());
+        CacheUtil.writeCache(history, tempFile);
+        History deserialised = FileHistoryCache.readCache(tempFile);
+        assertEquals(history, deserialised);
     }
 }

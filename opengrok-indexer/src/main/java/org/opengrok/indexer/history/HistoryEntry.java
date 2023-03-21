@@ -88,11 +88,6 @@ public class HistoryEntry implements Serializable {
         this(revision, null, date, author, message, active, null);
     }
 
-    public HistoryEntry(String revision, Date date, String author,
-                        String message, boolean active, Collection<String> files) {
-        this(revision, null, date, author, message, active, files);
-    }
-
     @VisibleForTesting
     HistoryEntry(String revision) {
         this();
@@ -176,6 +171,10 @@ public class HistoryEntry implements Serializable {
         this.revision = revision;
     }
 
+    public void setDisplayRevision(String displayRevision) {
+        this.displayRevision = displayRevision;
+    }
+
     public void appendMessage(String message) {
         this.message.append(message);
         this.message.append("\n");
@@ -207,7 +206,7 @@ public class HistoryEntry implements Serializable {
     @Override
     public String toString() {
         return String.join(" ",
-                getRevision(), getDate().toString(), getAuthor(), getMessage(), getFiles().toString());
+                getRevision(), getDisplayRevision(), getDate().toString(), getAuthor(), getMessage(), getFiles().toString());
     }
 
     /**

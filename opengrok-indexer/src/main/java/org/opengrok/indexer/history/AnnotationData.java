@@ -112,7 +112,7 @@ public class AnnotationData implements Serializable {
     }
 
     /**
-     * Gets the revision for the last change to the specified line.
+     * Gets the representation of the revision to be used for display purposes, which may be abbreviated, for the last change to the specified line.
      *
      * @param line line number (counting from 1)
      * @return revision string, or an empty string if there is no information
@@ -120,8 +120,7 @@ public class AnnotationData implements Serializable {
      */
     public String getRevisionForDisplay(int line) {
         try {
-            AnnotationLine annotationLine = annotationLines.get(line - 1);
-            return annotationLine.getRevision();
+            return annotationLines.get(line - 1).getDisplayRevision();
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
