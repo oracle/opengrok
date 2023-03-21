@@ -78,7 +78,8 @@ public class HostUtil {
                 .target(webappURI)
                     .path("api")
                     .path("v1")
-                    .path("configuration")
+                    .path("system")
+                    .path("ping")
                     .request()
                     .headers(headers)
                     .get();
