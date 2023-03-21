@@ -258,6 +258,10 @@ document.domReady.push(function() {domReadyHistory();});
             <%
             int count=0;
             for (HistoryEntry entry : hist.getHistoryEntries(maxItems, startIndex)) {
+                String dispRev = entry.getDisplayRevision();
+                if (dispRev == null || dispRev.length() == 0) {
+                    dispRev = "";
+                }
                 String rev = entry.getRevision();
                 if (rev == null || rev.length() == 0) {
                     rev = "";
@@ -281,7 +285,7 @@ document.domReady.push(function() {domReadyHistory();});
         <tr><%
                 if (cfg.isDir()) {
             %>
-            <td><%= rev %></td><%
+            <td><%= dispRev %></td><%
                 } else {
                     if (entry.isActive()) {
                         StringBuffer urlBuffer = request.getRequestURL();
@@ -293,7 +297,7 @@ document.domReady.push(function() {domReadyHistory();});
             <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?" +
-                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= rev %>
+                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= dispRev %>
                 </a></td>
             <td><%
                 %><input type="radio"
@@ -335,7 +339,7 @@ document.domReady.push(function() {domReadyHistory();});
                     } else {
                         striked = true;
                 %>
-            <td><del><%= rev %></del></td>
+            <td><del><%= dispRev %></del></td>
             <td></td><%
                     }
                 }
@@ -358,7 +362,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= Util.htmlize(author) %><%
                 }
                 %></td>
-            <td><a name="<%= rev %>"></a><%
+            <td><a name="<%= dispRev %>"></a><%
                 // revision message collapse threshold minimum of 10
                 int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
