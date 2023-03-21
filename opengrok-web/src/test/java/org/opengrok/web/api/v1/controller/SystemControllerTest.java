@@ -118,7 +118,7 @@ class SystemControllerTest extends OGKJerseyTest {
         // The output file will be located in a directory under data root so create it first.
         Path dataRoot = Files.createTempDirectory("api_dtags_test");
         env.setDataRoot(dataRoot.toString());
-        Paths.get(dataRoot.toString(), "index").toFile().mkdir();
+        assertTrue(Paths.get(dataRoot.toString(), "index").toFile().mkdir());
 
         // Create path descriptions string.
         StringBuilder sb = new StringBuilder();
@@ -128,10 +128,11 @@ class SystemControllerTest extends OGKJerseyTest {
         };
 
         // Reload the contents via API call.
-        Response r = target("system")
+        try (Response r = target("system")
                 .path("pathdesc")
-                .request().post(Entity.json(descriptions));
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+                .request().post(Entity.json(descriptions))) {
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+        }
 
         // Check
         Path eftarPath = env.getDtagsEftarPath();
