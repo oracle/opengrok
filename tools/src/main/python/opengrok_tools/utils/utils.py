@@ -43,7 +43,7 @@ def check_create_dir(logger, path):
     """
     if not os.path.isdir(path):
         try:
-            os.makedirs(path)
+            os.makedirs(path, exist_ok=True)
         except OSError:
             logger.error("cannot create {} directory".format(path))
             sys.exit(FAILURE_EXITVAL)
