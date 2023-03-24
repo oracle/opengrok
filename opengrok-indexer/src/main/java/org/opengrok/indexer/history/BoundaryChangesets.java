@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
 import java.util.ArrayList;
@@ -74,6 +75,24 @@ public class BoundaryChangesets {
         return maxCount;
     }
 
+    static class IdWithProgress {
+        private final Progress progress;
+        private final String id;
+
+        IdWithProgress(String id, Progress progress) {
+            this.id = id;
+            this.progress = progress;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public Progress getProgress() {
+            return progress;
+        }
+    }
+
     /**
      * @param sinceRevision start revision ID
      * @return immutable list of revision IDs denoting the intervals
@@ -82,25 +101,33 @@ public class BoundaryChangesets {
     public synchronized List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException {
         reset();
 
-        LOGGER.log(Level.FINE, "getting boundary changesets for ''{0}''", repository.getDirectoryName());
+        Level logLevel = Level.FINE;
+        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            logLevel = Level.INFO;
+        }
+
+        LOGGER.log(logLevel, "getting boundary changesets for {0}", repository);
         Statistics stat = new Statistics();
 
-        repository.accept(sinceRevision, this::visit);
+        try (Progress progress = new Progress(LOGGER, String.format("changesets visited of %s", this.repository))) {
+            repository.accept(sinceRevision, this::visit, progress);
+        }
 
         // The changesets need to go from oldest to newest.
         Collections.reverse(result);
 
-        stat.report(LOGGER, Level.FINE,
-                String.format("Done getting boundary changesets for ''%s'' (%d entries)",
-                        repository.getDirectoryName(), result.size()));
+        stat.report(LOGGER, logLevel,
+                String.format("Done getting boundary changesets for %s (%d entries)",
+                        repository, result.size()));
 
         return List.copyOf(result);
     }
 
-    private void visit(String id) {
+    private void visit(IdWithProgress arg) {
         if (cnt != 0 && cnt % maxCount == 0) {
-            result.add(id);
+            result.add(arg.getId());
         }
         cnt++;
+        arg.getProgress().increment();
     }
 }
