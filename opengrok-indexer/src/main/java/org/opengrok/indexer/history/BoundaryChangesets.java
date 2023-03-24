@@ -76,8 +76,8 @@ public class BoundaryChangesets {
     }
 
     static class IdWithProgress {
-        final private Progress progress;
-        final private String id;
+        private final Progress progress;
+        private final String id;
 
         IdWithProgress(String id, Progress progress) {
             this.id = id;
