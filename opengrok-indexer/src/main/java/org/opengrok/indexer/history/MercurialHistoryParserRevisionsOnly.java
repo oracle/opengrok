@@ -23,6 +23,7 @@
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.Progress;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,11 +34,15 @@ import java.util.function.Consumer;
 
 class MercurialHistoryParserRevisionsOnly implements Executor.StreamHandler {
     private final MercurialRepository repository;
-    private final Consumer<String> visitor;
+    private final Consumer<BoundaryChangesets.IdWithProgress> visitor;
 
-    MercurialHistoryParserRevisionsOnly(MercurialRepository repository, Consumer<String> visitor) {
+    private final Progress progress;
+
+    MercurialHistoryParserRevisionsOnly(MercurialRepository repository,
+                                        Consumer<BoundaryChangesets.IdWithProgress> visitor, Progress progress) {
         this.repository = repository;
         this.visitor = visitor;
+        this.progress = progress;
     }
 
     void parse(File file, String sinceRevision) throws HistoryException {
@@ -61,7 +66,7 @@ class MercurialHistoryParserRevisionsOnly implements Executor.StreamHandler {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             String s;
             while ((s = in.readLine()) != null) {
-                visitor.accept(s);
+                visitor.accept(new BoundaryChangesets.IdWithProgress(s, progress));
             }
         }
     }
