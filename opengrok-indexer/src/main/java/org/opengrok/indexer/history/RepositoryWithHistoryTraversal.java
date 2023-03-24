@@ -143,7 +143,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             if (fileCollector != null) {
                 visitors.add(fileCollector);
             }
-            try (Progress progress = new Progress(LOGGER, String.format("history traversal of %s", this))) {
+            try (Progress progress = new Progress(LOGGER, String.format(" changesets traversed of %s", this))) {
                 ProgressVisitor progressVisitor = new ProgressVisitor(progress);
                 visitors.add(progressVisitor);
                 traverseHistory(directory, sinceRevision, null, null, visitors);
@@ -183,7 +183,8 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                 visitors.add(fileCollector);
             }
 
-            try (Progress progress = new Progress(LOGGER, String.format("history traversal of %s", this))) {
+            try (Progress progress = new Progress(LOGGER,
+                    String.format(" changesets traversed of %s (range %s %s)", this, sinceRevision, tillRevision))) {
                 ProgressVisitor progressVisitor = new ProgressVisitor(progress);
                 visitors.add(progressVisitor);
                 traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
