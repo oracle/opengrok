@@ -66,7 +66,7 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * Traverse the changesets using the visitor pattern.
      * @param sinceRevision start revision
      * @param visitor consumer of revisions
-     * @praram progress {@link Progress} instance
+     * @param progress {@link Progress} instance
      * @throws HistoryException on error during history retrieval
      */
     public abstract void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor,
