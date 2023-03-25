@@ -2126,8 +2126,9 @@ public class IndexDatabase {
             hasPendingCommit = true;
 
             Statistics completerStat = new Statistics();
-            int n = completer.complete(this.project != null ? " for project " + this.project : "");
-            completerStat.report(LOGGER, Level.FINE, String.format("completed %d object(s)", n));
+            final String logSuffix = this.project != null ? " for project " + this.project : "";
+            int n = completer.complete(logSuffix);
+            completerStat.report(LOGGER, Level.FINE, String.format("completed %d object(s)%s", n, logSuffix));
 
             // Just before commit(), reset the `hasPendingCommit' flag,
             // since after commit() is called, there is no need for
