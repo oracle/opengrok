@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -555,11 +555,11 @@ class IndexDatabaseTest {
         // hence it should be called just once.
         if (historyBased) {
             verify(idb, times(1)).indexDownUsingHistory(any(), any());
-            verify(idb, times(0)).indexDown(any(), any(), any());
+            verify(idb, times(0)).indexDown(any(), any(), any(), any());
         } else {
             // indexDown() is recursive, so it will be called more than once.
             verify(idb, times(0)).indexDownUsingHistory(any(), any());
-            verify(idb, atLeast(1)).indexDown(any(), any(), any());
+            verify(idb, atLeast(1)).indexDown(any(), any(), any(), any());
         }
     }
 
