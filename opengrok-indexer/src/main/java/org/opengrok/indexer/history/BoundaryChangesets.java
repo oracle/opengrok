@@ -102,14 +102,12 @@ public class BoundaryChangesets {
         reset();
 
         Level logLevel = Level.FINE;
-        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-            logLevel = Level.INFO;
-        }
 
         LOGGER.log(logLevel, "getting boundary changesets for {0}", repository);
         Statistics stat = new Statistics();
 
-        try (Progress progress = new Progress(LOGGER, String.format("changesets visited of %s", this.repository))) {
+        try (Progress progress = new Progress(LOGGER, String.format("changesets visited of %s", this.repository),
+                logLevel)) {
             repository.accept(sinceRevision, this::visit, progress);
         }
 

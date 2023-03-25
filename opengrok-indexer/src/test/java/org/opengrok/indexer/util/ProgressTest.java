@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -33,12 +33,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 
@@ -47,6 +49,14 @@ public class ProgressTest {
     public static void setup() {
         // needed to spawn logger thread in Progress
         RuntimeEnvironment.getInstance().setPrintProgress(true);
+    }
+
+    @Test
+    void testShifting() {
+        final Logger logger = Mockito.mock(Logger.class);
+        try (Progress progress = new Progress(logger, "xxx")) {
+            assertNotNull(progress);
+        }
     }
 
     @Test
@@ -85,6 +95,10 @@ public class ProgressTest {
         assertSame(loggerThread.getState(), Thread.State.TERMINATED);
 
         Mockito.verify(logger, times(totalCount)).log(any(), anyString());
+        Mockito.verify(logger, atLeast(1)).log(same(Level.INFO), anyString());
+        Mockito.verify(logger, atLeast(2)).log(same(Level.FINE), anyString());
+        Mockito.verify(logger, atLeast(10)).log(same(Level.FINER), anyString());
+        Mockito.verify(logger, atLeast(50)).log(same(Level.FINEST), anyString());
     }
 
     @Test
