@@ -471,7 +471,8 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
          * (saved in the value of the hash map entry for the file) in a file.
          * The renamed files will be handled separately.
          */
-        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till {2}",
+        Level logLevel = Level.FINE;
+        LOGGER.log(logLevel, "Storing history for {0} regular files in repository ''{1}'' till {2}",
                 new Object[]{regularFiles.size(), repository, getRevisionString(tillRevision)});
         final File root = env.getSourceRootFile();
 
@@ -480,7 +481,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         try (Progress progress = new Progress(LOGGER,
                 String.format("history cache for regular files of %s till %s", repository,
                         getRevisionString(tillRevision)),
-                regularFiles.size())) {
+                regularFiles.size(), logLevel)) {
             for (String file : regularFiles) {
                 env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
                     try {
@@ -502,7 +503,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
-            LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
+            LOGGER.log(logLevel, "Stored history for {0} regular files in repository ''{1}''",
                     new Object[]{fileHistoryCount, repository});
         }
 
@@ -530,7 +531,8 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
 
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
-        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
+        Level logLevel = Level.FINE;
+        LOGGER.log(logLevel, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
                 new Object[]{renamedFiles.size(), repository, getRevisionString(tillRevision)});
 
         createDirectoriesForFiles(renamedFiles, repository, "renamed files for history " +
@@ -542,7 +544,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         try (Progress progress = new Progress(LOGGER,
                 String.format("history cache for renamed files of %s till %s", repository,
                         getRevisionString(tillRevision)),
-                renamedFiles.size())) {
+                renamedFiles.size(), logLevel)) {
             for (final String file : renamedFiles) {
                 env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
                     try {
@@ -568,7 +570,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository {1}",
+        LOGGER.log(logLevel, "Stored history for {0} renamed files in repository {1}",
                 new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 
