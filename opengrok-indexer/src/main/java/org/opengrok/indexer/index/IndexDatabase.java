@@ -1767,7 +1767,7 @@ public class IndexDatabase {
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
-        try (Progress progress = new Progress(LOGGER, dir, worksCount)) {
+        try (Progress progress = new Progress(LOGGER, String.format("indexing '%s'", dir), worksCount)) {
             bySuccess = parallelizer.getForkJoinPool().submit(() ->
                 args.works.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
