@@ -150,6 +150,7 @@ public class IndexDatabase {
     private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
             Comparator.comparingInt(String::length).thenComparing(o -> o));
 
+    @Nullable
     private final Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
@@ -2125,7 +2126,7 @@ public class IndexDatabase {
             hasPendingCommit = true;
 
             Statistics completerStat = new Statistics();
-            int n = completer.complete();
+            int n = completer.complete(this.project != null ? " for project " + this.project : "");
             completerStat.report(LOGGER, Level.FINE, String.format("completed %d object(s)", n));
 
             // Just before commit(), reset the `hasPendingCommit' flag,
@@ -2144,7 +2145,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
+     * Verify {@code TABSIZE}, and evaluate AnalyzerGuru version together with {@code ZVER} --
      * or return a value to indicate mismatch.
      * @param file the source file object
      * @param path the source file path
