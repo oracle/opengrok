@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -62,7 +62,7 @@ import org.opengrok.indexer.util.TandemPath;
  * to be run in parallel; these methods are thread-safe w.r.t. underlying data structures.
  * <p>
  * No other methods are thread-safe between each other. E.g.,
- * {@link #complete()} should only be called by a single thread after all
+ * {@link #complete(String)} should only be called by a single thread after all
  * additions of {@link PendingSymlinkage}s, {@link PendingFileDeletion}s, and
  * {@link PendingFileRenaming}s are indicated.
  */
@@ -112,7 +112,7 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
-     * @throws IllegalStateException if {@link #complete()} is running
+     * @throws IllegalStateException if {@link #complete(String)} is running
      */
     public boolean add(PendingFileDeletion e) {
         if (completing) {
@@ -127,7 +127,7 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
-     * @throws IllegalStateException if {@link #complete()} is running
+     * @throws IllegalStateException if {@link #complete(String)} is running
      */
     public boolean add(PendingSymlinkage e) {
         if (completing) {
@@ -142,7 +142,7 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
-     * @throws IllegalStateException if {@link #complete()} is running
+     * @throws IllegalStateException if {@link #complete(String)} is running
      */
     public boolean add(PendingFileRenaming e) {
         if (completing) {
@@ -166,40 +166,41 @@ class PendingFileCompleter {
      * {@link PendingFileDeletion#getAbsolutePath()}; for a version of the path
      * with {@link #PENDING_EXTENSION} appended; and also for the path's parent
      * directory, which does nothing if the directory is not empty.
+     * @param logSuffix suffix to use when logging
      * @return the number of successful operations
      * @throws java.io.IOException if an I/O error occurs
      */
-    public int complete() throws IOException {
+    public int complete(String logSuffix) throws IOException {
         completing = true;
         try {
-            return completeInner();
+            return completeInner(logSuffix);
         } finally {
             completing = false;
         }
     }
 
-    private int completeInner() throws IOException {
+    private int completeInner(String logSuffix) throws IOException {
         Instant start = Instant.now();
-        int numDeletions = completeDeletions();
+        int numDeletions = completeDeletions(logSuffix);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
-                    new Object[] {numDeletions, StringUtils.getReadableTime(
+            LOGGER.log(Level.FINE, "deleted {0} file(s){1} (took {2})",
+                    new Object[] {numDeletions, logSuffix, StringUtils.getReadableTime(
                             Duration.between(start, Instant.now()).toMillis())});
         }
 
         start = Instant.now();
-        int numRenamings = completeRenamings();
+        int numRenamings = completeRenamings(logSuffix);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
-                    new Object[] {numRenamings, StringUtils.getReadableTime(
+            LOGGER.log(Level.FINE, "renamed {0} file(s){1} (took {2})",
+                    new Object[] {numRenamings, logSuffix, StringUtils.getReadableTime(
                             Duration.between(start, Instant.now()).toMillis())});
         }
 
         start = Instant.now();
-        int numLinkages = completeLinkages();
+        int numLinkages = completeLinkages(logSuffix);
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
-                    new Object[] {numLinkages, StringUtils.getReadableTime(
+            LOGGER.log(Level.FINE, "affirmed links for {0} path(s){1} (took {2})",
+                    new Object[] {numLinkages, logSuffix, StringUtils.getReadableTime(
                             Duration.between(start, Instant.now()).toMillis())});
         }
 
@@ -209,9 +210,10 @@ class PendingFileCompleter {
     /**
      * Attempts to rename all the tracked elements, catching any failures, and
      * throwing an exception if any failed.
+     * @param logSuffix suffix to use when logging
      * @return the number of successful renamings
      */
-    private int completeRenamings() throws IOException {
+    private int completeRenamings(String logSuffix) throws IOException {
         int numPending = renames.size();
         int numFailures = 0;
 
@@ -226,7 +228,7 @@ class PendingFileCompleter {
             Collectors.toList());
         Map<Boolean, List<PendingFileRenamingExec>> bySuccess;
 
-        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+        try (Progress progress = new Progress(LOGGER, String.format("pending renames%s", logSuffix), numPending)) {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
                                 progress.increment();
@@ -247,8 +249,8 @@ class PendingFileCompleter {
             numFailures = failures.size();
             double pctFailed = 100.0 * numFailures / numPending;
             String exmsg = String.format(
-                "%d failures (%.1f%%) while renaming pending files",
-                numFailures, pctFailed);
+                "%d failures (%.1f%%) while renaming pending files%s",
+                numFailures, pctFailed, logSuffix);
             throw new IOException(exmsg, failures.get(0).exception);
         }
 
@@ -258,9 +260,10 @@ class PendingFileCompleter {
     /**
      * Attempts to delete all the tracked elements, catching any failures, and
      * throwing an exception if any failed.
+     * @param logSuffix suffix to use when logging
      * @return the number of successful deletions
      */
-    private int completeDeletions() throws IOException {
+    private int completeDeletions(String logSuffix) throws IOException {
         int numPending = deletions.size();
         int numFailures = 0;
 
@@ -274,7 +277,7 @@ class PendingFileCompleter {
             Collectors.toList());
         Map<Boolean, List<PendingFileDeletionExec>> bySuccess;
 
-        try (Progress progress = new Progress(LOGGER, "pending deletions", numPending)) {
+        try (Progress progress = new Progress(LOGGER, String.format("pending deletions%s", logSuffix), numPending)) {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
                                 progress.increment();
@@ -296,8 +299,8 @@ class PendingFileCompleter {
             numFailures = failures.size();
             double pctFailed = 100.0 * numFailures / numPending;
             String exmsg = String.format(
-                "%d failures (%.1f%%) while deleting pending files",
-                numFailures, pctFailed);
+                "%d failures (%.1f%%) while deleting pending files%s",
+                numFailures, pctFailed, logSuffix);
             throw new IOException(exmsg, failures.get(0).exception);
         }
 
@@ -307,9 +310,10 @@ class PendingFileCompleter {
     /**
      * Attempts to link the tracked elements, catching any failures, and
      * throwing an exception if any failed.
+     * @param logSuffix suffix to use when logging
      * @return the number of successful linkages
      */
-    private int completeLinkages() throws IOException {
+    private int completeLinkages(String logSuffix) throws IOException {
         int numPending = linkages.size();
         int numFailures = 0;
 
@@ -323,7 +327,7 @@ class PendingFileCompleter {
                         f.getTargetRelPath())).collect(Collectors.toList());
 
         Map<Boolean, List<PendingSymlinkageExec>> bySuccess;
-        try (Progress progress = new Progress(LOGGER, "pending linkages", numPending)) {
+        try (Progress progress = new Progress(LOGGER, String.format("pending linkages%s", logSuffix), numPending)) {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
                                 progress.increment();
@@ -344,8 +348,8 @@ class PendingFileCompleter {
             numFailures = failures.size();
             double pctFailed = 100.0 * numFailures / numPending;
             String exmsg = String.format(
-                    "%d failures (%.1f%%) while linking pending paths",
-                    numFailures, pctFailed);
+                    "%d failures (%.1f%%) while linking pending paths%s",
+                    numFailures, pctFailed, logSuffix);
             throw new IOException(exmsg, failures.get(0).exception);
         }
 
