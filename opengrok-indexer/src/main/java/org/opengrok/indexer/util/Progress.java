@@ -41,6 +41,7 @@ import java.util.logging.Logger;
  * to go through, it will ping an instance of this class for each item completed.
  * This class will then log based on the number of pings. The bigger the progress,
  * the higher log level ({@link Level} value) will be used. The default base level is {@code Level.INFO}.
+ * Regardless of the base level, maximum 4 log levels will be used.
  */
 public class Progress implements AutoCloseable {
     private final Logger logger;
@@ -99,7 +100,7 @@ public class Progress implements AutoCloseable {
             this.totalCount = totalCount;
         }
 
-        // Note: Level.CONFIG is missing
+        // Note: Level.CONFIG is missing as it does not make too much sense for progress reporting semantically.
         final List<Level> standardLevels = Arrays.asList(Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO,
                 Level.FINE, Level.FINER, Level.FINEST, Level.ALL);
         int i = standardLevels.indexOf(baseLogLevel);
