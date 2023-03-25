@@ -868,7 +868,10 @@ public class IndexDatabase {
         if (historyBased) {
             indexDownUsingHistory(env.getSourceRootFile(), args);
         } else {
-            indexDown(sourceRoot, dir, args);
+            String logSuffix = project != null ? " for project " + project : String.format(" for directory '%s'", dir);
+            try (Progress progress = new Progress(LOGGER, String.format("file collection%s", logSuffix))) {
+                indexDown(sourceRoot, dir, args, progress);
+            }
         }
 
         elapsed.report(LOGGER, String.format("Done file collection for directory '%s'", dir),
@@ -890,9 +893,13 @@ public class IndexDatabase {
 
         FileCollector fileCollector = RuntimeEnvironment.getInstance().getFileCollector(project.getName());
 
-        for (String path : fileCollector.getFiles()) {
-            File file = new File(sourceRoot, path);
-            processFileIncremental(args, file, path);
+        try (Progress progress = new Progress(LOGGER, String.format("collecting files for %s", project),
+                fileCollector.getFiles().size())) {
+            for (String path : fileCollector.getFiles()) {
+                File file = new File(sourceRoot, path);
+                processFileIncremental(args, file, path);
+                progress.increment();
+            }
         }
     }
 
@@ -1561,10 +1568,11 @@ public class IndexDatabase {
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of
+     * @param progress {@link Progress} instance
      * files for indexing
      */
     @VisibleForTesting
-    void indexDown(File dir, String parent, IndexDownArgs args) throws IOException {
+    void indexDown(File dir, String parent, IndexDownArgs args, Progress progress) throws IOException {
 
         if (isInterrupted()) {
             return;
@@ -1590,9 +1598,10 @@ public class IndexDatabase {
                 handleSymlink(path, ret);
             } else {
                 if (file.isDirectory()) {
-                    indexDown(file, path, args);
+                    indexDown(file, path, args, progress);
                 } else {
                     processFile(args, file, path);
+                    progress.increment();
                 }
             }
         }
