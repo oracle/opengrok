@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 public class ProgressTest {
@@ -51,12 +52,32 @@ public class ProgressTest {
         RuntimeEnvironment.getInstance().setPrintProgress(true);
     }
 
+    /**
+     * Very rudimentary test for log level shifting.
+     */
     @Test
-    void testShifting() {
+    void testShifting() throws InterruptedException {
+        Level logLevel = Level.FINE;
+        final int totalCount = 100;
+
         final Logger logger = Mockito.mock(Logger.class);
-        try (Progress progress = new Progress(logger, "xxx")) {
-            assertNotNull(progress);
+        Mockito.when(logger.isLoggable(same(Level.INFO))).thenReturn(false);
+        Mockito.when(logger.isLoggable(same(Level.FINE))).thenReturn(true);
+        Mockito.when(logger.isLoggable(same(Level.FINER))).thenReturn(true);
+        Mockito.when(logger.isLoggable(same(Level.FINEST))).thenReturn(true);
+
+        try (Progress progress = new Progress(logger, "shifting", logLevel)) {
+            for (int i = 0; i < totalCount; i++) {
+                progress.increment();
+                // Give the logger thread some time to log.
+                TimeUnit.MILLISECONDS.sleep(10);
+            }
         }
+
+        Mockito.verify(logger, never()).log(same(Level.INFO), anyString());
+        Mockito.verify(logger, atLeast(1)).log(same(Level.FINE), anyString());
+        Mockito.verify(logger, atLeast(1)).log(same(Level.FINER), anyString());
+        Mockito.verify(logger, atLeast(1)).log(same(Level.FINEST), anyString());
     }
 
     @Test
