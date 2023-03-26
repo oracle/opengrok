@@ -302,6 +302,8 @@ public final class Configuration {
     private int connectTimeout = -1;    // connect timeout in seconds
     private int apiTimeout = -1;    // API timeout in seconds
 
+    private int indexCheckTimeout;
+
     private boolean historyBasedReindex;
 
     /**
@@ -414,6 +416,25 @@ public final class Configuration {
                     String.format(NEGATIVE_NUMBER_ERROR, "restfulCommandTimeout", timeout));
         }
         this.restfulCommandTimeout = timeout;
+    }
+
+    public int getIndexCheckTimeout() {
+        return indexCheckTimeout;
+    }
+
+    /**
+     * Set the index check timeout (performed by the webapp on startup) to a new value.
+     *
+     * @see org.opengrok.indexer.index.IndexCheck
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setIndexCheckTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "indexCheckTimeout", timeout));
+        }
+        this.indexCheckTimeout = timeout;
     }
 
     public int getWebappStartCommandTimeout() {
@@ -552,6 +573,7 @@ public final class Configuration {
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
+        setIndexCheckTimeout(60);
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
         //luceneLocking default is OFF

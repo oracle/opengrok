@@ -150,7 +150,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
             Map<String, Project> projects = env.getProjects();
             Path indexRoot = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
             if (indexRoot.toFile().exists()) {
-                LOGGER.log(Level.FINE, "Checking indexes for all projects");
+                LOGGER.log(Level.FINE, "Checking index versions for all projects");
                 Statistics statistics = new Statistics();
                 ExecutorService executor = Executors.newFixedThreadPool(env.getRepositoryInvalidationParallelism(),
                         new OpenGrokThreadFactory("webapp-index-check"));
@@ -169,16 +169,16 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 }
                 executor.shutdown();
                 try {
-                    // TODO: make the timeout tunable
-                    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                        LOGGER.log(Level.WARNING, "index check took more than 60 seconds");
+                    if (!executor.awaitTermination(env.getIndexCheckTimeout(), TimeUnit.SECONDS)) {
+                        LOGGER.log(Level.WARNING, "index version check took more than {0} seconds",
+                                env.getIndexCheckTimeout());
                         executor.shutdownNow();
                     }
                 } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "failed to await termination of index check");
+                    LOGGER.log(Level.WARNING, "failed to await termination of index version check");
                     executor.shutdownNow();
                 }
-                statistics.report(LOGGER, Level.FINE, "Index check for all projects done");
+                statistics.report(LOGGER, Level.FINE, "Index version check for all projects done");
             }
         } else {
             LOGGER.log(Level.FINE, "Checking index");
