@@ -325,6 +325,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(timeout, Configuration::setWebappStartCommandTimeout);
     }
 
+    public int getIndexCheckTimeout() {
+        return syncReadConfiguration(Configuration::getIndexCheckTimeout);
+    }
+
+    public void setIndexCheckTimeout(int timeout) {
+        syncWriteConfiguration(timeout, Configuration::setIndexCheckTimeout);
+    }
+
     public int getIndexerCommandTimeout() {
         return syncReadConfiguration(Configuration::getIndexerCommandTimeout);
     }
