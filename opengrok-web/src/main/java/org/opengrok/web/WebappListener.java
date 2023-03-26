@@ -34,11 +34,13 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexCheck;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.controller.ConfigurationController;
@@ -51,6 +53,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -146,18 +151,34 @@ public final class WebappListener implements ServletContextListener, ServletRequ
             Path indexRoot = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
             if (indexRoot.toFile().exists()) {
                 LOGGER.log(Level.FINE, "Checking indexes for all projects");
+                Statistics statistics = new Statistics();
+                ExecutorService executor = Executors.newFixedThreadPool(env.getRepositoryInvalidationParallelism(),
+                        new OpenGrokThreadFactory("webapp-index-check"));
                 for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
-                    try {
-                        IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()),
-                                IndexCheck.IndexCheckMode.VERSION, projectEntry.getKey());
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING,
-                                String.format("Project %s index check failed, marking as not indexed",
-                                        projectEntry.getKey()), e);
-                        projectEntry.getValue().setIndexed(false);
-                    }
+                    executor.submit(() -> {
+                        try {
+                            IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()),
+                                    IndexCheck.IndexCheckMode.VERSION, projectEntry.getKey());
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING,
+                                    String.format("Project %s index check failed, marking as not indexed",
+                                            projectEntry.getKey()), e);
+                            projectEntry.getValue().setIndexed(false);
+                        }
+                    });
                 }
-                LOGGER.log(Level.FINE, "Index check for all projects done");
+                executor.shutdown();
+                try {
+                    // TODO: make the timeout tunable
+                    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                        LOGGER.log(Level.WARNING, "index check took more than 60 seconds");
+                        executor.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "failed to await termination of index check");
+                    executor.shutdownNow();
+                }
+                statistics.report(LOGGER, Level.FINE, "Index check for all projects done");
             }
         } else {
             LOGGER.log(Level.FINE, "Checking index");
