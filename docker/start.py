@@ -27,7 +27,6 @@ import multiprocessing
 import signal
 import shutil
 import subprocess
-import sys
 import tempfile
 import threading
 import time
