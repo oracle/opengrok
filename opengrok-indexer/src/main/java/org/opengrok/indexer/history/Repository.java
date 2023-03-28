@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -581,24 +581,28 @@ public abstract class Repository extends RepositoryInfo {
         return RepoCommand;
     }
 
-    protected String getRepoRelativePath(final File file)
-            throws IOException {
-
+    /**
+     * @param file File object
+     * @return relative path to repository root
+     * @throws IOException on I/O error
+     */
+    protected String getRepoRelativePath(final File file) throws IOException {
         String filename = file.getPath();
         String repoDirName = getDirectoryName();
 
-        String abs = file.getCanonicalPath();
-        if (abs.startsWith(repoDirName)) {
-            if (abs.length() > repoDirName.length()) {
-                filename = abs.substring(repoDirName.length() + 1);
+        String canonicalPath = file.getCanonicalPath();
+        if (canonicalPath.startsWith(repoDirName + File.separator)) {
+            if (canonicalPath.length() > repoDirName.length()) {
+                filename = canonicalPath.substring(repoDirName.length() + 1);
             }
         } else {
-            abs = file.getAbsolutePath();
-            if (abs.startsWith(repoDirName) && abs.length() >
-                repoDirName.length()) {
-                filename = abs.substring(repoDirName.length() + 1);
+            String absolutePath = file.getAbsolutePath();
+            if (absolutePath.startsWith(repoDirName + File.separator) &&
+                    absolutePath.length() > repoDirName.length()) {
+                filename = absolutePath.substring(repoDirName.length() + 1);
             }
         }
+
         return filename;
     }
 
