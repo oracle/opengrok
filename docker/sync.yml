@@ -7,6 +7,7 @@ commands:
       duration: PT1H
       tags: ['%PROJECT%']
       text: resync + reindex in progress
+    api_timeout: "$API_TIMEOUT"
 - command:
     args: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml',
            --api_timeout, '%API_TIMEOUT%',
@@ -27,6 +28,7 @@ commands:
     data: 'resync + reindex in progress'
     headers:
       'Content-type': 'text/plain'
+    api_timeout: "$API_TIMEOUT"
 cleanup:
 - call:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
@@ -34,3 +36,4 @@ cleanup:
     data: 'resync + reindex in progress'
     headers:
       'Content-type': 'text/plain'
+    api_timeout: "$API_TIMEOUT"
