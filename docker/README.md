@@ -103,6 +103,7 @@ The image contains these directories:
 `REST_TOKEN` | None | if set, the REST app will require this token as Bearer token in order to trigger reindex.
 `READONLY_CONFIG_FILE` | None | if set, this [read-only configuration](https://github.com/oracle/opengrok/wiki/Read-only-configuration) file will be merged with configuration from this file. This is done when the container starts. This file has to be distinct from the default configuration file (`/opengrok/etc/configuration.xml`), e.g. `/opengrok/etc/read-only-config.xml`.
 `CHECK_INDEX` | None | if set, the format of the index will be checked first. **If the index is not compatible with the currently running version, the data root will be wiped out and reindex from scratch will be performed.**
+`API_TIMEOUT` | 8 | Timeout for synchronous API requests. In seconds.
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e SYNC_PERIOD_MINUTES=30`
 

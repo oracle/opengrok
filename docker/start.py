@@ -27,7 +27,6 @@ import multiprocessing
 import signal
 import shutil
 import subprocess
-import sys
 import tempfile
 import threading
 import time
@@ -214,11 +213,11 @@ def wait_for_tomcat(logger, uri):
     logger.info("Tomcat is ready")
 
 
-def refresh_projects(logger, uri):
+def refresh_projects(logger, uri, api_timeout):
     """
     Ensure each immediate source root subdirectory is a project.
     """
-    webapp_projects = list_projects(logger, uri)
+    webapp_projects = list_projects(logger, uri, timeout=api_timeout)
     if webapp_projects is None:
         return
 
@@ -231,16 +230,16 @@ def refresh_projects(logger, uri):
         if os.path.isdir(os.path.join(src_root, item)):
             if item not in webapp_projects:
                 logger.info("Adding project {}".format(item))
-                add_project(logger, item, uri)
+                add_project(logger, item, uri, timeout=api_timeout)
 
     # Remove projects
     for item in webapp_projects:
         if not os.path.isdir(os.path.join(src_root, item)):
             logger.info("Deleting project {}".format(item))
-            delete_project(logger, item, uri)
+            delete_project(logger, item, uri, timeout=api_timeout)
 
 
-def save_config(logger, uri, config_path):
+def save_config(logger, uri, config_path, api_timeout):
     """
     Retrieve configuration from the web app and write it to file.
     :param logger: logger instance
@@ -248,7 +247,7 @@ def save_config(logger, uri, config_path):
     :param config_path: file path
     """
 
-    config = get_configuration(logger, uri)
+    config = get_configuration(logger, uri, timeout=api_timeout)
     if config is None:
         return
 
@@ -275,7 +274,7 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
+def indexer_no_projects(logger, uri, config_path, extra_indexer_options, api_timeout):
     """
     Project less indexer
     """
@@ -289,7 +288,8 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
                            '--remote', 'on',
                            '-H',
                            '-W', config_path,
-                           '-U', uri]
+                           '-U', uri,
+                           '--connectTimeout', api_timeout]
         if extra_indexer_options:
             logger.debug("Adding extra indexer options: {}".
                          format(extra_indexer_options))
@@ -303,7 +303,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
         periodic_timer.wait_for_event()
 
 
-def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
+def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_timeout):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
@@ -312,7 +312,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
     wait_for_tomcat(logger, uri)
 
     while True:
-        refresh_projects(logger, uri)
+        refresh_projects(logger, uri, api_timeout)
 
         if os.environ.get('OPENGROK_SYNC_YML'):  # debug only
             config_file = os.environ.get('OPENGROK_SYNC_YML')
@@ -323,7 +323,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
             logger.error("Cannot read config file from {}".format(config_file))
             raise Exception("no sync config")
 
-        projects = list_projects(logger, uri)
+        projects = list_projects(logger, uri, timeout=api_timeout)
         if projects:
             #
             # The driveon=True is needed for the initial indexing of newly
@@ -340,13 +340,14 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
             logger.info("Sync starting")
             do_sync(loglevel, commands, config.get('cleanup'),
                     projects, config.get("ignore_errors"), uri,
-                    numworkers, driveon=True, logger=logger, print_output=True)
+                    numworkers, driveon=True, logger=logger, print_output=True,
+                    timeout=api_timeout)
             logger.info("Sync done")
 
             # Workaround for https://github.com/oracle/opengrok/issues/1670
             Path(os.path.join(OPENGROK_DATA_ROOT, 'timestamp')).touch()
 
-            save_config(logger, uri, config_path)
+            save_config(logger, uri, config_path, api_timeout)
 
         logger.info("Waiting for reindex to be triggered")
         global periodic_timer
@@ -489,6 +490,10 @@ def main():
     if os.environ.get('AVOID_PROJECTS'):
         use_projects = False
 
+    api_timeout = 8
+    if os.environ.get('API_TIMEOUT'):
+        api_timeout = int(os.environ.get('API_TIMEOUT'))
+
     #
     # Create empty configuration to avoid the non-existent file exception
     # in the web app during the first web app startup.
@@ -550,11 +555,11 @@ def main():
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,
                        OPENGROK_CONFIG_FILE,
-                       num_workers, env)
+                       num_workers, env, api_timeout)
     else:
         worker_function = indexer_no_projects
         syncer_args = (logger, uri, OPENGROK_CONFIG_FILE,
-                       extra_indexer_options)
+                       extra_indexer_options, api_timeout)
 
     if sync_enabled:
         period_seconds = sync_period_mins * 60
