@@ -344,10 +344,14 @@ class Command:
                 newarg = cmdarg
                 for pattern in args_subst.keys():
                     if pattern in newarg and args_subst[pattern]:
+                        value = args_subst[pattern]
+                        if value.startswith("$"):
+                            self.logger.debug(f"treating {value} as environment variable")
+                            value = os.environ.get(value[1:], "")
                         self.logger.debug("replacing '{}' in '{}' with '{}'".
                                           format(pattern, newarg,
-                                                 args_subst[pattern]))
-                        newarg = newarg.replace(pattern, args_subst[pattern])
+                                                 value))
+                        newarg = newarg.replace(pattern, value)
                         self.logger.debug("replaced argument with {}".
                                           format(newarg))
                         subst_done = i
