@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -297,7 +297,7 @@ class Command:
         finally:
             if self.timeout != 0 and timeout_thread:
                 with time_condition:
-                    time_condition.notifyAll()
+                    time_condition.notify_all()
 
             # The subprocess module does not close the write pipe descriptor
             # it fetched via OutputThread's fileno() so in order to gracefully
