@@ -347,7 +347,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
             # Workaround for https://github.com/oracle/opengrok/issues/1670
             Path(os.path.join(OPENGROK_DATA_ROOT, 'timestamp')).touch()
 
-            save_config(logger, uri, config_path)
+            save_config(logger, uri, config_path, api_timeout)
 
         logger.info("Waiting for reindex to be triggered")
         global periodic_timer
