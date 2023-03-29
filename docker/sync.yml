@@ -8,7 +8,10 @@ commands:
       tags: ['%PROJECT%']
       text: resync + reindex in progress
 - command:
-    args: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml', -I, -U, '%URL%', '%PROJECT%']
+    args: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml',
+           --api_timeout, '%API_TIMEOUT%',
+           -I, -U, '%URL%', '%PROJECT%']
+    args_subst: {"%API_TIMEOUT%": "$API_TIMEOUT"}
 - command:
     args: [opengrok-reindex-project, --printoutput,
       --api_timeout, '%API_TIMEOUT%',
