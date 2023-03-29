@@ -96,7 +96,7 @@ ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-j
 COPY docker/logging.properties /usr/local/tomcat/conf/logging.properties
 RUN sed -i -e 's/Valve/Disabled/' /usr/local/tomcat/conf/server.xml
 
-# add our scripts
+# add our scripts and configuration
 COPY docker /scripts
 RUN chmod -R +x /scripts
 

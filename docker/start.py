@@ -76,6 +76,7 @@ OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
 
 NOMIRROR_ENV_NAME = 'NOMIRROR'
+API_TIMEOUT_ENV_NAME = 'API_TIMEOUT'
 
 expected_token = None
 periodic_timer = None
@@ -481,16 +482,16 @@ def main():
         setup_redirect_source(logger, url_root)
 
     api_timeout = 8
-    if os.environ.get('API_TIMEOUT'):
-        api_timeout = int(os.environ.get('API_TIMEOUT'))
-    extra_indexer_options = "--connectTimeout " + str(api_timeout)
+    if os.environ.get(API_TIMEOUT_ENV_NAME):
+        api_timeout = int(os.environ.get(API_TIMEOUT_ENV_NAME))
+    else:
+        os.environ[API_TIMEOUT_ENV_NAME] = str(api_timeout)
 
     env = {}
-    indexer_opt = os.environ.get('INDEXER_OPT', '')
-    if indexer_opt:
-        extra_indexer_options += " " + indexer_opt
-    logger.info("extra indexer options: '{}'".format(extra_indexer_options))
-    env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
+    extra_indexer_options = os.environ.get('INDEXER_OPT', '')
+    if extra_indexer_options:
+        logger.info("extra indexer options: '{}'".format(extra_indexer_options))
+        env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
 
     if os.environ.get(NOMIRROR_ENV_NAME):
         env[OPENGROK_NO_MIRROR_ENV] = os.environ.get(NOMIRROR_ENV_NAME)
