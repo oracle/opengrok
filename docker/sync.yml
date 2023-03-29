@@ -9,10 +9,13 @@ commands:
       text: resync + reindex in progress
 - command: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml', -I, -U, '%URL%', '%PROJECT%']
 - command: [opengrok-reindex-project, --printoutput,
+    --api_timeout, '%API_TIMEOUT',
     --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
+    --connectTimeout, '%API_TIMEOUT',
     -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
     -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
   limits: {RLIMIT_NOFILE: 1024}
+  args_subst: {"%API_TIMEOUT%": $API_TIMEOUT}
 - call:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
     method: DELETE

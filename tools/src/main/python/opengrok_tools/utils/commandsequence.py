@@ -148,7 +148,7 @@ class CommandSequenceBase:
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
                  driveon=False, url=None, env=None, http_headers=None,
-                 api_timeout=None, async_api_timeout=None):
+                 api_timeout=None, async_api_timeout=None, args_subst={}):
         self.name = name
 
         if commands is None:
@@ -178,6 +178,10 @@ class CommandSequenceBase:
         self.async_api_timeout = async_api_timeout
 
         self.url = url
+
+        self.args_subst = {PROJECT_SUBST: self.name,
+                           URL_SUBST: self.url}
+        self.args_subst.extend(args_subst)
 
     def __str__(self):
         return str(self.name)
@@ -263,8 +267,7 @@ class CommandSequence(CommandSequenceBase):
                                   env_vars=command.get("env"),
                                   logger=self.logger,
                                   resource_limits=command.get("limits"),
-                                  args_subst={PROJECT_SUBST: self.name,
-                                              URL_SUBST: self.url},
+                                  args_subst=self.args_subst,
                                   args_append=[self.name], excl_subst=True)
                 ret_code = self.run_command(command)
 
