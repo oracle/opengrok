@@ -484,6 +484,7 @@ def main():
     api_timeout = 8
     if os.environ.get(API_TIMEOUT_ENV_NAME):
         api_timeout = int(os.environ.get(API_TIMEOUT_ENV_NAME))
+        logger.info(f"API timeout set to {api_timeout} seconds")
     else:
         os.environ[API_TIMEOUT_ENV_NAME] = str(api_timeout)
 
