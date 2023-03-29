@@ -138,10 +138,13 @@ class ApiCall:
         self.api_timeout = None
         call_timeout = call_dict.get(API_TIMEOUT_PROPERTY)
         if call_timeout:
-            if call_timeout.startswith("$"):
-                call_timeout = os.environ.get(call_timeout[1:], "")
-            if call_timeout.isdigit():
-                self.api_timeout = int(call_timeout)
+            if isinstance(call_timeout, str):
+                if call_timeout.startswith("$"):
+                    call_timeout = os.environ.get(call_timeout[1:], "")
+                if call_timeout.isdigit():
+                    self.api_timeout = int(call_timeout)
+            else:
+                self.api_timeout = call_timeout
 
         self.async_api_timeout = None
         call_api_timeout = call_dict.get(ASYNC_API_TIMEOUT_PROPERTY)
