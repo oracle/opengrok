@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Entry point for the OpenGrok Docker container.
+"""
+
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
