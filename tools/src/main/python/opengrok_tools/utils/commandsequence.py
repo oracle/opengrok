@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -41,6 +41,10 @@ ASYNC_API_TIMEOUT_PROPERTY = "async_api_timeout"
 HEADERS_PROPERTY = "headers"
 METHOD_PROPERTY = "method"
 URI_PROPERTY = "uri"
+ARGS_SUBST_PROPERTY = "args_subst"
+LIMITS_PROPERTY = "limits"
+ENV_PROPERTY = "env"
+ARGS_PROPERTY = "args"
 
 
 class CommandConfigurationException(Exception):
@@ -97,8 +101,8 @@ def check_command_property(command):
     if command_value is None and call_value is None:
         raise CommandConfigurationException(f"command dictionary has unknown key: {command}")
 
-    if command_value and not isinstance(command_value, list):
-        raise CommandConfigurationException("command value not a list: {}".
+    if command_value and not isinstance(command_value, dict):
+        raise CommandConfigurationException("command value not a dictionary: {}".
                                             format(command_value))
     if call_value:
         check_call_config(call_value)
@@ -148,7 +152,7 @@ class CommandSequenceBase:
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
                  driveon=False, url=None, env=None, http_headers=None,
-                 api_timeout=None, async_api_timeout=None, args_subst={}):
+                 api_timeout=None, async_api_timeout=None):
         self.name = name
 
         if commands is None:
@@ -181,7 +185,6 @@ class CommandSequenceBase:
 
         self.args_subst = {PROJECT_SUBST: self.name,
                            URL_SUBST: self.url}
-        self.args_subst.extend(args_subst)
 
     def __str__(self):
         return str(self.name)
@@ -249,8 +252,7 @@ class CommandSequence(CommandSequenceBase):
             if command.get(CALL_PROPERTY):
                 try:
                     call_rest_api(ApiCall(command.get(CALL_PROPERTY)),
-                                  {PROJECT_SUBST: self.name,
-                                   URL_SUBST: self.url},
+                                  self.args_subst,
                                   self.http_headers,
                                   self.api_timeout,
                                   self.async_api_timeout)
@@ -262,12 +264,16 @@ class CommandSequence(CommandSequenceBase):
 
                     break
             elif command.get(COMMAND_PROPERTY):
-                command_args = command.get(COMMAND_PROPERTY)
+                command = command.get(COMMAND_PROPERTY)
+                command_args = command.get(ARGS_PROPERTY)
+                args_subst = self.args_subst
+                if command.get(ARGS_SUBST_PROPERTY):
+                    args_subst.update(command.get(ARGS_SUBST_PROPERTY))
                 command = Command(command_args,
-                                  env_vars=command.get("env"),
+                                  env_vars=command.get(ENV_PROPERTY),
                                   logger=self.logger,
-                                  resource_limits=command.get("limits"),
-                                  args_subst=self.args_subst,
+                                  resource_limits=command.get(LIMITS_PROPERTY),
+                                  args_subst=args_subst,
                                   args_append=[self.name], excl_subst=True)
                 ret_code = self.run_command(command)
 
@@ -319,13 +325,13 @@ class CommandSequence(CommandSequenceBase):
                     self.logger.error("API call {} failed: {}".
                                       format(cleanup_cmd, e))
             elif cleanup_cmd.get(COMMAND_PROPERTY):
-                command_args = cleanup_cmd.get(COMMAND_PROPERTY)
+                cleanup_cmd = cleanup_cmd.get(COMMAND_PROPERTY)
+                command_args = cleanup_cmd.get(ARGS_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
                               logger=self.logger,
-                              args_subst={PROJECT_SUBST: self.name,
-                                          URL_SUBST: self.url},
+                              args_subst=self.args_subst,
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != SUCCESS_EXITVAL:
