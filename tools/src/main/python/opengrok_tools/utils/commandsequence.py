@@ -74,10 +74,13 @@ def check_call_config(call):
 
     call_timeout = call.get(API_TIMEOUT_PROPERTY)
     if call_timeout:
-        try:
-            int(call_timeout)
-        except ValueError as exc:
-            raise CommandConfigurationException(f"{API_TIMEOUT_PROPERTY} not an integer", exc)
+        if call_timeout.startswith("$"):
+            pass
+        else:
+            try:
+                int(call_timeout)
+            except ValueError as exc:
+                raise CommandConfigurationException(f"{API_TIMEOUT_PROPERTY} not an integer", exc)
 
     call_api_timeout = call.get(ASYNC_API_TIMEOUT_PROPERTY)
     if call_api_timeout:
@@ -138,7 +141,7 @@ class ApiCall:
             if call_timeout.startswith("$"):
                 call_timeout = os.environ.get(call_timeout[1:], "")
             if call_timeout.isdigit():
-                self.api_timeout = call_timeout
+                self.api_timeout = int(call_timeout)
 
         self.async_api_timeout = None
         call_api_timeout = call_dict.get(ASYNC_API_TIMEOUT_PROPERTY)
