@@ -288,8 +288,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options, api_tim
                            '--remote', 'on',
                            '-H',
                            '-W', config_path,
-                           '-U', uri,
-                           '--connectTimeout', api_timeout]
+                           '-U', uri]
         if extra_indexer_options:
             logger.debug("Adding extra indexer options: {}".
                          format(extra_indexer_options))
@@ -477,11 +476,18 @@ def main():
     if url_root != 'source':
         setup_redirect_source(logger, url_root)
 
+    api_timeout = 8
+    if os.environ.get('API_TIMEOUT'):
+        api_timeout = int(os.environ.get('API_TIMEOUT'))
+    extra_indexer_options = "--connectTimeout " + str(api_timeout)
+
     env = {}
-    extra_indexer_options = os.environ.get('INDEXER_OPT', '')
-    if extra_indexer_options:
-        logger.info("extra indexer options: {}".format(extra_indexer_options))
-        env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
+    indexer_opt = os.environ.get('INDEXER_OPT', '')
+    if indexer_opt:
+        extra_indexer_options += " " + indexer_opt
+    logger.info("extra indexer options: '{}'".format(extra_indexer_options))
+    env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
+
     if os.environ.get(NOMIRROR_ENV_NAME):
         env[OPENGROK_NO_MIRROR_ENV] = os.environ.get(NOMIRROR_ENV_NAME)
     logger.debug('Extra environment: {}'.format(env))
@@ -489,10 +495,6 @@ def main():
     use_projects = True
     if os.environ.get('AVOID_PROJECTS'):
         use_projects = False
-
-    api_timeout = 8
-    if os.environ.get('API_TIMEOUT'):
-        api_timeout = int(os.environ.get('API_TIMEOUT'))
 
     #
     # Create empty configuration to avoid the non-existent file exception
