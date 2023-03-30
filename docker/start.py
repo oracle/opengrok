@@ -87,6 +87,11 @@ REINDEX_POINT = '/reindex'
 
 @auth.verify_token
 def verify_token(token):
+    """
+    :param token: supplied authentication token
+    :return: "yes" if the token was correct
+    """
+
     if expected_token is None:
         return "yes"
 
@@ -97,6 +102,10 @@ def verify_token(token):
 @app.route(REINDEX_POINT)
 @auth.login_required
 def index():
+    """
+    API endpoint for triggering reindex.
+    :return: message describing the outcome
+    """
     global periodic_timer
 
     if periodic_timer:
@@ -110,6 +119,10 @@ def index():
 
 
 def rest_function(logger, rest_port):
+    """
+    :param logger: logger instance
+    :param rest_port: REST API TCP port
+    """
     logger.info("Starting REST app on port {}".format(rest_port))
     serve(app, host="0.0.0.0", port=rest_port)
 
@@ -279,7 +292,7 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def indexer_no_projects(logger, uri, config_path, extra_indexer_options, api_timeout):
+def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
     """
     Project less indexer
     """
@@ -324,7 +337,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
             config_file = os.path.join(fs_root, 'scripts', 'sync.yml')
         config = read_config(logger, config_file)
         if config is None:
-            logger.error("Cannot read config file from {}".format(config_file))
+            logger.error(f"Cannot read config file from {config_file}")
             raise Exception("no sync config")
 
         projects = list_projects(logger, uri, timeout=api_timeout)
@@ -386,7 +399,7 @@ def create_bare_config(logger, use_projects, extra_indexer_options=None):
     indexer.execute()
     ret = indexer.getretcode()
     if ret != SUCCESS_EXITVAL:
-        logger.error('Command returned {}'.format(ret))
+        logger.error(f'Command returned {ret}')
         logger.error(indexer.geterroutput())
         raise Exception("Failed to create bare configuration")
 
@@ -426,7 +439,7 @@ def check_index_and_wipe_out(logger):
                 path = os.path.join(root, entry)
                 if os.path.isdir(path):
                     try:
-                        logger.info("Removing '{}'".format(path))
+                        logger.info(f"Removing '{path}'")
                         shutil.rmtree(path)
                     except Exception as exc:
                         logger.error("cannot delete '{}': {}".format(path, exc))
@@ -567,7 +580,7 @@ def main():
     else:
         worker_function = indexer_no_projects
         syncer_args = (logger, uri, OPENGROK_CONFIG_FILE,
-                       extra_indexer_options, api_timeout)
+                       extra_indexer_options)
 
     if sync_enabled:
         period_seconds = sync_period_mins * 60
