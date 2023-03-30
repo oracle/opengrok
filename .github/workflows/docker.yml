@@ -16,12 +16,16 @@ jobs:
     - name: Install opengrok-tools
       run: python3 setup.py install
       working-directory: tools
-    - name: Install pylint and flake8
-      run: python3 -m pip install pylint flake8
+    - name: Install checkers
+      run: python3 -m pip install pylint flake8 black isort
     - name: Run flake8
       run: flake8 --max-line-length 119 docker/*.py
     - name: Run pylint
       run: pylint -E --max-line-length 119 docker/*.py
+    - name: Run black in check mode
+      run: black --check **.py
+    - name: Run isort in check mode
+      run: isort **.py  --check --dif
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
