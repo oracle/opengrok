@@ -1,0 +1,4 @@
+flask
+flask_httpauth
+waitress
+requests
