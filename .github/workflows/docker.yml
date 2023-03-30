@@ -14,7 +14,8 @@ jobs:
     - name: Install dependencies
       run: python3 -m pip install -r docker/requirements.txt
     - name: Install opengrok-tools
-      run: python3 tools/setup.py install
+      run: python3 setup.py install
+      working-directory: tools
     - name: Install pylint and flake8
       run: python3 -m pip install pylint flake8
     - name: Run flake8
