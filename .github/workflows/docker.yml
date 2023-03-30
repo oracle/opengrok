@@ -8,6 +8,19 @@ jobs:
     steps:
     - name: Checkout master branch
       uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: python3 -m pip install -r docker/requirements.txt
+    - name: Install opengrok-tools
+      run: python3 tools/setup.py install
+    - name: Install pylint and flake8
+      run: python3 -m pip install pylint flake8
+    - name: Run flake8
+      run: flake8 docker/*.py
+    - name: Run pylint
+      run: pylint docker/*.py
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -16,9 +29,6 @@ jobs:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
     - name: Install Python pre-requisites
       run: python3 -m pip install requests
     - name: Optionally update README on Docker hub

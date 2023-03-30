@@ -51,7 +51,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <module>distribution</module>
         <module>suggester</module>
         <module>tools</module>
-        <module>docker</module>
     </modules>
 
     <scm>
