@@ -654,6 +654,10 @@ def main():
 
     # Start Tomcat last.
     logger.info("Starting Tomcat")
+    tomcat_temp = os.path.join(OPENGROK_DATA_ROOT, "tomcat_temp")
+    os.makedirs(tomcat_temp, exist_ok=True)
+    tomcat_env = os.environ
+    tomcat_env["CATALINA_TMPDIR"] = tomcat_temp
     tomcat_popen = subprocess.Popen(
         [os.path.join(tomcat_root, "bin", "catalina.sh"), "run"]
     )
