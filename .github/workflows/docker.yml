@@ -23,9 +23,9 @@ jobs:
     - name: Run pylint
       run: pylint -E --max-line-length 119 docker/*.py
     - name: Run black in check mode
-      run: black --check **.py
+      run: black --check docker/*.py
     - name: Run isort in check mode
-      run: isort **.py  --check --dif
+      run: isort  --settings-file docker/.isort.cfg docker/*.py  --check --dif
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
