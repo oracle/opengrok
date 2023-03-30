@@ -46,6 +46,7 @@ ARGS_SUBST_PROPERTY = "args_subst"
 LIMITS_PROPERTY = "limits"
 ENV_PROPERTY = "env"
 ARGS_PROPERTY = "args"
+DATA_PROPERTY = "data"
 
 
 class CommandConfigurationException(Exception):
@@ -59,6 +60,11 @@ def check_call_config(call):
     if not isinstance(call, dict):
         raise CommandConfigurationException("call value not a dictionary: {}".
                                             format(call))
+
+    for key in call.keys():
+        if key not in [URI_PROPERTY, METHOD_PROPERTY, API_TIMEOUT_PROPERTY, ASYNC_API_TIMEOUT_PROPERTY,
+                       DATA_PROPERTY, HEADERS_PROPERTY]:
+            raise CommandConfigurationException(f"unknown property {key} in call {call}")
 
     uri = call.get(URI_PROPERTY)
     if not uri:
@@ -90,6 +96,40 @@ def check_call_config(call):
             raise CommandConfigurationException(f"{ASYNC_API_TIMEOUT_PROPERTY} not an integer", exc)
 
 
+def check_command_config(command):
+    """
+    :param command: dictionary with executable command configuration
+    """
+    if not isinstance(command, dict):
+        raise CommandConfigurationException(f"command value not a dictionary: {command}")
+
+    for key in command.keys():
+        if key not in [ENV_PROPERTY, ARGS_PROPERTY, LIMITS_PROPERTY, ARGS_SUBST_PROPERTY]:
+            raise CommandConfigurationException(f"unknown property {key} in command {command}")
+
+    limits = command.get(LIMITS_PROPERTY)
+    if limits:
+        if not isinstance(command, dict):
+            raise CommandConfigurationException(f"limits value is not a dictionary in {command}")
+
+    args = command.get(ARGS_PROPERTY)
+    if not args:
+        raise CommandConfigurationException(f"empty/missing args property in {command}")
+
+    if not isinstance(args, list):
+        raise CommandConfigurationException(f"args property is not a list in {command}")
+
+    args_subst = command.get(ARGS_SUBST_PROPERTY)
+    if args_subst:
+        if not isinstance(args_subst, dict):
+            raise CommandConfigurationException(f"args_subst value is not a dictionary in {command}")
+
+    env = command.get(ENV_PROPERTY)
+    if env:
+        if not isinstance(env, dict):
+            raise CommandConfigurationException(f"env value is not a dictionary in {command}")
+
+
 def check_command_property(command):
     """
     Check if the 'commands' parameter of CommandSequenceBase() has the right structure
@@ -111,6 +151,9 @@ def check_command_property(command):
     if call_value:
         check_call_config(call_value)
 
+    if command_value:
+        check_command_config(command_value)
+
 
 class ApiCall:
     """
@@ -129,7 +172,7 @@ class ApiCall:
         if not self.method:
             self.method = "GET"
 
-        self.data = call_dict.get("data")
+        self.data = call_dict.get(DATA_PROPERTY)
 
         self.headers = call_dict.get(HEADERS_PROPERTY)
         if not self.headers:
