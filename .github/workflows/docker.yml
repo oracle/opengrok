@@ -25,7 +25,7 @@ jobs:
     - name: Run black in check mode
       run: black --check docker/*.py
     - name: Run isort in check mode
-      run: isort  --settings-file docker/.isort.cfg docker/*.py  --check --dif
+      run: isort  --settings-file docker/.isort.cfg docker/*.py  --check --diff
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
