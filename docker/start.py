@@ -25,33 +25,41 @@ Entry point for the OpenGrok Docker container.
 # Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
-import os
 import logging
 import multiprocessing
-import signal
+import os
 import shutil
+import signal
 import subprocess
 import tempfile
 import threading
 import time
 from pathlib import Path
-from requests import get, ConnectionError
+
 from flask import Flask
 from flask_httpauth import HTTPTokenAuth
+from opengrok_tools.config_merge import merge_config_files
+from opengrok_tools.deploy import deploy_war
+from opengrok_tools.mirror import OPENGROK_NO_MIRROR_ENV
+from opengrok_tools.sync import do_sync
+from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
+from opengrok_tools.utils.indexer import Indexer
+from opengrok_tools.utils.log import (
+    get_class_basename,
+    get_console_logger,
+    get_log_level,
+)
+from opengrok_tools.utils.mirror import check_configuration
+from opengrok_tools.utils.opengrok import (
+    add_project,
+    delete_project,
+    get_configuration,
+    list_projects,
+)
+from opengrok_tools.utils.readconfig import read_config
+from requests import ConnectionError, get
 from waitress import serve
 
-from opengrok_tools.utils.log import get_console_logger, \
-    get_log_level, get_class_basename
-from opengrok_tools.deploy import deploy_war
-from opengrok_tools.utils.indexer import Indexer
-from opengrok_tools.sync import do_sync
-from opengrok_tools.config_merge import merge_config_files
-from opengrok_tools.utils.opengrok import list_projects, \
-    add_project, delete_project, get_configuration
-from opengrok_tools.utils.readconfig import read_config
-from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
-from opengrok_tools.utils.mirror import check_configuration
-from opengrok_tools.mirror import OPENGROK_NO_MIRROR_ENV
 from periodic_timer import PeriodicTimer
 
 fs_root = os.path.abspath('.').split(os.path.sep)[0] + os.path.sep
