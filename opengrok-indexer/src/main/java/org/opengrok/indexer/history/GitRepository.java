@@ -343,8 +343,8 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
     private String getFirstRevision(String filePath) {
         String revision = null;
-        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            Iterable<RevCommit> commits = new Git(repository).log().
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName()); Git gitRepo = new Git(repository)) {
+            Iterable<RevCommit> commits = gitRepo.log().
                     addPath(getGitFilePath(filePath)).
                     setMaxCount(1).
                     call();
@@ -367,8 +367,8 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     private Annotation getAnnotation(String revision, String filePath, String fileName) throws IOException {
         Annotation annotation = new Annotation(fileName);
 
-        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            BlameCommand blameCommand = new Git(repository).blame().setFilePath(getGitFilePath(filePath));
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName()); Git gitRepo = new Git(repository)) {
+            BlameCommand blameCommand = gitRepo.blame().setFilePath(getGitFilePath(filePath));
             ObjectId commitId = repository.resolve(revision);
             blameCommand.setStartCommit(commitId);
             blameCommand.setFollowFileRenames(isHandleRenamedFiles());
