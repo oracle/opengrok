@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -290,6 +290,22 @@ public class HistoryEntryTest {
                 historyAuthor, historyMessage, true, null);
         assertNotSame(e, instance);
         assertEquals(e, instance);
+    }
+
+    @Test
+    public void testNotEqualsRevision() {
+        HistoryEntry e = new HistoryEntry(historyRevision + "0", historyDisplayRevision, historyDate,
+                historyAuthor, historyMessage, true, null);
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
+    }
+
+    @Test
+    public void testNotEqualsDisplayRevision() {
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision + "0", historyDate,
+                historyAuthor, historyMessage, true, null);
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
     }
 
     @Test
