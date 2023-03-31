@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -87,9 +87,9 @@ class FileAnnotationCacheTest {
     void testSerialization() throws Exception {
         final String fileName = "main.c";
         Annotation annotation = new Annotation(fileName);
-        annotation.addLine("1", "author1", true);
-        annotation.addLine("2", "author1", true);
-        annotation.setRevision("2");
+        annotation.addLine("1.000", "author1", true, "1");
+        annotation.addLine("2.000", "author1", true, "2");
+        annotation.setRevision("2.000");
         File file = Paths.get(repositories.getSourceRoot(), "git", fileName).toFile();
         assertTrue(file.exists());
         cache.store(file, annotation);
