@@ -239,10 +239,10 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
     /**
      * Get the name of file in given revision. The returned file name is relative to the repository root.
-     * Assumes renamed file hanndling is on.
+     * Assumes renamed file handling is on.
      *
      * @param fullpath full file path
-     * @param changeset revision ID (could be short)
+     * @param changeset revision ID
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
      * @see #getPathRelativeToCanonicalRepositoryRoot(String)
@@ -278,7 +278,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                     continue;
                 }
 
-                if (commit.getId().getName().startsWith(changeset)) { // suspicious? - should be an exact match on revision Id
+                if (commit.getId().getName().equals(changeset)) {
                     break;
                 }
 
