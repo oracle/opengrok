@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -59,6 +59,20 @@ class AnnotationLineTest {
     void testEqualsNegative3() {
         AnnotationLine annotationLine1 = new AnnotationLine("1.0", "bar", true);
         AnnotationLine annotationLine2 = new AnnotationLine("1.0", "bar", false);
+        assertNotEquals(annotationLine1, annotationLine2);
+    }
+
+    @Test
+    void testEqualsPositiveDisplayRevision() {
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0000", "bar", true, "1.0");
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0000", "bar", true, "1.0");
+        assertEquals(annotationLine1, annotationLine2);
+    }
+
+    @Test
+    void testEqualsNegativeDisplayRevision() {
+        AnnotationLine annotationLine1 = new AnnotationLine("1.0000", "bar", true, "1.0");
+        AnnotationLine annotationLine2 = new AnnotationLine("1.0000", "bar", true, "1.1");
         assertNotEquals(annotationLine1, annotationLine2);
     }
 

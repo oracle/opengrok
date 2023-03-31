@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -118,6 +118,9 @@ public class AnnotationLine implements Serializable {
             return false;
         }
         if (!Objects.equals(getRevision(), other.getRevision())) {
+            return false;
+        }
+        if (!Objects.equals(getDisplayRevision(), other.getDisplayRevision())) {
             return false;
         }
 
