@@ -42,7 +42,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
  */
 public class HistoryEntry implements Serializable {
 
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = 1277313126047397131L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
 

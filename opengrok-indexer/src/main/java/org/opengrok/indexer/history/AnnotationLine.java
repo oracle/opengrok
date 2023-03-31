@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 public class AnnotationLine implements Serializable {
 
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = 3402729223485872826L;
 
     private String revision;
     private String author;
