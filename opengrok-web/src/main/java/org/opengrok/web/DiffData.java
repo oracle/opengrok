@@ -93,7 +93,7 @@ public class DiffData {
 
     /**
      * @param index index of the revision
-     * @return shortened revision string (maximum 8 characters) with ".." appended
+     * @return shortened revision string (maximum 8 characters) with {@code ".."} appended if longer
      */
     public String getShortRev(int index) {
         return rev[index].substring(0, Integer.min(rev[index].length(), 8)) + (rev[index].length() > 8 ? ".." : "");
