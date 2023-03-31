@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -163,9 +163,9 @@ include file="/mast.jsp"
             if (type == t) {
         %> <span class="active"><%= t.toString() %><%
                 if (t == DiffType.OLD) {
-            %>  ( <%= data.getRev(0) %> )<%
+            %>  (<%= data.getRev(0) %>)<%
                 } else if (t == DiffType.NEW) {
-            %>  ( <%= data.getRev(1) %> )<%
+            %>  (<%= data.getRev(1) %>)<%
                 }
             %></span><%
             } else {
@@ -175,9 +175,9 @@ include file="/mast.jsp"
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
             <%
                 if (t == DiffType.OLD) {
-            %>  ( <%= data.getRev(0) %> )<%
+            %>  (<%= data.getShortRev(0) %>)<%
                 } else if (t == DiffType.NEW) {
-            %>  ( <%= data.getRev(1) %> )<%
+            %>  (<%= data.getShortRev(1) %>)<%
                 }
             %></a></span><%
             }
