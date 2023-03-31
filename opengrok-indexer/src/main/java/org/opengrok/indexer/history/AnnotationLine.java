@@ -49,9 +49,9 @@ public class AnnotationLine implements Serializable {
 
     /**
      * An annotation line where the revision is not overridden for display purposes.
-     * @param revision
-     * @param author
-     * @param enabled
+     * @param revision revision string
+     * @param author author string
+     * @param enabled whether it is enabled
      */
     AnnotationLine(String revision, String author, boolean enabled) {
       this(revision, author, enabled, null);
