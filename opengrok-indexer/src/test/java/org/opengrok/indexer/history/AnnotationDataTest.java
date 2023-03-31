@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -65,7 +65,7 @@ class AnnotationDataTest {
      * {@link AnnotationData} with different lists of {@link AnnotationLine} should differ.
      */
     @Test
-    void testEqualsNegative() {
+    void testEqualsNegativeLineLists() {
         final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true);
         final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true);
         final AnnotationLine annotationLine3 = new AnnotationLine("1.2", "Me", true);
@@ -76,8 +76,30 @@ class AnnotationDataTest {
         annotationData1.addLine(annotationLine3);
 
         AnnotationData annotationData2 = new AnnotationData();
+        annotationData2.addLine(annotationLine1);
+        annotationData2.addLine(annotationLine2);
+
+        assertNotEquals(annotationData1, annotationData2);
+    }
+
+    /**
+     * This is useful for {@link FileAnnotationCacheTest#testSerialization()}.
+     * {@link AnnotationData} with non-equal {@link AnnotationLine}s should differ.
+     */
+    @Test
+    void testEqualsNegativeLineContents() {
+        final AnnotationLine annotationLine1 = new AnnotationLine("1.0", "Me", true, "10");
+        final AnnotationLine annotationLine2 = new AnnotationLine("1.1", "Me", true, "11");
+
+        AnnotationData annotationData1 = new AnnotationData();
         annotationData1.addLine(annotationLine1);
         annotationData1.addLine(annotationLine2);
+
+        AnnotationData annotationData2 = new AnnotationData();
+        annotationData2.addLine(annotationLine1);
+        final AnnotationLine annotationLine2changed = new AnnotationLine("1.1", "Me", true, "111");
+        assertNotEquals(annotationLine2, annotationLine2changed);
+        annotationData2.addLine(annotationLine2changed);
 
         assertNotEquals(annotationData1, annotationData2);
     }
