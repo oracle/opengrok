@@ -96,7 +96,7 @@ public class DiffData {
      * @return shortened revision string (maximum 8 characters) with ".." appended
      */
     public String getShortRev(int index) {
-        return rev[index].substring(0, Integer.min(rev[index].length(), 8)) + "..";
+        return rev[index].substring(0, Integer.min(rev[index].length(), 8)) + (rev[index].length() > 8 ? ".." : "");
     }
 
     public String[] getFile(int index) {
