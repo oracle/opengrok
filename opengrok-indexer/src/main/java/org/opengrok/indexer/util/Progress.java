@@ -18,29 +18,61 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Progress reporting via logging. The idea is that for anything that has a set of items
+ * to go through, it will ping an instance of this class for each item completed.
+ * This class will then log based on the number of pings. The bigger the progress,
+ * the higher log level ({@link Level} value) will be used. The default base level is {@code Level.INFO}.
+ * Regardless of the base level, maximum 4 log levels will be used.
+ */
 public class Progress implements AutoCloseable {
     private final Logger logger;
-    private final long totalCount;
+    private final Long totalCount;
     private final String suffix;
 
     private final AtomicLong currentCount = new AtomicLong();
+    private final Map<Level, Integer> levelCountMap = new TreeMap<>(Comparator.comparingInt(Level::intValue).reversed());
     private Thread loggerThread = null;
     private volatile boolean run;
 
+    private final Level baseLogLevel;
+
     private final Object sync = new Object();
+
+    /**
+     * @param logger logger instance
+     * @param suffix string suffix to identify the operation
+     */
+    public Progress(Logger logger, String suffix) {
+        this(logger, suffix, -1, Level.INFO);
+    }
+
+    /**
+     * @param logger logger instance
+     * @param suffix string suffix to identify the operation
+     * @param logLevel base log level
+     */
+    public Progress(Logger logger, String suffix, Level logLevel) {
+        this(logger, suffix, -1, logLevel);
+    }
 
     /**
      * @param logger logger instance
@@ -48,18 +80,54 @@ public class Progress implements AutoCloseable {
      * @param totalCount total count
      */
     public Progress(Logger logger, String suffix, long totalCount) {
+        this(logger, suffix, totalCount, Level.INFO);
+    }
+
+    /**
+     * @param logger logger instance
+     * @param suffix string suffix to identify the operation
+     * @param totalCount total count
+     * @param logLevel base log level
+     */
+    public Progress(Logger logger, String suffix, long totalCount, Level logLevel) {
         this.logger = logger;
         this.suffix = suffix;
-        this.totalCount = totalCount;
+        this.baseLogLevel = logLevel;
 
-        // Assuming printProgress configuration setting cannot be changed on the fly.
-        if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
-            // spawn a logger thread.
-            run = true;
-            loggerThread = new Thread(this::logLoop,
-                    "progress-thread-" + suffix.replaceAll(" ", "_"));
-            loggerThread.start();
+        if (totalCount < 0) {
+            this.totalCount = null;
+        } else {
+            this.totalCount = totalCount;
         }
+
+        // Note: Level.CONFIG is missing as it does not make too much sense for progress reporting semantically.
+        final List<Level> standardLevels = Arrays.asList(Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO,
+                Level.FINE, Level.FINER, Level.FINEST, Level.ALL);
+        int i = standardLevels.indexOf(baseLogLevel);
+        for (int num : new int[]{100, 50, 10, 1}) {
+            Level level = standardLevels.get(i);
+            if (level == null) {
+                break;
+            }
+            levelCountMap.put(level, num);
+            if (num == 1) {
+                break;
+            }
+            i++;
+        }
+
+        // Assuming the printProgress configuration setting cannot be changed on the fly.
+        if (!baseLogLevel.equals(Level.OFF) && RuntimeEnvironment.getInstance().isPrintProgress()) {
+            spawnLogThread();
+        }
+    }
+
+    private void spawnLogThread() {
+        // spawn a logger thread.
+        run = true;
+        loggerThread = new Thread(this::logLoop,
+                "progress-thread-" + suffix.replaceAll(" ", "_"));
+        loggerThread.start();
     }
 
     // for testing
@@ -84,10 +152,6 @@ public class Progress implements AutoCloseable {
     private void logLoop() {
         long cachedCount = 0;
         Map<Level, Long> lastLoggedChunk = new HashMap<>();
-        Map<Level, Integer> levelCount = Map.of(Level.INFO, 100,
-                Level.FINE, 50,
-                Level.FINER, 10,
-                Level.FINEST, 1);
 
         while (true) {
             long currentCount = this.currentCount.get();
@@ -95,26 +159,8 @@ public class Progress implements AutoCloseable {
 
             // Do not log if there was no progress.
             if (cachedCount < currentCount) {
-                if (currentCount <= 1 || currentCount == totalCount) {
-                    currentLevel = Level.INFO;
-                } else {
-                    if (lastLoggedChunk.getOrDefault(Level.INFO, -1L) <
-                            currentCount / levelCount.get(Level.INFO)) {
-                        currentLevel = Level.INFO;
-                    } else if (lastLoggedChunk.getOrDefault(Level.FINE, -1L) <
-                            currentCount / levelCount.get(Level.FINE)) {
-                        currentLevel = Level.FINE;
-                    } else if (lastLoggedChunk.getOrDefault(Level.FINER, -1L) <
-                            currentCount / levelCount.get(Level.FINER)) {
-                        currentLevel = Level.FINER;
-                    }
-                }
-
-                if (logger.isLoggable(currentLevel)) {
-                    lastLoggedChunk.put(currentLevel, currentCount / levelCount.get(currentLevel));
-                    logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                            new Object[]{currentCount, currentCount * 100.0f / totalCount, suffix});
-                }
+                currentLevel = getLevel(lastLoggedChunk, currentCount, currentLevel);
+                logIt(lastLoggedChunk, currentCount, currentLevel);
             }
 
             if (!run) {
@@ -135,6 +181,41 @@ public class Progress implements AutoCloseable {
             } catch (InterruptedException e) {
                 logger.log(Level.WARNING, "logger thread interrupted");
             }
+        }
+    }
+
+    @VisibleForTesting
+    Level getLevel(Map<Level, Long> lastLoggedChunk, long currentCount, Level currentLevel) {
+        // The intention is to log the initial and final count at the base log level.
+        if (currentCount <= 1 || (totalCount != null && currentCount == totalCount)) {
+            currentLevel = baseLogLevel;
+        } else {
+            // Set the log level based on the "buckets".
+            for (Level level : levelCountMap.keySet()) {
+                if (lastLoggedChunk.getOrDefault(level, -1L) <
+                        currentCount / levelCountMap.get(level)) {
+                    currentLevel = level;
+                    break;
+                }
+            }
+        }
+        return currentLevel;
+    }
+
+    private void logIt(Map<Level, Long> lastLoggedChunk, long currentCount, Level currentLevel) {
+        if (logger.isLoggable(currentLevel)) {
+            lastLoggedChunk.put(currentLevel, currentCount / levelCountMap.get(currentLevel));
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Progress: ");
+            stringBuilder.append(currentCount);
+            stringBuilder.append(" ");
+            if (totalCount != null) {
+                stringBuilder.append("(");
+                stringBuilder.append(String.format("%.2f", currentCount * 100.0f / totalCount));
+                stringBuilder.append("%) ");
+            }
+            stringBuilder.append(suffix);
+            logger.log(currentLevel, stringBuilder.toString());
         }
     }
 

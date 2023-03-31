@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
 import java.io.File;
@@ -78,10 +79,6 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             this.files = new TreeSet<>();
             this.renamedFiles = new HashSet<>();
             this.deletedFiles = new HashSet<>();
-        }
-
-        ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles) {
-            this(commit, files, renamedFiles, deletedFiles, null);
         }
 
         ChangesetInfo(CommitInfo commit, SortedSet<String> files, Set<String> renamedFiles, Set<String> deletedFiles,
@@ -148,7 +145,11 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             if (fileCollector != null) {
                 visitors.add(fileCollector);
             }
-            traverseHistory(directory, sinceRevision, null, null, visitors);
+            try (Progress progress = new Progress(LOGGER, String.format(" changesets traversed of %s", this))) {
+                ProgressVisitor progressVisitor = new ProgressVisitor(progress);
+                visitors.add(progressVisitor);
+                traverseHistory(directory, sinceRevision, null, null, visitors);
+            }
             History history = new History(historyCollector.entries, historyCollector.renamedFiles,
                     historyCollector.latestRev);
 
@@ -183,7 +184,13 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
             if (fileCollector != null) {
                 visitors.add(fileCollector);
             }
-            traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
+
+            try (Progress progress = new Progress(LOGGER,
+                    String.format(" changesets traversed of %s (range %s %s)", this, sinceRevision, tillRevision))) {
+                ProgressVisitor progressVisitor = new ProgressVisitor(progress);
+                visitors.add(progressVisitor);
+                traverseHistory(directory, sinceRevision, tillRevision, null, visitors);
+            }
             History history = new History(historyCollector.entries, historyCollector.renamedFiles,
                     historyCollector.latestRev);
 

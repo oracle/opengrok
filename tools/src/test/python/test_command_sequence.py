@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -38,8 +38,8 @@ from opengrok_tools.utils.patterns import PROJECT_SUBST, CALL_PROPERTY
 
 def test_str():
     cmds = CommandSequence(CommandSequenceBase("opengrok-master",
-                                               [{"command": ['foo']},
-                                                {"command": ["bar"]}]))
+                                               [{"command": {"args": ['foo']}},
+                                                {"command": {"args": ["bar"]}}]))
     assert str(cmds) == "opengrok-master"
 
 
@@ -50,32 +50,25 @@ def test_invalid_configuration_commands_none():
     assert str(exc_info.value) == "commands is None"
 
 
-def test_invalid_configuration_commands_not_list():
-    with pytest.raises(CommandConfigurationException) as exc_info:
-        CommandSequence(CommandSequenceBase("foo", {"foo": "bar"}))
-
-    assert str(exc_info.value) == "commands is not a list"
-
-
 def test_invalid_configuration_commands_no_command():
     with pytest.raises(CommandConfigurationException) as exc_info:
-        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
+        CommandSequence(CommandSequenceBase("foo", [{"command": {"args": ['foo']}},
                                                     {"foo": "bar"}]))
 
     assert str(exc_info.value).startswith("command dictionary has unknown key")
 
 
-def test_invalid_configuration_commands_no_list():
+def test_invalid_configuration_commands_no_dict1():
     with pytest.raises(CommandConfigurationException) as exc_info:
-        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
-                                                    {"command": "bar"}]))
+        CommandSequence(CommandSequenceBase("foo", [{"command": {"args": ['foo']}},
+                                                    {"command": ["bar"]}]))
 
-    assert str(exc_info.value).startswith("command value not a list")
+    assert str(exc_info.value).startswith("command value not a dictionary")
 
 
-def test_invalid_configuration_commands_no_dict():
+def test_invalid_configuration_commands_no_dict2():
     with pytest.raises(CommandConfigurationException) as exc_info:
-        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
+        CommandSequence(CommandSequenceBase("foo", [{"command": {"args": ['foo']}},
                                                     "command"]))
 
     assert str(exc_info.value).find("is not a dictionary") != -1
@@ -87,7 +80,7 @@ def test_timeout_propagation():
     """
     expected_timeout = 11
     expected_api_timeout = 22
-    cmd_seq_base = CommandSequenceBase("foo", [{"command": ['foo']}],
+    cmd_seq_base = CommandSequenceBase("foo", [{"command": {"args": ['foo']}}],
                                        api_timeout=expected_timeout,
                                        async_api_timeout=expected_api_timeout)
     cmd_seq = CommandSequence(cmd_seq_base)
@@ -99,11 +92,11 @@ def test_timeout_propagation():
                     or not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_run_retcodes():
-    cmd_list = [{"command": ["/bin/echo"]},
-                {"command": ["/bin/sh", "-c",
-                 "echo " + PROJECT_SUBST + "; exit 0"]},
-                {"command": ["/bin/sh", "-c",
-                 "echo " + PROJECT_SUBST + "; exit 1"]}]
+    cmd_list = [{"command": {"args": ["/bin/echo"]}},
+                {"command": {"args": ["/bin/sh", "-c",
+                 "echo " + PROJECT_SUBST + "; exit 0"]}},
+                {"command": {"args": ["/bin/sh", "-c",
+                 "echo " + PROJECT_SUBST + "; exit 1"]}}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
     assert cmds.retcodes == {
@@ -117,9 +110,9 @@ def test_run_retcodes():
                     or not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_terminate_after_non_zero_code():
-    cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + PROJECT_SUBST + "; exit 255"]},
-                {"command": ["/bin/echo"]}]
+    cmd_list = [{"command": {"args": ["/bin/sh", "-c",
+                 "echo " + PROJECT_SUBST + "; exit 255"]}},
+                {"command": {"args": ["/bin/echo"]}}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
     assert cmds.retcodes == {
@@ -131,9 +124,9 @@ def test_terminate_after_non_zero_code():
                     or not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_exit_2_handling():
-    cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + PROJECT_SUBST + "; exit 2"]},
-                {"command": ["/bin/echo"]}]
+    cmd_list = [{"command": {"args": ["/bin/sh", "-c",
+                 "echo " + PROJECT_SUBST + "; exit 2"]}},
+                {"command": {"args": ["/bin/echo"]}}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
     assert cmds.retcodes == {
@@ -146,14 +139,14 @@ def test_exit_2_handling():
                     or not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_driveon_flag():
-    cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + PROJECT_SUBST + "; exit 2"]},
-                {"command": ["/bin/echo"]},
-                {"command": ["/bin/sh", "-c",
-                             "echo " + PROJECT_SUBST +
-                             "; exit 1"]},
-                {"command": ["/bin/sh", "-c",
-                             "echo " + PROJECT_SUBST]}]
+    cmd_list = [{"command": {"args": ["/bin/sh", "-c",
+                 "echo " + PROJECT_SUBST + "; exit 2"]}},
+                {"command": {"args": ["/bin/echo"]}},
+                {"command": {"args": ["/bin/sh", "-c",
+                                      "echo " + PROJECT_SUBST +
+                                      "; exit 1"]}},
+                {"command": {"args": ["/bin/sh", "-c",
+                             "echo " + PROJECT_SUBST]}}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master",
                                                cmd_list, driveon=True))
     cmds.run()
@@ -168,11 +161,35 @@ def test_driveon_flag():
 @pytest.mark.skipif(not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_project_subst():
-    cmd_list = [{"command": ["/bin/echo", PROJECT_SUBST]}]
+    cmd_list = [{"command": {"args": ["/bin/echo", PROJECT_SUBST]}}]
     cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
     cmds.run()
 
     assert cmds.outputs['/bin/echo test-subst'] == ['test-subst\n']
+
+
+@pytest.mark.skipif(not os.path.exists('/bin/echo'),
+                    reason="requires Unix")
+def test_args_subst():
+    cmd_list = [{"command": {"args": ["/bin/echo", "%PATTERN%"],
+                             "args_subst": {"%PATTERN%": "foo"}}}]
+    cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
+    cmds.run()
+
+    assert cmds.outputs['/bin/echo foo'] == ['foo\n']
+
+
+@pytest.mark.skipif(not os.path.exists('/bin/echo'),
+                    reason="requires Unix")
+def test_args_subst_env():
+    cmd_list = [{"command": {"args": ["/bin/echo", "%PATTERN%"],
+                             "args_subst": {"%PATTERN%": "$FOO"}}}]
+    os.environ["FOO"] = "bar"
+    cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
+    cmds.run()
+    os.environ.pop("FOO")
+
+    assert cmds.outputs['/bin/echo bar'] == ['bar\n']
 
 
 def test_cleanup_exception():
@@ -195,12 +212,12 @@ def test_cleanup():
     with tempfile.TemporaryDirectory() as tmpdir:
         file_foo = os.path.join(tmpdir, "foo")
         file_bar = os.path.join(tmpdir, "bar")
-        cleanup_list = [{"command": ["/usr/bin/touch", file_foo]},
-                        {"command": ["/bin/cat", "/totallynonexistent"]},
-                        {"command": ["/usr/bin/touch", file_bar]}]
+        cleanup_list = [{"command": {"args": ["/usr/bin/touch", file_foo]}},
+                        {"command": {"args": ["/bin/cat", "/totallynonexistent"]}},
+                        {"command": {"args": ["/usr/bin/touch", file_bar]}}]
         # Running 'cat' on non-existing entry causes it to return 1.
         cmd = ["/bin/cat", "/foobar"]
-        cmd_list = [{"command": cmd}]
+        cmd_list = [{"command": {"args": cmd}}]
         commands = CommandSequence(CommandSequenceBase("test-cleanup-list",
                                                        cmd_list,
                                                        cleanup=cleanup_list))

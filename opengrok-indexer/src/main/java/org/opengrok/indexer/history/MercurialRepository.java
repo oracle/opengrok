@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -47,6 +47,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.LazilyInstantiate;
+import org.opengrok.indexer.util.Progress;
 
 /**
  * Access to a Mercurial repository.
@@ -566,8 +567,10 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         return getHistory(file, null);
     }
 
-    public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
-        new MercurialHistoryParserRevisionsOnly(this, visitor).
+    public void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor, Progress progress)
+            throws HistoryException {
+
+        new MercurialHistoryParserRevisionsOnly(this, visitor, progress).
                 parse(new File(getDirectoryName()), sinceRevision);
     }
 

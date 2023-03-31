@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
@@ -86,6 +86,7 @@ import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.Progress;
 
 import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
 
@@ -451,8 +452,8 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return MAX_CHANGESETS;
     }
 
-    @Override
-    public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
+    public void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor, Progress progress)
+            throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
@@ -463,7 +464,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
 
             for (RevCommit commit : walk) {
                 // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
-                visitor.accept(commit.getId().name());
+                visitor.accept(new BoundaryChangesets.IdWithProgress(commit.getId().name(), progress));
             }
         } catch (IOException e) {
             throw new HistoryException(e);

@@ -7,18 +7,28 @@ commands:
       duration: PT1H
       tags: ['%PROJECT%']
       text: resync + reindex in progress
-- command: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml', -I, -U, '%URL%', '%PROJECT%']
-- command: [opengrok-reindex-project, --printoutput,
-    --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
-    -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
-    -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
-  limits: {RLIMIT_NOFILE: 1024}
+    api_timeout: "$API_TIMEOUT"
+- command:
+    args: [opengrok-mirror, -c, '/opengrok/etc/mirror.yml',
+           --api_timeout, '%API_TIMEOUT%',
+           -I, -U, '%URL%', '%PROJECT%']
+    args_subst: {"%API_TIMEOUT%": "$API_TIMEOUT"}
+- command:
+    args: [opengrok-reindex-project, --printoutput,
+      --api_timeout, '%API_TIMEOUT%',
+      --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
+      --connectTimeout, '%API_TIMEOUT%',
+      -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
+      -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
+    limits: {RLIMIT_NOFILE: 1024}
+    args_subst: {"%API_TIMEOUT%": "$API_TIMEOUT"}
 - call:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
     method: DELETE
     data: 'resync + reindex in progress'
     headers:
       'Content-type': 'text/plain'
+    api_timeout: "$API_TIMEOUT"
 cleanup:
 - call:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
@@ -26,3 +36,4 @@ cleanup:
     data: 'resync + reindex in progress'
     headers:
       'Content-type': 'text/plain'
+    api_timeout: "$API_TIMEOUT"

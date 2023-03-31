@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
 import java.io.File;
@@ -65,12 +66,17 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * Traverse the changesets using the visitor pattern.
      * @param sinceRevision start revision
      * @param visitor consumer of revisions
+     * @param progress {@link Progress} instance
      * @throws HistoryException on error during history retrieval
      */
-    public abstract void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException;
+    public abstract void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor,
+                                Progress progress)
+            throws HistoryException;
 
     @Override
-    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException, CacheException {
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory)
+            throws HistoryException, CacheException {
+
         if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
             LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
                     "it is disabled in the configuration. Generating history cache as whole.", this);

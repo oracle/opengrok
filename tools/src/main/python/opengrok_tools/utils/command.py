@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -297,7 +297,7 @@ class Command:
         finally:
             if self.timeout != 0 and timeout_thread:
                 with time_condition:
-                    time_condition.notifyAll()
+                    time_condition.notify_all()
 
             # The subprocess module does not close the write pipe descriptor
             # it fetched via OutputThread's fileno() so in order to gracefully
@@ -344,10 +344,14 @@ class Command:
                 newarg = cmdarg
                 for pattern in args_subst.keys():
                     if pattern in newarg and args_subst[pattern]:
+                        value = args_subst[pattern]
+                        if value.startswith("$"):
+                            self.logger.debug(f"treating {value} as environment variable")
+                            value = os.environ.get(value[1:], "")
                         self.logger.debug("replacing '{}' in '{}' with '{}'".
                                           format(pattern, newarg,
-                                                 args_subst[pattern]))
-                        newarg = newarg.replace(pattern, args_subst[pattern])
+                                                 value))
+                        newarg = newarg.replace(pattern, value)
                         self.logger.debug("replaced argument with {}".
                                           format(newarg))
                         subst_done = i

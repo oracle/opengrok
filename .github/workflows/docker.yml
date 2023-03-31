@@ -8,6 +8,24 @@ jobs:
     steps:
     - name: Checkout master branch
       uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: python3 -m pip install -r docker/requirements.txt
+    - name: Install opengrok-tools
+      run: python3 setup.py install
+      working-directory: tools
+    - name: Install checkers
+      run: python3 -m pip install pylint flake8 black isort
+    - name: Run flake8
+      run: flake8 --max-line-length 119 docker/*.py
+    - name: Run pylint
+      run: pylint -E --max-line-length 119 docker/*.py
+    - name: Run black in check mode
+      run: black --check docker/*.py
+    - name: Run isort in check mode
+      run: isort --settings-file docker/.isort.cfg docker/*.py  --check --diff
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -16,9 +34,6 @@ jobs:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
     - name: Install Python pre-requisites
       run: python3 -m pip install requests
     - name: Optionally update README on Docker hub

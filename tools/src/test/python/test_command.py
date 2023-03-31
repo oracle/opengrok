@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -73,6 +73,17 @@ def test_subst_multiple():
     cmd = Command(['foo', 'aaa%ARG%bbb%XYZ%ccc', 'bar'],
                   args_subst={"%ARG%": "blah", "%XYZ%": "xyz"})
     assert cmd.cmd == ['foo', 'aaablahbbbxyzccc', 'bar']
+
+
+def test_subst_env():
+    """
+    Test substitution with value treated as environment variable.
+    """
+    os.environ["FOO"] = "foo"
+    cmd = Command(['foo', 'aaa%ARG%bbb', 'bar'],
+                  args_subst={"%ARG%": "$FOO"})
+    assert cmd.cmd == ['foo', 'aaafoobbb', 'bar']
+    os.environ.pop("FOO")
 
 
 # On Windows the return code is actually 1.

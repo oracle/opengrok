@@ -18,10 +18,11 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
+import os
 
 from requests.exceptions import RequestException
 
@@ -41,6 +42,11 @@ ASYNC_API_TIMEOUT_PROPERTY = "async_api_timeout"
 HEADERS_PROPERTY = "headers"
 METHOD_PROPERTY = "method"
 URI_PROPERTY = "uri"
+ARGS_SUBST_PROPERTY = "args_subst"
+LIMITS_PROPERTY = "limits"
+ENV_PROPERTY = "env"
+ARGS_PROPERTY = "args"
+DATA_PROPERTY = "data"
 
 
 class CommandConfigurationException(Exception):
@@ -54,6 +60,11 @@ def check_call_config(call):
     if not isinstance(call, dict):
         raise CommandConfigurationException("call value not a dictionary: {}".
                                             format(call))
+
+    for key in call.keys():
+        if key not in [URI_PROPERTY, METHOD_PROPERTY, API_TIMEOUT_PROPERTY, ASYNC_API_TIMEOUT_PROPERTY,
+                       DATA_PROPERTY, HEADERS_PROPERTY]:
+            raise CommandConfigurationException(f"unknown property {key} in call {call}")
 
     uri = call.get(URI_PROPERTY)
     if not uri:
@@ -69,10 +80,13 @@ def check_call_config(call):
 
     call_timeout = call.get(API_TIMEOUT_PROPERTY)
     if call_timeout:
-        try:
-            int(call_timeout)
-        except ValueError as exc:
-            raise CommandConfigurationException(f"{API_TIMEOUT_PROPERTY} not an integer", exc)
+        if call_timeout.startswith("$"):
+            pass
+        else:
+            try:
+                int(call_timeout)
+            except ValueError as exc:
+                raise CommandConfigurationException(f"{API_TIMEOUT_PROPERTY} not an integer", exc)
 
     call_api_timeout = call.get(ASYNC_API_TIMEOUT_PROPERTY)
     if call_api_timeout:
@@ -80,6 +94,40 @@ def check_call_config(call):
             int(call_api_timeout)
         except ValueError as exc:
             raise CommandConfigurationException(f"{ASYNC_API_TIMEOUT_PROPERTY} not an integer", exc)
+
+
+def check_command_config(command):
+    """
+    :param command: dictionary with executable command configuration
+    """
+    if not isinstance(command, dict):
+        raise CommandConfigurationException(f"command value not a dictionary: {command}")
+
+    for key in command.keys():
+        if key not in [ENV_PROPERTY, ARGS_PROPERTY, LIMITS_PROPERTY, ARGS_SUBST_PROPERTY]:
+            raise CommandConfigurationException(f"unknown property {key} in command {command}")
+
+    limits = command.get(LIMITS_PROPERTY)
+    if limits:
+        if not isinstance(command, dict):
+            raise CommandConfigurationException(f"limits value is not a dictionary in {command}")
+
+    args = command.get(ARGS_PROPERTY)
+    if not args:
+        raise CommandConfigurationException(f"empty/missing args property in {command}")
+
+    if not isinstance(args, list):
+        raise CommandConfigurationException(f"args property is not a list in {command}")
+
+    args_subst = command.get(ARGS_SUBST_PROPERTY)
+    if args_subst:
+        if not isinstance(args_subst, dict):
+            raise CommandConfigurationException(f"args_subst value is not a dictionary in {command}")
+
+    env = command.get(ENV_PROPERTY)
+    if env:
+        if not isinstance(env, dict):
+            raise CommandConfigurationException(f"env value is not a dictionary in {command}")
 
 
 def check_command_property(command):
@@ -97,11 +145,14 @@ def check_command_property(command):
     if command_value is None and call_value is None:
         raise CommandConfigurationException(f"command dictionary has unknown key: {command}")
 
-    if command_value and not isinstance(command_value, list):
-        raise CommandConfigurationException("command value not a list: {}".
+    if command_value and not isinstance(command_value, dict):
+        raise CommandConfigurationException("command value not a dictionary: {}".
                                             format(command_value))
     if call_value:
         check_call_config(call_value)
+
+    if command_value:
+        check_command_config(command_value)
 
 
 class ApiCall:
@@ -121,7 +172,7 @@ class ApiCall:
         if not self.method:
             self.method = "GET"
 
-        self.data = call_dict.get("data")
+        self.data = call_dict.get(DATA_PROPERTY)
 
         self.headers = call_dict.get(HEADERS_PROPERTY)
         if not self.headers:
@@ -130,7 +181,13 @@ class ApiCall:
         self.api_timeout = None
         call_timeout = call_dict.get(API_TIMEOUT_PROPERTY)
         if call_timeout:
-            self.api_timeout = call_timeout
+            if isinstance(call_timeout, str):
+                if call_timeout.startswith("$"):
+                    call_timeout = os.environ.get(call_timeout[1:], "")
+                if call_timeout.isdigit():
+                    self.api_timeout = int(call_timeout)
+            else:
+                self.api_timeout = call_timeout
 
         self.async_api_timeout = None
         call_api_timeout = call_dict.get(ASYNC_API_TIMEOUT_PROPERTY)
@@ -178,6 +235,9 @@ class CommandSequenceBase:
         self.async_api_timeout = async_api_timeout
 
         self.url = url
+
+        self.args_subst = {PROJECT_SUBST: self.name,
+                           URL_SUBST: self.url}
 
     def __str__(self):
         return str(self.name)
@@ -245,8 +305,7 @@ class CommandSequence(CommandSequenceBase):
             if command.get(CALL_PROPERTY):
                 try:
                     call_rest_api(ApiCall(command.get(CALL_PROPERTY)),
-                                  {PROJECT_SUBST: self.name,
-                                   URL_SUBST: self.url},
+                                  self.args_subst,
                                   self.http_headers,
                                   self.api_timeout,
                                   self.async_api_timeout)
@@ -258,13 +317,16 @@ class CommandSequence(CommandSequenceBase):
 
                     break
             elif command.get(COMMAND_PROPERTY):
-                command_args = command.get(COMMAND_PROPERTY)
+                command = command.get(COMMAND_PROPERTY)
+                command_args = command.get(ARGS_PROPERTY)
+                args_subst = self.args_subst
+                if command.get(ARGS_SUBST_PROPERTY):
+                    args_subst.update(command.get(ARGS_SUBST_PROPERTY))
                 command = Command(command_args,
-                                  env_vars=command.get("env"),
+                                  env_vars=command.get(ENV_PROPERTY),
                                   logger=self.logger,
-                                  resource_limits=command.get("limits"),
-                                  args_subst={PROJECT_SUBST: self.name,
-                                              URL_SUBST: self.url},
+                                  resource_limits=command.get(LIMITS_PROPERTY),
+                                  args_subst=args_subst,
                                   args_append=[self.name], excl_subst=True)
                 ret_code = self.run_command(command)
 
@@ -316,13 +378,13 @@ class CommandSequence(CommandSequenceBase):
                     self.logger.error("API call {} failed: {}".
                                       format(cleanup_cmd, e))
             elif cleanup_cmd.get(COMMAND_PROPERTY):
-                command_args = cleanup_cmd.get(COMMAND_PROPERTY)
+                cleanup_cmd = cleanup_cmd.get(COMMAND_PROPERTY)
+                command_args = cleanup_cmd.get(ARGS_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
                               logger=self.logger,
-                              args_subst={PROJECT_SUBST: self.name,
-                                          URL_SUBST: self.url},
+                              args_subst=self.args_subst,
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != SUCCESS_EXITVAL:
