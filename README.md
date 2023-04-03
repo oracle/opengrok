@@ -58,5 +58,3 @@ Use the [Github Discussions](https://github.com/oracle/opengrok/discussions).
 ## 6. Run as container
 
 You can run OpenGrok as a Docker container as described [here](docker/README.md).
-
-In fact, http://demo.opengrok.org/ is using the `opengrok/docker:master` Docker image.
