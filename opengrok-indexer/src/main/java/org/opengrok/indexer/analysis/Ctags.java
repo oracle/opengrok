@@ -202,7 +202,6 @@ public class Ctags implements Resettable {
         addRustSupport(command);
         addPascalSupport(command);
         addPowerShellSupport(command);
-        addTerraformSupport(command);
         //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
         if (langMap == null) {
@@ -441,52 +440,6 @@ public class Ctags implements Resettable {
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v/");
         command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p/");
-    }
-
-    private void addTerraformSupport(List<String> command) {
-        if (!ctagsLanguages.contains("Terraform")) { // Built-in would be capitalized.
-            command.add("--langdef=terraform"); // Lower-case if user-defined.
-        }
-
-        /*
-         * Ignore Terraform single-line comments with short-form (only two
-         * separators following the pattern), exclusive matches.
-         */
-        command.add("--regex-terraform=,^[[:space:]]*#,,{exclusive}");
-        command.add("--regex-terraform=,^[[:space:]]*//,,{exclusive}");
-
-        /*
-         * Terraform "resource block declares a resource of a given type ...
-         * with a given local name...." Unfortunately there is no Posix
-         * equivalent of {Identifier} from HCL.lexh, so we must approximate with
-         * the possibility of leaving out some matches.
-         */
-        command.add("--kinddef-terraform=r,resource,Resource\\ names");
-        command.add("--kinddef-terraform=d,dataSource,Data\\ sources");
-        command.add("--kinddef-terraform=m,module,Modules");
-        command.add("--kinddef-terraform=o,outputValue,Output\\ values");
-        command.add("--kinddef-terraform=p,provider,Providers");
-        command.add("--kinddef-terraform=v,variable,Variables");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*resource[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*" +
-                "\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1.\\2/r/");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*data[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*" +
-                "\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1.\\2/d/");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*module[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1/m/");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*output[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1/o/");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*provider[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1/p/");
-        command.add("--regex-terraform=" +
-                "/^[[:space:]]*variable[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1/v/");
     }
 
     /**
