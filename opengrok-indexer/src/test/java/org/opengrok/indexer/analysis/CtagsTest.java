@@ -153,11 +153,11 @@ public class CtagsTest {
 
     private static List<SingleTagTestData> terraformTestParams() {
         return List.of(
-                new SingleTagTestData("data_source", "aws_ami.example", "dataSource"),
+                new SingleTagTestData("data_source", "example", "data"),
                 new SingleTagTestData("module", "servers", "module"),
-                new SingleTagTestData("output_value", "instance_ip_addr", "outputValue"),
+                new SingleTagTestData("output_value", "instance_ip_addr", "output"),
                 new SingleTagTestData("provider", "oci", "provider"),
-                new SingleTagTestData("resource", "oci_core_vcn.test_vcn", "resource"),
+                new SingleTagTestData("resource", "test_vcn", "resource"),
                 new SingleTagTestData("variable", "availability_zone_names", "variable")
         );
     }
