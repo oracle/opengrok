@@ -52,20 +52,6 @@ public class CacheUtil {
     }
 
     /**
-     * Write serialized object to file.
-     * @param object object to be stored
-     * @param output output file
-     * @throws IOException on error
-     */
-    public static void writeCache(Object object, File output) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(output);
-             XMLEncoder e = new XMLEncoder(new GZIPOutputStream(new BufferedOutputStream(out)))) {
-            e.setPersistenceDelegate(File.class, new FileHistoryCache.FilePersistenceDelegate());
-            e.writeObject(object);
-        }
-    }
-
-    /**
      *
      * @param repository {@link RepositoryInfo} instance
      * @param cache {@link Cache} instance

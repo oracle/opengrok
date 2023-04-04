@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -55,6 +56,7 @@ public class HistoryEntry implements Serializable {
     private final StringBuffer message;
 
     private boolean active;
+    @JsonIgnore
     private SortedSet<String> files;
 
     /** Creates a new instance of HistoryEntry. */
@@ -94,6 +96,7 @@ public class HistoryEntry implements Serializable {
         this.revision = revision;
     }
 
+    @JsonIgnore
     public String getLine() {
         return String.join(" ",
                 getRevision(), getDate().toString(), getAuthor(), message, "\n");

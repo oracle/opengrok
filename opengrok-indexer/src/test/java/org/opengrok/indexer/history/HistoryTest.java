@@ -152,8 +152,8 @@ class HistoryTest {
         ArrayList<HistoryEntry> serialisableEntryList = new ArrayList<>(entries);
         History history = new History(serialisableEntryList);
         File tempFile = File.createTempFile("tmpHistory1", "gz", temporaryPath.toFile());
-        CacheUtil.writeCache(history, tempFile);
-        History deserialised = FileHistoryCache.readCache(tempFile);
+        FileHistoryCache.writeHistoryTo(history, tempFile);
+        History deserialised = FileHistoryCache.readHistory(tempFile);
         assertEquals(history, deserialised);
     }
 }
