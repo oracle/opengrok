@@ -214,6 +214,18 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      * @throws IOException on error
      */
     public static void writeHistoryTo(History history, File outputFile) throws IOException {
+        ObjectWriter objectWriter = getObjectWriter();
+
+        // TODO: BufferedOutputStream ?
+        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+            for (HistoryEntry historyEntry : history.getHistoryEntries()) {
+                byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
+                outputStream.write(bytes);
+            }
+        }
+    }
+
+    private static ObjectWriter getObjectWriter() {
         SmileFactory smileFactory = new SmileFactory();
         // need header to enable shared string values
         smileFactory.configure(SmileGenerator.Feature.WRITE_HEADER, true);
@@ -221,14 +233,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
 
         ObjectMapper mapper = new SmileMapper(smileFactory);
         // ObjectMapper mapper = new JsonMapper();
-        ObjectWriter objectWriter = mapper.writer().forType(HistoryEntry.class);
-
-        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-            for (HistoryEntry historyEntry : history.getHistoryEntries()) {
-                byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
-                outputStream.write(bytes);
-            }
-        }
+        return mapper.writer().forType(HistoryEntry.class);
     }
 
     private void safelyRename(File output, File cacheFile) throws HistoryException {
@@ -349,13 +354,19 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
 
         // Append the contents of the pre-existing cache file to the temporary file.
         if (mergeHistory && cacheFile.exists()) {
-            try (BufferedWriter out = new BufferedWriter(new FileWriter(outputFile, true));
-                 BufferedReader in = new BufferedReader(new FileReader(cacheFile))) {
-
-                char[] buf = new char[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
+            // TODO: buffered ?
+            try (OutputStream outputStream = new FileOutputStream(outputFile, true)) {
+                SmileFactory factory = new SmileFactory();
+                ObjectMapper mapper = new SmileMapper();
+                ObjectWriter objectWriter = getObjectWriter();
+                try (SmileParser parser = factory.createParser(cacheFile)) {
+                    parser.setCodec(mapper);
+                    Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
+                    while (historyEntryIterator.hasNext()) {
+                        HistoryEntry historyEntry = historyEntryIterator.next();
+                        byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
+                        outputStream.write(bytes);
+                    }
                 }
             } catch (IOException ioe) {
                 throw new HistoryException("Failed to write history", ioe);
