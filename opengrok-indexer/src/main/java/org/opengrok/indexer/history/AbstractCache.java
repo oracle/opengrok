@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -132,6 +132,6 @@ public abstract class AbstractCache implements Cache {
     }
 
     public String getCacheFileSuffix() {
-        return ".gz";
+        return "";
     }
 }

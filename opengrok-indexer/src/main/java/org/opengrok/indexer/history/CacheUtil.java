@@ -29,16 +29,12 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 
-import java.beans.XMLEncoder;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Helper functions for {@link HistoryCache} and {@link AnnotationCache} implementations.
@@ -49,20 +45,6 @@ public class CacheUtil {
 
     private CacheUtil() {
         // private to enforce static
-    }
-
-    /**
-     * Write serialized object to file.
-     * @param object object to be stored
-     * @param output output file
-     * @throws IOException on error
-     */
-    public static void writeCache(Object object, File output) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(output);
-             XMLEncoder e = new XMLEncoder(new GZIPOutputStream(new BufferedOutputStream(out)))) {
-            e.setPersistenceDelegate(File.class, new FileHistoryCache.FilePersistenceDelegate());
-            e.writeObject(object);
-        }
     }
 
     /**

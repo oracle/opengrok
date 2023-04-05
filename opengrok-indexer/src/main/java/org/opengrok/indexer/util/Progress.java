@@ -105,6 +105,10 @@ public class Progress implements AutoCloseable {
                 Level.FINE, Level.FINER, Level.FINEST, Level.ALL);
         int i = standardLevels.indexOf(baseLogLevel);
         for (int num : new int[]{100, 50, 10, 1}) {
+            if (i >= standardLevels.size()) {
+                break;
+            }
+
             Level level = standardLevels.get(i);
             if (level == null) {
                 break;

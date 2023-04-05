@@ -26,17 +26,14 @@ package org.opengrok.indexer.history;
 import java.beans.Encoder;
 import java.beans.Expression;
 import java.beans.PersistenceDelegate;
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -45,8 +42,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -54,12 +51,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -176,127 +178,113 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         return true;
     }
 
-    private static XMLDecoder getDecoder(InputStream in, ClassLoader classLoader) {
-        return new XMLDecoder(in, null, null, classLoader);
-    }
-
-    @TestOnly
-    static History readCache(String xmlconfig) {
-        final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
-        try (XMLDecoder d = getDecoder(in, new HistoryClassLoader())) {
-            return (History) d.readObject();
-        }
-    }
-
     /**
-     * Read history from a file.
+     * Read complete history from the cache.
      */
-    static History readCache(File file) throws IOException {
-        try (FileInputStream in = new FileInputStream(file);
-            XMLDecoder d = getDecoder(new GZIPInputStream(new BufferedInputStream(in)), new HistoryClassLoader())) {
-            return (History) d.readObject();
+    static History readHistory(File cacheFile, Repository repository) throws IOException {
+        SmileFactory factory = new SmileFactory();
+        ObjectMapper mapper = new SmileMapper();
+        List<HistoryEntry> historyEntryList = new ArrayList<>();
+
+        try (SmileParser parser = factory.createParser(cacheFile)) {
+            parser.setCodec(mapper);
+            Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
+            historyEntryIterator.forEachRemaining(historyEntryList::add);
         }
-    }
 
-    /**
-     * Store object in file on disk.
-     * @param dir directory where the file will be saved
-     * @param object object to store
-     * @param cacheFile the file to store the history to
-     */
-    private void writeObjectToFile(File dir, Object object, File cacheFile) throws HistoryException {
+        History history = new History(historyEntryList);
 
-        // We have a problem that multiple threads may access the cache layer
-        // at the same time. Since I would like to avoid read-locking, I just
-        // serialize the write access to the cache file. The generation of the
-        // cache file would most likely be executed during index generation, and
-        // that happens sequentially anyway....
-        // Generate the file with a temporary name and move it into place when
-        // done, so it is not necessary to protect the readers for partially updated
-        // files...
-        final File output;
-        try {
-            output = File.createTempFile("ogtmp", null, dir);
-            CacheUtil.writeCache(object, output);
-        } catch (IOException ioe) {
-            throw new HistoryException("Failed to write history", ioe);
-        }
-        synchronized (lock) {
-            if (!cacheFile.delete() && cacheFile.exists()) {
-                if (!output.delete()) {
-                    LOGGER.log(Level.WARNING, "Failed to remove temporary cache file");
-                }
-                throw new HistoryException(String.format("Cache file '%s' exists, and could not be deleted.",
-                        cacheFile));
+        // Read tags from separate file.
+        if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+            File tagFile = getTagsFile(cacheFile);
+            try (SmileParser parser = factory.createParser(tagFile)) {
+                parser.setCodec(mapper);
+                Map<String, String> tags = parser.readValueAs(new TypeReference<HashMap<String, String>>() {
+                });
+                history.setTags(tags);
+            } catch (IOException ioe) {
+                // Handle the exception here gracefully - it impacts the history only partially.
+                LOGGER.log(Level.WARNING, "failed to read tags from ''{0}''", tagFile);
             }
-            if (!output.renameTo(cacheFile)) {
-                try {
-                    Files.delete(output.toPath());
-                } catch (IOException e) {
-                    throw new HistoryException("failed to delete output file", e);
-                }
-                throw new HistoryException(String.format("Failed to rename cache temporary file '%s' to '%s'",
-                        output, cacheFile));
-            }
-        }
-    }
-
-    /**
-     * Read history from cacheFile and merge it with histNew, return merged history.
-     *
-     * @param cacheFile file to where the history object will be stored
-     * @param histNew history object with new history entries
-     * @param repo repository to where pre pre-image of the cacheFile belong
-     * @return merged history (can be null if merge failed for some reason)
-     */
-    private History mergeOldAndNewHistory(File cacheFile, History histNew, Repository repo) {
-
-        History histOld;
-        History history = null;
-
-        try {
-            histOld = readCache(cacheFile);
-            // Merge old history with the new history.
-            List<HistoryEntry> listOld = histOld.getHistoryEntries();
-            if (!listOld.isEmpty()) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "for ''{0}'' merging old history {1} with new history {2}",
-                            new Object[]{cacheFile, histOld.getRevisionList(), histNew.getRevisionList()});
-                }
-                List<HistoryEntry> listNew = histNew.getHistoryEntries();
-                ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
-                while (li.hasPrevious()) {
-                    listOld.add(0, li.previous());
-                }
-                history = new History(listOld);
-
-                // Re-tag the changesets in case there have been some new
-                // tags added to the repository. Technically we should just
-                // re-tag the last revision from the listOld however this
-                // does not solve the problem when listNew contains new tags
-                // retroactively tagging changesets from listOld, so we resort
-                // to this somewhat crude solution of re-tagging from scratch.
-                if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
-                    history.strip();
-                    repo.assignTagsInHistory(history);
-                }
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE,
-                String.format("Cannot open history cache file %s", cacheFile.getPath()), ex);
         }
 
         return history;
     }
 
     /**
-     * Store history object (encoded as XML and compressed with gzip) in a file.
+     * Write serialized object to file.
+     * @param history {@link History} instance to be stored
+     * @param outputFile output file
+     * @throws IOException on error
+     */
+    public static void writeHistoryTo(History history, File outputFile) throws IOException {
+        ObjectWriter objectWriter = getObjectWriter();
+
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))) {
+            for (HistoryEntry historyEntry : history.getHistoryEntries()) {
+                byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
+                outputStream.write(bytes);
+            }
+        }
+    }
+
+    public static void writeTagsTo(File outputFile, History history) throws IOException {
+        SmileFactory smileFactory = new SmileFactory();
+        // need header to enable shared string values
+        smileFactory.configure(SmileGenerator.Feature.WRITE_HEADER, true);
+        smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
+
+        ObjectMapper mapper = new SmileMapper(smileFactory);
+        // ObjectMapper mapper = new JsonMapper();
+        ObjectWriter objectWriter = mapper.writer().forType(HashMap.class);
+
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))) {
+            byte[] bytes = objectWriter.writeValueAsBytes(history.getTags());
+            outputStream.write(bytes);
+        }
+    }
+
+    private static ObjectWriter getObjectWriter() {
+        SmileFactory smileFactory = new SmileFactory();
+        // need header to enable shared string values
+        smileFactory.configure(SmileGenerator.Feature.WRITE_HEADER, true);
+        smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
+
+        ObjectMapper mapper = new SmileMapper(smileFactory);
+        // ObjectMapper mapper = new JsonMapper();
+        return mapper.writer().forType(HistoryEntry.class);
+    }
+
+    private void safelyRename(File output, File cacheFile) throws HistoryException {
+        if (!cacheFile.delete() && cacheFile.exists()) {
+            if (!output.delete()) {
+                LOGGER.log(Level.WARNING, "Failed to remove temporary cache file ''{0}''", cacheFile);
+            }
+            throw new HistoryException(String.format("Cache file '%s' exists, and could not be deleted.",
+                    cacheFile));
+        }
+        if (!output.renameTo(cacheFile)) {
+            try {
+                Files.delete(output.toPath());
+            } catch (IOException e) {
+                throw new HistoryException("failed to delete output file", e);
+            }
+            throw new HistoryException(String.format("Failed to rename cache temporary file '%s' to '%s'",
+                    output, cacheFile));
+        }
+    }
+
+    private static File getTagsFile(File file) {
+        return new File(file.getAbsolutePath() + ".t");
+    }
+
+    /**
+     * Store {@link History} object in a file.
      *
      * @param histNew history object to store
      * @param file file to store the history object into
      * @param repo repository for the file
-     * @param mergeHistory whether to merge the history with existing or
-     *                     store the histNew as is
+     * @param mergeHistory whether to merge the history with existing or store the histNew as is
      */
     private void storeFile(History histNew, File file, Repository repo, boolean mergeHistory) throws HistoryException {
         File cacheFile;
@@ -306,7 +294,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             LOGGER.log(Level.FINER, e.getMessage());
             return;
         }
-        History history = histNew;
 
         File dir = cacheFile.getParentFile();
         // calling isDirectory twice to prevent a race condition
@@ -314,26 +301,80 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             throw new HistoryException("Unable to create cache directory '" + dir + "'.");
         }
 
-        if (mergeHistory && cacheFile.exists()) {
-            history = mergeOldAndNewHistory(cacheFile, histNew, repo);
-        }
-
-        // If the merge failed, null history will be returned.
-        // In such case store at least new history as the best effort.
-        if (history == null) {
-            LOGGER.log(Level.WARNING, "history cache for file ''{0}'' truncated to new history", file);
-            history = histNew;
-        }
-
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
-                    new Object[]{cacheFile, history.getRevisionList()});
+                    new Object[]{cacheFile, histNew.getRevisionList()});
         }
-        writeObjectToFile(dir, history, cacheFile);
-    }
 
-    private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
-        storeFile(histNew, file, repo, false);
+        final File outputFile;
+        try {
+            outputFile = File.createTempFile("ogtmp", null, dir);
+            writeHistoryTo(histNew, outputFile);
+        } catch (IOException ioe) {
+            throw new HistoryException("Failed to write history", ioe);
+        }
+
+        boolean assignTags = env.isTagsEnabled() && repo.hasFileBasedTags();
+
+        // Append the contents of the pre-existing cache file to the temporary file.
+        if (mergeHistory && cacheFile.exists()) {
+            try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, true))) {
+                SmileFactory factory = new SmileFactory();
+                ObjectMapper mapper = new SmileMapper();
+                ObjectWriter objectWriter = getObjectWriter();
+                try (SmileParser parser = factory.createParser(cacheFile)) {
+                    parser.setCodec(mapper);
+                    Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
+                    while (historyEntryIterator.hasNext()) {
+                        HistoryEntry historyEntry = historyEntryIterator.next();
+                        byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
+                        outputStream.write(bytes);
+                        if (assignTags) {
+                            histNew.getHistoryEntries().add(historyEntry);
+                        }
+                    }
+                }
+            } catch (IOException ioe) {
+                throw new HistoryException("Failed to write history", ioe);
+            }
+
+            // Re-tag the changesets in case there have been some new
+            // tags added to the repository. Technically we should just
+            // re-tag the last revision from the listOld however this
+            // does not solve the problem when listNew contains new tags
+            // retroactively tagging changesets from listOld, so we resort
+            // to this somewhat crude solution of re-tagging from scratch.
+            if (assignTags) {
+                histNew.strip();
+                repo.assignTagsInHistory(histNew);
+            }
+        }
+
+        // TODO: adjust the comment and revisit the locking - is it really needed ?
+        // We have a problem that multiple threads may access the cache layer
+        // at the same time. Since I would like to avoid read-locking, I just
+        // serialize the write access to the cache file. The generation of the
+        // cache file would most likely be executed during index generation, and
+        // that happens sequentially anyway....
+        // Generate the file with a temporary name and move it into place when
+        // done, so it is not necessary to protect the readers for partially updated
+        // files...
+        synchronized (lock) {
+            if (assignTags) {
+                // Store tags in separate file.
+                // Ideally that should be done using the cycle above to avoid dealing with complete History instance.
+                File outputTagsFile = getTagsFile(outputFile);
+                try {
+                    writeTagsTo(outputTagsFile, histNew);
+                } catch (IOException ioe) {
+                    throw new HistoryException("Failed to write tags", ioe);
+                }
+
+                safelyRename(outputTagsFile, getTagsFile(cacheFile));
+            }
+
+            safelyRename(outputFile, cacheFile);
+        }
     }
 
     private void finishStore(Repository repository, String latestRev) {
@@ -343,7 +384,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             // failure), do not create the CachedRevision file as this would
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
-                "Could not store history for repository {0}: {1} is not a directory",
+                "Could not store history for repository {0}: ''{1}'' is not a directory",
                 new Object[]{repository, histDir});
         } else {
             storeLatestCachedRevision(repository, latestRev);
@@ -609,7 +650,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 if (fileHistoryCacheHits != null) {
                     fileHistoryCacheHits.increment();
                 }
-                return readCache(cacheFile);
+                return readHistory(cacheFile, repository);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, String.format("Error when reading cache file '%s'", cacheFile), e);
             }

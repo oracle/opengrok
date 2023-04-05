@@ -304,7 +304,7 @@ public class IndexerTest {
             if (path.equals(this.path)) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File f = new File(env.getDataRootPath(),
-                        TandemPath.join("historycache" + path, ".gz"));
+                        TandemPath.join("historycache" + path, ""));
                 assertTrue(f.exists(), String.format("history cache file %s should be preserved", f));
             }
             removedFiles.add(path);
@@ -339,7 +339,7 @@ public class IndexerTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, List.of("mercurial"));
         File historyFile = new File(env.getDataRootPath(),
-                TandemPath.join("historycache" + path, ".gz"));
+                TandemPath.join("historycache" + path, ""));
         assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
 
         // create index

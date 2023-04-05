@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
@@ -38,11 +37,14 @@ import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -50,6 +52,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
@@ -196,7 +203,7 @@ class FileHistoryCacheTest {
         /*
          * The history should not be disturbed.
          * Make sure that get() retrieved the history from cache. Mocking/spying static methods
-         * (FileHistoryCache#readCache() in this case) is tricky so use the cache hits metric.
+         * (FileHistoryCache#readHistory() in this case) is tricky so use the cache hits metric.
          */
         double cacheHitsBeforeGet = cache.getFileHistoryCacheHits();
         History historyAfterReindex = cache.get(file, repo, false);
@@ -251,7 +258,7 @@ class FileHistoryCacheTest {
         // Avoid uncommitted changes.
         MercurialRepositoryTest.runHgCommand(reposRoot, "revert", "--all");
 
-        // Add bunch of changesets with file based changes and tags.
+        // Add a bunch of changesets with file based changes and tags.
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export-tag.txt").toURI()).toString());
 
@@ -396,7 +403,7 @@ class FileHistoryCacheTest {
     /**
      * Check how incremental reindex behaves when indexing changesets that
      * rename+change file.
-     *
+     * <p>
      * The scenario goes as follows:
      * - create Mercurial repository
      * - perform full reindex
@@ -404,6 +411,7 @@ class FileHistoryCacheTest {
      * - perform incremental reindex
      * - change+rename the file again
      * - incremental reindex
+     * </p>
      */
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
@@ -984,59 +992,40 @@ class FileHistoryCacheTest {
         assertNotNull(retrievedHistory, "history for Makefile should not be null");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
-                    "    <void method=\"exec\">\n" +
-                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
-                    "        <void index=\"0\">\n" +
-                    "          <string>/usr/bin/nc</string>\n" +
-                    "        </void>\n" +
-                    "        <void index=\"1\">\n" +
-                    "          <string>-l</string>\n" +
-                    "        </void>\n" +
-                    "      </array>\n" +
-                    "    </void>\n" +
-                    "  </object>\n" +
-                    "</java>",
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
-                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
-                    "      <void index=\"0\"> \n" +
-                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
-                    "      </void>\n" +
-                    "    </array>\n" +
-                    "    <void method=\"start\"/>\n" +
-                    "  </object>\n" +
-                    "</java>",
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class = \"java.io.FileOutputStream\"> \n" +
-                    "    <string>opengrok_test.txt</string>\n" +
-                    "    <method name = \"write\">\n" +
-                    "      <array class=\"byte\" length=\"3\">\n" +
-                    "        <void index=\"0\"><byte>96</byte></void>\n" +
-                    "        <void index=\"1\"><byte>96</byte></void>\n" +
-                    "        <void index=\"2\"><byte>96</byte></void>\n" +
-                    "      </array>\n" +
-                    "    </method>\n" +
-                    "    <method name=\"close\"/>\n" +
-                    "  </object>\n" +
-                    "</java>"
-    })
-    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
-        assertThrows(IllegalAccessError.class, () -> FileHistoryCache.readCache(exploit));
-    }
-
+    // TODO
     @Test
-    void testReadCacheValid() throws IOException {
-        File testFile = new File(FileHistoryCacheTest.class.getClassLoader().
-                getResource("history/FileHistoryCache.java.gz").getFile());
-        History history = FileHistoryCache.readCache(testFile);
-        assertNotNull(history);
-        assertEquals(30, history.getHistoryEntries().size());
+    void testSmile() throws Exception {
+        ObjectMapper mapper = new SmileMapper();
+        File outputFile = new File("/tmp/histentry");
+        ObjectWriter objectWriter = mapper.writer().forType(HistoryEntry.class);
+
+        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+            HistoryEntry historyEntry = new HistoryEntry("1.1.1", "1",
+                    new Date(1245446973L / 60 * 60 * 1000),
+                    "xyz",
+                    "Return failure when executed with no arguments",
+                    true, Collections.emptyList());
+            byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
+            outputStream.write(bytes);
+
+            historyEntry = new HistoryEntry("2.2.2", "2",
+                    new Date(1245446973L / 60 * 60 * 1000),
+                    "xyz",
+                    "Return failure when executed with no arguments",
+                    true, Collections.emptyList());
+            bytes = objectWriter.writeValueAsBytes(historyEntry);
+            outputStream.write(bytes);
+        }
+
+        SmileFactory factory = new SmileFactory();
+        List<HistoryEntry> historyEntryList = new ArrayList<>();
+        try (SmileParser parser = factory.createParser(outputFile)) {
+            parser.setCodec(mapper);
+            Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
+            historyEntryIterator.forEachRemaining(historyEntryList::add);
+        }
+
+        History history = new History(historyEntryList);
+        System.out.println(history);
     }
 }
