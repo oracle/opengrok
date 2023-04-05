@@ -259,7 +259,7 @@ class FileHistoryCacheTest {
         // Avoid uncommitted changes.
         MercurialRepositoryTest.runHgCommand(reposRoot, "revert", "--all");
 
-        // Add bunch of changesets with file based changes and tags.
+        // Add a bunch of changesets with file based changes and tags.
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export-tag.txt").toURI()).toString());
 
