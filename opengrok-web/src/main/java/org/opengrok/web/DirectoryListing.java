@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -142,6 +143,7 @@ public class DirectoryListing {
      * @throws CacheException on error
      * @throws IOException I/O exception
      */
+    @VisibleForTesting
     public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
             throws IOException, CacheException {
         List<DirectoryEntry> filesExtra = null;
