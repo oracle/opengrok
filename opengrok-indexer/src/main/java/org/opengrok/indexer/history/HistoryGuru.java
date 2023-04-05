@@ -418,38 +418,53 @@ public final class HistoryGuru {
         return null;
     }
 
+    @Nullable
+    private HistoryEntry getLastHistoryEntryFromCache(File file, Repository repository) throws CacheException {
+
+        if (useHistoryCache() && historyCache.supportsRepository(repository)) {
+            return historyCache.getLastHistoryEntry(file);
+        }
+
+        return null;
+    }
+
     /**
      * Get last {@link HistoryEntry} for a file. First, try to retrieve it from the cache.
      * If that fails, fallback to the repository method.
      * @param file file to get the history entry for
      * @param ui is the request coming from the UI
+     * @param fallback whether to perform fallback to repository method if cache retrieval fails
      * @return last (newest) history entry for given file or {@code null}
      * @throws HistoryException if history retrieval failed
      */
     @Nullable
-    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui, boolean fallback) throws HistoryException {
         Statistics statistics = new Statistics();
         LOGGER.log(Level.FINEST, "started retrieval of last history entry for ''{0}''", file);
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
-        History history;
         try {
-            history = getHistoryFromCache(file, repository, false);
-            if (history != null) {
-                HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
-                if (lastHistoryEntry != null) {
-                    statistics.report(LOGGER, Level.FINEST,
-                            String.format("got latest history entry %s for ''%s'' from history cache",
-                            lastHistoryEntry, file), "history.entry.latest");
-                    return lastHistoryEntry;
-                }
+            HistoryEntry lastHistoryEntry = getLastHistoryEntryFromCache(file, repository);
+            if (lastHistoryEntry != null) {
+                statistics.report(LOGGER, Level.FINEST,
+                        String.format("got latest history entry %s for ''%s'' from history cache",
+                        lastHistoryEntry, file), "history.entry.latest");
+                return lastHistoryEntry;
             }
         } catch (CacheException e) {
             LOGGER.log(Level.FINER,
                     String.format("failed to retrieve last history entry for ''%s'' in %s using history cache",
                             file, repository),
                             e.getMessage());
+        }
+
+        if (!fallback) {
+            statistics.report(LOGGER, Level.FINEST,
+                    String.format("cannot retrieve the last history entry for ''%s'' in %s because fallback to" +
+                                    "repository method is disabled",
+                            file, repository), "history.entry.latest");
+            return null;
         }
 
         if (!isRepoHistoryEligible(repository, file, ui)) {

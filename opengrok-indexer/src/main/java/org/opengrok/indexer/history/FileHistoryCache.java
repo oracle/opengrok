@@ -209,6 +209,22 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         return history;
     }
 
+    static HistoryEntry readLastHistoryEntry(File cacheFile) throws IOException {
+        SmileFactory factory = new SmileFactory();
+        ObjectMapper mapper = new SmileMapper();
+        HistoryEntry historyEntry = null;
+
+        try (SmileParser parser = factory.createParser(cacheFile)) {
+            parser.setCodec(mapper);
+            Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
+            if (historyEntryIterator.hasNext()) {
+                historyEntry = historyEntryIterator.next();
+            }
+        }
+
+        return historyEntry;
+    }
+
     /**
      * Write serialized object to file.
      * @param history {@link History} instance to be stored
@@ -641,6 +657,27 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                     fileHistoryCacheHits.increment();
                 }
                 return readHistory(cacheFile, repository);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, String.format("Error when reading cache file '%s'", cacheFile), e);
+            }
+        }
+
+        if (fileHistoryCacheMisses != null) {
+            fileHistoryCacheMisses.increment();
+        }
+
+        return null;
+    }
+
+    @Override
+    public HistoryEntry getLastHistoryEntry(File file) throws CacheException {
+        if (isUpToDate(file)) {
+            File cacheFile = getCachedFile(file);
+            try {
+                if (fileHistoryCacheHits != null) {
+                    fileHistoryCacheHits.increment();
+                }
+                return readLastHistoryEntry(cacheFile);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, String.format("Error when reading cache file '%s'", cacheFile), e);
             }
