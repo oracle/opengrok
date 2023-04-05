@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
