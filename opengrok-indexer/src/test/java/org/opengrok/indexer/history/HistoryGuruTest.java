@@ -377,7 +377,7 @@ public class HistoryGuruTest {
     void testGetLastHistoryEntryNonexistent() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         File file = new File("/nonexistent");
-        assertNull(instance.getLastHistoryEntry(file, true));
+        assertNull(instance.getLastHistoryEntry(file, true, true));
     }
 
     @ParameterizedTest
@@ -391,9 +391,9 @@ public class HistoryGuruTest {
         File file = new File(repository.getSourceRoot(), "git");
         assertTrue(file.exists());
         if (isIndexerParam) {
-            assertThrows(IllegalStateException.class, () -> instance.getLastHistoryEntry(file, true));
+            assertThrows(IllegalStateException.class, () -> instance.getLastHistoryEntry(file, true, true));
         } else {
-            assertNotNull(instance.getLastHistoryEntry(file, true));
+            assertNotNull(instance.getLastHistoryEntry(file, true, true));
         }
         env.setIndexer(isIndexer);
         env.setTagsEnabled(isTagsEnabled);
@@ -417,7 +417,7 @@ public class HistoryGuruTest {
 
         assertNotNull(repository);
         repository.setHistoryEnabled(false);
-        assertNull(instance.getLastHistoryEntry(file, false));
+        assertNull(instance.getLastHistoryEntry(file, false, true));
 
         // cleanup
         repository.setHistoryEnabled(true);

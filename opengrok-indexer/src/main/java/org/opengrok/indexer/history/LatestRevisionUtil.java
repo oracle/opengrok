@@ -113,7 +113,7 @@ public class LatestRevisionUtil {
 
     @Nullable
     private static String getLastRevFromHistory(File file) throws HistoryException {
-        HistoryEntry he = HistoryGuru.getInstance().getLastHistoryEntry(file, true);
+        HistoryEntry he = HistoryGuru.getInstance().getLastHistoryEntry(file, true, true);
         if (he != null) {
             return he.getRevision();
         }

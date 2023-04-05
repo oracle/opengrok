@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -42,6 +42,14 @@ interface HistoryCache extends Cache {
      * @throws CacheException if the history cache cannot be fetched
      */
     History get(File file, @Nullable Repository repository, boolean withFiles) throws CacheException;
+
+    /**
+     * Retrieve last (newest) history entry for the given file from the cache.
+     *
+     * @param file The file to retrieve history for
+     * @throws CacheException if the history cache cannot be read
+     */
+    HistoryEntry getLastHistoryEntry(File file) throws CacheException;
 
     /**
      * Store the history for a repository.
