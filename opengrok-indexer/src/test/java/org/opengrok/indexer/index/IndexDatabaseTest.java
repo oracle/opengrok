@@ -223,7 +223,7 @@ class IndexDatabaseTest {
                     assertFalse(historyGuru.hasAnnotationCacheForFile(file));
                 }
             } else {
-                cacheFile = TandemPath.join(fileName, "");
+                cacheFile = TandemPath.join(fileName, dirName.equals(IndexDatabase.XREF_DIR) ? ".gz" : "");
                 File dataFile = new File(dataDir, cacheFile);
 
                 if (shouldExist) {
