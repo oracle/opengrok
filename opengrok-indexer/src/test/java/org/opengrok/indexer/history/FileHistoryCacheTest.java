@@ -983,4 +983,23 @@ class FileHistoryCacheTest {
         retrievedHistory = cache.get(makefile, repo, true);
         assertNotNull(retrievedHistory, "history for Makefile should not be null");
     }
+
+    @Test
+    void testGetLastHistoryEntry() throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "git");
+
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+
+        cache.clear(repository);
+        File sourceFile = new File(repositoryRoot, "main.c");
+        assertTrue(repository.getHistory(sourceFile).getHistoryEntries().size() > 1);
+        assertTrue(sourceFile.exists());
+        assertNull(cache.getLastHistoryEntry(sourceFile));
+
+        History historyToStore = repository.getHistory(repositoryRoot);
+        cache.store(historyToStore, repository);
+        HistoryEntry historyEntry = cache.getLastHistoryEntry(sourceFile);
+        assertNotNull(historyEntry);
+        assertEquals("aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a", historyEntry.getRevision());
+    }
 }
