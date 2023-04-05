@@ -729,6 +729,7 @@ public final class HistoryGuru {
      * Get the last modified times for all files and subdirectories in the specified directory.
      *
      * @param directory the directory whose files to check
+     * @param entries list of {@link DirectoryEntry} instances
      * @return a map from file names to modification times for the files that
      * the history cache has information about
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
