@@ -991,41 +991,4 @@ class FileHistoryCacheTest {
         retrievedHistory = cache.get(makefile, repo, true);
         assertNotNull(retrievedHistory, "history for Makefile should not be null");
     }
-
-    // TODO
-    @Test
-    void testSmile() throws Exception {
-        ObjectMapper mapper = new SmileMapper();
-        File outputFile = new File("/tmp/histentry");
-        ObjectWriter objectWriter = mapper.writer().forType(HistoryEntry.class);
-
-        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-            HistoryEntry historyEntry = new HistoryEntry("1.1.1", "1",
-                    new Date(1245446973L / 60 * 60 * 1000),
-                    "xyz",
-                    "Return failure when executed with no arguments",
-                    true, Collections.emptyList());
-            byte[] bytes = objectWriter.writeValueAsBytes(historyEntry);
-            outputStream.write(bytes);
-
-            historyEntry = new HistoryEntry("2.2.2", "2",
-                    new Date(1245446973L / 60 * 60 * 1000),
-                    "xyz",
-                    "Return failure when executed with no arguments",
-                    true, Collections.emptyList());
-            bytes = objectWriter.writeValueAsBytes(historyEntry);
-            outputStream.write(bytes);
-        }
-
-        SmileFactory factory = new SmileFactory();
-        List<HistoryEntry> historyEntryList = new ArrayList<>();
-        try (SmileParser parser = factory.createParser(outputFile)) {
-            parser.setCodec(mapper);
-            Iterator<HistoryEntry> historyEntryIterator = parser.readValuesAs(HistoryEntry.class);
-            historyEntryIterator.forEachRemaining(historyEntryList::add);
-        }
-
-        History history = new History(historyEntryList);
-        System.out.println(history);
-    }
 }
