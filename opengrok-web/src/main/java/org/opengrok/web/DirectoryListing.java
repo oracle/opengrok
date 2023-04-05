@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -166,7 +167,7 @@ public class DirectoryListing {
      * @throws CacheException when failed to get last modified time for files in directory
      */
     public List<String> extraListTo(String contextPath, File dir, Writer out,
-                                    String path, List<DirectoryEntry> entries) throws IOException, CacheException {
+                                    String path, @Nullable List<DirectoryEntry> entries) throws IOException, CacheException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<>();
         int offset = -1;
@@ -199,6 +200,10 @@ public class DirectoryListing {
 
         PathAccepter pathAccepter = RuntimeEnvironment.getInstance().getPathAccepter();
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        if (entries != null) {
+            entries = entries.stream().filter(e -> pathAccepter.accept(e.getFile())).
+                    collect(Collectors.toList());
+        }
 
         // Print the '..' entry even for empty directories.
         if (path.length() != 0) {
@@ -208,14 +213,11 @@ public class DirectoryListing {
             out.write("</tr>\n");
         }
 
-        Map<String, Date> modTimes = HistoryGuru.getInstance().getLastModifiedTimes(dir);
+        Map<String, Date> modTimes = HistoryGuru.getInstance().getLastModifiedTimes(dir, entries);
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
                 File child = entry.getFile();
-                if (!pathAccepter.accept(child)) {
-                    continue;
-                }
                 String filename = child.getName();
                 String filenameLower = filename.toLowerCase(Locale.ROOT);
                 if (filenameLower.startsWith("readme") ||

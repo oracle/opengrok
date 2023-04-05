@@ -55,6 +55,7 @@ import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.Statistics;
@@ -732,7 +733,7 @@ public final class HistoryGuru {
      * the history cache has information about
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public Map<String, Date> getLastModifiedTimes(File directory) throws CacheException {
+    public Map<String, Date> getLastModifiedTimes(File directory, List<DirectoryEntry> entries) throws CacheException {
 
         Repository repository = getRepository(directory);
         if (repository == null) {
@@ -747,7 +748,7 @@ public final class HistoryGuru {
             return Collections.emptyMap();
         }
 
-        return historyCache.getLastModifiedTimes(directory, repository);
+        return historyCache.getLastModifiedTimes(entries);
     }
 
     /**
