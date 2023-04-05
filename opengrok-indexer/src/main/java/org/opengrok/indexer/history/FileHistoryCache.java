@@ -78,8 +78,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHistoryCache.class);
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private final Object lock = new Object();
-
     private static final String HISTORY_CACHE_DIR_NAME = "historycache";
     private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
 
@@ -350,31 +348,23 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             }
         }
 
-        // TODO: adjust the comment and revisit the locking - is it really needed ?
-        // We have a problem that multiple threads may access the cache layer
-        // at the same time. Since I would like to avoid read-locking, I just
-        // serialize the write access to the cache file. The generation of the
-        // cache file would most likely be executed during index generation, and
-        // that happens sequentially anyway....
         // Generate the file with a temporary name and move it into place when
         // done, so it is not necessary to protect the readers for partially updated
-        // files...
-        synchronized (lock) {
-            if (assignTags) {
-                // Store tags in separate file.
-                // Ideally that should be done using the cycle above to avoid dealing with complete History instance.
-                File outputTagsFile = getTagsFile(outputFile);
-                try {
-                    writeTagsTo(outputTagsFile, histNew);
-                } catch (IOException ioe) {
-                    throw new HistoryException("Failed to write tags", ioe);
-                }
-
-                safelyRename(outputTagsFile, getTagsFile(cacheFile));
+        // files.
+        if (assignTags) {
+            // Store tags in separate file.
+            // Ideally that should be done using the cycle above to avoid dealing with complete History instance.
+            File outputTagsFile = getTagsFile(outputFile);
+            try {
+                writeTagsTo(outputTagsFile, histNew);
+            } catch (IOException ioe) {
+                throw new HistoryException("Failed to write tags", ioe);
             }
 
-            safelyRename(outputFile, cacheFile);
+            safelyRename(outputTagsFile, getTagsFile(cacheFile));
         }
+
+        safelyRename(outputFile, cacheFile);
     }
 
     private void finishStore(Repository repository, String latestRev) {
