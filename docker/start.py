@@ -42,6 +42,7 @@ from opengrok_tools.config_merge import merge_config_files
 from opengrok_tools.deploy import deploy_war
 from opengrok_tools.mirror import OPENGROK_NO_MIRROR_ENV
 from opengrok_tools.sync import do_sync
+from opengrok_tools.utils.commandsequence import COMMAND_PROPERTY, ENV_PROPERTY
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 from opengrok_tools.utils.indexer import Indexer
 from opengrok_tools.utils.log import (
@@ -294,12 +295,14 @@ def merge_commands_env(commands, env):
     :param env: environment dictionary
     :return: updated commands structure
     """
-    for cmd in commands:
-        cmd_env = cmd.get("env")
-        if cmd_env:
-            cmd.env.update(env)
-        else:
-            cmd["env"] = env
+    for entry in commands:
+        cmd = entry.get(COMMAND_PROPERTY)
+        if cmd:
+            cmd_env = cmd.get(ENV_PROPERTY)
+            if cmd_env:
+                cmd_env.update(env)
+            else:
+                cmd[ENV_PROPERTY] = env
 
     return commands
 
