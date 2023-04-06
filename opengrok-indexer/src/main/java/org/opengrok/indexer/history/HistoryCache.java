@@ -23,7 +23,6 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -87,10 +86,10 @@ interface HistoryCache extends Cache {
      * specified directory.
      *
      * @param entries list of {@link DirectoryEntry} instances
-     * @return a map from file names to modification times
+     * @return a map from file names to {@link HistoryEntry} instance
      * @throws CacheException on error
      */
-    Map<String, Date> getLastModifiedTimes(List<DirectoryEntry> entries) throws CacheException;
+    Map<String, HistoryEntry> getLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
 
     /**
      * Clear entry for single file from history cache.

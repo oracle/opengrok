@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -338,9 +337,7 @@ public final class HistoryGuru {
                 String hist_rev = he.getRevision();
                 String short_rev = repo.getRevisionForAnnotate(hist_rev);
                 if (revs.contains(short_rev)) {
-                    annotation.addDesc(short_rev, "changeset: " + he.getRevision()
-                            + "\nsummary: " + he.getMessage() + "\nuser: "
-                            + he.getAuthor() + "\ndate: " + he.getDate());
+                    annotation.addDesc(short_rev, he.getDescription());
                     // History entries are coming from recent to older,
                     // file version should be from oldest to newer.
                     annotation.addFileVersion(short_rev, revs.size() - revsMatched);
@@ -730,11 +727,11 @@ public final class HistoryGuru {
      *
      * @param directory the directory whose files to check
      * @param entries list of {@link DirectoryEntry} instances
-     * @return a map from file names to modification times for the files that
+     * @return a map from file names to {@link HistoryEntry} instance for the files that
      * the history cache has information about
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public Map<String, Date> getLastModifiedTimes(File directory, List<DirectoryEntry> entries) throws CacheException {
+    public Map<String, HistoryEntry> getLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
 
         if (!env.isUseHistoryCacheForDirectoryListing()) {
             LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",
@@ -755,7 +752,7 @@ public final class HistoryGuru {
             return Collections.emptyMap();
         }
 
-        return historyCache.getLastModifiedTimes(entries);
+        return historyCache.getLastHistoryEntries(entries);
     }
 
     /**

@@ -123,7 +123,16 @@ public class HistoryEntry implements Serializable {
                     new Object[]{separator, file});
             separator = ">";
         }
-   }
+    }
+
+    /**
+     * @return description of selected fields; used in the web app.
+     */
+    public String getDescription() {
+        return "changeset: " + getRevision()
+                + "\nsummary: " + getMessage() + "\nuser: "
+                + getAuthor() + "\ndate: " + getDate();
+    }
 
     public String getAuthor() {
         return author;

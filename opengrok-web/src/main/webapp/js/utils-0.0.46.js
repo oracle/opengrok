@@ -1680,33 +1680,34 @@ function domReadyMast() {
             window.location.hash = h;
         }
     }
-    if (document.annotate) {
-        $('a.r').tooltip({
-            content: function () {
-                const element = $(this);
-                const title = element.attr("title") || "";
-                const parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
-                if (parts.length <= 0) {
-                    return "";
-                }
-                const $el = $("<dl>");
-                for (let i = 0; i < parts.length; i++) {
-                    const definitions = parts[i].split(":");
-                    if (definitions.length < 2) {
-                        continue;
-                    }
-                    $("<dt>").text(definitions.shift().trim()).appendTo($el);
-                    const $dd = $("<dd>");
-                    $.each(definitions.join(":").split("<br/>"), function (i, el) {
-                        $dd.append(escapeHtml(el.trim()));
-                        $dd.append($("<br/>"));
-                    });
-                    $dd.appendTo($el);
-                }
-                return $el;
-            }
-        });
 
+    $('a.title-tooltip').tooltip({
+        content: function () {
+            const element = $(this);
+            const title = element.attr("title") || "";
+            const parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
+            if (parts.length <= 0) {
+                return "";
+            }
+            const $el = $("<dl>");
+            for (let i = 0; i < parts.length; i++) {
+                const definitions = parts[i].split(":");
+                if (definitions.length < 2) {
+                    continue;
+                }
+                $("<dt>").text(definitions.shift().trim()).appendTo($el);
+                const $dd = $("<dd>");
+                $.each(definitions.join(":").split("<br/>"), function (i, el) {
+                    $dd.append(escapeHtml(el.trim()));
+                    $dd.append($("<br/>"));
+                });
+                $dd.appendTo($el);
+            }
+            return $el;
+        }
+    });
+
+    if (document.annotate) {
         $("#toggle-annotate-by-javascript").css('display', 'inline');
         $("#toggle-annotate").hide();
     }

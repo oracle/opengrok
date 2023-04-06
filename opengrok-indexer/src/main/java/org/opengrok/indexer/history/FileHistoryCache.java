@@ -40,7 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -764,17 +763,17 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public Map<String, Date> getLastModifiedTimes(List<DirectoryEntry> entries) {
+    public Map<String, HistoryEntry> getLastHistoryEntries(List<DirectoryEntry> entries) {
         if (entries == null) {
             return Collections.emptyMap();
         }
 
-        Map<String, Date> map = new HashMap<>();
+        Map<String, HistoryEntry> map = new HashMap<>();
         for (DirectoryEntry directoryEntry : entries) {
             try {
                 HistoryEntry historyEntry = getLastHistoryEntry(directoryEntry.getFile());
                 if (historyEntry != null && historyEntry.getDate() != null) {
-                    map.put(directoryEntry.getFile().getName(), historyEntry.getDate());
+                    map.put(directoryEntry.getFile().getName(), historyEntry);
                 }
             } catch (CacheException e) {
                 LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());

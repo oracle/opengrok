@@ -44,6 +44,7 @@ import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.CacheException;
+import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
@@ -215,7 +216,8 @@ public class DirectoryListing {
             out.write("</tr>\n");
         }
 
-        Map<String, Date> modTimes = HistoryGuru.getInstance().getLastModifiedTimes(dir, entries);
+        Map<String, HistoryEntry> lastHistoryEntriesMap
+                = HistoryGuru.getInstance().getLastHistoryEntries(dir, entries);
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
@@ -227,6 +229,8 @@ public class DirectoryListing {
                     readMes.add(filename);
                 }
                 boolean isDir = child.isDirectory();
+                HistoryEntry historyEntry = lastHistoryEntriesMap.get(filename);
+
                 out.write("<tr><td>");
                 out.write("<p class=\"");
                 out.write(isDir ? 'r' : 'p');
@@ -248,13 +252,20 @@ public class DirectoryListing {
                     out.write("</b></a>/");
                 } else {
                     out.write(Util.uriEncodePath(filename));
-                    out.write("\">");
+                    out.write("\"");
+                    if (historyEntry != null) {
+                        out.write(" class=\"title-tooltip\" ");
+                        out.write(" title=\"");
+                        out.write(Util.encode(historyEntry.getDescription()));
+                        out.write("\"");
+                    }
+                    out.write(">");
                     out.write(filename);
                     out.write("</a>");
                 }
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename);
-                printDateSize(out, child, modTimes.get(filename), dateFormatter);
+                printDateSize(out, child, historyEntry != null ? historyEntry.getDate() : null, dateFormatter);
                 printNumlines(out, entry, isDir);
                 printLoc(out, entry, isDir);
                 if (offset > 0) {
