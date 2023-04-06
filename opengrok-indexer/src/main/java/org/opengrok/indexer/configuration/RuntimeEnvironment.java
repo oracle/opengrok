@@ -1499,6 +1499,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(flag, Configuration::setHistoryBasedReindex);
     }
 
+    public boolean isUseHistoryCacheForDirectoryListing() {
+        return syncReadConfiguration(Configuration::isUseHistoryCacheForDirectoryListing);
+    }
+
+    public void setUseHistoryCacheForDirectoryListing(boolean flag) {
+        syncWriteConfiguration(flag, Configuration::setUseHistoryCacheForDirectoryListing);
+    }
+
     public FileCollector getFileCollector(String projectName) {
         return fileCollectorMap.get(projectName);
     }

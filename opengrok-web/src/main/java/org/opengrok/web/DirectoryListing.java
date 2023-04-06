@@ -57,7 +57,7 @@ public class DirectoryListing {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
 
-    protected static final String DIRECTORY_SIZE_PLACEHOLDER = "-";
+    protected static final String DIRECTORY_BLANK_PLACEHOLDER = "-";
     private final EftarFileReader desc;
     private final long now;
 
@@ -72,33 +72,33 @@ public class DirectoryListing {
     }
 
     /**
-     * Write part of HTML code which contains file/directory last
-     * modification time and size.
+     * Write part of HTML code which contains file/directory last modification time and size.
      *
      * @param out write destination
-     * @param child the file or directory to use for writing the data
-     * @param modTime the time of the last commit that touched {@code child},
-     * or {@code null} if unknown
+     * @param file the file or directory to use for writing the data
+     * @param modTime the time of the last commit that touched {@code file} or {@code null} if unknown
      * @param dateFormatter the formatter to use for pretty printing dates
      *
-     * @throws NullPointerException if a parameter is {@code null}
+     * @throws IOException when cannot read last modified time from file system
      */
-    private void printDateSize(Writer out, File child, Date modTime,
-                               Format dateFormatter)
-            throws IOException {
-        long lastm = modTime == null ? child.lastModified() : modTime.getTime();
+    private void printDateSize(Writer out, File file, Date modTime, Format dateFormatter) throws IOException {
+        long lastModTime = modTime == null ? file.lastModified() : modTime.getTime();
 
         out.write("<td>");
-        if (now - lastm < 86400000) {
-            out.write("Today");
+        if (modTime == null && file.isDirectory()) {
+            out.write(DIRECTORY_BLANK_PLACEHOLDER);
         } else {
-            out.write(dateFormatter.format(lastm));
+            if (now - lastModTime < 86400000) {
+                out.write("Today");
+            } else {
+                out.write(dateFormatter.format(lastModTime));
+            }
         }
         out.write("</td><td>");
-        if (child.isDirectory()) {
-            out.write(DIRECTORY_SIZE_PLACEHOLDER);
+        if (file.isDirectory()) {
+            out.write(DIRECTORY_BLANK_PLACEHOLDER);
         } else {
-            out.write(Util.readableSize(child.length()));
+            out.write(Util.readableSize(file.length()));
         }
         out.write("</td>");
     }

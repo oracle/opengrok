@@ -736,6 +736,12 @@ public final class HistoryGuru {
      */
     public Map<String, Date> getLastModifiedTimes(File directory, List<DirectoryEntry> entries) throws CacheException {
 
+        if (!env.isUseHistoryCacheForDirectoryListing()) {
+            LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",
+                    directory);
+            return Collections.emptyMap();
+        }
+
         Repository repository = getRepository(directory);
         if (repository == null) {
             LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to retrieve last modified times",

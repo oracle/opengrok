@@ -297,7 +297,7 @@ class DirectoryListingTest {
         Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
-        if (DirectoryListing.DIRECTORY_SIZE_PLACEHOLDER.equals(val.getNodeValue().trim())) {
+        if (DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER.equals(val.getNodeValue().trim())) {
             // track that it had the DIRECTORY_SIZE_PLACEHOLDER character
             return DIRECTORY_INTERNAL_SIZE;
         }
