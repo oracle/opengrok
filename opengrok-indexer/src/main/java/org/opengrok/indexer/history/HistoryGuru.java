@@ -920,20 +920,20 @@ public final class HistoryGuru {
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 
-            LOGGER.log(Level.INFO, "Creating history cache for {0} ({1}) {2} renamed file handling",
+            LOGGER.log(Level.INFO, "Creating history cache for ''{0}'' ({1}) {2} renamed file handling",
                     new Object[]{path, type, repository.isHandleRenamedFiles() ? "with" : "without"});
 
             try {
                 repository.createCache(historyCache, sinceRevision);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
-                        "An error occurred while creating cache for " + path + " (" + type + ")", e);
+                        String.format("An error occurred while creating cache for '%s' (%s)", path, type), e);
             }
 
-            elapsed.report(LOGGER, "Done history cache for " + path);
+            elapsed.report(LOGGER, String.format("Done history cache for '%s'", path));
         } else {
             LOGGER.log(Level.WARNING,
-                    "Skipping creation of history cache of {0} repository in {1}: Missing SCM dependencies?",
+                    "Skipping creation of history cache of {0} repository in ''{1}'': Missing SCM dependencies?",
                     new Object[]{type, path});
         }
     }
