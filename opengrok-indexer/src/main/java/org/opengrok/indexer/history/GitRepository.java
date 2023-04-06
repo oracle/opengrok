@@ -138,7 +138,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         try {
             filename = getGitFilePath(Paths.get(getCanonicalDirectoryName()).relativize(Paths.get(fullpath)).toString());
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' in for repository '%s'",
+            LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' for '%s'",
                     fullpath, directory), e);
             return result;
         }
@@ -159,7 +159,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                     treeWalk.setFilter(PathFilter.create(filename));
                     if (!treeWalk.next()) {
                         LOGGER.log(Level.FINEST, "Did not find expected file ''{0}'' in revision {1} " +
-                                "for repository ''{2}''", new Object[] {filename, rev, directory});
+                                "for ''{2}''", new Object[] {filename, rev, directory});
                         return result;
                     }
 
@@ -175,7 +175,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 revWalk.dispose();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("Failed to get file '%s' in revision %s for repository '%s'",
+            LOGGER.log(Level.WARNING, String.format("Failed to get file '%s' in revision %s for '%s'",
                     filename, rev, directory), e);
         }
 
@@ -250,11 +250,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     String findOriginalName(String fullpath, String changeset) throws IOException {
 
         if (fullpath == null || fullpath.isEmpty()) {
-            throw new IOException(String.format("Invalid file path string: %s", fullpath));
+            throw new IOException(String.format("Invalid file path string: '%s'", fullpath));
         }
 
         if (changeset == null || changeset.isEmpty()) {
-            throw new IOException(String.format("Invalid changeset string for path %s: %s",
+            throw new IOException(String.format("Invalid changeset string for '%s': %s",
                     fullpath, changeset));
         }
 
@@ -525,7 +525,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 }
             }
         } catch (IOException | ForbiddenSymlinkException e) {
-            throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
+            throw new HistoryException(String.format("failed to get history for '%s'", file), e);
         }
     }
 
@@ -735,7 +735,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                         commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
                     } catch (IOException e) {
                         LOGGER.log(Level.FINEST,
-                                String.format("cannot get tags for \"%s\"", directory.getAbsolutePath()), e);
+                                String.format("cannot get tags for '%s'", directory.getAbsolutePath()), e);
                     }
                 }
 
@@ -748,12 +748,12 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 }
             }
         } catch (IOException | GitAPIException e) {
-            LOGGER.log(Level.WARNING, String.format("cannot get tags for \"%s\"", directory.getAbsolutePath()), e);
+            LOGGER.log(Level.WARNING, String.format("cannot get tags for '%s'", directory.getAbsolutePath()), e);
             // In case of partial success, do not null-out tagList here.
         }
 
         if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Read tags count={0} for {1}",
+            LOGGER.log(Level.FINER, "Read tags count={0} for ''{1}''",
                     new Object[] {tagList.size(), directory});
         }
     }
@@ -798,9 +798,9 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         try {
             future.get(RuntimeEnvironment.getInstance().getCommandTimeout(cmdType), TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.log(Level.WARNING, "failed tag rebuild for directory " + directory, e);
+            LOGGER.log(Level.WARNING, String.format("failed tag rebuild for directory '%s'", directory), e);
         } catch (TimeoutException e) {
-            LOGGER.log(Level.WARNING, "timed out tag rebuild for directory " + directory, e);
+            LOGGER.log(Level.WARNING, String.format("timed out tag rebuild for directory '%s'", directory), e);
         }
 
         if (!executor.isTerminated()) {
