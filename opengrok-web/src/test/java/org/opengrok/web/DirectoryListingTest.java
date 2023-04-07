@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -68,6 +68,11 @@ class DirectoryListingTest {
      * the FS is platform dependent.
      */
     private static final int DIRECTORY_INTERNAL_SIZE = -2;
+    /**
+     * Indication that the file is a directory and the date was not displayed,
+     * because the {@code useHistoryCacheForDirectoryListing} tunable was true.
+     */
+    private static final long DIRECTORY_INTERNAL_DATE = -2;
     /**
      * Indication of unparseable file size.
      */
@@ -165,8 +170,7 @@ class DirectoryListingTest {
             int ret = -1;
 
             // @todo verify all attributes!
-            if (name.compareTo(fe.name) == 0
-                    && href.compareTo(fe.href) == 0) {
+            if (name.compareTo(fe.name) == 0 && href.compareTo(fe.href) == 0) {
                 if ( // this is a file so the size must be exact
                         (subdirs == null && size == fe.size)
                         // this is a directory so the size must have been "-" char
@@ -186,7 +190,7 @@ class DirectoryListingTest {
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
         entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
         // Will test getSimplifiedPath() behavior for ignored directories.
-        // Use DIRECTORY_INTERNAL_SIZE value for length so it is checked as the directory
+        // Use DIRECTORY_INTERNAL_SIZE value for length, so it is checked as the directory
         // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
         entries[2] = new FileEntry("subdir", "subdir/", 0, Arrays.asList(
                 new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
@@ -204,6 +208,8 @@ class DirectoryListingTest {
         // Need to populate list of ignored entries for all repository types.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
+
+        env.setUseHistoryCacheForDirectoryListing(false);
     }
 
     @AfterEach
@@ -280,6 +286,12 @@ class DirectoryListingTest {
         assertEquals(Node.TEXT_NODE, val.getNodeType());
 
         String value = val.getNodeValue();
+        if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
+            // Assumes that the history cache was created.
+            assertEquals("-", value);
+            return DIRECTORY_INTERNAL_DATE;
+        }
+
         return value.equalsIgnoreCase("Today")
                 ? Long.MAX_VALUE
                 : dateFormatter.parse(value).getTime();
@@ -312,13 +324,12 @@ class DirectoryListingTest {
      * Validate this file-entry in the table.
      *
      * @param element The &lt;tr&gt; element
-     * @throws java.lang.Exception
      */
     private void validateEntry(Element element) throws Exception {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
-        // There should be 5 columns or less in the table.
+        // There should be 5 columns or fewer in the table.
         if (len < 5) {
             return;
         }
@@ -352,6 +363,7 @@ class DirectoryListingTest {
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
         DirectoryListing instance = new DirectoryListing();
+        assertNotNull(directory.list());
         instance.listTo("ctx", directory, out, directory.getPath(),
                 Arrays.asList(directory.list()));
 

@@ -86,7 +86,8 @@ public class DirectoryListing {
         long lastModTime = modTime == null ? file.lastModified() : modTime.getTime();
 
         out.write("<td>");
-        if (modTime == null && file.isDirectory()) {
+        if (modTime == null && RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing() &&
+                file.isDirectory()) {
             out.write(DIRECTORY_BLANK_PLACEHOLDER);
         } else {
             if (now - lastModTime < 86400000) {
