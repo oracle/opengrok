@@ -128,6 +128,7 @@ public class HistoryEntry implements Serializable {
     /**
      * @return description of selected fields; used in the web app.
      */
+    @JsonIgnore
     public String getDescription() {
         return "changeset: " + getRevision()
                 + "\nsummary: " + getMessage() + "\nuser: "
