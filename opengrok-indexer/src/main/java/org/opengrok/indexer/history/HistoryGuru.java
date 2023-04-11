@@ -749,7 +749,7 @@ public final class HistoryGuru {
         // Do not use history cache for repositories with merge commits disabled as some files in the repository
         // could be introduced and changed solely via merge changesets. The call would presumably fall back
         // to file system based time stamps, however that might be confusing, so avoid that.
-        if (!repository.isMergeCommitsEnabled()) {
+        if (repository.isMergeCommitsSupported() && !repository.isMergeCommitsEnabled()) {
             LOGGER.log(Level.FINEST,
                     "will not retrieve last modified times due to merge changesets disabled for ''{0}}''",
                     directory);

@@ -128,6 +128,14 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
+     * Default implementation, should be overridden by individual repository implementations.
+     * @return whether merge commits are supported
+     */
+    public boolean isMergeCommitsSupported() {
+        return false;
+    }
+
+    /**
      * @return true if the repository handles merge commits.
      */
     public boolean isMergeCommitsEnabled() {
@@ -138,6 +146,10 @@ public class RepositoryInfo implements Serializable {
      * @param flag true if the repository should handle merge commits, false otherwise.
      */
     public void setMergeCommitsEnabled(boolean flag) {
+        if (!isMergeCommitsSupported()) {
+            throw new RuntimeException(String.format("%s does not support merge changesets, " +
+                    "so cannot set mergeCommitsEnabled", this));
+        }
         this.mergeCommitsEnabled = flag;
     }
 
@@ -430,6 +442,9 @@ public class RepositoryInfo implements Serializable {
             stringBuilder.append("historyCache=on,");
             stringBuilder.append("renamed=");
             stringBuilder.append(this.isHandleRenamedFiles());
+        }
+
+        if (isMergeCommitsSupported()) {
             stringBuilder.append(",");
             stringBuilder.append("merge=");
             stringBuilder.append(this.isMergeCommitsEnabled());
