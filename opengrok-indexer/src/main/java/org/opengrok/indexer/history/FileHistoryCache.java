@@ -771,7 +771,12 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         Map<String, HistoryEntry> map = new HashMap<>();
         for (DirectoryEntry directoryEntry : entries) {
             try {
-                HistoryEntry historyEntry = getLastHistoryEntry(directoryEntry.getFile());
+                File file = directoryEntry.getFile();
+                if (file.isDirectory()) {
+                    continue;
+                }
+
+                HistoryEntry historyEntry = getLastHistoryEntry(file);
                 if (historyEntry != null && historyEntry.getDate() != null) {
                     map.put(directoryEntry.getFile().getName(), historyEntry);
                 }

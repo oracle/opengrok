@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.never;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
@@ -42,6 +43,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -58,12 +61,14 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -1001,5 +1006,38 @@ class FileHistoryCacheTest {
         HistoryEntry historyEntry = cache.getLastHistoryEntry(sourceFile);
         assertNotNull(historyEntry);
         assertEquals("aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a", historyEntry.getRevision());
+    }
+
+    /**
+     * Test {@link FileHistoryCache#getLastHistoryEntries(List)}, in particular that it avoids
+     * getting history cache entries for directories.
+     */
+    @Test
+    void testGetLastHistoryEntries() throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "git");
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        File subDir = new File(repositoryRoot, "subdir");
+        assertTrue(subDir.mkdir());
+        File subFile = new File(subDir, "subfile.txt");
+        assertTrue(subFile.createNewFile());
+        assertTrue(subFile.exists());
+
+        FileHistoryCache spyCache = Mockito.spy(cache);
+        spyCache.clear(repository);
+        History historyToStore = repository.getHistory(repositoryRoot);
+        spyCache.store(historyToStore, repository);
+
+        File[] files = repositoryRoot.listFiles();
+        assertNotNull(files);
+        assertTrue(files.length > 0);
+        assertTrue(Arrays.stream(files).anyMatch(File::isDirectory));
+        List<DirectoryEntry> directoryEntries = new ArrayList<>();
+        for (File file : files) {
+            directoryEntries.add(new DirectoryEntry(file));
+        }
+
+        Map<String, HistoryEntry> historyEntries = spyCache.getLastHistoryEntries(directoryEntries);
+        assertNotNull(historyEntries);
+        Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
     }
 }
