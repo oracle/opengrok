@@ -59,7 +59,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 /**
- * JUnit test to test that the DirectoryListing produce the expected result.
+ * JUnit test to test that the {@link DirectoryListing} produce the expected result.
  */
 class DirectoryListingTest {
 
