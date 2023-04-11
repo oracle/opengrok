@@ -333,7 +333,7 @@ class DirectoryListingTest {
         if (len < 5) {
             return;
         }
-        assertEquals(7, len, "list.jsp table <td> count");
+        assertEquals(7, len, "table <td> count");
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
