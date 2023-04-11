@@ -1042,7 +1042,11 @@ public final class HistoryGuru {
             return;
         }
 
-        Repository repository = getRepository(new File(path));
+        Repository repository = getRepository(new File(env.getSourceRootFile(), path));
+        if (repository == null) {
+            return;
+        }
+
         // Repositories that do not support getting history for directories do not undergo
         // incremental history cache generation, so for these the removeHistory parameter is not honored.
         if (!repository.hasHistoryForDirectories() || removeHistory) {

@@ -1044,7 +1044,7 @@ public class IndexDatabase {
         completer.add(pending);
     }
 
-    private void removeHistoryFile(String path, boolean removeHistory) {
+    private void removeHistoryCacheFile(String path, boolean removeHistory) {
         HistoryGuru.getInstance().clearHistoryCacheFile(path, removeHistory);
     }
 
@@ -1070,7 +1070,7 @@ public class IndexDatabase {
 
         removeXrefFile(path);
 
-        removeHistoryFile(path, removeHistory);
+        removeHistoryCacheFile(path, removeHistory);
 
         /*
          * Even when the history should not be removed (incremental reindex), annotation should,
