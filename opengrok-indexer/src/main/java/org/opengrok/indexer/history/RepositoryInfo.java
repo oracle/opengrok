@@ -146,10 +146,6 @@ public class RepositoryInfo implements Serializable {
      * @param flag true if the repository should handle merge commits, false otherwise.
      */
     public void setMergeCommitsEnabled(boolean flag) {
-        if (!isMergeCommitsSupported()) {
-            throw new RuntimeException(String.format("%s does not support merge changesets, " +
-                    "so cannot set mergeCommitsEnabled", this));
-        }
         this.mergeCommitsEnabled = flag;
     }
 
