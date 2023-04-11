@@ -314,8 +314,8 @@ class DirectoryListingTest {
      *
      * @param item the node representing &lt;td&gt;
      * @return positive integer if the record was a file<br>
-     * -1 if the size could not be parsed<br>
-     * -2 if the record was a directory<br>
+     * {@link #INVALID_SIZE} if the size could not be parsed<br>
+     * {@link #DIRECTORY_INTERNAL_SIZE} if the record was a directory<br>
      */
     private int getSize(Node item) throws NumberFormatException {
         Node val = item.getFirstChild();
