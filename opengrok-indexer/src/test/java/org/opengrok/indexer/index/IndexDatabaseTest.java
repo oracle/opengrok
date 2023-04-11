@@ -62,7 +62,6 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.CVSRepository;
 import org.opengrok.indexer.history.FileCollector;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
