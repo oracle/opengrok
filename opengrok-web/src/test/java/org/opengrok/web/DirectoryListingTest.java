@@ -288,7 +288,7 @@ class DirectoryListingTest {
         String value = firstChild.getNodeValue();
         if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
             // Assumes that the history cache was created.
-            assertEquals("-", value);
+            assertEquals(DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER, value);
             return DIRECTORY_INTERNAL_DATE;
         }
 
