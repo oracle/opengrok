@@ -281,11 +281,11 @@ class DirectoryListingTest {
      * @throws java.lang.Exception if an error occurs
      */
     private long getLastModified(Node item) throws Exception {
-        Node val = item.getFirstChild();
-        assertNotNull(val);
-        assertEquals(Node.TEXT_NODE, val.getNodeType());
+        Node firstChild = item.getFirstChild();
+        assertNotNull(firstChild);
+        assertEquals(Node.TEXT_NODE, firstChild.getNodeType());
 
-        String value = val.getNodeValue();
+        String value = firstChild.getNodeValue();
         if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
             // Assumes that the history cache was created.
             assertEquals("-", value);
