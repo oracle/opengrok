@@ -1039,5 +1039,8 @@ class FileHistoryCacheTest {
         Map<String, HistoryEntry> historyEntries = spyCache.getLastHistoryEntries(directoryEntries);
         assertNotNull(historyEntries);
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
+
+        // Cleanup.
+        cache.clear(repository);
     }
 }
