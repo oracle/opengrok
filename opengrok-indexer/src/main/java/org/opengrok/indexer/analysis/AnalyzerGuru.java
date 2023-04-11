@@ -638,7 +638,7 @@ public class AnalyzerGuru {
             if (history != null) {
                 HistoryReader hr = new HistoryReader(history);
                 doc.add(new TextField(QueryBuilder.HIST, hr));
-                HistoryEntry histEntry = histGuru.getLastHistoryEntry(file, false, true);
+                HistoryEntry histEntry = history.getLastHistoryEntry();
                 if (histEntry != null) {
                     doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
                 }
