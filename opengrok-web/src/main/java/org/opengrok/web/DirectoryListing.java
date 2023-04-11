@@ -255,7 +255,7 @@ public class DirectoryListing {
                     out.write(Util.uriEncodePath(filename));
                     out.write("\"");
                     if (historyEntry != null) {
-                        out.write(" class=\"title-tooltip\" ");
+                        out.write(" class=\"title-tooltip\"");
                         out.write(" title=\"");
                         out.write(Util.encode(historyEntry.getDescription()));
                         out.write("\"");
