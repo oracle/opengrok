@@ -779,6 +779,9 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 HistoryEntry historyEntry = getLastHistoryEntry(file);
                 if (historyEntry != null && historyEntry.getDate() != null) {
                     map.put(directoryEntry.getFile().getName(), historyEntry);
+                } else {
+                    LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
+                            directoryEntry.getFile());
                 }
             } catch (CacheException e) {
                 LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
