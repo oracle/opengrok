@@ -1044,8 +1044,8 @@ public class IndexDatabase {
         completer.add(pending);
     }
 
-    private void removeHistoryFile(String path) {
-        HistoryGuru.getInstance().clearHistoryCacheFile(path);
+    private void removeHistoryFile(String path, boolean removeHistory) {
+        HistoryGuru.getInstance().clearHistoryCacheFile(path, removeHistory);
     }
 
     private void removeAnnotationFile(String path) {
@@ -1056,7 +1056,7 @@ public class IndexDatabase {
      * Remove a stale file from the index database and potentially also from history cache,
      * and queue the removal of the associated xref file.
      *
-     * @param removeHistory if false, do not remove history cache and annotation cache for this file
+     * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
      */
     private void removeFile(boolean removeHistory) throws IOException {
@@ -1070,9 +1070,7 @@ public class IndexDatabase {
 
         removeXrefFile(path);
 
-        if (removeHistory) {
-            removeHistoryFile(path);
-        }
+        removeHistoryFile(path, removeHistory);
 
         /*
          * Even when the history should not be removed (incremental reindex), annotation should,

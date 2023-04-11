@@ -292,6 +292,11 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         return new File(file.getAbsolutePath() + ".t");
     }
 
+    @Override
+    public void storeFile(History history, File file, Repository repository) throws HistoryException {
+        storeFile(history, file, repository, false);
+    }
+
     /**
      * Store {@link History} object in a file.
      *

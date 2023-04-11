@@ -71,6 +71,16 @@ interface HistoryCache extends Cache {
     void store(History history, Repository repository, @Nullable String tillRevision) throws CacheException;
 
     /**
+     * Store the history for a file in given repository.
+     *
+     * @param history The history to store
+     * @param file file
+     * @param repository The repository whose history to store
+     * @throws HistoryException if the history cannot be stored
+     */
+    void storeFile(History history, File file, Repository repository) throws HistoryException;
+
+    /**
      * Get the revision identifier for the latest cached revision in a repository.
      *
      * @param repository the repository whose latest revision to return

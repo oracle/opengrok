@@ -36,7 +36,7 @@ public class HistoryReader extends Reader {
     private final List<HistoryEntry> entries;
     private Reader input;
 
-    HistoryReader(History history) {
+    public HistoryReader(History history) {
         entries = history.getHistoryEntries();
     }
 
