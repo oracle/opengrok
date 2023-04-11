@@ -112,7 +112,6 @@ import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
