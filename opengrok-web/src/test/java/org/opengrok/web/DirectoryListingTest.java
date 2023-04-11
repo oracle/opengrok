@@ -387,6 +387,9 @@ class DirectoryListingTest {
         }
     }
 
+    /**
+     * Test that {@link EftarFileReader} exceptions are handled gracefully.
+     */
     @Test
     void directoryListingWithEftarException() throws Exception {
         EftarFileReader mockReader = mock(EftarFileReader.class);
