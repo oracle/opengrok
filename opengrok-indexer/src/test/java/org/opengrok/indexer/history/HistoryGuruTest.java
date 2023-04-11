@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 
 import java.io.File;
