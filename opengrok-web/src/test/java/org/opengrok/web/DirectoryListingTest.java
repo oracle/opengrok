@@ -192,9 +192,9 @@ class DirectoryListingTest {
         // Will test getSimplifiedPath() behavior for ignored directories.
         // Use DIRECTORY_INTERNAL_SIZE value for length, so it is checked as the directory
         // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
-        entries[2] = new FileEntry("subdir", "subdir/", 0, Arrays.asList(
-                new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
-                        new FileEntry("version", "version", 0, 312))
+        entries[2] = new FileEntry("subdir", "subdir/", 0,
+                List.of(new FileEntry("SCCS", "SCCS/", 0,
+                        List.of(new FileEntry("version", "version", 0, 312))
                 )));
 
         for (FileEntry entry : entries) {
