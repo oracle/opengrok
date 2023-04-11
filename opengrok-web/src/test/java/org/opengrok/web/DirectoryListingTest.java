@@ -165,19 +165,31 @@ class DirectoryListingTest {
             }
         }
 
+        // @todo verify all attributes!
         @Override
         public int compareTo(FileEntry fe) {
-            int ret = -1;
+            int ret;
 
-            // @todo verify all attributes!
-            if (name.compareTo(fe.name) == 0 && href.compareTo(fe.href) == 0) {
-                if ( // this is a file so the size must be exact
-                        (subdirs == null && size == fe.size)
-                        // this is a directory so the size must have been "-" char
-                        || (subdirs != null && size == DIRECTORY_INTERNAL_SIZE)) {
-                    ret = 0;
+            if ((ret = name.compareTo(fe.name)) != 0) {
+                return ret;
+            }
+
+            if ((ret = href.compareTo(fe.href)) != 0) {
+                return ret;
+            }
+
+            // this is a file so the size must be exact
+            if (subdirs == null) {
+                if (size != fe.size) {
+                    ret = Integer.compare(size, fe.size);
+                }
+            } else {
+                // this is a directory so the size must have been "-" char
+                if (size != DIRECTORY_INTERNAL_SIZE) {
+                    ret = Integer.compare(size, DIRECTORY_INTERNAL_SIZE);
                 }
             }
+
             return ret;
         }
     }
