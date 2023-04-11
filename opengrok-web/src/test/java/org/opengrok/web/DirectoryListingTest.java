@@ -245,7 +245,7 @@ class DirectoryListingTest {
     }
 
     /**
-     * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
+     * Get the {@code href} attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
      * href="foo" class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;.
      */
     private String getHref(Node item) {
@@ -292,7 +292,7 @@ class DirectoryListingTest {
      * @return last modified date of the file
      * @throws java.lang.Exception if an error occurs
      */
-    private long getLastModified(Node item) throws Exception {
+    private long getDateValue(Node item) throws Exception {
         Node firstChild = item.getFirstChild();
         assertNotNull(firstChild);
         assertEquals(Node.TEXT_NODE, firstChild.getNodeType());
@@ -350,7 +350,7 @@ class DirectoryListingTest {
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
         entry.href = getHref(nl.item(1));
-        entry.lastModified = getLastModified(nl.item(3));
+        entry.lastModified = getDateValue(nl.item(3));
         entry.size = getSize(nl.item(4));
 
         // Try to look it up in the list of files.
