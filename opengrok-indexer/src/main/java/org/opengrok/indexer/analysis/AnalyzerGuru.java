@@ -112,7 +112,6 @@ import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -637,13 +636,9 @@ public class AnalyzerGuru {
             HistoryReader hr = histGuru.getHistoryReader(file);
             if (hr != null) {
                 doc.add(new TextField(QueryBuilder.HIST, hr));
-                History history;
-                if ((history = histGuru.getHistory(file)) != null) {
-                    List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
-                    if (!historyEntries.isEmpty()) {
-                        HistoryEntry histEntry = historyEntries.get(0);
-                        doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
-                    }
+                HistoryEntry histEntry = histGuru.getLastHistoryEntry(file, false, true);
+                if (histEntry != null) {
+                    doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
                 }
             }
         } catch (HistoryException e) {
