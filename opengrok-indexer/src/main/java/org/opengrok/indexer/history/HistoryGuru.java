@@ -724,7 +724,8 @@ public final class HistoryGuru {
 
     /**
      * Get the last modified times for all files and subdirectories in the specified directory.
-     *
+     * If the related {@link Repository} instance does not exist or if it is capable or merge commits,
+     * however merge commits are disabled in its properties, empty map will be returned.
      * @param directory the directory whose files to check
      * @param entries list of {@link DirectoryEntry} instances
      * @return a map from file names to {@link HistoryEntry} instance for the files that
