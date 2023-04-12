@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +54,7 @@ import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.Statistics;
@@ -337,9 +337,7 @@ public final class HistoryGuru {
                 String hist_rev = he.getRevision();
                 String short_rev = repo.getRevisionForAnnotate(hist_rev);
                 if (revs.contains(short_rev)) {
-                    annotation.addDesc(short_rev, "changeset: " + he.getRevision()
-                            + "\nsummary: " + he.getMessage() + "\nuser: "
-                            + he.getAuthor() + "\ndate: " + he.getDate());
+                    annotation.addDesc(short_rev, he.getDescription());
                     // History entries are coming from recent to older,
                     // file version should be from oldest to newer.
                     annotation.addFileVersion(short_rev, revs.size() - revsMatched);
@@ -714,17 +712,35 @@ public final class HistoryGuru {
 
     /**
      * Get the last modified times for all files and subdirectories in the specified directory.
-     *
+     * If the related {@link Repository} instance does not exist or if it is capable or merge commits,
+     * however merge commits are disabled in its properties, empty map will be returned.
      * @param directory the directory whose files to check
-     * @return a map from file names to modification times for the files that
+     * @param entries list of {@link DirectoryEntry} instances
+     * @return a map from file names to {@link HistoryEntry} instance for the files that
      * the history cache has information about
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public Map<String, Date> getLastModifiedTimes(File directory) throws CacheException {
+    public Map<String, HistoryEntry> getLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
+
+        if (!env.isUseHistoryCacheForDirectoryListing()) {
+            LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",
+                    directory);
+            return Collections.emptyMap();
+        }
 
         Repository repository = getRepository(directory);
         if (repository == null) {
             LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to retrieve last modified times",
+                    directory);
+            return Collections.emptyMap();
+        }
+
+        // Do not use history cache for repositories with merge commits disabled as some files in the repository
+        // could be introduced and changed solely via merge changesets. The call would presumably fall back
+        // to file system based time stamps, however that might be confusing, so avoid that.
+        if (repository.isMergeCommitsSupported() && !repository.isMergeCommitsEnabled()) {
+            LOGGER.log(Level.FINEST,
+                    "will not retrieve last modified times due to merge changesets disabled for ''{0}}''",
                     directory);
             return Collections.emptyMap();
         }
@@ -735,7 +751,7 @@ public final class HistoryGuru {
             return Collections.emptyMap();
         }
 
-        return historyCache.getLastModifiedTimes(directory, repository);
+        return historyCache.getLastHistoryEntries(entries);
     }
 
     /**

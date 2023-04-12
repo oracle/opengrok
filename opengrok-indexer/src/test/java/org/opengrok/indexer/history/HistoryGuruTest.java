@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
@@ -54,6 +55,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -422,5 +424,44 @@ public class HistoryGuruTest {
         // cleanup
         repository.setHistoryEnabled(true);
         Files.move(tmpHistPath, histPath);
+    }
+
+    /**
+     * Test that it is not possible to get last history entries for repository
+     * that does not have the merge changesets enabled.
+     * <br/>
+     * Assumes that the history cache for the repository was already created in the setup.
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetLastHistoryEntriesWrtMergeCommits(boolean isMergeCommitsEnabled) throws Exception {
+        File repositoryRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(repositoryRoot.exists());
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Repository repository = instance.getRepository(repositoryRoot);
+        assertNotNull(repository);
+        boolean isMergeCommitsEnabledRepositoryOrig = repository.isMergeCommitsEnabled();
+        repository.setMergeCommitsEnabled(isMergeCommitsEnabled);
+        assertEquals(isMergeCommitsEnabled, repository.isMergeCommitsEnabled());
+
+        File[] files = repositoryRoot.listFiles();
+        assertNotNull(files);
+        assertTrue(files.length > 0);
+        List<DirectoryEntry> directoryEntries = new ArrayList<>();
+        for (File file : files) {
+            directoryEntries.add(new DirectoryEntry(file));
+        }
+        boolean useHistoryCacheForDirectoryListingOrig = env.isUseHistoryCacheForDirectoryListing();
+        env.setUseHistoryCacheForDirectoryListing(true);
+        Map<String, HistoryEntry> historyEntryMap = instance.getLastHistoryEntries(repositoryRoot, directoryEntries);
+        if (isMergeCommitsEnabled) {
+            assertFalse(historyEntryMap.isEmpty());
+        } else {
+            assertTrue(historyEntryMap.isEmpty());
+        }
+
+        // Cleanup.
+        env.setUseHistoryCacheForDirectoryListing(useHistoryCacheForDirectoryListingOrig);
+        repository.setMergeCommitsEnabled(isMergeCommitsEnabledRepositoryOrig);
     }
 }

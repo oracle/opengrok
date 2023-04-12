@@ -23,10 +23,11 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.search.DirectoryEntry;
 
 interface HistoryCache extends Cache {
 
@@ -49,6 +50,7 @@ interface HistoryCache extends Cache {
      * @param file The file to retrieve history for
      * @throws CacheException if the history cache cannot be read
      */
+    @Nullable
     HistoryEntry getLastHistoryEntry(File file) throws CacheException;
 
     /**
@@ -93,12 +95,11 @@ interface HistoryCache extends Cache {
      * Get the last modified times for all files and subdirectories in the
      * specified directory.
      *
-     * @param directory which directory to fetch modification times for
-     * @param repository the repository in which the directory lives
-     * @return a map from file names to modification times
+     * @param entries list of {@link DirectoryEntry} instances
+     * @return a map from file names to {@link HistoryEntry} instance
      * @throws CacheException on error
      */
-    Map<String, Date> getLastModifiedTimes(File directory, Repository repository) throws CacheException;
+    Map<String, HistoryEntry> getLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
 
     /**
      * Clear entry for single file from history cache.

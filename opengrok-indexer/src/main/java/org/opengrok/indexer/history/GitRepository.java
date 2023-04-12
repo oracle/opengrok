@@ -110,6 +110,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         ignoredFiles.add(".git");
     }
 
+    @Override
+    public boolean isMergeCommitsSupported() {
+        return true;
+    }
+
     /**
      * Be careful, git uses only forward slashes in its command and output (not in file path).
      * Using backslashes together with git show will get empty output and 0 status code.

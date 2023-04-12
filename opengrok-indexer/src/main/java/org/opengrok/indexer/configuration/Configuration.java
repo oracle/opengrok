@@ -306,6 +306,8 @@ public final class Configuration {
 
     private boolean historyBasedReindex;
 
+    private boolean useHistoryCacheForDirectoryListing;
+
     /**
      * History handling types for remote SCM repositories.
      * <ul>
@@ -544,12 +546,14 @@ public final class Configuration {
         setAllowLeadingWildcard(true);
         setAllowedSymlinks(new HashSet<>());
         setAnnotationCacheEnabled(false);
+        setApiTimeout(300); // 5 minutes
         setAuthenticationTokens(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCanonicalRoots(new HashSet<>());
+        setConnectTimeout(10);
         setIndexerCommandTimeout(600); // 10 minutes
         setRestfulCommandTimeout(60);
         setInteractiveCommandTimeout(30);
@@ -568,6 +572,7 @@ public final class Configuration {
         setGroups(new TreeSet<>());
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
+        setHistoryBasedReindex(true);
         setHistoryCache(true);
         setHistoryEnabled(true);
         setHitsPerPage(25);
@@ -602,15 +607,13 @@ public final class Configuration {
         setSourceRoot(null);
         //setTabSize(4);
         setTagsEnabled(false);
+        setUseHistoryCacheForDirectoryListing(true);
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
-        // Set to empty string so we can append it to the URL unconditionally later.
-        setHistoryBasedReindex(true);
+        // Set to empty string, so we can append it to the URL unconditionally later.
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
         setXrefTimeout(30);
-        setApiTimeout(300); // 5 minutes
-        setConnectTimeout(10);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -1460,6 +1463,14 @@ public final class Configuration {
 
     public void setHistoryBasedReindex(boolean flag) {
         historyBasedReindex = flag;
+    }
+
+    public boolean isUseHistoryCacheForDirectoryListing() {
+        return useHistoryCacheForDirectoryListing;
+    }
+
+    public void setUseHistoryCacheForDirectoryListing(boolean flag) {
+        useHistoryCacheForDirectoryListing = flag;
     }
 
     /**

@@ -735,7 +735,7 @@ public final class Util {
         out.write("<span class=\"blame\">");
         if (enabled) {
             out.write(ANCHOR_CLASS_START);
-            out.write("r");
+            out.write("r title-tooltip");
             out.write("\" style=\"background-color: ");
             out.write(annotation.getColors().getOrDefault(r, "inherit"));
             out.write("\" href=\"");

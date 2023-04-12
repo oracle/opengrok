@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -59,7 +59,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 /**
- * JUnit test to test that the DirectoryListing produce the expected result.
+ * JUnit test to test that the {@link DirectoryListing} produce the expected result.
  */
 class DirectoryListingTest {
 
@@ -68,6 +68,11 @@ class DirectoryListingTest {
      * the FS is platform dependent.
      */
     private static final int DIRECTORY_INTERNAL_SIZE = -2;
+    /**
+     * Indication that the file is a directory and the date was not displayed,
+     * because the {@code useHistoryCacheForDirectoryListing} tunable was true.
+     */
+    private static final long DIRECTORY_INTERNAL_DATE = -2;
     /**
      * Indication of unparseable file size.
      */
@@ -160,20 +165,31 @@ class DirectoryListingTest {
             }
         }
 
+        // @todo verify all attributes!
         @Override
         public int compareTo(FileEntry fe) {
-            int ret = -1;
+            int ret;
 
-            // @todo verify all attributes!
-            if (name.compareTo(fe.name) == 0
-                    && href.compareTo(fe.href) == 0) {
-                if ( // this is a file so the size must be exact
-                        (subdirs == null && size == fe.size)
-                        // this is a directory so the size must have been "-" char
-                        || (subdirs != null && size == DIRECTORY_INTERNAL_SIZE)) {
-                    ret = 0;
+            if ((ret = name.compareTo(fe.name)) != 0) {
+                return ret;
+            }
+
+            if ((ret = href.compareTo(fe.href)) != 0) {
+                return ret;
+            }
+
+            // this is a file so the size must be exact
+            if (subdirs == null) {
+                if (size != fe.size) {
+                    ret = Integer.compare(size, fe.size);
+                }
+            } else {
+                // this is a directory so the size must have been "-" char
+                if (size != DIRECTORY_INTERNAL_SIZE) {
+                    ret = Integer.compare(size, DIRECTORY_INTERNAL_SIZE);
                 }
             }
+
             return ret;
         }
     }
@@ -186,11 +202,11 @@ class DirectoryListingTest {
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
         entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
         // Will test getSimplifiedPath() behavior for ignored directories.
-        // Use DIRECTORY_INTERNAL_SIZE value for length so it is checked as the directory
+        // Use DIRECTORY_INTERNAL_SIZE value for length, so it is checked as the directory
         // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
-        entries[2] = new FileEntry("subdir", "subdir/", 0, Arrays.asList(
-                new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
-                        new FileEntry("version", "version", 0, 312))
+        entries[2] = new FileEntry("subdir", "subdir/", 0,
+                List.of(new FileEntry("SCCS", "SCCS/", 0,
+                        List.of(new FileEntry("version", "version", 0, 312))
                 )));
 
         for (FileEntry entry : entries) {
@@ -204,6 +220,8 @@ class DirectoryListingTest {
         // Need to populate list of ignored entries for all repository types.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
+
+        env.setUseHistoryCacheForDirectoryListing(false);
     }
 
     @AfterEach
@@ -227,7 +245,7 @@ class DirectoryListingTest {
     }
 
     /**
-     * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
+     * Get the {@code href} attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
      * href="foo" class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;.
      */
     private String getHref(Node item) {
@@ -274,12 +292,18 @@ class DirectoryListingTest {
      * @return last modified date of the file
      * @throws java.lang.Exception if an error occurs
      */
-    private long getLastModified(Node item) throws Exception {
-        Node val = item.getFirstChild();
-        assertNotNull(val);
-        assertEquals(Node.TEXT_NODE, val.getNodeType());
+    private long getDateValue(Node item) throws Exception {
+        Node firstChild = item.getFirstChild();
+        assertNotNull(firstChild);
+        assertEquals(Node.TEXT_NODE, firstChild.getNodeType());
 
-        String value = val.getNodeValue();
+        String value = firstChild.getNodeValue();
+        if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
+            // Assumes that the history cache was created.
+            assertEquals(DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER, value);
+            return DIRECTORY_INTERNAL_DATE;
+        }
+
         return value.equalsIgnoreCase("Today")
                 ? Long.MAX_VALUE
                 : dateFormatter.parse(value).getTime();
@@ -290,14 +314,14 @@ class DirectoryListingTest {
      *
      * @param item the node representing &lt;td&gt;
      * @return positive integer if the record was a file<br>
-     * -1 if the size could not be parsed<br>
-     * -2 if the record was a directory<br>
+     * {@link #INVALID_SIZE} if the size could not be parsed<br>
+     * {@link #DIRECTORY_INTERNAL_SIZE} if the record was a directory<br>
      */
     private int getSize(Node item) throws NumberFormatException {
         Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
-        if (DirectoryListing.DIRECTORY_SIZE_PLACEHOLDER.equals(val.getNodeValue().trim())) {
+        if (DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER.equals(val.getNodeValue().trim())) {
             // track that it had the DIRECTORY_SIZE_PLACEHOLDER character
             return DIRECTORY_INTERNAL_SIZE;
         }
@@ -312,22 +336,21 @@ class DirectoryListingTest {
      * Validate this file-entry in the table.
      *
      * @param element The &lt;tr&gt; element
-     * @throws java.lang.Exception
      */
     private void validateEntry(Element element) throws Exception {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
-        // There should be 5 columns or less in the table.
+        // There should be 5 columns or fewer in the table.
         if (len < 5) {
             return;
         }
-        assertEquals(7, len, "list.jsp table <td> count");
+        assertEquals(7, len, "table <td> count");
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
         entry.href = getHref(nl.item(1));
-        entry.lastModified = getLastModified(nl.item(3));
+        entry.lastModified = getDateValue(nl.item(3));
         entry.size = getSize(nl.item(4));
 
         // Try to look it up in the list of files.
@@ -352,6 +375,7 @@ class DirectoryListingTest {
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
         DirectoryListing instance = new DirectoryListing();
+        assertNotNull(directory.list());
         instance.listTo("ctx", directory, out, directory.getPath(),
                 Arrays.asList(directory.list()));
 
@@ -375,6 +399,9 @@ class DirectoryListingTest {
         }
     }
 
+    /**
+     * Test that {@link EftarFileReader} exceptions are handled gracefully.
+     */
     @Test
     void directoryListingWithEftarException() throws Exception {
         EftarFileReader mockReader = mock(EftarFileReader.class);

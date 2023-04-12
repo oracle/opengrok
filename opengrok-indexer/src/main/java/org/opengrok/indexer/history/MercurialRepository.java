@@ -129,6 +129,11 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         ignoredDirs.add(".hg");
     }
 
+    @Override
+    public boolean isMergeCommitsSupported() {
+        return true;
+    }
+
     /**
      * Return name of the branch or "default".
      */
