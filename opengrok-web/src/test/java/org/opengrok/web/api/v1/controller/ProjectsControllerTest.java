@@ -645,7 +645,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
         Indexer.getInstance().prepareIndexer(
                 env,
-                false, // don't search for repositories
+                true, // don't search for repositories
                 true, // add projects
                 // don't create dictionary
                 new ArrayList<>(), // subFiles - needed when refreshing history partially
