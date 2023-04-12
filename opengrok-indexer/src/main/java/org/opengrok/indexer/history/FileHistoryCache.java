@@ -655,6 +655,10 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     @Override
     public History get(File file, Repository repository, boolean withFiles) throws CacheException {
 
+        if (file.isDirectory()) {
+            return null;
+        }
+
         if (isUpToDate(file)) {
             File cacheFile = getCachedFile(file);
             try {
