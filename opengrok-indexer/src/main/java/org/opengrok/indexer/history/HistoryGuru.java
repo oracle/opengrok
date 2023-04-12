@@ -350,18 +350,6 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the appropriate history reader for given file.
-     *
-     * @param file The file to get the history reader for
-     * @throws HistoryException If an error occurs while getting the history
-     * @return A {@link HistoryReader} that may be used to read out history data for a named file
-     */
-    public HistoryReader getHistoryReader(File file) throws HistoryException {
-        History history = getHistory(file, false);
-        return history == null ? null : new HistoryReader(history);
-    }
-
-    /**
      * Get the history for the specified file.
      *
      * @param file the file to get the history for
@@ -906,6 +894,26 @@ public final class HistoryGuru {
         return repositories.values().stream().map(RepositoryInfo::new).collect(Collectors.toSet());
     }
 
+    /**
+     * Store history for a file into history cache. If the related repository does not support
+     * getting the history for directories, it will return right away without storing the history.
+     * @param file file
+     * @param history {@link History} instance
+     */
+    public void storeHistory(File file, History history) {
+        Repository repository = getRepository(file);
+        if (repository.hasHistoryForDirectories()) {
+            return;
+        }
+
+        try {
+            historyCache.storeFile(history, file, repository);
+        } catch (HistoryException e) {
+            LOGGER.log(Level.WARNING,
+                    String.format("cannot create history cache for '%s' in repository %s", file, repository), e);
+        }
+    }
+
     private void createHistoryCache(Repository repository, String sinceRevision) {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
@@ -1027,13 +1035,23 @@ public final class HistoryGuru {
     /**
      * Clear entry for single file from history cache.
      * @param path path to the file relative to the source root
+     * @param removeHistory whether to remove history cache entry for the path
      */
-    public void clearHistoryCacheFile(String path) {
+    public void clearHistoryCacheFile(String path, boolean removeHistory) {
         if (!useHistoryCache()) {
             return;
         }
 
-        historyCache.clearFile(path);
+        Repository repository = getRepository(new File(env.getSourceRootFile(), path));
+        if (repository == null) {
+            return;
+        }
+
+        // Repositories that do not support getting history for directories do not undergo
+        // incremental history cache generation, so for these the removeHistory parameter is not honored.
+        if (!repository.hasHistoryForDirectories() || removeHistory) {
+            historyCache.clearFile(path);
+        }
     }
 
     /**

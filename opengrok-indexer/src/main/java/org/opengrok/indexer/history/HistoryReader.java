@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
@@ -36,12 +38,12 @@ public class HistoryReader extends Reader {
     private final List<HistoryEntry> entries;
     private Reader input;
 
-    HistoryReader(History history) {
+    public HistoryReader(History history) {
         entries = history.getHistoryEntries();
     }
 
     @Override
-    public int read(char[] cbuf, int off, int len) throws IOException {
+    public int read(char @NotNull [] cbuf, int off, int len) throws IOException {
         if (input == null) {
             input = createInternalReader();
         }

@@ -25,6 +25,7 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -70,8 +71,10 @@ import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.history.RepositoryWithHistoryTraversal;
+import org.opengrok.indexer.history.SCCSRepository;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
@@ -91,6 +94,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
@@ -222,8 +226,14 @@ class IndexDatabaseTest {
                 } else {
                     assertFalse(historyGuru.hasAnnotationCacheForFile(file));
                 }
+            } else if (dirName.equals("historycache")) {
+                if (shouldExist) {
+                    assertTrue(historyGuru.hasHistoryCacheForFile(file));
+                } else {
+                    assertFalse(historyGuru.hasHistoryCacheForFile(file));
+                }
             } else {
-                cacheFile = TandemPath.join(fileName, dirName.equals(IndexDatabase.XREF_DIR) ? ".gz" : "");
+                cacheFile = TandemPath.join(fileName, ".gz");
                 File dataFile = new File(dataDir, cacheFile);
 
                 if (shouldExist) {
@@ -972,5 +982,60 @@ class IndexDatabaseTest {
         gitProject.setHistoryBasedReindex(projectUseAnnotationOrig);
         env.setDataRoot(dataRootOrig);
         IOUtils.removeRecursive(dataRoot);
+    }
+
+    private static void runSccsCommand(File reposRoot, String... args) {
+        List<String> cmdargs = new ArrayList<>();
+        SCCSRepository repo = new SCCSRepository();
+        cmdargs.add(repo.getRepoCommand());
+        Collections.addAll(cmdargs, args);
+        Executor exec = new Executor(cmdargs, reposRoot);
+        int exitCode = exec.exec();
+        assertEquals(0, exitCode, "command '" + cmdargs.toString() + "'failed."
+                + "\nexit code: " + exitCode
+                + "\nstdout:\n" + exec.getOutputString()
+                + "\nstderr:\n" + exec.getErrorString());
+    }
+
+    @Test
+    @EnabledForRepository(SCCS)
+    void testHistoryCacheForFileBasedRepository() throws Exception {
+        String projectName = "teamware";
+        Project project = env.getProjects().get(projectName);
+        assertNotNull(project);
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+
+        String fileName = "header.h";
+        File repoRoot = new File(repository.getSourceRoot(), projectName);
+        File file = new File(repoRoot, fileName);
+        assertTrue(file.exists());
+
+        // Check that the history cache entry for the file exists.
+        checkDataExistence(projectName + File.separator + fileName, true);
+        HistoryGuru historyGuru = HistoryGuru.getInstance();
+        HistoryEntry historyEntry = historyGuru.getLastHistoryEntry(file, false, false);
+        assertNotNull(historyEntry);
+        assertEquals("1.1", historyEntry.getRevision());
+
+        // Update and change the file.
+        runSccsCommand(repoRoot, "clean");
+        runSccsCommand(repoRoot, "get", "-e", fileName);
+        try (FileWriter fileWriter = new FileWriter(file, true)) {
+            fileWriter.write("#define FOO 42");
+        }
+        runSccsCommand(repoRoot, "delget", "-yfoo", fileName);
+        idb.update();
+
+        // Recheck the history cache entry.
+        assertTrue(historyGuru.hasHistoryCacheForFile(file));
+        historyEntry = historyGuru.getLastHistoryEntry(file, false, false);
+        assertNotNull(historyEntry);
+        assertEquals("1.2", historyEntry.getRevision());
+
+        // The SCCS "clean" operation above wiped all the other files, so their history cache entries should be gone.
+        File otherFile = new File(repoRoot, "main.c");
+        assertFalse(otherFile.exists());
+        assertFalse(historyGuru.hasHistoryCacheForFile(otherFile));
     }
 }
