@@ -30,10 +30,8 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -44,7 +42,6 @@ import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.CacheException;
-import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
@@ -58,7 +55,7 @@ public class DirectoryListing {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
 
-    protected static final String DIRECTORY_BLANK_PLACEHOLDER = "-";
+    protected static final String BLANK_PLACEHOLDER = "-";
     private final EftarFileReader desc;
     private final long now;
 
@@ -74,21 +71,19 @@ public class DirectoryListing {
 
     /**
      * Write part of HTML code which contains file/directory last modification time and size.
-     *
+     * The size printed for directories will be always {@link #BLANK_PLACEHOLDER}.
+     * The time printed will be string representation of the non {@code null} time or {@link #BLANK_PLACEHOLDER}.
      * @param out write destination
      * @param file the file or directory to use for writing the data
-     * @param modTime the time of the last commit that touched {@code file} or {@code null} if unknown
+     * @param lastModTime the time of the last commit that touched {@code file} or {@code null} if unknown
      * @param dateFormatter the formatter to use for pretty printing dates
      *
-     * @throws IOException when cannot read last modified time from file system
+     * @throws IOException when writing to the {@code out} parameter failed
      */
-    private void printDateSize(Writer out, File file, Date modTime, Format dateFormatter) throws IOException {
-        long lastModTime = modTime == null ? file.lastModified() : modTime.getTime();
-
+    private void printDateSize(Writer out, File file, Long lastModTime, Format dateFormatter) throws IOException {
         out.write("<td>");
-        if (modTime == null && RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing() &&
-                file.isDirectory()) {
-            out.write(DIRECTORY_BLANK_PLACEHOLDER);
+        if (lastModTime == null) {
+            out.write(BLANK_PLACEHOLDER);
         } else {
             if (now - lastModTime < 86400000) {
                 out.write("Today");
@@ -98,7 +93,7 @@ public class DirectoryListing {
         }
         out.write("</td><td>");
         if (file.isDirectory()) {
-            out.write(DIRECTORY_BLANK_PLACEHOLDER);
+            out.write(BLANK_PLACEHOLDER);
         } else {
             out.write(Util.readableSize(file.length()));
         }
@@ -217,8 +212,7 @@ public class DirectoryListing {
             out.write("</tr>\n");
         }
 
-        Map<String, HistoryEntry> lastHistoryEntriesMap
-                = HistoryGuru.getInstance().getLastHistoryEntries(dir, entries);
+        boolean fallback = HistoryGuru.getInstance().getLastHistoryEntries(dir, entries);
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
@@ -230,7 +224,6 @@ public class DirectoryListing {
                     readMes.add(filename);
                 }
                 boolean isDir = child.isDirectory();
-                HistoryEntry historyEntry = lastHistoryEntriesMap.get(filename);
 
                 out.write("<tr><td>");
                 out.write("<p class=\"");
@@ -254,10 +247,10 @@ public class DirectoryListing {
                 } else {
                     out.write(Util.uriEncodePath(filename));
                     out.write("\"");
-                    if (historyEntry != null) {
+                    if (entry.getDescription() != null) {
                         out.write(" class=\"title-tooltip\"");
                         out.write(" title=\"");
-                        out.write(Util.encode(historyEntry.getDescription()));
+                        out.write(Util.encode(entry.getDescription()));
                         out.write("\"");
                     }
                     out.write(">");
@@ -266,7 +259,13 @@ public class DirectoryListing {
                 }
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename);
-                printDateSize(out, child, historyEntry != null ? historyEntry.getDate() : null, dateFormatter);
+                Long date = null;
+                if (entry.getDate() != null) {
+                    date = entry.getDate().getTime();
+                } else if (fallback) {
+                    date = child.lastModified();
+                }
+                printDateSize(out, child, date, dateFormatter);
                 printNumlines(out, entry, isDir);
                 printLoc(out, entry, isDir);
                 if (offset > 0) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -26,6 +26,7 @@ package org.opengrok.indexer.search;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 
 import java.io.File;
+import java.util.Date;
 
 /**
  * Represents a pairing of {@link File} along with supplemental
@@ -35,6 +36,10 @@ public class DirectoryEntry {
 
     private final File file;
     private final NullableNumLinesLOC extra;
+
+    private String description;
+
+    private Date date;
 
     /**
      * Initializes an instance with a specified, required {@link File}.
@@ -70,5 +75,21 @@ public class DirectoryEntry {
      */
     public NullableNumLinesLOC getExtra() {
         return extra;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

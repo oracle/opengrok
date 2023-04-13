@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
@@ -453,11 +452,11 @@ public class HistoryGuruTest {
         }
         boolean useHistoryCacheForDirectoryListingOrig = env.isUseHistoryCacheForDirectoryListing();
         env.setUseHistoryCacheForDirectoryListing(true);
-        Map<String, HistoryEntry> historyEntryMap = instance.getLastHistoryEntries(repositoryRoot, directoryEntries);
+        boolean fallback = instance.getLastHistoryEntries(repositoryRoot, directoryEntries);
         if (isMergeCommitsEnabled) {
-            assertFalse(historyEntryMap.isEmpty());
+            assertFalse(fallback);
         } else {
-            assertTrue(historyEntryMap.isEmpty());
+            assertTrue(fallback);
         }
 
         // Cleanup.

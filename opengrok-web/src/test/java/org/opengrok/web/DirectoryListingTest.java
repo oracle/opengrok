@@ -300,7 +300,7 @@ class DirectoryListingTest {
         String value = firstChild.getNodeValue();
         if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
             // Assumes that the history cache was created.
-            assertEquals(DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER, value);
+            assertEquals(DirectoryListing.BLANK_PLACEHOLDER, value);
             return DIRECTORY_INTERNAL_DATE;
         }
 
@@ -321,7 +321,7 @@ class DirectoryListingTest {
         Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
-        if (DirectoryListing.DIRECTORY_BLANK_PLACEHOLDER.equals(val.getNodeValue().trim())) {
+        if (DirectoryListing.BLANK_PLACEHOLDER.equals(val.getNodeValue().trim())) {
             // track that it had the DIRECTORY_SIZE_PLACEHOLDER character
             return DIRECTORY_INTERNAL_SIZE;
         }

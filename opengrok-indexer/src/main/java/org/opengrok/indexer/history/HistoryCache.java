@@ -24,7 +24,6 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.search.DirectoryEntry;
@@ -96,10 +95,9 @@ interface HistoryCache extends Cache {
      * specified directory.
      *
      * @param entries list of {@link DirectoryEntry} instances
-     * @return a map from file names to {@link HistoryEntry} instance
      * @throws CacheException on error
      */
-    Map<String, HistoryEntry> getLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
+    void fillLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
 
     /**
      * Clear entry for single file from history cache.

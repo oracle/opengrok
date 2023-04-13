@@ -1009,7 +1009,7 @@ class FileHistoryCacheTest {
     }
 
     /**
-     * Test {@link FileHistoryCache#getLastHistoryEntries(List)}, in particular that it avoids
+     * Test {@link FileHistoryCache#fillLastHistoryEntries(List)}, in particular that it avoids
      * getting history cache entries for directories.
      */
     @Test
@@ -1036,8 +1036,7 @@ class FileHistoryCacheTest {
             directoryEntries.add(new DirectoryEntry(file));
         }
 
-        Map<String, HistoryEntry> historyEntries = spyCache.getLastHistoryEntries(directoryEntries);
-        assertNotNull(historyEntries);
+        spyCache.fillLastHistoryEntries(directoryEntries);
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
 
         // Cleanup.
