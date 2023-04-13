@@ -39,7 +39,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -772,22 +771,24 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public Map<String, HistoryEntry> getLastHistoryEntries(List<DirectoryEntry> entries) {
+    public void fillLastHistoryEntries(List<DirectoryEntry> entries) {
         if (entries == null) {
-            return Collections.emptyMap();
+            return;
         }
 
-        Map<String, HistoryEntry> map = new HashMap<>();
         for (DirectoryEntry directoryEntry : entries) {
             try {
                 File file = directoryEntry.getFile();
                 if (file.isDirectory()) {
+                    directoryEntry.setDescription("-");
+                    directoryEntry.setDate(null);
                     continue;
                 }
 
                 HistoryEntry historyEntry = getLastHistoryEntry(file);
                 if (historyEntry != null && historyEntry.getDate() != null) {
-                    map.put(directoryEntry.getFile().getName(), historyEntry);
+                    directoryEntry.setDescription(historyEntry.getDescription());
+                    directoryEntry.setDate(historyEntry.getDate());
                 } else {
                     LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
                             directoryEntry.getFile());
@@ -796,8 +797,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
             }
         }
-
-        return map;
     }
 
     @Override

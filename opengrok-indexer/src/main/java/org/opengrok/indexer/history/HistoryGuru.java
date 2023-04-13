@@ -711,28 +711,31 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the last modified times for all files and subdirectories in the specified directory.
-     * If the related {@link Repository} instance does not exist or if it is capable or merge commits,
-     * however merge commits are disabled in its properties, empty map will be returned.
+     * Get the last modified times and descriptions for all files and subdirectories in the specified directory.
      * @param directory the directory whose files to check
      * @param entries list of {@link DirectoryEntry} instances
-     * @return a map from file names to {@link HistoryEntry} instance for the files that
-     * the history cache has information about
+     * @return whether to fall back to file system based time stamps if the date is {@code null}
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public Map<String, HistoryEntry> getLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
+    public boolean getLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
 
         if (!env.isUseHistoryCacheForDirectoryListing()) {
             LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",
                     directory);
-            return Collections.emptyMap();
+            return true;
+        }
+
+        if (!useHistoryCache()) {
+            LOGGER.log(Level.FINEST, "history cache is disabled for ''{0}'' to retrieve last modified times",
+                    directory);
+            return true;
         }
 
         Repository repository = getRepository(directory);
         if (repository == null) {
             LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to retrieve last modified times",
                     directory);
-            return Collections.emptyMap();
+            return true;
         }
 
         // Do not use history cache for repositories with merge commits disabled as some files in the repository
@@ -742,16 +745,12 @@ public final class HistoryGuru {
             LOGGER.log(Level.FINEST,
                     "will not retrieve last modified times due to merge changesets disabled for ''{0}}''",
                     directory);
-            return Collections.emptyMap();
+            return true;
         }
 
-        if (!useHistoryCache()) {
-            LOGGER.log(Level.FINEST, "history cache is disabled for ''{0}'' to retrieve last modified times",
-                    directory);
-            return Collections.emptyMap();
-        }
+        historyCache.fillLastHistoryEntries(entries);
 
-        return historyCache.getLastHistoryEntries(entries);
+        return false;
     }
 
     /**
