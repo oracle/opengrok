@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -184,7 +184,7 @@ public class Executor {
             envStr = " with environment: " + envMap.toString();
         }
         LOGGER.log(Level.FINE,
-                "Executing command [{0}] in directory {1}{2}",
+                "Executing command [{0}] in directory ''{1}''{2}",
                 new Object[] {cmd_str, dir_str, envStr});
 
         Process process = null;
@@ -201,7 +201,7 @@ public class Executor {
                 } catch (IOException ex) {
                     if (reportExceptions) {
                         LOGGER.log(Level.SEVERE,
-                                "Error while executing command [{0}] in directory {1}",
+                                "Error while executing command [{0}] in directory ''{1}''",
                                 new Object[] {cmd_str, dir_str});
                         LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
                     }
@@ -220,7 +220,7 @@ public class Executor {
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
                         LOGGER.log(Level.WARNING,
-                            String.format("Terminating process of command [%s] in directory %s " +
+                            String.format("Terminating process of command [%s] in directory '%s' " +
                             "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
                         proc.destroy();
                     }
@@ -232,10 +232,10 @@ public class Executor {
             ret = process.waitFor();
 
             stat.report(LOGGER, Level.FINE,
-                    String.format("Finished command [%s] in directory %s with exit code %d", cmd_str, dir_str, ret),
+                    String.format("Finished command [%s] in directory '%s' with exit code %d", cmd_str, dir_str, ret),
                     "executor.latency");
             LOGGER.log(Level.FINE,
-                "Finished command [{0}] in directory {1} with exit code {2}",
+                "Finished command [{0}] in directory ''{1}'' with exit code {2}",
                 new Object[] {cmd_str, dir_str, ret});
 
             // Wait for the stderr read-out thread to finish the processing and
@@ -272,8 +272,9 @@ public class Executor {
             StringBuilder msg = new StringBuilder("Non-zero exit status ")
                     .append(ret).append(" from command [")
                     .append(cmd_str)
-                    .append("] in directory ")
-                    .append(dir_str);
+                    .append("] in directory '")
+                    .append(dir_str).
+                    append("'");
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");
                     if (stderr.length > MAX_MSG_SZ) {
