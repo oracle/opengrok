@@ -25,13 +25,14 @@ package org.opengrok.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.Files;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,10 +40,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.opengrok.indexer.configuration.Filter;
+import org.opengrok.indexer.configuration.IgnoredNames;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryEntry;
+import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.search.DirectoryEntry;
+import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.EftarFileReader;
+import org.opengrok.indexer.web.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,7 +70,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 /**
- * JUnit test to test that the {@link DirectoryListing} produce the expected result.
+ * Test that the {@link DirectoryListing#extraListTo(String, File, Writer, String, List)} produces the expected result.
  */
 class DirectoryListingTest {
 
@@ -69,20 +80,27 @@ class DirectoryListingTest {
      */
     private static final int DIRECTORY_INTERNAL_SIZE = -2;
     /**
-     * Indication that the file is a directory and the date was not displayed,
-     * because the {@code useHistoryCacheForDirectoryListing} tunable was true.
+     * Indication that the date was not displayed.
      */
-    private static final long DIRECTORY_INTERNAL_DATE = -2;
+    private static final long NO_DATE = -2;
     /**
      * Indication of unparseable file size.
      */
     private static final int INVALID_SIZE = -1;
 
-    private File directory;
-    private FileEntry[] entries;
-    private SimpleDateFormat dateFormatter;
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    class FileEntry implements Comparable<FileEntry> {
+    private static final String PROJECT_NAME = "git";
+
+    private TestRepository repositories;
+
+    private boolean savedUseHistoryCacheForDirectoryListing;
+
+    private File directory;
+    private List<FileEntry> entries;
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
+
+    static class FileEntry implements Comparable<FileEntry> {
 
         String name;
         String href;
@@ -95,19 +113,19 @@ class DirectoryListingTest {
          * -1 - for an unparseable size
          * </pre>
          */
-        int size;
+        long size;
+        String readableSize;
         List<FileEntry> subdirs;
 
         FileEntry() {
-            dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
         }
 
-        private FileEntry(String name, String href, long lastModified, int size, List<FileEntry> subdirs) {
-            this();
+        private FileEntry(String name, String href, Long lastModified, long size, List<FileEntry> subdirs) {
             this.name = name;
             this.href = href;
             this.lastModified = lastModified;
             this.size = size;
+            this.readableSize = Util.readableSize(size);
             this.subdirs = subdirs;
         }
 
@@ -136,36 +154,6 @@ class DirectoryListingTest {
             this(name, href, lastModified, size, null);
         }
 
-        private void create() throws Exception {
-            File file = new File(directory, name);
-
-            if (subdirs != null && subdirs.size() > 0) {
-                // this is a directory
-                assertTrue(file.mkdirs(), "Failed to create a directory");
-                for (FileEntry entry : subdirs) {
-                    entry.name = name + File.separator + entry.name;
-                    entry.create();
-                }
-            } else {
-                assertTrue(file.createNewFile(), "Failed to create file");
-            }
-
-            long val = lastModified;
-            if (val == Long.MAX_VALUE) {
-                val = System.currentTimeMillis();
-            }
-
-            assertTrue(file.setLastModified(val), "Failed to set modification time");
-
-            if (subdirs == null && size > 0) {
-                try (FileOutputStream out = new FileOutputStream(file)) {
-                    byte[] buffer = new byte[size];
-                    out.write(buffer);
-                }
-            }
-        }
-
-        // @todo verify all attributes!
         @Override
         public int compareTo(FileEntry fe) {
             int ret;
@@ -178,15 +166,21 @@ class DirectoryListingTest {
                 return ret;
             }
 
+            if ((ret = Long.compare(lastModified, fe.lastModified)) != 0) {
+                return ret;
+            }
+
             // this is a file so the size must be exact
             if (subdirs == null) {
-                if (size != fe.size) {
-                    ret = Integer.compare(size, fe.size);
+                if (fe.size == INVALID_SIZE) {
+                    ret = readableSize.compareTo(fe.readableSize);
+                } else {
+                    ret = Long.compare(size, fe.size);
                 }
             } else {
                 // this is a directory so the size must have been "-" char
                 if (size != DIRECTORY_INTERNAL_SIZE) {
-                    ret = Integer.compare(size, DIRECTORY_INTERNAL_SIZE);
+                    ret = Long.compare(size, DIRECTORY_INTERNAL_SIZE);
                 }
             }
 
@@ -194,54 +188,44 @@ class DirectoryListingTest {
         }
     }
 
+    /**
+     * Set up the test environment with repositories.
+     */
     @BeforeEach
     public void setUp() throws Exception {
-        directory = Files.createTempDirectory("directory").toFile();
+        repositories = new TestRepository();
+        repositories.create(getClass().getResource("/repositories"));
 
-        entries = new FileEntry[3];
-        entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
-        entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
-        // Will test getSimplifiedPath() behavior for ignored directories.
-        // Use DIRECTORY_INTERNAL_SIZE value for length, so it is checked as the directory
-        // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
-        entries[2] = new FileEntry("subdir", "subdir/", 0,
-                List.of(new FileEntry("SCCS", "SCCS/", 0,
-                        List.of(new FileEntry("version", "version", 0, 312))
-                )));
+        // Needed for HistoryGuru to operate normally.
+        env.setRepositories(repositories.getSourceRoot());
 
-        for (FileEntry entry : entries) {
-            entry.create();
-        }
+        directory = new File(env.getSourceRootFile(), PROJECT_NAME);
 
-        // Create the entry that will be ignored separately.
-        FileEntry hgtags = new FileEntry(".hgtags", ".hgtags", 0, 1);
-        hgtags.create();
+        savedUseHistoryCacheForDirectoryListing = env.isUseHistoryCacheForDirectoryListing();
 
         // Need to populate list of ignored entries for all repository types.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
 
-        env.setUseHistoryCacheForDirectoryListing(false);
+        // Needed to test the per repository merge changeset support flag is honored.
+        // The repository will inherit the property from the project.
+        env.setProjectsEnabled(true);
     }
 
+    /**
+     * Clean up after the test. Remove the test repositories.
+     */
     @AfterEach
     public void tearDown() {
-        if (directory != null && directory.exists()) {
-            removeDirectory(directory);
-            directory.delete();
-        }
-    }
+        repositories.destroy();
+        repositories = null;
 
-    private void removeDirectory(File dir) {
-        File[] childs = dir.listFiles();
-        if (childs != null) {
-            for (File f : childs) {
-                if (f.isDirectory()) {
-                    removeDirectory(f);
-                }
-                f.delete();
-            }
-        }
+        env.setUseHistoryCacheForDirectoryListing(savedUseHistoryCacheForDirectoryListing);
+
+        env.setIgnoredNames(new IgnoredNames());
+        env.setIncludedNames(new Filter());
+
+        env.getProjects().clear();
     }
 
     /**
@@ -287,7 +271,6 @@ class DirectoryListingTest {
     /**
      * Get the LastModified date from the &lt;td&gt;date&lt;/td&gt;.
      *
-     * @todo fix the item
      * @param item the node representing &lt;td&gt
      * @return last modified date of the file
      * @throws java.lang.Exception if an error occurs
@@ -298,15 +281,16 @@ class DirectoryListingTest {
         assertEquals(Node.TEXT_NODE, firstChild.getNodeType());
 
         String value = firstChild.getNodeValue();
-        if (RuntimeEnvironment.getInstance().isUseHistoryCacheForDirectoryListing()) {
-            // Assumes that the history cache was created.
-            assertEquals(DirectoryListing.BLANK_PLACEHOLDER, value);
-            return DIRECTORY_INTERNAL_DATE;
+
+        if (value.equalsIgnoreCase("Today")) {
+            return Long.MAX_VALUE;
         }
 
-        return value.equalsIgnoreCase("Today")
-                ? Long.MAX_VALUE
-                : dateFormatter.parse(value).getTime();
+        if (value.equals("-")) {
+            return NO_DATE;
+        }
+
+        return dateFormatter.parse(value).getTime();
     }
 
     /**
@@ -317,7 +301,7 @@ class DirectoryListingTest {
      * {@link #INVALID_SIZE} if the size could not be parsed<br>
      * {@link #DIRECTORY_INTERNAL_SIZE} if the record was a directory<br>
      */
-    private int getSize(Node item) throws NumberFormatException {
+    private int getIntSize(Node item) throws NumberFormatException {
         Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
@@ -330,6 +314,13 @@ class DirectoryListingTest {
         } catch (NumberFormatException ex) {
             return INVALID_SIZE;
         }
+    }
+
+    private String getStringSize(Node item) throws NumberFormatException {
+        Node val = item.getFirstChild();
+        assertNotNull(val);
+        assertEquals(Node.TEXT_NODE, val.getNodeType());
+        return val.getNodeValue().trim();
     }
 
     /**
@@ -351,12 +342,15 @@ class DirectoryListingTest {
         entry.name = getFilename(nl.item(1));
         entry.href = getHref(nl.item(1));
         entry.lastModified = getDateValue(nl.item(3));
-        entry.size = getSize(nl.item(4));
+        entry.size = getIntSize(nl.item(4));
+        if (entry.size == INVALID_SIZE) {
+            entry.readableSize = getStringSize(nl.item(4));
+        }
 
         // Try to look it up in the list of files.
-        for (int ii = 0; ii < entries.length; ++ii) {
-            if (entries[ii] != null && entries[ii].compareTo(entry) == 0) {
-                entries[ii] = null;
+        for (FileEntry e : entries) {
+            if (e.compareTo(entry) == 0) {
+                entries.remove(e);
                 return;
             }
         }
@@ -369,8 +363,93 @@ class DirectoryListingTest {
      *
      * @throws java.lang.Exception if an error occurs while generating the list.
      */
-    @Test
-    void directoryListing() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testDirectoryListing(boolean useHistoryCache) throws Exception {
+
+        env.setUseHistoryCacheForDirectoryListing(useHistoryCache);
+
+        if (useHistoryCache) {
+            Project project = new Project(PROJECT_NAME, env.getPathRelativeToSourceRoot(directory));
+            project.setMergeCommitsEnabled(true);
+            env.getProjects().put(PROJECT_NAME, project);
+        }
+
+        // Always create history cache. This should provide additional testing confidence
+        // in how the useHistoryCacheForDirectoryListing indexer tunable is used.
+        Indexer indexer = Indexer.getInstance();
+        indexer.prepareIndexer(
+                env, true, true,
+                null, List.of(env.getPathRelativeToSourceRoot(directory)));
+
+        Document document = getDocumentWithDirectoryListing();
+
+        // Construct the expected directory entries.
+        setEntries(useHistoryCache);
+
+        // Verify the values of directory entries.
+        NodeList nl = document.getElementsByTagName("tr");
+        int len = nl.getLength();
+        // Add one extra for header and one for parent directory link.
+        assertEquals(entries.size() + 2, len);
+        // Skip the header and parent link.
+        for (int i = 2; i < len; ++i) {
+            validateEntry((Element) nl.item(i));
+        }
+    }
+
+    private void setEntries(boolean useHistoryCache) throws Exception {
+        File[] files = directory.listFiles();
+        assertNotNull(files);
+        entries = new ArrayList<>();
+
+        for (File file : files) {
+            if (env.getIgnoredNames().ignore(file)) {
+                continue;
+            }
+
+            HistoryGuru historyGuru = HistoryGuru.getInstance();
+            // See the comment about always creating history cache in the caller.
+            assertTrue(historyGuru.hasHistoryCacheForFile(file));
+
+            if (useHistoryCache) {
+                if (file.isDirectory()) {
+                    entries.add(new FileEntry(file.getName(), file.getName() + "/",
+                            NO_DATE, DIRECTORY_INTERNAL_SIZE, null));
+                } else {
+                    HistoryEntry historyEntry = historyGuru.getLastHistoryEntry(file, true, false);
+                    assertNotNull(historyEntry);
+                    // The date string displayed in the UI has simple form so use the following
+                    // to strip the minutes/seconds.
+                    String dateString = dateFormatter.format(historyEntry.getDate());
+                    long lastModTime = dateFormatter.parse(dateString).getTime();
+                    entries.add(new FileEntry(file.getName(), file.getName(),
+                            lastModTime, file.length(), null));
+                }
+            } else {
+                // The date string displayed in the UI has simple form so use the following
+                // to strip the minutes/seconds.
+                Date date = new Date(file.lastModified());
+                String dateString = dateFormatter.format(date);
+                long lastModTime = dateFormatter.parse(dateString).getTime();
+
+                // Special case for files modified today.
+                if (System.currentTimeMillis() - lastModTime < 86400000) {
+                    lastModTime = Long.MAX_VALUE;
+                }
+
+                if (file.isDirectory()) {
+                    entries.add(new FileEntry(file.getName(), file.getName() + "/",
+                            lastModTime, DIRECTORY_INTERNAL_SIZE, null));
+                } else {
+                    entries.add(new FileEntry(file.getName(), file.getName(),
+                            lastModTime, file.length(), null));
+                }
+            }
+        }
+    }
+
+    private Document getDocumentWithDirectoryListing() throws Exception {
         StringWriter out = new StringWriter();
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
@@ -387,16 +466,10 @@ class DirectoryListingTest {
 
         out.append("</start>\n");
         String str = out.toString();
-        Document document = builder.parse(new ByteArrayInputStream(str.getBytes()));
+        // The XML parser does not like the '&nbsp;' so strip it away.
+        str = str.replace("&nbsp;", " ");
 
-        NodeList nl = document.getElementsByTagName("tr");
-        int len = nl.getLength();
-        // Add one extra for header and one for parent directory link.
-        assertEquals(entries.length + 2, len);
-        // Skip the header and parent link.
-        for (int i = 2; i < len; ++i) {
-            validateEntry((Element) nl.item(i));
-        }
+        return builder.parse(new ByteArrayInputStream(str.getBytes()));
     }
 
     /**
