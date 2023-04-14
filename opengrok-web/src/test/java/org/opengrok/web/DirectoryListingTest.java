@@ -455,7 +455,7 @@ class DirectoryListingTest {
 
         DirectoryListing instance = new DirectoryListing();
         assertNotNull(directory.list());
-        instance.listTo("ctx", directory, out, directory.getPath(),
+        instance.listTo("ctx", directory, out, directory.getName(),
                 Arrays.asList(directory.list()));
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -482,7 +482,7 @@ class DirectoryListingTest {
         DirectoryListing instance = new DirectoryListing(mockReader);
         File file = new File(directory, "foo");
         StringWriter mockWriter = spy(StringWriter.class);
-        instance.extraListTo("ctx", directory, mockWriter, directory.getPath(),
+        instance.extraListTo("ctx", directory, mockWriter, directory.getName(),
                 Collections.singletonList(new DirectoryEntry(file)));
         verify(mockWriter, atLeast(20)).write(anyString());
     }
