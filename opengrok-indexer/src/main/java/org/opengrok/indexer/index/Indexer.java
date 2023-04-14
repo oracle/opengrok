@@ -1036,7 +1036,7 @@ public final class Indexer {
      * @param addProjects if true, add projects
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
-     * @param repositories list of repositories
+     * @param repositories list of repository paths relative to source root
      * @throws IndexerException indexer exception
      * @throws IOException I/O exception
      */
