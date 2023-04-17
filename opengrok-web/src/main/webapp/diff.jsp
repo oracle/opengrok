@@ -212,11 +212,12 @@ action=download">download diff</a></span><%
         if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
         %><table class="plain" aria-label="table with old and new content"><%
             if (type == DiffType.SIDEBYSIDE) {
-                String linkPrefix = request.getContextPath() + Prefix.XREF_P + Util.htmlize(cfg.getPath());
+                String linkPrefix = request.getContextPath() + Prefix.XREF_P + Util.htmlize(cfg.getPath()) +
+                        "?" + QueryParameters.REVISION_PARAM_EQ;
             %>
             <thead><tr>
-                <th><a href="<%= linkPrefix %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>"><%= data.getFilename() %> (<%= data.getRev(0) %>)</a></th>
-                <th><a href="<%= linkPrefix %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>"><%= data.getFilename() %> (<%= data.getRev(1) %>)</a></th>
+                <th><a href="<%= linkPrefix %><%= data.getRev(0) %>"><%= data.getFilename() %> (<%= data.getRev(0) %>)</a></th>
+                <th><a href="<%= linkPrefix %><%= data.getRev(1) %>"><%= data.getFilename() %> (<%= data.getRev(1) %>)</a></th>
             </tr></thead><%
             }
             %>
