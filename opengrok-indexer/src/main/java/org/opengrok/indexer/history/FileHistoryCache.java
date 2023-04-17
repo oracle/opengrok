@@ -523,7 +523,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
          * The renamed files will be handled separately.
          */
         Level logLevel = Level.FINE;
-        LOGGER.log(logLevel, "Storing history for {0} regular files in repository ''{1}'' till {2}",
+        LOGGER.log(logLevel, "Storing history for {0} regular files in repository {1} till {2}",
                 new Object[]{regularFiles.size(), repository, getRevisionString(tillRevision)});
         final File root = env.getSourceRootFile();
 
@@ -554,7 +554,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
-            LOGGER.log(logLevel, "Stored history for {0} regular files in repository ''{1}''",
+            LOGGER.log(logLevel, "Stored history for {0} regular files in repository {1}",
                     new Object[]{fileHistoryCount, repository});
         }
 
@@ -583,7 +583,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
         Level logLevel = Level.FINE;
-        LOGGER.log(logLevel, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
+        LOGGER.log(logLevel, "Storing history for {0} renamed files in repository {1} till {2}",
                 new Object[]{renamedFiles.size(), repository, getRevisionString(tillRevision)});
 
         createDirectoriesForFiles(renamedFiles, repository, "renamed files for history " +
@@ -645,7 +645,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             File dir = cache.getParentFile();
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
-                LOGGER.log(Level.WARNING, "Unable to create cache directory ''{0}''.", dir);
+                LOGGER.log(Level.WARNING, "Unable to create cache directory ''{0}''", dir);
             }
         }
         elapsed.report(LOGGER, Level.FINE, String.format("Done creating directories for %s (%s)", repository, label));
