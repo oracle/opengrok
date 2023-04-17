@@ -863,7 +863,7 @@ public final class HistoryGuru {
         List<Future<Collection<RepositoryInfo>>> futures = new ArrayList<>();
         List<RepositoryInfo> repoList = new ArrayList<>();
 
-        try (Progress progress = new Progress(LOGGER, "repository scan")) {
+        try (Progress progress = new Progress(LOGGER, "directories processed for repository scan")) {
             for (File file : files) {
                 /*
                  * Adjust scan depth based on source root path. Some directories can be symbolic links pointing
