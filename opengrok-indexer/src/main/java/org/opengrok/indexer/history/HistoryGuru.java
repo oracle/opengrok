@@ -821,8 +821,7 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository for ''{1}''",
-                            new Object[]{repository.getClass().getName(), path});
+                    LOGGER.log(Level.CONFIG, "Adding repository {0}", repository);
 
                     repoList.add(new RepositoryInfo(repository));
                     putRepository(repository);
