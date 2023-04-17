@@ -780,10 +780,7 @@ public final class HistoryGuru {
                 continue;
             }
 
-            String path;
             try {
-                path = file.getCanonicalPath();
-
                 Repository repository = null;
                 try {
                     repository = RepositoryFactory.getRepository(file, CommandTimeoutType.INDEXER, isNested);
@@ -821,8 +818,7 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository for ''{1}''",
-                            new Object[]{repository.getClass().getName(), path});
+                    LOGGER.log(Level.CONFIG, "Adding repository {0}", repository);
 
                     repoList.add(new RepositoryInfo(repository));
                     putRepository(repository);
@@ -937,34 +933,28 @@ public final class HistoryGuru {
     }
 
     private void createHistoryCache(Repository repository, String sinceRevision) {
-        String path = repository.getDirectoryName();
-        String type = repository.getClass().getSimpleName();
-
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.INFO,
-                    "Skipping history cache creation of {0} repository in ''{1}'' and its subdirectories",
-                    new Object[]{type, path});
+                    "Skipping history cache creation for {0} and its subdirectories", repository);
             return;
         }
 
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 
-            LOGGER.log(Level.INFO, "Creating history cache for ''{0}'' ({1}) {2} renamed file handling",
-                    new Object[]{path, type, repository.isHandleRenamedFiles() ? "with" : "without"});
+            LOGGER.log(Level.INFO, "Creating history cache for {0}", repository);
 
             try {
                 repository.createCache(historyCache, sinceRevision);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
-                        String.format("An error occurred while creating cache for '%s' (%s)", path, type), e);
+                        String.format("An error occurred while creating cache for %s", repository), e);
             }
 
-            elapsed.report(LOGGER, String.format("Done history cache for '%s'", path));
+            elapsed.report(LOGGER, String.format("Done history cache for %s", repository));
         } else {
             LOGGER.log(Level.WARNING,
-                    "Skipping creation of history cache of {0} repository in ''{1}'': Missing SCM dependencies?",
-                    new Object[]{type, path});
+                    "Skipping creation of history cache for {0}: Missing SCM dependencies?", repository);
         }
     }
 
@@ -993,10 +983,7 @@ public final class HistoryGuru {
                 latestRev = historyCache.getLatestCachedRevision(repo);
                 repos2process.put(repo, latestRev);
             } catch (CacheException he) {
-                LOGGER.log(Level.WARNING,
-                        String.format(
-                                "Failed to retrieve latest cached revision for %s",
-                                repo.getDirectoryName()), he);
+                LOGGER.log(Level.WARNING, String.format("Failed to retrieve latest cached revision for %s", repo), he);
             }
         }
 
@@ -1033,8 +1020,7 @@ public final class HistoryGuru {
         try {
             historyCache.optimize();
         } catch (CacheException he) {
-            LOGGER.log(Level.WARNING,
-                    "Failed optimizing the history cache database", he);
+            LOGGER.log(Level.WARNING, "Failed optimizing the history cache database", he);
         }
         elapsed.report(LOGGER, "Done history cache for all repositories", "indexer.history.cache");
         setHistoryIndexDone();
