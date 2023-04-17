@@ -57,6 +57,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
 /**
@@ -761,9 +762,11 @@ public final class HistoryGuru {
      * @param allowedNesting number of levels of nested repos to allow
      * @param depth maximum scanning depth
      * @param isNested a value indicating if a parent {@link Repository} was already found above the {@code files}
+     * @param progress {@link org.opengrok.indexer.util.Progress} instance
      * @return collection of added repositories
      */
-    private Collection<RepositoryInfo> addRepositories(File[] files, int allowedNesting, int depth, boolean isNested) {
+    private Collection<RepositoryInfo> addRepositories(File[] files, int allowedNesting, int depth, boolean isNested,
+                                                       Progress progress) {
 
         if (depth < 0) {
             throw new IllegalArgumentException("depth is negative");
@@ -814,7 +817,7 @@ public final class HistoryGuru {
                         } else {
                             // Recursive call to scan next depth
                             repoList.addAll(addRepositories(subFiles,
-                                    allowedNesting, depth - 1, isNested));
+                                    allowedNesting, depth - 1, isNested, progress));
                         }
                     }
                 } else {
@@ -832,7 +835,7 @@ public final class HistoryGuru {
                                     file.getAbsolutePath());
                         } else if (depth > 0) {
                             repoList.addAll(addRepositories(subFiles,
-                                    allowedNesting - 1, depth - 1, true));
+                                    allowedNesting - 1, depth - 1, true, progress));
                         }
                     }
                 }
@@ -841,6 +844,8 @@ public final class HistoryGuru {
                         "Failed to get canonical path for ''{0}'': {1}",
                         new Object[]{file.getAbsolutePath(), exp.getMessage()});
                 LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
+            } finally {
+                progress.increment();
             }
         }
 
@@ -858,33 +863,35 @@ public final class HistoryGuru {
         List<Future<Collection<RepositoryInfo>>> futures = new ArrayList<>();
         List<RepositoryInfo> repoList = new ArrayList<>();
 
-        for (File file: files) {
-            /*
-             * Adjust scan depth based on source root path. Some directories can be symbolic links pointing
-             * outside source root so avoid constructing canonical paths for the computation to work.
-             */
-            int levelsBelowSourceRoot;
-            try {
-                String relativePath = env.getPathRelativeToSourceRoot(file);
-                levelsBelowSourceRoot = Path.of(relativePath).getNameCount();
-            } catch (IOException | ForbiddenSymlinkException e) {
-                LOGGER.log(Level.WARNING, "cannot get path relative to source root for ''{0}'', " +
-                        "skipping repository scan for this directory", file);
-                continue;
-            }
-            final int scanDepth = env.getScanningDepth() - levelsBelowSourceRoot;
+        try (Progress progress = new Progress(LOGGER, "directories processed for repository scan")) {
+            for (File file : files) {
+                /*
+                 * Adjust scan depth based on source root path. Some directories can be symbolic links pointing
+                 * outside source root so avoid constructing canonical paths for the computation to work.
+                 */
+                int levelsBelowSourceRoot;
+                try {
+                    String relativePath = env.getPathRelativeToSourceRoot(file);
+                    levelsBelowSourceRoot = Path.of(relativePath).getNameCount();
+                } catch (IOException | ForbiddenSymlinkException e) {
+                    LOGGER.log(Level.WARNING, "cannot get path relative to source root for ''{0}'', " +
+                            "skipping repository scan for this directory", file);
+                    continue;
+                }
+                final int scanDepth = env.getScanningDepth() - levelsBelowSourceRoot;
 
-            futures.add(executor.submit(() -> addRepositories(new File[]{file},
-                    env.getNestingMaximum(), scanDepth, false)));
+                futures.add(executor.submit(() -> addRepositories(new File[]{file},
+                        env.getNestingMaximum(), scanDepth, false, progress)));
+            }
+
+            futures.forEach(future -> {
+                try {
+                    repoList.addAll(future.get());
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "failed to get results of repository scan", e);
+                }
+            });
         }
-
-        futures.forEach(future -> {
-            try {
-                repoList.addAll(future.get());
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "failed to get results of repository scan", e);
-            }
-        });
 
         LOGGER.log(Level.FINER, "Discovered repositories: {0}", repoList);
 
@@ -1280,34 +1287,37 @@ public final class HistoryGuru {
         final ExecutorService executor = Executors.newFixedThreadPool(parallelismLevel,
                 new OpenGrokThreadFactory("invalidate-repos-"));
 
-        for (RepositoryInfo repositoryInfo : repos) {
-            executor.submit(() -> {
-                try {
-                    Repository r = RepositoryFactory.getRepository(repositoryInfo, cmdType);
-                    if (r == null) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to instantiate internal repository data for {0} in ''{1}''",
-                                new Object[]{repositoryInfo.getType(), repositoryInfo.getDirectoryName()});
-                    } else {
-                        repositoryMap.put(r.getDirectoryName(), r);
+        try (Progress progress = new Progress(LOGGER, "repository invalidation", repos.size())) {
+            for (RepositoryInfo repositoryInfo : repos) {
+                executor.submit(() -> {
+                    try {
+                        Repository r = RepositoryFactory.getRepository(repositoryInfo, cmdType);
+                        if (r == null) {
+                            LOGGER.log(Level.WARNING,
+                                    "Failed to instantiate internal repository data for {0} in ''{1}''",
+                                    new Object[]{repositoryInfo.getType(), repositoryInfo.getDirectoryName()});
+                        } else {
+                            repositoryMap.put(r.getDirectoryName(), r);
+                        }
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        LOGGER.log(Level.WARNING, "Could not create " + repositoryInfo.getType()
+                                + " repository object for '" + repositoryInfo.getDirectoryName() + "'", ex);
+                    } finally {
+                        latch.countDown();
+                        progress.increment();
                     }
-                } catch (Exception ex) {
-                    // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING, "Could not create " + repositoryInfo.getType()
-                        + " repository object for '" + repositoryInfo.getDirectoryName() + "'", ex);
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+                });
+            }
 
-        // Wait until all repositories are validated.
-        try {
-            latch.await();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
+            // Wait until all repositories are validated.
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.SEVERE, "latch exception", ex);
+            }
+            executor.shutdown();
         }
-        executor.shutdown();
 
         clear();
         repositoryMap.forEach((key, repo) -> putRepository(repo));
