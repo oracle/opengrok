@@ -425,9 +425,9 @@ public class RepositoryInfo implements Serializable {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("{");
-        stringBuilder.append("dir=");
+        stringBuilder.append("dir='");
         stringBuilder.append(this.getDirectoryName());
-        stringBuilder.append(",");
+        stringBuilder.append("',");
         stringBuilder.append("type=");
         stringBuilder.append(getType());
         stringBuilder.append(",");
