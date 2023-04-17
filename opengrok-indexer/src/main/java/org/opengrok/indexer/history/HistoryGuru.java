@@ -936,7 +936,6 @@ public final class HistoryGuru {
     }
 
     private void createHistoryCache(Repository repository, String sinceRevision) {
-
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.INFO,
                     "Skipping history cache creation for {0} and its subdirectories", repository);
