@@ -136,15 +136,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         storeFile(history, file, repository, !renamed);
     }
 
-    static class FilePersistenceDelegate extends PersistenceDelegate {
-        @Override
-        protected Expression instantiate(Object oldInstance, Encoder out) {
-            File f = (File) oldInstance;
-            return new Expression(oldInstance, f.getClass(), "new",
-                new Object[] {f.toString()});
-        }
-    }
-
     @Override
     public void initialize() {
         MeterRegistry meterRegistry = Metrics.getRegistry();
