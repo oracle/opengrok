@@ -936,8 +936,6 @@ public final class HistoryGuru {
     }
 
     private void createHistoryCache(Repository repository, String sinceRevision) {
-        String path = repository.getDirectoryName();
-        String type = repository.getClass().getSimpleName();
 
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.INFO,
