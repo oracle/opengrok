@@ -780,10 +780,7 @@ public final class HistoryGuru {
                 continue;
             }
 
-            String path;
             try {
-                path = file.getCanonicalPath();
-
                 Repository repository = null;
                 try {
                     repository = RepositoryFactory.getRepository(file, CommandTimeoutType.INDEXER, isNested);
