@@ -452,7 +452,7 @@ public class HistoryGuruTest {
         }
         boolean useHistoryCacheForDirectoryListingOrig = env.isUseHistoryCacheForDirectoryListing();
         env.setUseHistoryCacheForDirectoryListing(true);
-        boolean fallback = instance.getLastHistoryEntries(repositoryRoot, directoryEntries);
+        boolean fallback = instance.fillLastHistoryEntries(repositoryRoot, directoryEntries);
         if (isMergeCommitsEnabled) {
             assertFalse(fallback);
         } else {

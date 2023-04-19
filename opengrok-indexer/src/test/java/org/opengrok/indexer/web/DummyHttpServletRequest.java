@@ -182,8 +182,17 @@ public class DummyHttpServletRequest implements HttpServletRequest {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private String contextPath;
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
     @Override
     public String getContextPath() {
+        if (contextPath != null) {
+            return contextPath;
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -224,7 +233,16 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getServletPath() {
+        if (servletPath != null) {
+            return servletPath;
+        }
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private String servletPath;
+
+    public void setServletPath(String path) {
+        this.servletPath = path;
     }
 
     @Override

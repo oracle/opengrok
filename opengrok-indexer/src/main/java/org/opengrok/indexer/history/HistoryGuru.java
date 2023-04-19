@@ -712,13 +712,14 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the last modified times and descriptions for all files and subdirectories in the specified directory.
+     * Get the last modified times and descriptions for all files and subdirectories in the specified directory
+     * and set it into the entries provided.
      * @param directory the directory whose files to check
      * @param entries list of {@link DirectoryEntry} instances
      * @return whether to fall back to file system based time stamps if the date is {@code null}
      * @throws org.opengrok.indexer.history.CacheException if history cannot be retrieved
      */
-    public boolean getLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
+    public boolean fillLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
 
         if (!env.isUseHistoryCacheForDirectoryListing()) {
             LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",

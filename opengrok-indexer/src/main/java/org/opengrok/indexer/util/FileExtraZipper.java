@@ -18,16 +18,15 @@
  */
 
 /*
+ * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.search.DirectoryEntry;
@@ -41,29 +40,23 @@ public class FileExtraZipper {
 
     /**
      * Merge the specified lists by looking up a possible entry in
-     * {@code extras} for every element in {@code files}.
-     * @param dir the files' directory
-     * @param files the file names
-     * @param extras some OpenGrok-analyzed extra metadata
-     * @return a list of the same size as {@code files}
+     * {@code extras} for every element in {@code entries}.
+     *
+     * @param entries list of {@link DirectoryEntry} instances
+     * @param extras  some OpenGrok-analyzed extra metadata
      */
-    public List<DirectoryEntry> zip(File dir, List<String> files, List<NullableNumLinesLOC> extras) {
+    public void zip(List<DirectoryEntry> entries, List<NullableNumLinesLOC> extras) {
 
         if (extras == null) {
-            return files.stream().map(f -> new DirectoryEntry(new File(dir, f))).collect(Collectors.toList());
+            return;
         }
 
         Map<String, NullableNumLinesLOC> byName = indexExtraByName(extras);
 
-        List<DirectoryEntry> result = new ArrayList<>(files.size());
-        for (String file : files) {
-            File fileobj = new File(dir, file);
-            NullableNumLinesLOC extra = findExtra(byName, fileobj);
-            DirectoryEntry entry = new DirectoryEntry(fileobj, extra);
-            result.add(entry);
+        for (DirectoryEntry entry : entries) {
+            NullableNumLinesLOC extra = findExtra(byName, entry.getFile());
+            entry.setExtra(extra);
         }
-
-        return result;
     }
 
     private NullableNumLinesLOC findExtra(Map<String, NullableNumLinesLOC> byName, File fileobj) {

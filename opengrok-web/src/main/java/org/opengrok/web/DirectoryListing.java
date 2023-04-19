@@ -30,11 +30,11 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -75,20 +75,21 @@ public class DirectoryListing {
      * The time printed will be string representation of the non {@code null} time or {@link #BLANK_PLACEHOLDER}.
      * @param out write destination
      * @param file the file or directory to use for writing the data
-     * @param lastModTime the time of the last commit that touched {@code file} or {@code null} if unknown
+     * @param date the time of the last commit that touched {@code file} or {@code null} if unknown
      * @param dateFormatter the formatter to use for pretty printing dates
      *
      * @throws IOException when writing to the {@code out} parameter failed
      */
-    private void printDateSize(Writer out, File file, Long lastModTime, Format dateFormatter) throws IOException {
+    public void printDateSize(Writer out, File file, Date date, Format dateFormatter) throws IOException {
         out.write("<td>");
-        if (lastModTime == null) {
+        if (date == null) {
             out.write(BLANK_PLACEHOLDER);
         } else {
+            long lastModTime = date.getTime();
             if (now - lastModTime < 86400000) {
                 out.write("Today");
             } else {
-                out.write(dateFormatter.format(lastModTime));
+                out.write(dateFormatter.format(date));
             }
         }
         out.write("</td><td>");
@@ -135,40 +136,41 @@ public class DirectoryListing {
      * @param out writer
      * @param path path
      * @param files list of files
-     * @return see
-     * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
      * @throws CacheException on error
      * @throws IOException I/O exception
      */
     @VisibleForTesting
-    public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
+    public void listTo(String contextPath, File dir, Writer out, String path, List<String> files)
             throws IOException, CacheException {
-        List<DirectoryEntry> filesExtra = null;
-        if (files != null) {
-            filesExtra = files.stream().map(f ->
-                new DirectoryEntry(new File(dir, f), null)).collect(Collectors.toList());
-        }
-        return extraListTo(contextPath, dir, out, path, filesExtra);
+
+        List<DirectoryEntry> filesExtra = createDirectoryEntries(dir, path, files);
+        extraListTo(contextPath, dir, out, path, filesExtra);
     }
 
     /**
-     * Write HTML-ized listing of the given directory to the given destination.
-     *
-     * @param contextPath path used for link prefixes
      * @param dir the directory to list
-     * @param out write destination
      * @param path virtual path of the directory (usually the path name of
-     *  <var>dir</var> with the source root directory stripped off).
-     * @param entries basenames of potential children of the directory to list,
-     *  but filtered by {@link PathAccepter}.
-     * @return a possible empty list of README files included in the written listing.
-     * @throws IOException when cannot write to the {@code out} parameter
-     * @throws CacheException when failed to get last modified time for files in directory
+     *        <var>dir</var> with the source root directory stripped off).
+     * @return list of {@link DirectoryEntry} instances
+     * @throws CacheException if history cache operation failed
      */
-    public List<String> extraListTo(String contextPath, File dir, Writer out,
-                                    String path, @Nullable List<DirectoryEntry> entries) throws IOException, CacheException {
-        // TODO this belongs to a jsp, not here
-        ArrayList<String> readMes = new ArrayList<>();
+    public List<DirectoryEntry> createDirectoryEntries(File dir, String path, List<String> files) throws CacheException {
+        List<DirectoryEntry> entries = new ArrayList<>(files.size());
+
+        for (String filePath : files) {
+            File file = new File(dir, filePath);
+            DirectoryEntry entry = new DirectoryEntry(file);
+            entries.add(entry);
+        }
+
+        // Filter out entries that are not allowed.
+        PathAccepter pathAccepter = RuntimeEnvironment.getInstance().getPathAccepter();
+        entries.removeIf(entry -> !pathAccepter.accept(entry.getFile()));
+
+        if (entries.isEmpty()) {
+            return entries;
+        }
+
         int offset = -1;
         EftarFileReader.FNode parentFNode = null;
         if (desc != null) {
@@ -182,6 +184,59 @@ public class DirectoryListing {
             }
         }
 
+        boolean fallback = HistoryGuru.getInstance().fillLastHistoryEntries(dir, entries);
+
+        for (DirectoryEntry entry : entries) {
+            File child = entry.getFile();
+            String filename = child.getName();
+
+            String pathDescription = "";
+            try {
+                if (offset > 0) {
+                    pathDescription = desc.getChildTag(parentFNode, filename);
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, String.format("cannot get path description for '%s'", child), e);
+            }
+            entry.setPathDescription(pathDescription);
+
+            if (entry.getDate() == null && fallback) {
+                long date = child.lastModified();
+                entry.setDate(new Date(date));
+            }
+        }
+
+        return entries;
+    }
+
+    /**
+     * Write HTML-ized listing of the given directory to the given destination.
+     *
+     * @param contextPath path used for link prefixes
+     * @param dir the directory to list
+     * @param out write destination
+     * @param path virtual path of the directory (usually the path name of
+     *  <var>dir</var> with the source root directory stripped off).
+     * @param entries basenames of potential children of the directory to list,
+     *  assuming that these were filtered by {@link PathAccepter}.
+     * @throws IOException when cannot write to the {@code out} parameter
+     * @throws CacheException when failed to get last modified time for files in directory
+     */
+    public void extraListTo(String contextPath, File dir, Writer out,
+                                    String path, @Nullable List<DirectoryEntry> entries) throws IOException {
+        // TODO this belongs to a jsp, not here
+
+        boolean entriesWithPathDescriptionsPresent = false;
+        if (entries != null) {
+            for (DirectoryEntry entry : entries) {
+                String pathDescription = entry.getPathDescription();
+                if (pathDescription != null && !pathDescription.isEmpty())  {
+                    entriesWithPathDescriptionsPresent = true;
+                    break;
+                }
+            }
+        }
+
         out.write("<table id=\"dirlist\" class=\"tablesorter tablesorter-default\">\n");
         out.write("<thead>\n");
         out.write("<tr>\n");
@@ -192,17 +247,12 @@ public class DirectoryListing {
         out.write("<th class=\"sort-groksizes\">Size</th>\n");
         out.write("<th>#Lines</th>\n");
         out.write("<th>LOC</th>\n");
-        if (offset > 0) {
+        if (entriesWithPathDescriptionsPresent) {
             out.write("<th><samp>Description</samp></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
 
-        PathAccepter pathAccepter = RuntimeEnvironment.getInstance().getPathAccepter();
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
-        if (entries != null) {
-            entries = entries.stream().filter(e -> pathAccepter.accept(e.getFile())).
-                    collect(Collectors.toList());
-        }
 
         // Print the '..' entry even for empty directories.
         if (path.length() != 0) {
@@ -212,17 +262,11 @@ public class DirectoryListing {
             out.write("</tr>\n");
         }
 
-        boolean fallback = HistoryGuru.getInstance().getLastHistoryEntries(dir, entries);
-
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
                 File child = entry.getFile();
                 String filename = child.getName();
-                String filenameLower = filename.toLowerCase(Locale.ROOT);
-                if (filenameLower.startsWith("readme") ||
-                        filenameLower.endsWith("readme")) {
-                    readMes.add(filename);
-                }
+
                 boolean isDir = child.isDirectory();
 
                 out.write("<tr><td>");
@@ -259,30 +303,18 @@ public class DirectoryListing {
                 }
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename);
-                Long date = null;
-                if (entry.getDate() != null) {
-                    date = entry.getDate().getTime();
-                } else if (fallback) {
-                    date = child.lastModified();
-                }
-                printDateSize(out, child, date, dateFormatter);
+                printDateSize(out, child, entry.getDate(), dateFormatter);
                 printNumlines(out, entry, isDir);
                 printLoc(out, entry, isDir);
-                if (offset > 0) {
-                    String briefDesc = desc.getChildTag(parentFNode, filename);
-                    if (briefDesc == null) {
-                        out.write("<td/>");
-                    } else {
-                        out.write("<td>");
-                        out.write(briefDesc);
-                        out.write("</td>");
-                    }
+                if (entriesWithPathDescriptionsPresent) {
+                    out.write("<td>");
+                    out.write(entry.getPathDescription());
+                    out.write("</td>");
                 }
                 out.write("</tr>\n");
             }
         }
         out.write("</tbody>\n</table>");
-        return readMes;
     }
 
     private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)
