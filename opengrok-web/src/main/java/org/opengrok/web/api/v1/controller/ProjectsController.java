@@ -118,7 +118,7 @@ public class ProjectsController {
             // Note that the project is inactive in the UI until it is indexed.
             // See isIndexed()
             env.getProjects().put(projectName, project);
-            env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjectList()));
+            env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjectList()));
         } else {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();

@@ -50,7 +50,10 @@ public final class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> listGroups() {
         if (env.hasGroups()) {
-            return Objects.requireNonNull(env.getGroups()).stream().map(Group::getName).collect(Collectors.toList());
+            return Objects.requireNonNull(env.getGroups()).values()
+                    .stream()
+                    .map(Group::getName)
+                    .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }

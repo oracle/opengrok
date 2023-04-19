@@ -166,10 +166,10 @@ public class RuntimeEnvironmentTest {
 
         Group g = new Group("Random", "xyz.*");
 
-        instance.getGroups().add(g);
+        instance.getGroups().put(g.getName(), g);
         assertEquals(1, instance.getGroups().size());
-        assertEquals(g, instance.getGroups().iterator().next());
-        assertEquals("Random", instance.getGroups().iterator().next().getName());
+        assertEquals(g, new TreeSet<>(instance.getGroups().values()).iterator().next());
+        assertEquals("Random", new TreeSet<>(instance.getGroups().values()).iterator().next().getName());
 
         instance.setGroups(null);
         assertNull(instance.getGroups());
@@ -880,9 +880,9 @@ public class RuntimeEnvironmentTest {
         Project project2 = new Project("barfoo", "/barfoo");
         env.getProjects().put(project2.getName(), project2);
         final Group group1 = new Group("group1", "bar");
-        env.getGroups().add(group1);
+        env.getGroups().put(group1.getName(), group1);
         final Group group2 = new Group("group2", "bar.*");
-        env.getGroups().add(group2);
+        env.getGroups().put(group2.getName(), group2);
 
         final RepositoryInfo repository1 = new RepositoryInfo();
         repository1.setDirectoryNameRelative("/bar");
@@ -899,7 +899,7 @@ public class RuntimeEnvironmentTest {
         assertEquals(2, env.getGroups().size());
 
         // populate groups for the first time
-        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
 
         assertEquals(2, env.getProjects().size());
         assertEquals(2, env.getRepositories().size());
@@ -916,7 +916,7 @@ public class RuntimeEnvironmentTest {
         env.getRepositories().remove(repository1);
 
         // populate groups for the second time
-        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
 
         assertEquals(2, env.getProjects().size());
         assertEquals(1, env.getRepositories().size());

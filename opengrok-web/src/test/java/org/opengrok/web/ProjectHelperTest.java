@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
@@ -58,7 +60,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
     /**
      * Test if projects and groups are always reloaded fully from the env.
-     *
+     * <p>
      * This ensures that when the RuntimeEnvironment changes that it also
      * updates the projects in the UI.
      */
@@ -66,7 +68,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     public void testSynchronization() {
         HashMap<String, Project> oldProjects = new HashMap<>(env.getProjects());
         List<RepositoryInfo> oldRepositories = new ArrayList<>(env.getRepositories());
-        Set<Group> oldGroups = new TreeSet<>(env.getGroups());
+        Set<Group> oldGroups = new TreeSet<>(env.getGroups().values());
         Map<Project, List<RepositoryInfo>> oldMap = new TreeMap<>(getRepositoriesMap());
         env.getAuthorizationFramework().removeAll();
         env.setSourceRoot("/src"); // needed for setDirectoryName() below
@@ -109,7 +111,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         env.getRepositories().add(info);
         env.getProjects().put("foo", p);
         env.getProjects().put("bar", repo);
-        env.getGroups().add(g);
+        env.getGroups().put(g.getName(), g);
 
         assertEquals(42, env.getProjects().size());
         assertEquals(21, env.getRepositories().size());
@@ -128,7 +130,8 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         setRepositoriesMap(oldMap);
         env.setProjects(oldProjects);
         env.setRepositories(oldRepositories);
-        env.setGroups(oldGroups);
+        env.setGroups(oldGroups.stream()
+                .collect(Collectors.toMap(Group::getName, Function.identity(), (v1, v2) -> v1)));
     }
 
     /**
@@ -195,7 +198,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      */
     @Test
     public void testGetProjectsAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getProjects(g);
                 assertEquals(2, result.size());
@@ -212,7 +215,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      */
     @Test
     public void testGetProjectsUnAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getProjects(g).size());
                 break;
@@ -226,7 +229,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      */
     @Test
     public void testGetRepositoriesAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getRepositories(g);
                 assertEquals(2, result.size());
@@ -243,7 +246,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      */
     @Test
     public void testGetRepositoriesUnAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getRepositories(g).size());
                 break;
@@ -317,7 +320,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      */
     @Test
     public void testGetAllGroupedAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getAllGrouped(g);
                 assertEquals(4, result.size());
@@ -331,7 +334,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
     @Test
     public void testGetAllGroupedUnAllowedGroup() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getAllGrouped(g).size());
                 break;

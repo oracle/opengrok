@@ -295,7 +295,7 @@ public class Group implements Comparable<Group>, Nameable {
         Group ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasGroups()) {
-            for (Group grp : env.getGroups()) {
+            for (Group grp : env.getGroups().values()) {
                 if (name.equals(grp.getName())) {
                     ret = grp;
                 }

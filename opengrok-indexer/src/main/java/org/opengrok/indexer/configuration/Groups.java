@@ -29,6 +29,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -151,7 +152,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            matchGroups(System.out, cfg.getGroups(), match);
+            matchGroups(System.out, new HashSet<>(cfg.getGroups().values()), match);
         } else if (empty) {
             // just list the groups
             if (parent != null || groupname != null || grouppattern != null) {
@@ -173,7 +174,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            deleteGroup(cfg.getGroups(), groupname);
+            deleteGroup(new HashSet<>(cfg.getGroups().values()), groupname);
             out = prepareOutput(outFile);
             printOut(list, cfg, out);
         } else if (groupname != null) {
@@ -181,7 +182,7 @@ public final class Groups {
                 grouppattern = "";
             }
             // perform insert/update. parent may be null
-            if (!modifyGroup(cfg.getGroups(), groupname, grouppattern, parent)) {
+            if (!modifyGroup(new HashSet<>(cfg.getGroups().values()), groupname, grouppattern, parent)) {
                 System.err.println("Parent group does not exist \"" + parent + "\"");
             } else {
                 out = prepareOutput(outFile);
@@ -214,7 +215,7 @@ public final class Groups {
      */
     private static void printOut(boolean list, Configuration cfg, PrintStream out) {
         if (list) {
-            listGroups(System.out, cfg.getGroups());
+            listGroups(System.out, new HashSet<>(cfg.getGroups().values()));
             if (out != System.out) {
                 out.print(cfg.getXMLRepresentationAsString());
             }

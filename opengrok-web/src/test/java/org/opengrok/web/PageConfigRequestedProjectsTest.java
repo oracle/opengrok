@@ -25,7 +25,6 @@ package org.opengrok.web;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -48,7 +47,7 @@ public class PageConfigRequestedProjectsTest {
     final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private Map<String, Project> oldProjects;
-    private Set<Group> oldGroups;
+    private Map<String, Group> oldGroups;
     private AuthorizationStack oldPluginStack;
 
     @BeforeEach
@@ -57,7 +56,7 @@ public class PageConfigRequestedProjectsTest {
         oldGroups = env.getGroups();
         oldPluginStack = env.getPluginStack();
 
-        Set<Group> groups = new TreeSet<>();
+        Map<String, Group> groups = new TreeMap<>();
         Map<String, Project> projects = new TreeMap<>();
 
         for (int i = 0; i < 10; i++) {
@@ -73,12 +72,12 @@ public class PageConfigRequestedProjectsTest {
         group = new Group();
         group.setName("group-1-2-3");
         group.setPattern("project-(1|2|3)");
-        groups.add(group);
+        groups.put(group.getName(), group);
 
         group = new Group();
         group.setName("group-7-8-9");
         group.setPattern("project-(7|8|9)");
-        groups.add(group);
+        groups.put(group.getName(), group);
 
         env.setGroups(groups);
         env.setProjects(projects);

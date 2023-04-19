@@ -37,8 +37,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,7 +70,7 @@ class GroupsControllerTest extends OGKJerseyTest {
 
     @Test
     void emptyGroups() {
-        env.setGroups(new HashSet<>());
+        env.setGroups(new HashMap<>());
         assertFalse(env.hasGroups());
         List<String> groups = listGroups();
         assertNotNull(groups);
@@ -82,7 +85,9 @@ class GroupsControllerTest extends OGKJerseyTest {
         groups.add(group);
         group = new Group("group-bar", "project-(7|8|9)");
         groups.add(group);
-        env.setGroups(groups);
+        env.setGroups(groups
+                .stream()
+                .collect(Collectors.toMap(Group::getName, Function.identity(), (v1, v2) -> v1)));
         assertTrue(env.hasGroups());
 
         List<String> groupsResult = listGroups();
@@ -101,10 +106,10 @@ class GroupsControllerTest extends OGKJerseyTest {
     }
 
     private Group setGroup(String groupName, String pattern) {
-        Set<Group> groups = new TreeSet<>();
+        Map<String, Group> groups = new TreeMap<>();
         Group group;
         group = new Group(groupName, pattern);
-        groups.add(group);
+        groups.put(group.getName(), group);
         env.setGroups(groups);
         assertTrue(env.hasGroups());
         return group;
@@ -122,8 +127,8 @@ class GroupsControllerTest extends OGKJerseyTest {
 
     @Test
     void testGetAllProjectsNonexistent() {
-        env.setGroups(Collections.emptySet());
-        Set<Group> groupsEnv = env.getGroups();
+        env.setGroups(Collections.emptyMap());
+        Map<String, Group> groupsEnv = env.getGroups();
         assertNotNull(groupsEnv);
         assertTrue(groupsEnv.isEmpty());
 

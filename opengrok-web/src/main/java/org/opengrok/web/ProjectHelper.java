@@ -85,7 +85,7 @@ public final class ProjectHelper {
 
     private ProjectHelper(PageConfig cfg) {
         this.cfg = cfg;
-        groups = new TreeSet<>(cfg.getEnv().getGroups());
+        groups = new TreeSet<>(cfg.getEnv().getGroups().values());
         ungroupedProjects = new TreeSet<>();
         ungroupedRepositories = new TreeSet<>();
 
@@ -148,7 +148,7 @@ public final class ProjectHelper {
      * Generates ungrouped projects and repositories.
      */
     private void populateGroups() {
-        groups.addAll(cfg.getEnv().getGroups());
+        groups.addAll(cfg.getEnv().getGroups().values());
         for (Project project : cfg.getEnv().getProjectList()) {
             // filterProjects() only adds groups which match project's name.
             Set<Group> copy = Group.matching(project, groups);

@@ -178,9 +178,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // Add a group matching the project to be added.
         String groupName = "mercurialgroup";
         Group group = new Group(groupName, "mercurial.*");
-        env.getGroups().add(group);
+        env.getGroups().put(group.getName(), group);
         assertTrue(env.hasGroups());
-        assertEquals(1, env.getGroups().stream().
+        assertEquals(1, env.getGroups().values().stream().
                 filter(g -> g.getName().equals(groupName)).
                 collect(Collectors.toSet()).size());
         assertEquals(0, group.getRepositories().size());
@@ -275,9 +275,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // Add a group matching the project to be added.
         String groupName = "gitgroup";
         Group group = new Group(groupName, "git.*");
-        env.getGroups().add(group);
+        env.getGroups().put(group.getName(), group);
         assertTrue(env.hasGroups());
-        assertEquals(1, env.getGroups().stream().
+        assertEquals(1, env.getGroups().values().stream().
                 filter(g -> g.getName().equals(groupName)).
                 collect(Collectors.toSet()).size());
         assertEquals(0, group.getRepositories().size());
