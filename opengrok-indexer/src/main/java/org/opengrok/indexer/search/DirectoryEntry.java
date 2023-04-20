@@ -35,9 +35,11 @@ import java.util.Date;
 public class DirectoryEntry {
 
     private final File file;
-    private final NullableNumLinesLOC extra;
+    private NullableNumLinesLOC extra;
 
     private String description;
+
+    private String pathDescription;
 
     private Date date;
 
@@ -77,6 +79,10 @@ public class DirectoryEntry {
         return extra;
     }
 
+    public void setExtra(NullableNumLinesLOC extra) {
+        this.extra = extra;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -91,5 +97,13 @@ public class DirectoryEntry {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getPathDescription() {
+        return pathDescription;
+    }
+
+    public void setPathDescription(String pathDescription) {
+        this.pathDescription = pathDescription;
     }
 }

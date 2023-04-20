@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -59,8 +59,7 @@ public class DirectoryExtraReader {
      * @return a list of results, limited to 2000 values
      * @throws IOException if an error occurs searching the index
      */
-    public List<NullableNumLinesLOC> search(IndexSearcher searcher, String path)
-            throws IOException {
+    public List<NullableNumLinesLOC> search(IndexSearcher searcher, String path) throws IOException {
         if (searcher == null) {
             throw new IllegalArgumentException("`searcher' is null");
         }
@@ -87,9 +86,7 @@ public class DirectoryExtraReader {
                 "search.latency", new String[]{"category", "extra",
                         "outcome", hits.scoreDocs.length > 0 ? "success" : "empty"});
 
-        List<NullableNumLinesLOC> results = processHits(searcher, hits);
-
-        return results;
+        return processHits(searcher, hits);
     }
 
     private List<NullableNumLinesLOC> processHits(IndexSearcher searcher, TopDocs hits)

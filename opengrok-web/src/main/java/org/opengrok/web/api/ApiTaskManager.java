@@ -139,6 +139,7 @@ public final class ApiTaskManager {
 
     /**
      * Shutdown all executor services and wait 60 seconds for pending tasks.
+     * @throws InterruptedException on termination
      */
     public synchronized void shutdown() throws InterruptedException {
         for (ExecutorService executorService : queues.values()) {

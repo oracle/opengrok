@@ -70,6 +70,7 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
@@ -80,6 +81,8 @@ import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.DirectoryExtraReader;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
@@ -487,8 +490,8 @@ public final class PageConfig {
         return dirFileList;
     }
 
-    private Comparator<File> getFileComparator() {
-        if (getEnv().getListDirsFirst()) {
+    private static Comparator<File> getFileComparator() {
+        if (RuntimeEnvironment.getInstance().getListDirsFirst()) {
             return (f1, f2) -> {
                 if (f1.isDirectory() && !f2.isDirectory()) {
                     return -1;
@@ -504,7 +507,7 @@ public final class PageConfig {
     }
 
     @VisibleForTesting
-    List<String> getSortedFiles(File[] files) {
+    public static List<String> getSortedFiles(File[] files) {
         return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).collect(Collectors.toList());
     }
 
@@ -1101,6 +1104,10 @@ public final class PageConfig {
         return path;
     }
 
+    private void setPath(String path) {
+        this.path = Util.getCanonicalPath(Laundromat.launderInput(path), PATH_SEPARATOR);
+    }
+
     /**
      * @return true if file/directory corresponding to the request path exists however is unreadable, false otherwise
      */
@@ -1268,7 +1275,7 @@ public final class PageConfig {
      * contain {@code null} entries (when the related file could not be found)
      * having the same order as the given list.
      */
-    public File[] findDataFiles(List<String> filenames) {
+    public File[] findDataFiles(@Nullable List<String> filenames) {
         if (filenames == null || filenames.isEmpty()) {
             return new File[0];
         }
@@ -1512,6 +1519,53 @@ public final class PageConfig {
     }
 
     /**
+     * @param project {@link Project} instance or {@code null}
+     * @param request HTTP request
+     * @return list of {@link NullableNumLinesLOC} instances related to {@link #path}
+     * @throws IOException on I/O error
+     */
+    @Nullable
+    public List<NullableNumLinesLOC> getExtras(@Nullable Project project, HttpServletRequest request)
+            throws IOException {
+
+        SearchHelper searchHelper = prepareInternalSearch(SortOrder.RELEVANCY);
+        /*
+         * N.b. searchHelper.destroy() is called via
+         * WebappListener.requestDestroyed() on presence of the following
+         * REQUEST_ATTR.
+         */
+        request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+        if (project != null) {
+            searchHelper.prepareExec(project);
+        } else {
+            //noinspection Convert2Diamond
+            searchHelper.prepareExec(new TreeSet<String>());
+        }
+
+        return getNullableNumLinesLOCS(project, searchHelper);
+    }
+
+    @Nullable
+    @VisibleForTesting
+    public List<NullableNumLinesLOC> getNullableNumLinesLOCS(@Nullable Project project, SearchHelper searchHelper)
+            throws IOException {
+
+        if (searchHelper.getSearcher() != null) {
+            DirectoryExtraReader extraReader = new DirectoryExtraReader();
+            String primePath = path;
+            try {
+                primePath = searchHelper.getPrimeRelativePath(project != null ? project.getName() : "", path);
+            } catch (IOException | ForbiddenSymlinkException ex) {
+                LOGGER.log(Level.WARNING, String.format(
+                        "Error getting prime relative for %s", path), ex);
+            }
+            return extraReader.search(searchHelper.getSearcher(), primePath);
+        }
+
+        return null;
+    }
+
+    /**
      * Get the config w.r.t. the given request. If there is none yet, a new config
      * gets created, attached to the request and returned.
      * <p>
@@ -1530,10 +1584,21 @@ public final class PageConfig {
         return pcfg;
     }
 
-    private PageConfig(HttpServletRequest req) {
-        this.req = req;
+    public static PageConfig get(String path, HttpServletRequest request) {
+        PageConfig pcfg = new PageConfig(request);
+        pcfg.setPath(path);
+        return pcfg;
+    }
+
+    private PageConfig() {
         this.authFramework = RuntimeEnvironment.getInstance().getAuthorizationFramework();
         this.executor = RuntimeEnvironment.getInstance().getRevisionExecutor();
+    }
+
+    private PageConfig(HttpServletRequest req) {
+        this();
+
+        this.req = req;
         this.fragmentIdentifier = req.getParameter(QueryParameters.FRAGMENT_IDENTIFIER_PARAM);
     }
 

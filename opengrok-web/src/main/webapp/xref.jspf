@@ -52,6 +52,8 @@ org.opengrok.indexer.web.QueryParameters"
     Genre g = AnalyzerGuru.getGenre(a);
     String error = null;
 
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
     if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
         InputStream in = null;
         File tempf = null;

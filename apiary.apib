@@ -197,6 +197,41 @@ The `Content-type` header of the reply will be set accordingly.
             }
 
 
+
+## Directory listing [/list{?path}]
+
+### get directory entries [GET]
+
++ Parameters
+  + path (string) - path of file/directory to get listing for, relative to source root, starting with /
+
++ Response 200 (application/json)
+  + Body
+
+            [
+              {
+                "path": "/lucene/.github",
+                "numLines": 178,
+                "loc": 125,
+                "date": 1673456294670,
+                "description": null,
+                "pathDescription": "",
+                "isDirectory": true,
+                "size": null
+              },
+              {
+                "path": "/lucene/.asf.yaml",
+                "numLines": 25,
+                "loc": 21,
+                "date": 1673456294670,
+                "description": null,
+                "pathDescription": "",
+                "isDirectory": false,
+                "size": 574
+              }
+            ]
+
+
 ## Include files reload [/system/includes/reload]
 
 ### reloads all include files for web application [PUT]

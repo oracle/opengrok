@@ -248,7 +248,7 @@ public class PageConfigTest {
         assertTrue(file.isFile());
 
         // Make sure the regular file is last.
-        List<String> entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        List<String> entries = PageConfig.getSortedFiles(sourceRootFile.listFiles());
         assertNotNull(entries);
         assertFalse(entries.isEmpty());
         int numEntries = entries.size();
@@ -260,7 +260,7 @@ public class PageConfigTest {
         Files.createSymbolicLink(link, target);
 
         // Check the symlink was sorted as file.
-        entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        entries = PageConfig.getSortedFiles(sourceRootFile.listFiles());
         assertNotNull(entries);
         assertFalse(entries.isEmpty());
         assertEquals(numEntries + 1, entries.size());

@@ -66,6 +66,7 @@ public interface SuggesterService {
      * Wait for rebuild. For testing.
      * @param timeout timeout to wait for
      * @param unit timeout unit
+     * @throws InterruptedException on termination
      */
     void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException;
 
