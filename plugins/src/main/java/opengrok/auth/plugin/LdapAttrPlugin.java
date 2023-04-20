@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -43,10 +44,10 @@ import org.opengrok.indexer.configuration.Project;
 
 /**
  * Authorization plug-in to check user's LDAP attribute against whitelist.
- *
+ * <p>
  * This plugin heavily relies on the presence of the {@code LdapUserPlugin} in the stack above it,
  * since it is using the Distinguished Name of the {@code LdapUser} to perform the LDAP lookup.
- *
+ * </p>
  * @author Krystof Tulinger
  */
 public class LdapAttrPlugin extends AbstractLdapPlugin {
@@ -190,11 +191,11 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
+        return ((Boolean) Objects.requireNonNullElse(request.getSession().getAttribute(sessionAllowed), false));
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
+        return ((Boolean) Objects.requireNonNullElse(request.getSession().getAttribute(sessionAllowed), false));
     }
 }
