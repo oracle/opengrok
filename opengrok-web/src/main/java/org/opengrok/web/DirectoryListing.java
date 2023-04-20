@@ -151,7 +151,8 @@ public class DirectoryListing {
      * @param dir the directory to list
      * @param path virtual path of the directory (usually the path name of
      *        <var>dir</var> with the source root directory stripped off).
-     * @return list of {@link DirectoryEntry} instances
+     * @param files list of file paths
+     * @return list of {@link DirectoryEntry} instances, filtered via {@link PathAccepter}
      * @throws CacheException if history cache operation failed
      */
     public List<DirectoryEntry> createDirectoryEntries(File dir, String path, List<String> files) throws CacheException {
@@ -220,7 +221,6 @@ public class DirectoryListing {
      * @param entries basenames of potential children of the directory to list,
      *  assuming that these were filtered by {@link PathAccepter}.
      * @throws IOException when cannot write to the {@code out} parameter
-     * @throws CacheException when failed to get last modified time for files in directory
      */
     public void extraListTo(String contextPath, File dir, Writer out,
                                     String path, @Nullable List<DirectoryEntry> entries) throws IOException {
