@@ -169,9 +169,9 @@ document.pageReady.push(function() { pageReadyList();});
 
             List<String> readMes = null;
             if (entries != null) {
-                // TODO: startsWith || endsWith
                 readMes = entries.stream().
-                        filter(e -> e.getFile().getName().toLowerCase(Locale.ROOT).contains("readme")).
+                        filter(e -> e.getFile().getName().toLowerCase(Locale.ROOT).startsWith("readme") ||
+                                e.getFile().getName().toLowerCase(Locale.ROOT).endsWith("readme")).
                         map(e -> e.getFile().getName()).
                         collect(Collectors.toList());
             }
