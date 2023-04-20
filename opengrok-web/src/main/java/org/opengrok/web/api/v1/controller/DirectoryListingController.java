@@ -40,6 +40,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.FileExtraZipper;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.DirectoryListing;
 import org.opengrok.web.PageConfig;
@@ -88,7 +89,7 @@ public class DirectoryListingController {
         }
 
         DirectoryEntryDTO(DirectoryEntry entry) throws ForbiddenSymlinkException, IOException {
-            path = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(entry.getFile());
+            path = Util.fixPathIfWindows(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(entry.getFile()));
             NullableNumLinesLOC extra = entry.getExtra();
             if (extra != null) {
                 loc = entry.getExtra().getLOC();
