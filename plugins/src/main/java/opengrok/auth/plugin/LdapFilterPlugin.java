@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -196,11 +197,11 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
+        return ((Boolean) Objects.requireNonNullElse(request.getSession().getAttribute(sessionAllowed), false));
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
+        return ((Boolean) Objects.requireNonNullElse(request.getSession().getAttribute(sessionAllowed), false));
     }
 }
