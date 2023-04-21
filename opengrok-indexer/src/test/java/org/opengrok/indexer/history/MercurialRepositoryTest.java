@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -26,6 +26,8 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
@@ -81,6 +83,8 @@ public class MercurialRepositoryTest {
 
     private TestRepository repository;
 
+    private File repositoryRoot;
+
     /**
      * Set up a test repository. Should be called by the tests that need it. The
      * test repository will be destroyed automatically when the test finishes.
@@ -88,6 +92,7 @@ public class MercurialRepositoryTest {
     private void setUpTestRepository() throws IOException, URISyntaxException {
         repository = new TestRepository();
         repository.create(getClass().getResource("/repositories"));
+        repositoryRoot = new File(repository.getSourceRoot(), "mercurial");
     }
 
     @BeforeEach
@@ -122,14 +127,12 @@ public class MercurialRepositoryTest {
 
     @Test
     public void testGetHistorySubdir() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-
         // Add a subdirectory with some history.
-        runHgCommand(root, "import",
+        runHgCommand(repositoryRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
 
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History hist = mr.getHistory(new File(root, "subdir"));
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History hist = mr.getHistory(new File(repositoryRoot, "subdir"));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(1, entries.size());
     }
@@ -137,14 +140,12 @@ public class MercurialRepositoryTest {
     /**
      * Test that subset of changesets can be extracted based on penultimate
      * revision number. This works for directories only.
-     * @throws Exception
      */
     @Test
     public void testGetHistoryPartial() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         // Get all but the oldest revision.
-        History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
+        History hist = mr.getHistory(repositoryRoot, REVISIONS[REVISIONS.length - 1]);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length - 1, entries.size());
         for (int i = 0; i < entries.size(); i++) {
@@ -171,7 +172,7 @@ public class MercurialRepositoryTest {
 
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
-        assertEquals(0, exitCode, "hg command '" + cmdargs.toString() + "' failed."
+        assertEquals(0, exitCode, "hg command '" + cmdargs + "' failed."
                 + "\nexit code: " + exitCode
                 + "\nstdout:\n" + exec.getOutputString()
                 + "\nstderr:\n" + exec.getErrorString());
@@ -180,25 +181,21 @@ public class MercurialRepositoryTest {
     /**
      * Test that history of branched repository contains changesets of the
      * default branch as well.
-     * @throws Exception
      */
     @Test
     public void testGetHistoryBranch() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-
         // Branch the repo and add one changeset.
-        runHgCommand(root, "unbundle",
+        runHgCommand(repositoryRoot, "unbundle",
                 Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
         // Switch to the branch.
-        runHgCommand(root, "update", "mybranch");
+        runHgCommand(repositoryRoot, "update", "mybranch");
 
         // Since the above hg commands change the active branch the repository
         // needs to be initialized here so that its branch matches.
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         // Get all revisions.
-        History hist = mr.getHistory(root);
+        History hist = mr.getHistory(repositoryRoot);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         List<String> both = new ArrayList<>(REVISIONS.length
                 + REVISIONS_extra_branch.length);
@@ -218,7 +215,7 @@ public class MercurialRepositoryTest {
         }
 
         // Get revisions starting with given changeset before the repo was branched.
-        hist = mr.getHistory(root, "8:6a8c423f5624");
+        hist = mr.getHistory(repositoryRoot, "8:6a8c423f5624");
         entries = hist.getHistoryEntries();
         assertEquals(2, entries.size());
         assertEquals(REVISIONS_extra_branch[0], entries.get(0).getRevision());
@@ -227,12 +224,10 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that contents of last revision of a text file match expected content.
-     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryGet() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         String exp_str = "This will be a first novel of mine.\n"
                 + "\n"
                 + "Chapter 1.\n"
@@ -242,7 +237,7 @@ public class MercurialRepositoryTest {
                 + "...\n";
         byte[] buffer = new byte[1024];
 
-        InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
+        InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                 "novel.txt", REVISIONS[0]);
         assertNotNull(input);
 
@@ -257,29 +252,24 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that it is possible to get contents of multiple revisions of a file.
-     * @throws java.lang.Exception
      */
     @Test
     public void testgetHistoryGetForAll() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         for (String rev : REVISIONS_novel) {
-            InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
+            InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                     "novel.txt", rev);
             assertNotNull(input);
         }
     }
 
     /**
-     * Test that {@code getHistoryGet()} returns historical contents of renamed
-     * file.
-     * @throws java.lang.Exception
+     * Test that {@code getHistoryGet()} returns historical contents of renamed file.
      */
     @Test
     public void testGetHistoryGetRenamed() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
 
@@ -287,7 +277,7 @@ public class MercurialRepositoryTest {
          * In our test repository the file was renamed twice since
          * revision 3.
          */
-        InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
+        InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                 "novel.txt", "3");
         assert (input != null);
         int len = input.read(buffer);
@@ -299,12 +289,10 @@ public class MercurialRepositoryTest {
     /**
      * Test that {@code getHistory()} throws an exception if the revision
      * argument doesn't match any of the revisions in the history.
-     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryWithNoSuchRevision() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         // Get the sequence number and the hash from one of the revisions.
         String[] revisionParts = REVISIONS[1].split(":");
@@ -314,14 +302,13 @@ public class MercurialRepositoryTest {
 
         // Construct a revision identifier that doesn't exist.
         String constructedRevision = (number + 1) + ":" + hash;
-        assertThrows(HistoryException.class, () -> mr.getHistory(root, constructedRevision));
+        assertThrows(HistoryException.class, () -> mr.getHistory(repositoryRoot, constructedRevision));
     }
 
     @Test
     void testGetHistorySinceTillNullNull() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History history = hgRepo.getHistory(root, null, null);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, null, null);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(10, history.getHistoryEntries().size());
@@ -332,9 +319,8 @@ public class MercurialRepositoryTest {
 
     @Test
     void testGetHistorySinceTillNullRev() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History history = hgRepo.getHistory(root, null, REVISIONS[4]);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, null, REVISIONS[4]);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(6, history.getHistoryEntries().size());
@@ -345,9 +331,8 @@ public class MercurialRepositoryTest {
 
     @Test
     void testGetHistorySinceTillRevNull() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History history = hgRepo.getHistory(root, REVISIONS[3], null);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, REVISIONS[3], null);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(3, history.getHistoryEntries().size());
@@ -358,9 +343,8 @@ public class MercurialRepositoryTest {
 
     @Test
     void testGetHistorySinceTillRevRev() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History history = hgRepo.getHistory(root, REVISIONS[7], REVISIONS[2]);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, REVISIONS[7], REVISIONS[2]);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(5, history.getHistoryEntries().size());
@@ -372,10 +356,9 @@ public class MercurialRepositoryTest {
     @Test
     void testGetHistoryRenamedFileTillRev() throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        File file = new File(root, "novel.txt");
+        File file = new File(repositoryRoot, "novel.txt");
         assertTrue(file.exists() && file.isFile());
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         History history = hgRepo.getHistory(file, null, "7:db1394c05268");
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
@@ -387,12 +370,39 @@ public class MercurialRepositoryTest {
 
     @Test
     void testGetLastHistoryEntry() throws Exception {
-        File root = new File(repository.getSourceRoot(), "mercurial");
-        File file = new File(root, "novel.txt");
+        File file = new File(repositoryRoot, "novel.txt");
         assertTrue(file.exists() && file.isFile());
-        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         HistoryEntry historyEntry = hgRepo.getLastHistoryEntry(file, true);
         assertNotNull(historyEntry);
         assertEquals("8:6a8c423f5624", historyEntry.getRevision());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testMergeCommits(boolean isMergeCommitsEnabled) throws Exception {
+        // The bundle will add a branch and merge commit in the default branch.
+        runHgCommand(repositoryRoot, "unbundle",
+                Paths.get(getClass().getResource("/history/hg-merge.bundle").toURI()).toString());
+        runHgCommand(repositoryRoot, "update");
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean isMergeCommitsEnabledOrig = env.isMergeCommitsEnabled();
+        env.setMergeCommitsEnabled(isMergeCommitsEnabled);
+
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        if (isMergeCommitsEnabled) {
+            assertEquals(12, history.getHistoryEntries().size());
+            assertNotNull(history.getLastHistoryEntry());
+            assertEquals("merge", history.getLastHistoryEntry().getMessage());
+        } else {
+            assertEquals(11, history.getHistoryEntries().size());
+        }
+
+        // Cleanup.
+        env.setMergeCommitsEnabled(isMergeCommitsEnabledOrig);
     }
 }
