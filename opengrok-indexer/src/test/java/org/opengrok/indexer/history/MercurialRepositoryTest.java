@@ -381,7 +381,7 @@ public class MercurialRepositoryTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testMergeCommits(boolean isMergeCommitsEnabled) throws Exception {
-        // The bundle will add a branch and merge commit.
+        // The bundle will add a branch and merge commit in the default branch.
         runHgCommand(repositoryRoot, "unbundle",
                 Paths.get(getClass().getResource("/history/hg-merge.bundle").toURI()).toString());
         runHgCommand(repositoryRoot, "update");
