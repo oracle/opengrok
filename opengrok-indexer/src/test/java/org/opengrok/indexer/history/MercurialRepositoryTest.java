@@ -26,6 +26,8 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
@@ -376,12 +378,25 @@ public class MercurialRepositoryTest {
         assertEquals("8:6a8c423f5624", historyEntry.getRevision());
     }
 
-    @Test
-    void testMergeCommits() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testMergeCommits(boolean isMergeCommitsEnabled) throws Exception {
         // Branch the repo and add one changeset.
         runHgCommand(repositoryRoot, "unbundle",
-                Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+                Paths.get(getClass().getResource("/history/hg-merge.bundle").toURI()).toString());
+        runHgCommand(repositoryRoot, "update");
 
-        // TODO
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setMergeCommitsEnabled(isMergeCommitsEnabled);
+
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        History history = hgRepo.getHistory(repositoryRoot, null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        if (isMergeCommitsEnabled) {
+            assertEquals(12, history.getHistoryEntries().size());
+        } else {
+            assertEquals(11, history.getHistoryEntries().size());
+        }
     }
 }
