@@ -245,6 +245,12 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
             }
         }
 
+        // 'hg log' will display merge changesets by default. To honor the 'mergeCommitsEnabled' tunable,
+        // add the option no to display merges if it is false.
+        if (!isMergeCommitsEnabled()) {
+            cmd.add("--no-merges");
+        }
+
         cmd.add("--template");
         if (revisionsOnly) {
             cmd.add(TEMPLATE_REVS);
