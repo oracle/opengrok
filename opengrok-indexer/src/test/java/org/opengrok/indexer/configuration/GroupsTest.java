@@ -29,12 +29,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 public class GroupsTest {
 
     Configuration cfg;
@@ -51,30 +51,29 @@ public class GroupsTest {
 
     @Test
     public void testDeleteGroup() {
-        Set<Group> groups = cfg.getGroups();
-
+        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "random not existing group"});
 
-        assertEquals(6, cfg.getGroups().size());
+        assertEquals(6, groups.size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "apache"});
 
-        assertEquals(5, cfg.getGroups().size());
+        assertEquals(5, groups.size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "ctags"});
 
-        assertEquals(1, cfg.getGroups().size());
+        assertEquals(1, groups.size());
     }
 
     @Test
     public void testAddGroup() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "new fantastic group");
         assertNull(grp);
 
@@ -92,7 +91,7 @@ public class GroupsTest {
 
     @Test
     public void testAddGroupToParent() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
 
@@ -119,7 +118,7 @@ public class GroupsTest {
 
     @Test
     public void testModifyGroup() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
         assertEquals(grp.getName(), "apache");
@@ -147,7 +146,7 @@ public class GroupsTest {
             {"opengrok-12.0-rc3", 1},
             {"opengrk", 0}
         };
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
 
         for (Object[] test : tests) {
             testSingleMatch(groups, (int) test[1], (String) test[0]);

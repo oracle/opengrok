@@ -22,11 +22,9 @@
  */
 package org.opengrok.web;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +45,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     public static void setUpClass() {
         ProjectHelperTest.setUpClass();
 
-        List<Group> grps = new ArrayList<>(env.getGroups());
+        Map<String, Group> grps = env.getGroups();
         Map<String, Project> projects = env.getProjects();
         List<RepositoryInfo> rps = env.getRepositories();
         Map<Project, List<RepositoryInfo>> map = getRepositoriesMap();
@@ -67,7 +65,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 
         setRepositoriesMap(map);
         env.setProjects(projects);
-        env.setGroups(new TreeSet<>(grps));
+        env.setGroups(grps);
         env.setRepositories(rps);
     }
 
@@ -90,7 +88,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     private Group getAllowedGroupWithSubgroups() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed") && !g.getSubgroups().isEmpty()) {
                 return g;
             }
@@ -99,7 +97,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     private Group getAllowedGroupWithoutSubgroups() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed") && g.getSubgroups().isEmpty()) {
                 return g;
             }
@@ -108,7 +106,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     private Group getUnAllowedGroupWithSubgroups() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group") && !g.getSubgroups().isEmpty()) {
                 return g;
             }
@@ -117,7 +115,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     private Group getUnAllowedGroupWithoutSubgroups() {
-        for (Group g : RuntimeEnvironment.getInstance().getGroups()) {
+        for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group") && g.getSubgroups().isEmpty()) {
                 return g;
             }

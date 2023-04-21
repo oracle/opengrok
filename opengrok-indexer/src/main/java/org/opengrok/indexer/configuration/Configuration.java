@@ -46,8 +46,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,7 +135,7 @@ public final class Configuration {
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
     private Map<String, Project> projects; // project name -> Project
-    private Set<Group> groups;
+    private Map<String, Group> groups; // project name -> Group
     private String sourceRoot;
     private String dataRoot;
     /**
@@ -427,9 +428,9 @@ public final class Configuration {
     /**
      * Set the index check timeout (performed by the webapp on startup) to a new value.
      *
-     * @see org.opengrok.indexer.index.IndexCheck
      * @param timeout the new value
      * @throws IllegalArgumentException when the timeout is negative
+     * @see org.opengrok.indexer.index.IndexCheck
      */
     public void setIndexCheckTimeout(int timeout) throws IllegalArgumentException {
         if (timeout < 0) {
@@ -569,7 +570,7 @@ public final class Configuration {
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
-        setGroups(new TreeSet<>());
+        setGroups(new HashMap<>());
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryBasedReindex(true);
@@ -636,6 +637,7 @@ public final class Configuration {
     }
 
     /**
+     * @return int the current message limit
      * @see org.opengrok.indexer.web.messages.MessagesContainer
      *
      * @return int the current message limit
@@ -689,6 +691,7 @@ public final class Configuration {
 
     /**
      * Gets the configuration's ctags command. Default is null.
+     *
      * @return the configured value
      */
     public String getCtags() {
@@ -898,24 +901,25 @@ public final class Configuration {
     }
 
     /**
-     * Adds a group to the set. This is performed upon configuration parsing
+     * Adds a group to the map. This is performed upon configuration parsing
      *
      * @param group group
-     * @throws IOException when group is not unique across the set
+     * @throws IOException when group is not unique across the map
      */
     public void addGroup(Group group) throws IOException {
-        if (!groups.add(group)) {
+        if (groups.containsKey(group.getName())) {
             throw new IOException(
                     String.format("Duplicate group name '%s' in configuration.",
                             group.getName()));
         }
+        groups.put(group.getName(), group);
     }
 
-    public Set<Group> getGroups() {
+    public Map<String, Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Map<String, Group> groups) {
         this.groups = groups;
     }
 
@@ -1541,24 +1545,30 @@ public final class Configuration {
         // This ensures that when the configuration is reloaded then the set
         // contains only root groups. Subgroups are discovered again
         // as follows below
-        conf.groups.removeIf(g -> g.getParent() != null);
 
+        List<Group> nonRootGroups = conf.groups.values().stream()
+                .filter(g -> Objects.nonNull(g.getParent()))
+                .collect(Collectors.toList());
+        nonRootGroups.forEach(g -> {
+                    conf.groups.remove(g.getName());
+                }
+        );
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)
         // supporting an iterator.
-        TreeSet<Group> copy = new TreeSet<>();
-        LinkedList<Group> stack = new LinkedList<>(conf.groups);
+        Map<String, Group> copy = new TreeMap<>();
+        LinkedList<Group> stack = new LinkedList<>(conf.groups.values());
         while (!stack.isEmpty()) {
             Group group = stack.pollFirst();
             stack.addAll(group.getSubgroups());
 
-            if (!copy.add(group)) {
+            if (copy.containsKey(group.getName())) {
                 throw new IOException(
                         String.format("Duplicate group name '%s' in configuration.",
                                 group.getName()));
             }
-
-            // populate groups where the current group in in their subtree
+            copy.put(group.getName(), group);
+            // populate groups where the current group is in their subtree
             Group tmp = group.getParent();
             while (tmp != null) {
                 tmp.addDescendant(group);

@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -190,6 +191,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets the thread pool used for multi-project searches.
+     *
      * @return ExecutorService instance
      */
     public ExecutorService getSearchExecutor() {
@@ -256,6 +258,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets an instance associated to this environment.
+     *
      * @return PathAccepter instance
      */
     public PathAccepter getPathAccepter() {
@@ -384,6 +387,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set include root path.
+     *
      * @param includeRoot path
      */
     public void setIncludeRoot(String includeRoot) {
@@ -462,9 +466,9 @@ public final class RuntimeEnvironment {
      *
      * @param file A file to resolve
      * @return Path relative to source root
-     * @throws IOException If an IO error occurs
-     * @throws FileNotFoundException if the file is not relative to source root
-     * or if {@code sourceRoot} is not defined
+     * @throws IOException               If an IO error occurs
+     * @throws FileNotFoundException     if the file is not relative to source root
+     *                                   or if {@code sourceRoot} is not defined
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters an ineligible link
      */
     public String getPathRelativeToSourceRoot(File file) throws IOException, ForbiddenSymlinkException {
@@ -535,7 +539,7 @@ public final class RuntimeEnvironment {
     public void setProjects(Map<String, Project> projects) {
         syncWriteConfiguration(projects, (c, p) -> {
             if (p != null) {
-                populateGroups(getGroups(), new TreeSet<>(p.values()));
+                populateGroups(new TreeSet<>(getGroups().values()), new TreeSet<>(p.values()));
             }
             c.setProjects(p);
         });
@@ -553,21 +557,23 @@ public final class RuntimeEnvironment {
     /**
      * Get all the groups.
      *
-     * @return a set containing all the groups (maybe {@code null})
+     * @return a map containing all the groups (maybe {@code null})
      */
     @Nullable
-    public Set<Group> getGroups() {
+    public Map<String, Group> getGroups() {
         return syncReadConfiguration(Configuration::getGroups);
     }
 
     /**
      * Set the list of the groups.
      *
-     * @param groups the set of groups to use
+     * @param groups the map of groups to use
      */
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Map<String, Group> groups) {
         syncWriteConfiguration(groups, (c, g) -> {
-            populateGroups(g, new TreeSet<>(getProjects().values()));
+            if (Objects.nonNull(g)) {
+                populateGroups(new TreeSet<>(g.values()), new TreeSet<>(getProjects().values()));
+            }
             c.setGroups(g);
         });
     }
@@ -585,6 +591,7 @@ public final class RuntimeEnvironment {
     /**
      * Gets a static placeholder for the web application context name that is
      * translated to the true servlet {@code contextPath} on demand.
+     *
      * @return {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"}
      */
     public String getUrlPrefix() {
@@ -596,6 +603,7 @@ public final class RuntimeEnvironment {
      * successfully to {@link #setCtags(java.lang.String)}, or
      * {@link Configuration#getCtags()}, or the system property for
      * {@code "org.opengrok.indexer.analysis.Ctags"}, or "{@code ctags}" as a default.
+     *
      * @return a defined value
      */
     public String getCtags() {
@@ -615,7 +623,7 @@ public final class RuntimeEnvironment {
      * N.b. the value is not mediated to {@link Configuration}.
      *
      * @param ctags a defined value or {@code null} to reset to use the
-     * {@link Configuration#getCtags()} fallbacks
+     *              {@link Configuration#getCtags()} fallbacks
      * @see #getCtags()
      */
     public void setCtags(String ctags) {
@@ -628,6 +636,7 @@ public final class RuntimeEnvironment {
      * {@link Configuration#getMandoc()}, or the system property for
      * {@code "org.opengrok.indexer.analysis.Mandoc"}, or {@code null} as a
      * default.
+     *
      * @return a defined instance or {@code null}
      */
     public String getMandoc() {
@@ -647,7 +656,7 @@ public final class RuntimeEnvironment {
      * N.b. the value is not mediated to {@link Configuration}.
      *
      * @param value a defined value or {@code null} to reset to use the
-     * {@link Configuration#getMandoc()} fallbacks
+     *              {@link Configuration#getMandoc()} fallbacks
      * @see #getMandoc()
      */
     public void setMandoc(String value) {
@@ -705,6 +714,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets the base set of supported Ctags languages.
+     *
      * @return a defined set which may be empty if
      * {@link #validateUniversalCtags()} has not yet been called or if the call fails
      */
@@ -830,6 +840,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Add repositories to the list.
+     *
      * @param repositories list of repositories
      */
     public void addRepositories(List<RepositoryInfo> repositories) {
@@ -892,7 +903,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     *
      * @return at what size (in MB) we should flush the buffer
      */
     public double getRamBufferSize() {
@@ -1014,9 +1024,9 @@ public final class RuntimeEnvironment {
      * fully qualified classname.
      *
      * @param clazzName name of the targeting class. If {@code null} this method
-     * does nothing.
-     * @param cmd the client command to use. If {@code null} the corresponding
-     * entry for the given clazzName get removed.
+     *                  does nothing.
+     * @param cmd       the client command to use. If {@code null} the corresponding
+     *                  entry for the given clazzName get removed.
      * @return the client command previously set, which might be {@code null}.
      */
     public String setRepoCmd(String clazzName, String cmd) {
@@ -1050,7 +1060,7 @@ public final class RuntimeEnvironment {
      * Sets the user page suffix for the history listing.
      *
      * @param userPageSuffix the URL fragment following the username from
-     * history
+     *                       history
      */
     public void setUserPageSuffix(String userPageSuffix) {
         syncWriteConfiguration(userPageSuffix, Configuration::setUserPageSuffix);
@@ -1142,6 +1152,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets a value indicating if the web app should run ctags as necessary.
+     *
      * @return the value of {@link Configuration#isWebappCtags()}
      */
     public boolean isWebappCtags() {
@@ -1171,6 +1182,7 @@ public final class RuntimeEnvironment {
     /**
      * Gets the value of {@link Configuration#getIndexingParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
+     *
      * @return a natural number &gt;= 1
      */
     public int getIndexingParallelism() {
@@ -1182,6 +1194,7 @@ public final class RuntimeEnvironment {
     /**
      * Gets the value of {@link Configuration#getRepositoryInvalidationParallelism()} -- or
      * if zero, then as a default gets the number of available processors halved.
+     *
      * @return a natural number &gt;= 1
      */
     public int getRepositoryInvalidationParallelism() {
@@ -1192,6 +1205,7 @@ public final class RuntimeEnvironment {
     /**
      * Gets the value of {@link Configuration#getHistoryParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
+     *
      * @return a natural number &gt;= 1
      */
     public int getHistoryParallelism() {
@@ -1203,6 +1217,7 @@ public final class RuntimeEnvironment {
     /**
      * Gets the value of {@link Configuration#getHistoryFileParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
+     *
      * @return a natural number &gt;= 1
      */
     public int getHistoryFileParallelism() {
@@ -1273,6 +1288,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Return whether e-mail addresses should be obfuscated in the xref.
+     *
      * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
@@ -1281,6 +1297,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set whether e-mail addresses should be obfuscated in the xref.
+     *
      * @param obfuscatingEMailAddresses should we obfuscate emails?
      */
     public void setObfuscatingEMailAddresses(boolean obfuscatingEMailAddresses) {
@@ -1302,7 +1319,7 @@ public final class RuntimeEnvironment {
      * Set whether status.jsp should print internal settings.
      *
      * @param chattyStatusPage {@code true} if internal settings should be printed,
-     * {@code false} otherwise
+     *                         {@code false} otherwise
      */
     public void setChattyStatusPage(boolean chattyStatusPage) {
         syncWriteConfiguration(chattyStatusPage, Configuration::setChattyStatusPage);
@@ -1429,6 +1446,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets the total number of context lines per file to show.
+     *
      * @return a value greater than zero
      */
     public short getContextLimit() {
@@ -1437,6 +1455,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Gets the number of context lines to show before or after any match.
+     *
      * @return a value greater than or equal to zero
      */
     public short getContextSurround() {
@@ -1533,7 +1552,8 @@ public final class RuntimeEnvironment {
 
     /**
      * Read configuration from a file and put it into effect.
-     * @param file the file to read
+     *
+     * @param file    the file to read
      * @param cmdType command timeout type
      * @throws IOException I/O
      */
@@ -1564,8 +1584,8 @@ public final class RuntimeEnvironment {
      * Write the current configuration to a socket and waits for the result.
      *
      * @param host the host address to receive the configuration
-     * @throws IOException if an error occurs
-     * @throws InterruptedException on timeout
+     * @throws IOException              if an error occurs
+     * @throws InterruptedException     on timeout
      * @throws IllegalArgumentException on invalid configuration
      */
     public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
@@ -1665,7 +1685,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Sets the configuration and performs necessary actions.
-     *
+     * <p>
      * Mainly it classifies the projects in their groups and generates project -
      * repositories map
      *
@@ -1677,8 +1697,9 @@ public final class RuntimeEnvironment {
 
     /**
      * Sets the configuration and performs necessary actions.
+     *
      * @param configuration new configuration
-     * @param cmdType command timeout type
+     * @param cmdType       command timeout type
      */
     public void setConfiguration(Configuration configuration, CommandTimeoutType cmdType) {
         setConfiguration(configuration, null, cmdType);
@@ -1720,7 +1741,7 @@ public final class RuntimeEnvironment {
         }
 
         // populate groups is dependent on repositories map
-        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
+        populateGroups(new TreeSet<>(getGroups().values()), new TreeSet<>(getProjects().values()));
 
         includeFiles.reloadIncludeFiles();
     }
@@ -1751,7 +1772,7 @@ public final class RuntimeEnvironment {
      */
     public void setAuthorizationFramework(AuthorizationFramework fw) {
         synchronized (authFrameworkLock) {
-           if (this.authFramework != null) {
+            if (this.authFramework != null) {
                 this.authFramework.removeAll();
             }
             this.authFramework = fw;
@@ -1760,6 +1781,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Re-apply the configuration.
+     *
      * @param reindex is the message result of reindex
      * @param cmdType command timeout type
      * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
@@ -1775,8 +1797,8 @@ public final class RuntimeEnvironment {
      * to set new configuration in place.
      *
      * @param configuration XML configuration
-     * @param reindex is the message result of reindex
-     * @param cmdType command timeout type
+     * @param reindex       is the message result of reindex
+     * @param cmdType       command timeout type
      * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
      * boolean, CommandTimeoutType) applyConfig(config, reindex, cmdType)
      */
@@ -1798,11 +1820,12 @@ public final class RuntimeEnvironment {
      * is it just a request to set new configuration in place.
      * <p>
      * The classes that have registered their listener will be pinged here.
-     * @see ConfigurationChangedListener
-     * </p>
-     * @param config the incoming configuration
+     *
+     * @param config  the incoming configuration
      * @param reindex is the message result of reindex
      * @param cmdType command timeout type
+     * @see ConfigurationChangedListener
+     * </p>
      */
     public void applyConfig(Configuration config, boolean reindex, CommandTimeoutType cmdType) {
         setConfiguration(config, cmdType);
@@ -1850,7 +1873,7 @@ public final class RuntimeEnvironment {
     private void maybeRefreshSearcherManager(SearcherManager sm) {
         try {
             sm.maybeRefresh();
-        }  catch (AlreadyClosedException ex) {
+        } catch (AlreadyClosedException ex) {
             // This is a case of removed project. See refreshSearcherManagerMap() for details.
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
@@ -1878,6 +1901,7 @@ public final class RuntimeEnvironment {
      * Get IndexSearcher for given project or global IndexSearcher.
      * Wrapper of {@link #getSuperIndexSearcher(String)}. Make sure to release the returned
      * {@link SuperIndexSearcher} instance.
+     *
      * @param file file object
      * @return SuperIndexSearcher instance
      * @throws IOException on error when reading
@@ -1945,7 +1969,7 @@ public final class RuntimeEnvironment {
                     entry.getValue().close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE,
-                        String.format("cannot close SearcherManager for project %s", entry.getKey()), ex);
+                            String.format("cannot close SearcherManager for project %s", entry.getKey()), ex);
                 }
                 toRemove.add(entry.getKey());
             }
@@ -1960,7 +1984,7 @@ public final class RuntimeEnvironment {
      * Return collection of IndexReader objects as MultiReader object for given list of projects.
      * The caller is responsible for releasing the {@link SuperIndexSearcher} objects.
      *
-     * @param projects list of projects
+     * @param projects     list of projects
      * @param searcherList each SuperIndexSearcher produced will be put into this list
      * @return MultiReader for the projects
      */
@@ -1977,7 +2001,7 @@ public final class RuntimeEnvironment {
                 searcherList.add(searcher);
             } catch (IOException | NullPointerException ex) {
                 LOGGER.log(Level.SEVERE,
-                    "cannot get IndexReader for project " + proj, ex);
+                        "cannot get IndexReader for project " + proj, ex);
                 return null;
             }
         }
@@ -1986,7 +2010,7 @@ public final class RuntimeEnvironment {
             multiReader = new MultiReader(subreaders, true);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE,
-                "cannot construct MultiReader for set of projects", ex);
+                    "cannot construct MultiReader for set of projects", ex);
         }
         return multiReader;
     }
@@ -2031,6 +2055,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Remove all messages containing at least one of the tags.
+     *
      * @param tags set of tags
      * @param text message text (can be null, empty)
      */
@@ -2083,8 +2108,9 @@ public final class RuntimeEnvironment {
     /**
      * Applies the specified function to the runtime configuration, after having
      * obtained the configuration read-lock (and releasing afterward).
+     *
      * @param function a defined function
-     * @param <R> the type of the result of the function
+     * @param <R>      the type of the result of the function
      * @return the function result
      */
     public <R> R syncReadConfiguration(Function<Configuration, R> function) {
@@ -2099,8 +2125,9 @@ public final class RuntimeEnvironment {
      * Performs the specified operation which is provided the runtime
      * configuration and the specified argument, after first having obtained the
      * configuration write-lock (and releasing afterward).
-     * @param <V> the type of the input to the operation
-     * @param v the input argument
+     *
+     * @param <V>      the type of the input to the operation
+     * @param v        the input argument
      * @param consumer a defined consumer
      */
     public <V> void syncWriteConfiguration(V v, ConfigurationValueConsumer<V> consumer) {

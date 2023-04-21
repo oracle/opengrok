@@ -223,6 +223,11 @@ public class ConfigurationHelp {
                 String nm = "user-defined-key";
                 strmap.put(nm, getSampleProject(nm));
                 res = strmap;
+            } else if (actType1 == Group.class) {
+                Map<String, Group> strmap = new TreeMap<>();
+                String nm = "user-defined-key";
+                strmap.put(nm, getSampleGroup(nm));
+                res = strmap;
             } else {
                 throw new UnsupportedOperationException(
                     "Not supported yet for " + actType0 + " " + actType1);
@@ -268,6 +273,12 @@ public class ConfigurationHelp {
         p.setNavigateWindowEnabled(true);
         p.setTabSize(8);
         return p;
+    }
+
+    private static Group getSampleGroup(String name) {
+        Group grp = new Group(name, name);
+        grp.setFlag(1);
+        return grp;
     }
 
     private static Object getDefaultValue(Class<?> klass, Method setter,

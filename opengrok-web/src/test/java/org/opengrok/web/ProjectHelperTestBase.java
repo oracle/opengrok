@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterAll;
@@ -51,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProjectHelperTestBase {
 
-    protected static Set<Group> groups;
+    protected static Map<String, Group> groups;
     protected static Map<String, Project> projects;
     protected static List<RepositoryInfo> repositories;
     protected static RuntimeEnvironment env;
@@ -114,7 +112,7 @@ public class ProjectHelperTestBase {
             List<RepositoryInfo> rps,
             Map<Project, List<RepositoryInfo>> map,
             Map<String, Project> prjs,
-            List<Group> grps) {
+            Map<String, Group> grps) {
 
         for (int i = start; i < start + cnt; i++) {
             Group g = new Group((allowed ? "allowed_" : "") + "group_" + i);
@@ -133,7 +131,7 @@ public class ProjectHelperTestBase {
             pattern += createRepository(i, 2, 1, true, true, rps, prjs, map).getName();
 
             g.setPattern(pattern);
-            grps.add(g);
+            grps.put(g.getName(), g);
         }
     }
 
@@ -212,7 +210,7 @@ public class ProjectHelperTestBase {
         repositories_map = getRepositoriesMap();
         env.setPluginDirectory(null);
 
-        List<Group> grps = new ArrayList<>();
+        Map<String, Group> grps = new HashMap<>();
         Map<String, Project> prjs = new HashMap<>();
         List<RepositoryInfo> rps = new ArrayList<>();
         Map<Project, List<RepositoryInfo>> map = new TreeMap<>();
@@ -238,7 +236,7 @@ public class ProjectHelperTestBase {
 
         setRepositoriesMap(map);
         env.setProjects(prjs);
-        env.setGroups(new TreeSet<>(grps));
+        env.setGroups(grps);
         env.setRepositories(rps);
     }
 
