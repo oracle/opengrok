@@ -387,6 +387,7 @@ public class MercurialRepositoryTest {
         runHgCommand(repositoryRoot, "update");
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean isMergeCommitsEnabledOrig = env.isMergeCommitsEnabled();
         env.setMergeCommitsEnabled(isMergeCommitsEnabled);
 
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
@@ -400,5 +401,8 @@ public class MercurialRepositoryTest {
         } else {
             assertEquals(11, history.getHistoryEntries().size());
         }
+
+        // Cleanup.
+        env.setMergeCommitsEnabled(isMergeCommitsEnabledOrig);
     }
 }
