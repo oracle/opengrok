@@ -395,6 +395,8 @@ public class MercurialRepositoryTest {
         assertNotNull(history.getHistoryEntries());
         if (isMergeCommitsEnabled) {
             assertEquals(12, history.getHistoryEntries().size());
+            assertNotNull(history.getLastHistoryEntry());
+            assertEquals("merge", history.getLastHistoryEntry().getMessage());
         } else {
             assertEquals(11, history.getHistoryEntries().size());
         }
