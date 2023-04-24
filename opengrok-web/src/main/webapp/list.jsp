@@ -31,7 +31,6 @@ java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
-java.util.logging.Logger,
 java.util.Set,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
@@ -40,7 +39,6 @@ org.opengrok.indexer.analysis.AnalyzerFactory,
 org.opengrok.indexer.analysis.NullableNumLinesLOC,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
-org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.IOUtils,
@@ -48,13 +46,8 @@ org.opengrok.web.DirectoryListing"
 %>
 <%@ page import="static org.opengrok.web.PageConfig.DUMMY_REVISION" %>
 <%@ page import="static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision" %>
-<%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="jakarta.servlet.http.Cookie" %>
 <%@ page import="java.util.stream.Collectors" %>
-<%@ page import="org.opengrok.indexer.configuration.PathAccepter" %>
-<%@ page import="org.opengrok.indexer.configuration.RuntimeEnvironment" %>
-<%@ page import="java.text.Format" %>
-<%@ page import="java.text.SimpleDateFormat" %>
 <%
 {
     // need to set it here since requesting parameters
