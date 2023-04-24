@@ -31,7 +31,6 @@ java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
-java.util.logging.Logger,
 java.util.Set,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
@@ -40,7 +39,6 @@ org.opengrok.indexer.analysis.AnalyzerFactory,
 org.opengrok.indexer.analysis.NullableNumLinesLOC,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
-org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.IOUtils,
@@ -48,13 +46,11 @@ org.opengrok.web.DirectoryListing"
 %>
 <%@ page import="static org.opengrok.web.PageConfig.DUMMY_REVISION" %>
 <%@ page import="static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision" %>
-<%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="jakarta.servlet.http.Cookie" %>
 <%@ page import="java.util.stream.Collectors" %>
-<%@ page import="org.opengrok.indexer.configuration.PathAccepter" %>
-<%@ page import="org.opengrok.indexer.configuration.RuntimeEnvironment" %>
-<%@ page import="java.text.Format" %>
-<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="org.opengrok.indexer.util.Statistics" %>
+<%@ page import="org.opengrok.indexer.logger.LoggerFactory" %>
+<%@ page import="java.util.logging.Logger" %>
 <%
 {
     // need to set it here since requesting parameters
@@ -123,6 +119,8 @@ document.pageReady.push(function() { pageReadyList();});
 <%
 /* ---------------------- list.jsp start --------------------- */
 {
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
@@ -135,6 +133,8 @@ document.pageReady.push(function() { pageReadyList();});
     String rawPath = request.getContextPath() + Prefix.DOWNLOAD_P + path;
     Reader r = null;
     if (cfg.isDir()) {
+        Statistics statistics = new Statistics();
+
         // valid resource is requested
         // mast.jsp assures, that resourceFile is valid and not /
         // see cfg.resourceNotAvailable()
@@ -208,6 +208,8 @@ document.pageReady.push(function() { pageReadyList();});
 
             }
         }
+
+        statistics.report(LOGGER, Level.FINE, "directory listing done", "dir.list.latency");
     } else if (rev.length() != 0) {
         // requesting a revision
         File xrefFile;
