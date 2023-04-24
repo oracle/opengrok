@@ -48,6 +48,9 @@ org.opengrok.web.DirectoryListing"
 <%@ page import="static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision" %>
 <%@ page import="jakarta.servlet.http.Cookie" %>
 <%@ page import="java.util.stream.Collectors" %>
+<%@ page import="org.opengrok.indexer.util.Statistics" %>
+<%@ page import="org.opengrok.indexer.logger.LoggerFactory" %>
+<%@ page import="java.util.logging.Logger" %>
 <%
 {
     // need to set it here since requesting parameters
@@ -116,6 +119,8 @@ document.pageReady.push(function() { pageReadyList();});
 <%
 /* ---------------------- list.jsp start --------------------- */
 {
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
@@ -128,6 +133,8 @@ document.pageReady.push(function() { pageReadyList();});
     String rawPath = request.getContextPath() + Prefix.DOWNLOAD_P + path;
     Reader r = null;
     if (cfg.isDir()) {
+        Statistics statistics = new Statistics();
+
         // valid resource is requested
         // mast.jsp assures, that resourceFile is valid and not /
         // see cfg.resourceNotAvailable()
@@ -201,6 +208,8 @@ document.pageReady.push(function() { pageReadyList();});
 
             }
         }
+
+        statistics.report(LOGGER, Level.FINE, "directory listing done", "dir.list.latency");
     } else if (rev.length() != 0) {
         // requesting a revision
         File xrefFile;
