@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public class ConfigurationClassLoader extends ClassLoader {
             StatsdFlavor.class,
             String.class,
             SuggesterConfig.class,
+            TreeMap.class,
             TreeSet.class,
             XMLDecoder.class
     ).stream().map(Class::getName).collect(Collectors.toSet());
