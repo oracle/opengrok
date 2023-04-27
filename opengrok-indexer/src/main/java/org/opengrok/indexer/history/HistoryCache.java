@@ -95,9 +95,10 @@ interface HistoryCache extends Cache {
      * specified directory.
      *
      * @param entries list of {@link DirectoryEntry} instances
+     * @return whether all directory entries were filled
      * @throws CacheException on error
      */
-    void fillLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
+    boolean fillLastHistoryEntries(List<DirectoryEntry> entries) throws CacheException;
 
     /**
      * Clear entry for single file from history cache.

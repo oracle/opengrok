@@ -759,9 +759,9 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
     }
 
     @Override
-    public void fillLastHistoryEntries(List<DirectoryEntry> entries) {
+    public boolean fillLastHistoryEntries(List<DirectoryEntry> entries) {
         if (entries == null) {
-            return;
+            return false;
         }
 
         for (DirectoryEntry directoryEntry : entries) {
@@ -780,11 +780,15 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 } else {
                     LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
                             directoryEntry.getFile());
+                    return false;
                 }
             } catch (CacheException e) {
                 LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
+                return false;
             }
         }
+
+        return true;
     }
 
     @Override

@@ -750,9 +750,7 @@ public final class HistoryGuru {
             return true;
         }
 
-        historyCache.fillLastHistoryEntries(entries);
-
-        return false;
+        return !historyCache.fillLastHistoryEntries(entries);
     }
 
     /**
