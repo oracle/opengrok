@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -81,7 +81,7 @@ public class ConfigurationController {
                     env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
                     return null;
-                }));
+                }, Response.Status.CREATED));
     }
 
     @GET
@@ -104,7 +104,7 @@ public class ConfigurationController {
                     env.applyConfig(false, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
                     return null;
-                }));
+                }, Response.Status.NO_CONTENT));
     }
 
     @POST
