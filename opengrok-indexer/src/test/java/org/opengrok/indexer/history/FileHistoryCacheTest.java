@@ -43,7 +43,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
@@ -1013,9 +1013,12 @@ class FileHistoryCacheTest {
      * getting history cache entries for directories.
      */
     @Test
-    void testGetLastHistoryEntries() throws Exception {
+    void testFillLastHistoryEntries() throws Exception {
         File repositoryRoot = new File(repositories.getSourceRoot(), "git");
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+
+        // Create non-empty directory without repository involvement. This will be used to check
+        // that fillLastHistoryEntries() does not attempt to get history entry for it.
         File subDir = new File(repositoryRoot, "subdir");
         assertTrue(subDir.mkdir());
         File subFile = new File(subDir, "subfile.txt");
@@ -1031,13 +1034,50 @@ class FileHistoryCacheTest {
         assertNotNull(files);
         assertTrue(files.length > 0);
         assertTrue(Arrays.stream(files).anyMatch(File::isDirectory));
-        List<DirectoryEntry> directoryEntries = new ArrayList<>();
-        for (File file : files) {
-            directoryEntries.add(new DirectoryEntry(file));
-        }
+        List<DirectoryEntry> directoryEntries = Arrays.stream(files).map(DirectoryEntry::new).
+                collect(Collectors.toList());
 
-        spyCache.fillLastHistoryEntries(directoryEntries);
+        assertTrue(spyCache.fillLastHistoryEntries(directoryEntries));
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
+
+        assertEquals(directoryEntries.size() - 3,
+                (int) directoryEntries.stream().filter(e -> e.getDate() != null).count());
+        assertEquals(directoryEntries.size(),
+                (int) directoryEntries.stream().filter(e -> e.getDescription() != null).count());
+
+        // Cleanup.
+        cache.clear(repository);
+    }
+
+    /**
+     * Test {@link FileHistoryCache#fillLastHistoryEntries(List)}, in particular that it
+     * returns {@code false} and resets date/descriptions if some entries cannot be filled.
+     */
+    @Test
+    void testFillLastHistoryEntriesAllOrNothing() throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "git");
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+
+        // This file will be created without any repository involvement, therefore it will not be possible
+        // to get history entry for it. This should make fillLastHistoryEntries() to return false.
+        File subFile = new File(repositoryRoot, "file.txt");
+        assertFalse(subFile.exists());
+        assertTrue(subFile.createNewFile());
+
+        FileHistoryCache spyCache = Mockito.spy(cache);
+        spyCache.clear(repository);
+        History historyToStore = repository.getHistory(repositoryRoot);
+        spyCache.store(historyToStore, repository);
+
+        File[] files = repositoryRoot.listFiles();
+        assertNotNull(files);
+        assertTrue(files.length > 0);
+        List<DirectoryEntry> directoryEntries = Arrays.stream(files).map(DirectoryEntry::new).
+                collect(Collectors.toList());
+
+        assertFalse(spyCache.fillLastHistoryEntries(directoryEntries));
+        assertEquals(0, (int) directoryEntries.stream().filter(e -> e.getDate() != null).count());
+        assertEquals(0, (int) directoryEntries.stream().filter(e -> e.getDescription() != null).count());
 
         // Cleanup.
         cache.clear(repository);
