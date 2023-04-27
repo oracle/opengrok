@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -224,12 +225,11 @@ public class Ctags implements Resettable {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         ctagsProcess = processBuilder.start();
-        ctagsIn = new OutputStreamWriter(
-            ctagsProcess.getOutputStream(), StandardCharsets.UTF_8);
+        ctagsIn = new OutputStreamWriter(ctagsProcess.getOutputStream(), StandardCharsets.UTF_8);
         ctagsOut = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream(),
             StandardCharsets.UTF_8));
 
-        Thread errThread = new Thread(() -> {
+        Thread errThread = new OpenGrokThreadFactory("OpenGrok-ctags-err").newThread(() -> {
             try (BufferedReader error = new BufferedReader(new InputStreamReader(ctagsProcess.getErrorStream(),
                     StandardCharsets.UTF_8))) {
                 String s;
