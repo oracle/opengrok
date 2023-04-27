@@ -1032,10 +1032,8 @@ class FileHistoryCacheTest {
         assertNotNull(files);
         assertTrue(files.length > 0);
         assertTrue(Arrays.stream(files).anyMatch(File::isDirectory));
-        List<DirectoryEntry> directoryEntries = new ArrayList<>();
-        for (File file : files) {
-            directoryEntries.add(new DirectoryEntry(file));
-        }
+        List<DirectoryEntry> directoryEntries = Arrays.stream(files).map(DirectoryEntry::new).
+                collect(Collectors.toList());
 
         assertTrue(spyCache.fillLastHistoryEntries(directoryEntries));
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
