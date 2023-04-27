@@ -1058,6 +1058,7 @@ class FileHistoryCacheTest {
         File repositoryRoot = new File(repositories.getSourceRoot(), "git");
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
         File subFile = new File(repositoryRoot, "file.txt");
+        assertFalse(subFile.exists());
         assertTrue(subFile.createNewFile());
 
         FileHistoryCache spyCache = Mockito.spy(cache);
