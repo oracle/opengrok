@@ -1017,6 +1017,9 @@ class FileHistoryCacheTest {
     void testFillLastHistoryEntries() throws Exception {
         File repositoryRoot = new File(repositories.getSourceRoot(), "git");
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+
+        // Create non-empty directory without repository involvement. This will be used to check
+        // that fillLastHistoryEntries() does not attempt to get history entry for it.
         File subDir = new File(repositoryRoot, "subdir");
         assertTrue(subDir.mkdir());
         File subFile = new File(subDir, "subfile.txt");
