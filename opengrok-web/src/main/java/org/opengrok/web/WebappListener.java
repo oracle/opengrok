@@ -204,6 +204,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         try {
             env.shutdownRevisionExecutor();
             env.shutdownSearchExecutor();
+            env.shutdownDirectoryListingExecutor();
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "Could not shutdown revision executor", e);
         }

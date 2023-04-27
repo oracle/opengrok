@@ -103,6 +103,7 @@ public final class RuntimeEnvironment {
     private final LazilyInstantiate<IndexerParallelizer> lzIndexerParallelizer;
     private final LazilyInstantiate<ExecutorService> lzSearchExecutor;
     private final LazilyInstantiate<ExecutorService> lzRevisionExecutor;
+    private final LazilyInstantiate<ExecutorService> lzDirectoryListingExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
 
     private final LazilyInstantiate<SuperIndexSearcherFactory> lzSuperIndexSearcherFactory;
@@ -164,6 +165,7 @@ public final class RuntimeEnvironment {
         lzIndexerParallelizer = LazilyInstantiate.using(() -> new IndexerParallelizer(this));
         lzSearchExecutor = LazilyInstantiate.using(this::newSearchExecutor);
         lzRevisionExecutor = LazilyInstantiate.using(this::newRevisionExecutor);
+        lzDirectoryListingExecutor = LazilyInstantiate.using(this::newDirectoryListingExecutor);
         lzSuperIndexSearcherFactory = LazilyInstantiate.using(this::newSuperIndexSearcherFactory);
         lzIndexSearcherFactory = LazilyInstantiate.using(this::newIndexSearcherFactory);
     }
@@ -225,6 +227,20 @@ public final class RuntimeEnvironment {
     public void shutdownRevisionExecutor() throws InterruptedException {
         getRevisionExecutor().shutdownNow();
         getRevisionExecutor().awaitTermination(getIndexerCommandTimeout(), TimeUnit.SECONDS);
+    }
+
+    public ExecutorService getDirectoryListingExecutor() {
+        return lzDirectoryListingExecutor.get();
+    }
+
+    private ExecutorService newDirectoryListingExecutor() {
+        return Executors.newFixedThreadPool(this.getMaxDirectoryListingThreadCount(),
+                new OpenGrokThreadFactory("directory-listing"));
+    }
+
+    public void shutdownDirectoryListingExecutor() throws InterruptedException {
+        getDirectoryListingExecutor().shutdownNow();
+        getDirectoryListingExecutor().awaitTermination(getWebappStartCommandTimeout(), TimeUnit.SECONDS);
     }
 
     private SuperIndexSearcherFactory newSuperIndexSearcherFactory() {
@@ -1386,6 +1402,14 @@ public final class RuntimeEnvironment {
 
     public int getMaxRevisionThreadCount() {
         return syncReadConfiguration(Configuration::getMaxRevisionThreadCount);
+    }
+
+    public int getMaxDirectoryListingThreadCount() {
+        return syncReadConfiguration(Configuration::getMaxDirectoryListingThreadCount);
+    }
+
+    public void setMaxDirectoryListingThreadCount(int threadCount) {
+        syncWriteConfiguration(threadCount, Configuration::setMaxDirectoryListingThreadCount);
     }
 
     public int getCurrentIndexedCollapseThreshold() {

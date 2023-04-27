@@ -37,11 +37,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -766,31 +769,50 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
 
         boolean ret = true;
 
-        for (DirectoryEntry directoryEntry : entries) {
-            try {
-                File file = directoryEntry.getFile();
-                if (file.isDirectory()) {
-                    directoryEntry.setDescription("-");
-                    directoryEntry.setDate(null);
-                    continue;
-                }
+        Statistics statistics = new Statistics();
 
-                HistoryEntry historyEntry = getLastHistoryEntry(file);
-                if (historyEntry != null && historyEntry.getDate() != null) {
-                    directoryEntry.setDescription(historyEntry.getDescription());
-                    directoryEntry.setDate(historyEntry.getDate());
-                } else {
-                    LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
-                            directoryEntry.getFile());
+        final ExecutorService executor = env.getDirectoryListingExecutor();
+        Set<Future<Boolean>> futures = new HashSet<>();
+        for (DirectoryEntry directoryEntry : entries) {
+            futures.add(executor.submit(() -> {
+                try {
+                    File file = directoryEntry.getFile();
+                    if (file.isDirectory()) {
+                        directoryEntry.setDescription("-");
+                        directoryEntry.setDate(null);
+                        return true;
+                    }
+
+                    HistoryEntry historyEntry = getLastHistoryEntry(file);
+                    if (historyEntry != null && historyEntry.getDate() != null) {
+                        directoryEntry.setDescription(historyEntry.getDescription());
+                        directoryEntry.setDate(historyEntry.getDate());
+                    } else {
+                        LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
+                                directoryEntry.getFile());
+                        return false;
+                    }
+                } catch (CacheException e) {
+                    LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
+                    return false;
+                }
+                return true;
+            }));
+        }
+
+        for (Future<Boolean> future : futures) {
+            try {
+                if (!future.get()) {
                     ret = false;
                     break;
                 }
-            } catch (CacheException e) {
-                LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
+            } catch (Exception e) {
                 ret = false;
                 break;
             }
         }
+
+        statistics.report(LOGGER, Level.FINER, "done filling directory entries");
 
         // Enforce the all-or-nothing semantics.
         if (!ret) {
