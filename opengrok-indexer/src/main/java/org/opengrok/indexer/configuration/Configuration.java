@@ -270,6 +270,12 @@ public final class Configuration {
     private int MaxRevisionThreadCount;
 
     /**
+     * Upper bound for number of threads used for getting directory entries.
+     * This is total for the whole webapp.
+     */
+    private int MaxDirectoryListingThreadCount;
+
+    /**
      * If false, do not display listing or projects/repositories on the index page.
      */
     private boolean displayRepositories;
@@ -586,6 +592,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
+        setMaxDirectoryListingThreadCount(Runtime.getRuntime().availableProcessors());
         setMergeCommitsEnabled(true);
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
@@ -1351,6 +1358,14 @@ public final class Configuration {
 
     public void setMaxRevisionThreadCount(int count) {
         this.MaxRevisionThreadCount = count;
+    }
+
+    public int getMaxDirectoryListingThreadCount() {
+        return MaxDirectoryListingThreadCount;
+    }
+
+    public void setMaxDirectoryListingThreadCount(int count) {
+        this.MaxDirectoryListingThreadCount = count;
     }
 
     public boolean isProjectsEnabled() {
