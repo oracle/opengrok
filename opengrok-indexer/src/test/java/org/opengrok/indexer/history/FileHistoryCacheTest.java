@@ -1057,6 +1057,9 @@ class FileHistoryCacheTest {
     void testFillLastHistoryEntriesAllOrNothing() throws Exception {
         File repositoryRoot = new File(repositories.getSourceRoot(), "git");
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+
+        // This file will be created without any repository involvement, therefore it will not be possible
+        // to get history entry for it. This should make fillLastHistoryEntries() to return false.
         File subFile = new File(repositoryRoot, "file.txt");
         assertFalse(subFile.exists());
         assertTrue(subFile.createNewFile());
