@@ -1040,6 +1040,11 @@ class FileHistoryCacheTest {
         assertTrue(spyCache.fillLastHistoryEntries(directoryEntries));
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
 
+        assertEquals(directoryEntries.size() - 3,
+                (int) directoryEntries.stream().filter(e -> e.getDate() != null).count());
+        assertEquals(directoryEntries.size(),
+                (int) directoryEntries.stream().filter(e -> e.getDescription() != null).count());
+
         // Cleanup.
         cache.clear(repository);
     }
