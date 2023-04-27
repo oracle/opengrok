@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -97,7 +97,8 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        ApiUtils.waitForAsyncApi(response);
+        Response finalResponse = ApiUtils.waitForAsyncApi(response);
+        assertEquals(Response.Status.CREATED.getStatusCode(), finalResponse.getStatus());
 
         assertEquals(srcRoot, env.getSourceRootPath());
 
