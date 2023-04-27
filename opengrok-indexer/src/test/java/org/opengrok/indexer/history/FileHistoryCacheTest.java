@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
@@ -1013,7 +1014,7 @@ class FileHistoryCacheTest {
      * getting history cache entries for directories.
      */
     @Test
-    void testGetLastHistoryEntries() throws Exception {
+    void testFillLastHistoryEntries() throws Exception {
         File repositoryRoot = new File(repositories.getSourceRoot(), "git");
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
         File subDir = new File(repositoryRoot, "subdir");
@@ -1036,8 +1037,36 @@ class FileHistoryCacheTest {
             directoryEntries.add(new DirectoryEntry(file));
         }
 
-        spyCache.fillLastHistoryEntries(directoryEntries);
+        assertTrue(spyCache.fillLastHistoryEntries(directoryEntries));
         Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
+
+        // Cleanup.
+        cache.clear(repository);
+    }
+
+    /**
+     * Test {@link FileHistoryCache#fillLastHistoryEntries(List)}, in particular that it
+     * returns {@code false} if some entries cannot be filled.
+     */
+    @Test
+    void testFillLastHistoryEntriesAllOrNothing() throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "git");
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        File subFile = new File(repositoryRoot, "file.txt");
+        assertTrue(subFile.createNewFile());
+
+        FileHistoryCache spyCache = Mockito.spy(cache);
+        spyCache.clear(repository);
+        History historyToStore = repository.getHistory(repositoryRoot);
+        spyCache.store(historyToStore, repository);
+
+        File[] files = repositoryRoot.listFiles();
+        assertNotNull(files);
+        assertTrue(files.length > 0);
+        List<DirectoryEntry> directoryEntries = Arrays.stream(files).map(DirectoryEntry::new).
+                collect(Collectors.toList());
+
+        assertFalse(spyCache.fillLastHistoryEntries(directoryEntries));
 
         // Cleanup.
         cache.clear(repository);
