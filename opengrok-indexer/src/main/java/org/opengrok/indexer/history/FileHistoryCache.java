@@ -764,6 +764,8 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             return false;
         }
 
+        boolean ret = true;
+
         for (DirectoryEntry directoryEntry : entries) {
             try {
                 File file = directoryEntry.getFile();
@@ -780,15 +782,23 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
                 } else {
                     LOGGER.log(Level.FINE, "cannot get last history entry for ''{0}''",
                             directoryEntry.getFile());
-                    return false;
+                    ret = false;
+                    break;
                 }
             } catch (CacheException e) {
                 LOGGER.log(Level.FINER, "cannot get last history entry for ''{0}''", directoryEntry.getFile());
-                return false;
+                ret = false;
+                break;
             }
         }
 
-        return true;
+        // Enforce the all-or-nothing semantics.
+        if (!ret) {
+            entries.forEach(e -> e.setDate(null));
+            entries.forEach(e -> e.setDescription(null));
+        }
+
+        return ret;
     }
 
     @Override

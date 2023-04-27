@@ -1046,7 +1046,7 @@ class FileHistoryCacheTest {
 
     /**
      * Test {@link FileHistoryCache#fillLastHistoryEntries(List)}, in particular that it
-     * returns {@code false} if some entries cannot be filled.
+     * returns {@code false} and resets date/descriptions if some entries cannot be filled.
      */
     @Test
     void testFillLastHistoryEntriesAllOrNothing() throws Exception {
@@ -1067,6 +1067,8 @@ class FileHistoryCacheTest {
                 collect(Collectors.toList());
 
         assertFalse(spyCache.fillLastHistoryEntries(directoryEntries));
+        assertEquals(0, (int) directoryEntries.stream().filter(e -> e.getDate() != null).count());
+        assertEquals(0, (int) directoryEntries.stream().filter(e -> e.getDescription() != null).count());
 
         // Cleanup.
         cache.clear(repository);

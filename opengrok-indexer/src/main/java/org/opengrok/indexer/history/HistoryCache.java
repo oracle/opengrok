@@ -91,8 +91,8 @@ interface HistoryCache extends Cache {
     @Nullable String getLatestCachedRevision(Repository repository) throws CacheException;
 
     /**
-     * Get the last modified times for all files and subdirectories in the
-     * specified directory.
+     * Get the last modified times and descriptions for all files and subdirectories in the specified directory.
+     * If any of the entries cannot be filled, these properties will be reset for all entries.
      *
      * @param entries list of {@link DirectoryEntry} instances
      * @return whether all directory entries were filled
