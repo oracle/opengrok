@@ -229,7 +229,7 @@ public class Ctags implements Resettable {
         ctagsOut = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream(),
             StandardCharsets.UTF_8));
 
-        Thread errThread = new OpenGrokThreadFactory("OpenGrok-ctags-err").newThread(() -> {
+        Thread errThread = new OpenGrokThreadFactory("ctags-err").newThread(() -> {
             try (BufferedReader error = new BufferedReader(new InputStreamReader(ctagsProcess.getErrorStream(),
                     StandardCharsets.UTF_8))) {
                 String s;
