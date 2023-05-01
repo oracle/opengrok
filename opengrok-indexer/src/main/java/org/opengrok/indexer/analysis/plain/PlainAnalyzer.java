@@ -46,6 +46,7 @@ import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.XrefWork;
 import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -109,19 +110,6 @@ public class PlainAnalyzer extends TextAnalyzer {
     @Override
     protected Reader getReader(InputStream stream) throws IOException {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
-    }
-
-    private static class XrefWork {
-        Xrefer xrefer;
-        Exception exception;
-
-        XrefWork(Xrefer xrefer) {
-            this.xrefer = xrefer;
-        }
-
-        XrefWork(Exception e) {
-            this.exception = e;
-        }
     }
 
     @Override
