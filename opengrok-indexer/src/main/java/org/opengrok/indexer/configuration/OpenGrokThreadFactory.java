@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -33,6 +33,8 @@ import java.util.concurrent.ThreadFactory;
 public class OpenGrokThreadFactory implements ThreadFactory {
     private final String threadPrefix;
 
+    public static final String PREFIX = "OpenGrok-";
+
     public OpenGrokThreadFactory(String name) {
         if (!name.endsWith("-")) {
             threadPrefix = name + "-";
@@ -44,7 +46,7 @@ public class OpenGrokThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(@NotNull Runnable runnable) {
         Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setName("OpenGrok-" + threadPrefix + thread.getId());
+        thread.setName(PREFIX + threadPrefix + thread.getId());
         return thread;
     }
 }
