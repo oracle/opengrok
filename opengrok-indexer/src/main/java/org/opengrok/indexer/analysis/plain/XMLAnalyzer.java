@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -26,6 +26,10 @@ package org.opengrok.indexer.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexXref;
@@ -34,12 +38,13 @@ import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.XrefWork;
 import org.opengrok.indexer.analysis.Xrefer;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Analyzes HTML files.
- *
  * Created on September 30, 2005
  * @author Chandan
  */
@@ -73,18 +78,35 @@ public class XMLAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new OGKTextField(QueryBuilder.FULL,
-            getReader(src.getStream())));
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
+        doc.add(new OGKTextField(QueryBuilder.FULL, getReader(src.getStream())));
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setProject(project);
-                Xrefer xref = writeXref(args);
+                CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return new XrefWork(writeXref(args));
+                            } catch (IOException e) {
+                                return new XrefWork(e);
+                            }
+                        }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
+                        orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
+                XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
+                Xrefer xref = xrefWork.xrefer;
 
-                String path = doc.get(QueryBuilder.PATH);
-                addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
+                if (xref != null) {
+                    String path = doc.get(QueryBuilder.PATH);
+                    addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
+                } else {
+                    // Re-throw the exception from writeXref().
+                    throw new IOException(xrefWork.exception);
+                }
+            } catch (ExecutionException e) {
+                throw new InterruptedException("failed to generate xref :" + e);
             }
         }
     }
@@ -92,7 +114,7 @@ public class XMLAnalyzer extends TextAnalyzer {
     /**
      * Creates a wrapped {@link XMLXref} instance.
      * @param reader the data to produce xref for
-     * @return an xref instance
+     * @return xref instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
