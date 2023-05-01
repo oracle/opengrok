@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.opengrok.indexer.analysis.Ctags;
@@ -36,6 +37,8 @@ import org.opengrok.indexer.util.BoundedBlockingObjectPool;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.ObjectFactory;
 import org.opengrok.indexer.util.ObjectPool;
+
+import static java.util.concurrent.ForkJoinPool.defaultForkJoinWorkerThreadFactory;
 
 /**
  * Represents a container for executors that enable parallelism for indexing
@@ -230,7 +233,11 @@ public class IndexerParallelizer implements AutoCloseable {
 
     private void createLazyForkJoinPool() {
         lzForkJoinPool = LazilyInstantiate.using(() ->
-                new ForkJoinPool(indexingParallelism));
+                new ForkJoinPool(indexingParallelism, forkJoinPool -> {
+                    ForkJoinWorkerThread thread = defaultForkJoinWorkerThreadFactory.newThread(forkJoinPool);
+                    thread.setName(OpenGrokThreadFactory.PREFIX + "ForkJoinPool-" + thread.getId());
+                    return thread;
+                }, null, false));
     }
 
     private void createLazyCtagsPool() {
