@@ -27,9 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apache.lucene.document.Document;
@@ -48,7 +46,6 @@ import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.XrefWork;
 import org.opengrok.indexer.analysis.Xrefer;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 
@@ -149,34 +146,21 @@ public class PlainAnalyzer extends TextAnalyzer {
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return new XrefWork(writeXref(args));
-                    } catch (IOException e) {
-                        return new XrefWork(e);
-                    }
-                }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
-                        orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
-                XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
-                Xrefer xref = xrefWork.xrefer;
+                XrefWork xrefWork = new XrefWork(args, this);
+                Xrefer xref = xrefWork.getXrefer();
 
                 if (xref != null) {
                     Scopes scopes = xref.getScopes();
                     if (scopes.size() > 0) {
                         byte[] scopesSerialized = scopes.serialize();
-                        doc.add(new StoredField(QueryBuilder.SCOPES,
-                                scopesSerialized));
+                        doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
                     }
 
                     String path = doc.get(QueryBuilder.PATH);
                     addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
-                } else {
-                    // Re-throw the exception from writeXref().
-                    throw new IOException(xrefWork.exception);
                 }
             } catch (ExecutionException e) {
                 throw new InterruptedException("failed to generate xref :" + e);

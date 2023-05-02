@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.uue;
@@ -26,6 +26,8 @@ package org.opengrok.indexer.analysis.uue;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
@@ -35,6 +37,7 @@ import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.XrefWork;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
@@ -74,7 +77,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search
         JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
         OGKTextField full = new OGKTextField(QueryBuilder.FULL, symbolTokenizer);
@@ -85,7 +88,12 @@ public class UuencodeAnalyzer extends TextAnalyzer {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setProject(project);
-                writeXref(args);
+                XrefWork xrefWork = new XrefWork(args, this);
+                try {
+                    xrefWork.getXrefer();
+                } catch (ExecutionException e) {
+                    throw new InterruptedException("failed to generate xref :" + e);
+                }
             }
         }
     }

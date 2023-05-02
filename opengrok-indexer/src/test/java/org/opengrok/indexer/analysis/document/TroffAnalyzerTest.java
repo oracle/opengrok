@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2009, 2011, Jens Elkner.
  */
 package org.opengrok.indexer.analysis.document;
@@ -96,7 +96,7 @@ public class TroffAnalyzerTest {
      * @throws IOException I/O exception
      */
     @Test
-    void testAnalyze() throws IOException {
+    void testAnalyze() throws Exception {
         Document doc = new Document();
         StringWriter xrefOut = new StringWriter();
         analyzer.analyze(doc, new StreamSource() {
@@ -106,5 +106,4 @@ public class TroffAnalyzerTest {
             }
         }, xrefOut);
     }
-
 }
