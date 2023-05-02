@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class XrefWork {
     private Xrefer xrefer;
     private Exception exception;
-    final private WriteXrefArgs args;
-    final private AbstractAnalyzer analyzer;
+    private final WriteXrefArgs args;
+    private final AbstractAnalyzer analyzer;
 
     public XrefWork(WriteXrefArgs args, AbstractAnalyzer analyzer) {
         this.args = args;

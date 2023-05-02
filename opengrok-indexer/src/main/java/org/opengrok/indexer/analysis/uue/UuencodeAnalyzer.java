@@ -38,7 +38,6 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.XrefWork;
-import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**

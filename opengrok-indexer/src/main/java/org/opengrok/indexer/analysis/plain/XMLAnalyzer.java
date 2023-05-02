@@ -26,9 +26,7 @@ package org.opengrok.indexer.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
