@@ -22,15 +22,49 @@
  */
 package org.opengrok.indexer.analysis;
 
-public class XrefWork {
-    public Xrefer xrefer;
-    public Exception exception;
+import org.apache.lucene.document.Document;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
-    public XrefWork(Xrefer xrefer) {
-        this.xrefer = xrefer;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Class to wrap Xref production with timeout. This should be used for all classes that override
+ * {@link FileAnalyzer#analyze(Document, StreamSource, Writer)}.
+ */
+public class XrefWork {
+    private Xrefer xrefer;
+    private Exception exception;
+    final private WriteXrefArgs args;
+    final private AbstractAnalyzer analyzer;
+
+    public XrefWork(WriteXrefArgs args, AbstractAnalyzer analyzer) {
+        this.args = args;
+        this.analyzer = analyzer;
     }
 
-    public XrefWork(Exception e) {
-        this.exception = e;
+    public Xrefer getXrefer() throws ExecutionException, InterruptedException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        xrefer = this.analyzer.writeXref(args);
+                    } catch (IOException e) {
+                        exception = e;
+                    }
+                    return this;
+                }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
+                orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
+
+        XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
+        if (xrefWork.xrefer != null) {
+            return xrefer;
+        } else {
+            // Re-throw the exception from writeXref().
+            throw new ExecutionException(xrefWork.exception);
+        }
     }
 }

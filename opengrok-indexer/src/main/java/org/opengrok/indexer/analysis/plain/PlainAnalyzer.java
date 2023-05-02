@@ -149,34 +149,21 @@ public class PlainAnalyzer extends TextAnalyzer {
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return new XrefWork(writeXref(args));
-                    } catch (IOException e) {
-                        return new XrefWork(e);
-                    }
-                }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
-                        orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
-                XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
-                Xrefer xref = xrefWork.xrefer;
+                XrefWork xrefWork = new XrefWork(args, this);
+                Xrefer xref = xrefWork.getXrefer();
 
                 if (xref != null) {
                     Scopes scopes = xref.getScopes();
                     if (scopes.size() > 0) {
                         byte[] scopesSerialized = scopes.serialize();
-                        doc.add(new StoredField(QueryBuilder.SCOPES,
-                                scopesSerialized));
+                        doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
                     }
 
                     String path = doc.get(QueryBuilder.PATH);
                     addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
-                } else {
-                    // Re-throw the exception from writeXref().
-                    throw new IOException(xrefWork.exception);
                 }
             } catch (ExecutionException e) {
                 throw new InterruptedException("failed to generate xref :" + e);
