@@ -463,10 +463,6 @@ class IndexDatabaseTest {
         public void fileRemoved(String path) {
         }
 
-        @Override
-        public void fileUpdate(String path) {
-        }
-
         public Set<String> getRemovedFiles() {
             return removedFiles;
         }

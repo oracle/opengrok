@@ -208,10 +208,6 @@ public class IndexerTest {
         }
 
         @Override
-        public void fileUpdate(String path) {
-        }
-
-        @Override
         public void fileRemoved(String path) {
             removedFiles.add(path);
         }
@@ -290,10 +286,6 @@ public class IndexerTest {
 
         @Override
         public void fileRemove(String path) {
-        }
-
-        @Override
-        public void fileUpdate(String path) {
         }
 
         @Override

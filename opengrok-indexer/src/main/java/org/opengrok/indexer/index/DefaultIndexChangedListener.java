@@ -50,10 +50,6 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
     public void fileRemove(String path) {
         LOGGER.log(Level.FINE, "Remove: ''{0}''", path);
     }
-    @Override
-    public void fileUpdate(String path) {
-        LOGGER.log(Level.FINE, "Update: ''{0}''", path);
-    }
 
     @Override
     public void fileAdded(String path, String analyzer) {
