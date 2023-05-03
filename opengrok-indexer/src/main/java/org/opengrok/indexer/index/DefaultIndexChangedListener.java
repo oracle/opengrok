@@ -24,7 +24,10 @@
 package org.opengrok.indexer.index;
 
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Statistics;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,10 +42,15 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultIndexChangedListener.class);
 
+    private final Map<String, Statistics> statMap = new ConcurrentHashMap<>();
+
     @Override
     public void fileAdd(String path, String analyzer) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Add: ''{0}'' ({1})", new Object[]{path, analyzer});
+        }
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            statMap.put(path, new Statistics());
         }
     }
 
@@ -53,6 +61,16 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
 
     @Override
     public void fileAdded(String path, String analyzer) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            Statistics stat = statMap.get(path);
+            if (stat != null) {
+                stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
+                        "indexer.file.add.latency");
+                statMap.remove(path, stat);
+                return;
+            }
+        }
+
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(Level.FINER, "Added: ''{0}'' ({1})", new Object[]{path, analyzer});
         }
