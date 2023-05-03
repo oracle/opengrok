@@ -49,9 +49,7 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Add: ''{0}'' ({1})", new Object[]{path, analyzer});
         }
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            statMap.put(path, new Statistics());
-        }
+        statMap.put(path, new Statistics());
     }
 
     @Override
@@ -61,12 +59,12 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
 
     @Override
     public void fileAdded(String path, String analyzer) {
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            Statistics stat = statMap.get(path);
-            if (stat != null) {
-                stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
-                        "indexer.file.add.latency");
-                statMap.remove(path, stat);
+        Statistics stat = statMap.get(path);
+        if (stat != null) {
+            stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
+                    "indexer.file.add.latency");
+            statMap.remove(path, stat);
+            if (LOGGER.isLoggable(Level.FINEST)) {
                 return;
             }
         }
