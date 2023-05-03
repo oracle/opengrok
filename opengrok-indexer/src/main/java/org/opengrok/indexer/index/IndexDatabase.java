@@ -1784,7 +1784,7 @@ public class IndexDatabase {
                             }
                         } catch (AlreadyClosedException e) {
                             alreadyClosedCounter.incrementAndGet();
-                            String errmsg = String.format("ERROR addFile(): %s", x.file);
+                            String errmsg = String.format("ERROR addFile(): '%s'", x.file);
                             LOGGER.log(Level.SEVERE, errmsg, e);
                             x.exception = e;
                             ret = false;
@@ -1793,11 +1793,11 @@ public class IndexDatabase {
                             if (++tries <= 1) {
                                 continue;
                             }
-                            LOGGER.log(Level.WARNING, "No retry: {0}", x.file);
+                            LOGGER.log(Level.WARNING, "No retry: ''{0}''", x.file);
                             x.exception = e;
                             ret = false;
                         } catch (RuntimeException | IOException e) {
-                            String errmsg = String.format("ERROR addFile(): %s", x.file);
+                            String errmsg = String.format("ERROR addFile(): '%s'", x.file);
                             LOGGER.log(Level.WARNING, errmsg, e);
                             x.exception = e;
                             ret = false;
