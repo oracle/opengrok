@@ -44,8 +44,8 @@ public class Statistics {
   }
 
     private void logIt(Logger logger, Level logLevel, String msg, Duration duration) {
-        String timeStr = StringUtils.getReadableTime(duration.toMillis());
         if (logger.isLoggable(logLevel)) {
+            String timeStr = StringUtils.getReadableTime(duration.toMillis());
             logger.log(logLevel, String.format("%s (took %s)", msg, timeStr));
         }
     }
