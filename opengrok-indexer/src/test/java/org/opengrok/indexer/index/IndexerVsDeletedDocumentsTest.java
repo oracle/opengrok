@@ -145,9 +145,6 @@ class IndexerVsDeletedDocumentsTest {
             removedPaths.add(path);
             System.out.printf("Remove file: %s%n", path);
         }
-        @Override
-        public void fileUpdate(String path) {
-        }
 
         @Override
         public void fileAdded(String path, String analyzer) {
