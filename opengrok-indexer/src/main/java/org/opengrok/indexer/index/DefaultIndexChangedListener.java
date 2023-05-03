@@ -64,6 +64,8 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
             stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
                     "indexer.file.add.latency");
             statMap.remove(path, stat);
+
+            // The reporting updated the meter, however might not have emitted the log message.
             if (LOGGER.isLoggable(Level.FINEST)) {
                 return;
             }
