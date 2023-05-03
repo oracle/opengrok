@@ -15,4 +15,4 @@ Please make every effort to make most of your changes covered by tests.
 Feel free to add a Copyright line to the source files wehre you made non-trivial changes.
 
 For a pull request to be merged, we need the contributor to sign Oracle Contributor Agreement first.
-See http://www.oracle.com/technetwork/community/oca-486395.html for details.
+See https://oca.opensource.oracle.com/ for details.
