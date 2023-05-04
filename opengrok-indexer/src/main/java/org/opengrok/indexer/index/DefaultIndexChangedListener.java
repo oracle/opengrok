@@ -61,13 +61,13 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
     public void fileAdded(String path, String analyzer) {
         Statistics stat = statMap.get(path);
         if (stat != null) {
-            boolean ret = stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
+            boolean loggingDone = stat.report(LOGGER, Level.FINEST, String.format("Added: '%s' (%s)", path, analyzer),
                     "indexer.file.add.latency");
             statMap.remove(path, stat);
 
             // The report() updated the meter, however might not have emitted the log message.
             // In such case allow it to fall through to the below log() statement.
-            if (ret) {
+            if (loggingDone) {
                 return;
             }
         }
