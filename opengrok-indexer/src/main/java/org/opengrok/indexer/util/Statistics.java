@@ -43,11 +43,22 @@ public class Statistics {
       startTime = Instant.now();
   }
 
-    private void logIt(Logger logger, Level logLevel, String msg, Duration duration) {
+    /**
+     * Log a message with duration using provided logger if the supplied log level is active.
+     * @param logger logger instance
+     * @param logLevel log level
+     * @param msg message string
+     * @param duration duration to report
+     * @return whether logging was performed
+     */
+    private boolean logIt(Logger logger, Level logLevel, String msg, Duration duration) {
         if (logger.isLoggable(logLevel)) {
             String timeStr = StringUtils.getReadableTime(duration.toMillis());
             logger.log(logLevel, String.format("%s (took %s)", msg, timeStr));
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -55,9 +66,10 @@ public class Statistics {
      * @param logger logger instance
      * @param logLevel log level
      * @param msg message string
+     * @return whether logging was performed
      */
-    public void report(Logger logger, Level logLevel, String msg) {
-        logIt(logger, logLevel, msg, Duration.between(startTime, Instant.now()));
+    public boolean report(Logger logger, Level logLevel, String msg) {
+        return logIt(logger, logLevel, msg, Duration.between(startTime, Instant.now()));
     }
 
     /**
@@ -68,9 +80,10 @@ public class Statistics {
      * @param msg message string
      * @param meterName name of the meter
      * @see Metrics#getRegistry()
+     * @return whether logging was performed
      */
-    public void report(Logger logger, Level logLevel, String msg, String meterName) {
-        report(logger, logLevel, msg, meterName, new String[]{});
+    public boolean report(Logger logger, Level logLevel, String msg, String meterName) {
+        return report(logger, logLevel, msg, meterName, new String[]{});
     }
 
     /**
@@ -82,11 +95,12 @@ public class Statistics {
      * @param meterName name of the meter
      * @param tags array of tags for the meter
      * @see Metrics#getRegistry()
+     * @return whether logging was performed
      */
-    public void report(Logger logger, Level logLevel, String msg, String meterName, String[] tags) {
+    public boolean report(Logger logger, Level logLevel, String msg, String meterName, String[] tags) {
         Duration duration = Duration.between(startTime, Instant.now());
 
-        logIt(logger, logLevel, msg, duration);
+        boolean ret = logIt(logger, logLevel, msg, duration);
 
         MeterRegistry registry = Metrics.getRegistry();
         if (registry != null) {
@@ -95,6 +109,8 @@ public class Statistics {
                     register(registry).
                     record(duration);
         }
+
+        return ret;
     }
 
     /**
@@ -104,9 +120,10 @@ public class Statistics {
      * @param logger logger instance
      * @param msg message string
      * @param meterName name of the meter
+     * @return whether logging was performed
      */
-    public void report(Logger logger, String msg, String meterName) {
-        report(logger, Level.INFO, msg, meterName);
+    public boolean report(Logger logger, String msg, String meterName) {
+        return report(logger, Level.INFO, msg, meterName);
     }
 
     /**
@@ -114,8 +131,9 @@ public class Statistics {
      * The log level is {@code INFO}.
      * @param logger logger instance
      * @param msg message string
+     * @return whether logging was performed
      */
-    public void report(Logger logger, String msg) {
-        report(logger, Level.INFO, msg);
+    public boolean report(Logger logger, String msg) {
+        return report(logger, Level.INFO, msg);
     }
 }
