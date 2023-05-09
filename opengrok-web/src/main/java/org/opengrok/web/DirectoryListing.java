@@ -306,7 +306,7 @@ public class DirectoryListing {
                 printDateSize(out, child, entry.getDate(), dateFormatter);
                 printNumlines(out, entry, isDir);
                 printLoc(out, entry, isDir);
-                if (entriesWithPathDescriptionsPresent) {
+                if (entriesWithPathDescriptionsPresent && entry.getPathDescription() != null) {
                     out.write("<td>");
                     out.write(entry.getPathDescription());
                     out.write("</td>");

@@ -33,15 +33,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentMatchers;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.Project;
@@ -52,7 +59,9 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.EftarFile;
 import org.opengrok.indexer.web.EftarFileReader;
+import org.opengrok.indexer.web.PathDescription;
 import org.opengrok.indexer.web.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -65,6 +74,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -116,17 +126,20 @@ class DirectoryListingTest {
         long size;
         String readableSize;
         List<FileEntry> subdirs;
+        String pathDesc;
 
         FileEntry() {
         }
 
-        private FileEntry(String name, String href, Long lastModified, long size, List<FileEntry> subdirs) {
+        private FileEntry(String name, String href, Long lastModified, long size, List<FileEntry> subdirs,
+                          String pathDesc) {
             this.name = name;
             this.href = href;
             this.lastModified = lastModified;
             this.size = size;
             this.readableSize = Util.readableSize(size);
             this.subdirs = subdirs;
+            this.pathDesc = pathDesc;
         }
 
         /**
@@ -138,7 +151,7 @@ class DirectoryListingTest {
          * @param subdirs list of sub entries (may be empty)
          */
         FileEntry(String name, String href, long lastModified, List<FileEntry> subdirs) {
-            this(name, href, lastModified, DIRECTORY_INTERNAL_SIZE, subdirs);
+            this(name, href, lastModified, DIRECTORY_INTERNAL_SIZE, subdirs, null);
             assertNotNull(subdirs);
         }
 
@@ -151,7 +164,7 @@ class DirectoryListingTest {
          * @param size the desired size of the file on the disc
          */
         FileEntry(String name, String href, long lastModified, int size) {
-            this(name, href, lastModified, size, null);
+            this(name, href, lastModified, size, null, null);
         }
 
         @Override
@@ -164,6 +177,10 @@ class DirectoryListingTest {
 
             if ((ret = href.compareTo(fe.href)) != 0) {
                 return ret;
+            }
+
+            if (!Objects.equals(pathDesc, fe.pathDesc)) {
+                return -1;
             }
 
             if ((ret = Long.compare(lastModified, fe.lastModified)) != 0) {
@@ -323,12 +340,21 @@ class DirectoryListingTest {
         return val.getNodeValue().trim();
     }
 
+    private @Nullable String getStringOrNull(Node item) throws NumberFormatException {
+        Node val = item.getFirstChild();
+        if (val == null) {
+            return null;
+        }
+        assertEquals(Node.TEXT_NODE, val.getNodeType());
+        return val.getNodeValue().trim();
+    }
+
     /**
      * Validate this file-entry in the table.
      *
      * @param element The &lt;tr&gt; element
      */
-    private void validateEntry(Element element) throws Exception {
+    private void validateEntry(Element element, boolean usePathDescriptions) throws Exception {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
@@ -336,7 +362,12 @@ class DirectoryListingTest {
         if (len < 5) {
             return;
         }
-        assertEquals(7, len, "table <td> count");
+
+        if (usePathDescriptions) {
+            assertTrue(len >= 7, "table <td> count");
+        } else {
+            assertEquals(7, len, "table <td> count");
+        }
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
@@ -345,6 +376,10 @@ class DirectoryListingTest {
         entry.size = getIntSize(nl.item(4));
         if (entry.size == INVALID_SIZE) {
             entry.readableSize = getStringSize(nl.item(4));
+        }
+        // item(5) and item(6) are Lines# and LOC, respectively.
+        if (len > 7) {
+            entry.pathDesc = getStringOrNull(nl.item(7));
         }
 
         // Try to look it up in the list of files.
@@ -358,14 +393,23 @@ class DirectoryListingTest {
         throw new AssertionError("Could not find a match for: " + entry.name);
     }
 
+    private static Stream<Arguments> provideArgumentsForTestDirectoryListing() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(true, false),
+                Arguments.of(false, true),
+                Arguments.of(false, false)
+                );
+    }
+
     /**
      * Test directory listing.
      *
      * @throws java.lang.Exception if an error occurs while generating the list.
      */
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void testDirectoryListing(boolean useHistoryCache) throws Exception {
+    @MethodSource("provideArgumentsForTestDirectoryListing")
+    void testDirectoryListing(boolean useHistoryCache, boolean usePathDescriptions) throws Exception {
 
         env.setUseHistoryCacheForDirectoryListing(useHistoryCache);
 
@@ -382,10 +426,26 @@ class DirectoryListingTest {
                 env, true, true,
                 null, List.of(env.getPathRelativeToSourceRoot(directory)));
 
-        Document document = getDocumentWithDirectoryListing();
-
-        // Construct the expected directory entries.
-        setEntries(useHistoryCache);
+        Document document;
+        if (usePathDescriptions) {
+            File eftarFile = File.createTempFile("paths", ".eftar");
+            Set<PathDescription> descriptions = new HashSet<>();
+            descriptions.add(new PathDescription("/" + PROJECT_NAME + "/main.c",
+                    "Description for main.c"));
+            EftarFile ef = new EftarFile();
+            ef.create(descriptions, eftarFile.getAbsolutePath());
+            try (EftarFileReader eftarFileReader = new EftarFileReader(eftarFile)) {
+                document = getDocumentWithDirectoryListing(eftarFileReader);
+                // Construct the expected directory entries.
+                setEntries(useHistoryCache, eftarFileReader);
+                // Make sure there are some entries with path description.
+                assertTrue(entries.stream().anyMatch(e -> e.pathDesc != null));
+            }
+        } else {
+            document = getDocumentWithDirectoryListing(null);
+            // Construct the expected directory entries.
+            setEntries(useHistoryCache, null);
+        }
 
         // Verify the values of directory entries.
         NodeList nl = document.getElementsByTagName("tr");
@@ -394,11 +454,11 @@ class DirectoryListingTest {
         assertEquals(entries.size() + 2, len);
         // Skip the header and parent link.
         for (int i = 2; i < len; ++i) {
-            validateEntry((Element) nl.item(i));
+            validateEntry((Element) nl.item(i), usePathDescriptions);
         }
     }
 
-    private void setEntries(boolean useHistoryCache) throws Exception {
+    private void setEntries(boolean useHistoryCache, EftarFileReader eftarFileReader) throws Exception {
         File[] files = directory.listFiles();
         assertNotNull(files);
         entries = new ArrayList<>();
@@ -412,10 +472,18 @@ class DirectoryListingTest {
             // See the comment about always creating history cache in the caller.
             assertTrue(historyGuru.hasHistoryCacheForFile(file));
 
+            String pathDesc = null;
+            if (eftarFileReader != null) {
+                EftarFileReader.FNode parentFNode = eftarFileReader.getNode("/" + PROJECT_NAME);
+                if (parentFNode != null) {
+                    pathDesc = eftarFileReader.getChildTag(parentFNode, file.getName());
+                }
+            }
+
             if (useHistoryCache) {
                 if (file.isDirectory()) {
                     entries.add(new FileEntry(file.getName(), file.getName() + "/",
-                            NO_DATE, DIRECTORY_INTERNAL_SIZE, null));
+                            NO_DATE, DIRECTORY_INTERNAL_SIZE, null, pathDesc));
                 } else {
                     HistoryEntry historyEntry = historyGuru.getLastHistoryEntry(file, true, false);
                     assertNotNull(historyEntry);
@@ -424,7 +492,7 @@ class DirectoryListingTest {
                     String dateString = dateFormatter.format(historyEntry.getDate());
                     long lastModTime = dateFormatter.parse(dateString).getTime();
                     entries.add(new FileEntry(file.getName(), file.getName(),
-                            lastModTime, file.length(), null));
+                            lastModTime, file.length(), null, pathDesc));
                 }
             } else {
                 // The date string displayed in the UI has simple form so use the following
@@ -440,23 +508,31 @@ class DirectoryListingTest {
 
                 if (file.isDirectory()) {
                     entries.add(new FileEntry(file.getName(), file.getName() + "/",
-                            lastModTime, DIRECTORY_INTERNAL_SIZE, null));
+                            lastModTime, DIRECTORY_INTERNAL_SIZE, null, pathDesc));
                 } else {
                     entries.add(new FileEntry(file.getName(), file.getName(),
-                            lastModTime, file.length(), null));
+                            lastModTime, file.length(), null, pathDesc));
                 }
             }
         }
     }
 
-    private Document getDocumentWithDirectoryListing() throws Exception {
-        StringWriter out = new StringWriter();
+    private Document getDocumentWithDirectoryListing(@Nullable EftarFileReader eftarFileReader) throws Exception {
+        StringWriter outOrig = new StringWriter();
+        StringWriter out = spy(outOrig);
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
-        DirectoryListing instance = new DirectoryListing();
+        DirectoryListing instance;
+        if (eftarFileReader != null) {
+            instance = new DirectoryListing(eftarFileReader);
+        } else {
+            instance = new DirectoryListing();
+        }
         assertNotNull(directory.list());
         instance.listTo("ctx", directory, out, directory.getName(),
                 Arrays.asList(directory.list()));
+
+        verify(out, never()).write((String) ArgumentMatchers.isNull());
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         assertNotNull(factory, "DocumentBuilderFactory is null");
