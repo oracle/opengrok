@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -438,6 +439,8 @@ class DirectoryListingTest {
                 document = getDocumentWithDirectoryListing(eftarFileReader);
                 // Construct the expected directory entries.
                 setEntries(useHistoryCache, eftarFileReader);
+                // Make sure there are some entries with path description.
+                assertTrue(entries.stream().anyMatch(e -> e.pathDesc != null));
             }
         } else {
             document = getDocumentWithDirectoryListing(null);
