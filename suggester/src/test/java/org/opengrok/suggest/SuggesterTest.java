@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -105,7 +105,9 @@ class SuggesterTest {
     @Test
     void testNullSuggesterDir() {
         assertThrows(IllegalArgumentException.class,
-                () -> new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE, 1, registry));
+                () -> new Suggester(null, 10, Duration.ofMinutes(5), false,
+                        true, null, Integer.MAX_VALUE, 1, registry,
+                        false));
     }
 
     @Test
@@ -113,7 +115,9 @@ class SuggesterTest {
         assertThrows(IllegalArgumentException.class, () -> {
             Path tempFile = Files.createTempFile("opengrok", "test");
             try {
-                new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE, 1, registry);
+                new Suggester(tempFile.toFile(), 10, null, false,
+                        true, null, Integer.MAX_VALUE, 1, registry,
+                        false);
             } finally {
                 tempFile.toFile().delete();
             }
@@ -125,7 +129,8 @@ class SuggesterTest {
         assertThrows(IllegalArgumentException.class, () -> {
             Path tempFile = Files.createTempFile("opengrok", "test");
             try {
-                new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE, 1, registry);
+                new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false,
+                        true, null, Integer.MAX_VALUE, 1, registry, false);
             } finally {
                 tempFile.toFile().delete();
             }
@@ -143,7 +148,8 @@ class SuggesterTest {
         Path tempSuggesterDir = Files.createTempDirectory("opengrok");
 
         Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
-                true, Collections.singleton("test"), Integer.MAX_VALUE, Runtime.getRuntime().availableProcessors(), registry);
+                true, Collections.singleton("test"), Integer.MAX_VALUE,
+                Runtime.getRuntime().availableProcessors(), registry, false);
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
 
@@ -217,7 +223,7 @@ class SuggesterTest {
 
         t.s = new Suggester(t.suggesterDir.toFile(), 10, Duration.ofMinutes(1), false,
                 true, Collections.singleton("test"), Integer.MAX_VALUE,
-                Runtime.getRuntime().availableProcessors(), registry);
+                Runtime.getRuntime().availableProcessors(), registry, false);
 
         t.s.init(Collections.singleton(t.getNamedIndexDir()));
 

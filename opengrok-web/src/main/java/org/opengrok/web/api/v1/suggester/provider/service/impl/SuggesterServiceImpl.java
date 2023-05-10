@@ -320,7 +320,8 @@ public class SuggesterServiceImpl implements SuggesterService {
                 suggesterConfig.getAllowedFields(),
                 suggesterConfig.getTimeThreshold(),
                 rebuildParalleismLevel,
-                Metrics.getRegistry());
+                Metrics.getRegistry(),
+                env.isPrintProgress());
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());
