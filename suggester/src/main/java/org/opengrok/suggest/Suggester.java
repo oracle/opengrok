@@ -309,7 +309,7 @@ public final class Suggester implements Closeable {
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
-            try (Progress progress = new Progress(LOGGER, "suggester initialization", indexDirs.size(),
+            try (Progress progress = new Progress(LOGGER, "suggester rebuild", indexDirs.size(),
                     Level.INFO, isPrintProgress)) {
                 for (NamedIndexDir indexDir : indexDirs) {
                     SuggesterProjectData data = this.projectData.get(indexDir.name);
