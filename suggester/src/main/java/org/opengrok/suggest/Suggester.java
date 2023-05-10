@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -34,6 +34,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
+import org.opengrok.suggest.util.Progress;
 
 import java.io.Closeable;
 import java.io.File;
@@ -93,6 +94,7 @@ public final class Suggester implements Closeable {
     private final int timeThreshold;
 
     private final int rebuildParallelismLevel;
+    private final boolean isPrintProgress;
 
     private volatile boolean rebuilding;
     private volatile boolean terminating;
@@ -123,7 +125,9 @@ public final class Suggester implements Closeable {
      * @param allowedFields fields for which should the suggester be enabled,
      * if {@code null} then enabled for all fields
      * @param timeThreshold time in milliseconds after which the suggestions requests should time out
+     * @param rebuildParallelismLevel parallelism level for rebuild
      * @param registry meter registry
+     * @param isPrintProgress whether to report progress for initialization and rebuild
      */
     public Suggester(
             final File suggesterDir,
@@ -134,7 +138,8 @@ public final class Suggester implements Closeable {
             final Set<String> allowedFields,
             final int timeThreshold,
             final int rebuildParallelismLevel,
-            MeterRegistry registry) {
+            MeterRegistry registry,
+            boolean isPrintProgress) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
         }
@@ -152,6 +157,7 @@ public final class Suggester implements Closeable {
         this.allowedFields = new HashSet<>(allowedFields);
         this.timeThreshold = timeThreshold;
         this.rebuildParallelismLevel = rebuildParallelismLevel;
+        this.isPrintProgress = isPrintProgress;
 
         suggesterRebuildTimer = Timer.builder("suggester.rebuild.latency").
                 description("suggester rebuild latency").
@@ -180,17 +186,20 @@ public final class Suggester implements Closeable {
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
-            for (NamedIndexDir indexDir : luceneIndexes) {
-                if (terminating) {
-                    LOGGER.log(Level.INFO, "Terminating suggester initialization");
-                    return;
+            try (Progress progress = new Progress(LOGGER, "suggester initialization", luceneIndexes.size(),
+                    Level.INFO, isPrintProgress)) {
+                for (NamedIndexDir indexDir : luceneIndexes) {
+                    if (terminating) {
+                        LOGGER.log(Level.INFO, "Terminating suggester initialization");
+                        return;
+                    }
+                    submitInitIfIndexExists(executor, indexDir, progress);
                 }
-                submitInitIfIndexExists(executor, indexDir);
-            }
 
-            shutdownAndAwaitTermination(executor, start, suggesterInitTimer,
-                    "Suggester successfully initialized");
-            initDone.countDown();
+                shutdownAndAwaitTermination(executor, start, suggesterInitTimer,
+                        "Suggester successfully initialized");
+                initDone.countDown();
+            }
         }
     }
 
@@ -206,10 +215,11 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir) {
+    private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir,
+                                         Progress progress) {
         try {
             if (indexExists(indexDir.path)) {
-                executorService.submit(getInitRunnable(indexDir));
+                executorService.submit(getInitRunnable(indexDir, progress));
             } else {
                 LOGGER.log(Level.FINE, "Index in {0} directory does not exist, skipping...", indexDir);
             }
@@ -218,7 +228,7 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private Runnable getInitRunnable(final NamedIndexDir indexDir) {
+    private Runnable getInitRunnable(final NamedIndexDir indexDir, Progress progress) {
         return () -> {
             try {
                 if (terminating) {
@@ -239,6 +249,7 @@ public final class Suggester implements Closeable {
 
                 Duration d = Duration.between(start, Instant.now());
                 LOGGER.log(Level.FINE, "Finished initialization of {0}, took {1}", new Object[] {indexDir, d});
+                progress.increment();
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for %s", indexDir), e);
             }
@@ -300,17 +311,20 @@ public final class Suggester implements Closeable {
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
-            for (NamedIndexDir indexDir : indexDirs) {
-                SuggesterProjectData data = this.projectData.get(indexDir.name);
-                if (data != null) {
-                    executor.submit(getRebuildRunnable(data));
-                } else {
-                    submitInitIfIndexExists(executor, indexDir);
+            try (Progress progress = new Progress(LOGGER, "suggester rebuild", indexDirs.size(),
+                    Level.INFO, isPrintProgress)) {
+                for (NamedIndexDir indexDir : indexDirs) {
+                    SuggesterProjectData data = this.projectData.get(indexDir.name);
+                    if (data != null) {
+                        executor.submit(getRebuildRunnable(data, progress));
+                    } else {
+                        submitInitIfIndexExists(executor, indexDir, progress);
+                    }
                 }
-            }
 
-            shutdownAndAwaitTermination(executor, start, suggesterRebuildTimer,
-                    "Suggesters for " + indexDirs + " were successfully rebuilt");
+                shutdownAndAwaitTermination(executor, start, suggesterRebuildTimer,
+                        "Suggesters for " + indexDirs + " were successfully rebuilt");
+            }
         }
 
         rebuildLock.lock();
@@ -341,7 +355,7 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private Runnable getRebuildRunnable(final SuggesterProjectData data) {
+    private Runnable getRebuildRunnable(final SuggesterProjectData data, Progress progress) {
         return () -> {
             try {
                 if (terminating) {
@@ -354,6 +368,7 @@ public final class Suggester implements Closeable {
 
                 Duration d = Duration.between(start, Instant.now());
                 LOGGER.log(Level.FINE, "Rebuild of {0} finished, took {1}", new Object[] {data, d});
+                progress.increment();
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Could not rebuild suggester", e);
             }
