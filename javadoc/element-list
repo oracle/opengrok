@@ -66,6 +66,7 @@ org.opengrok.suggest.popular.impl.chronicle
 org.opengrok.suggest.query
 org.opengrok.suggest.query.customized
 org.opengrok.suggest.query.data
+org.opengrok.suggest.util
 org.opengrok.web
 org.opengrok.web.api
 org.opengrok.web.api.error
