@@ -254,8 +254,7 @@ public class Ctags implements Resettable {
             command.add("--langdef=rust"); // Lower-case if user-defined.
         }
 
-        // The following are not supported yet in Universal Ctags b13cb551
-        command.add("--kinddef-rust=C,const,Static\\ constants");
+        // The following are not supported yet in Universal Ctags 882b6c7
         command.add("--kinddef-rust=I,impl,Trait\\ implementation");
         command.add("--kinddef-rust=r,trait,Traits");
         command.add("--kinddef-rust=V,localVariable,Local\\ variables");
