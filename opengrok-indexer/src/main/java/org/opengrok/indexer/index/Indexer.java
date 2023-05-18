@@ -408,8 +408,6 @@ public final class Indexer {
             if (webappURI != null && subFiles.isEmpty()) {
                 getInstance().sendToConfigHost(env, webappURI);
             }
-
-            env.getIndexerParallelizer().bounce();
         } catch (ParseException e) {
             System.err.println("** " + e.getMessage());
             System.exit(1);
@@ -1129,65 +1127,66 @@ public final class Indexer {
         LOGGER.info("Starting indexing");
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
-        final CountDownLatch latch;
-        if (subFiles == null || subFiles.isEmpty()) {
-            latch = IndexDatabase.updateAll(progress);
-        } else {
-            List<IndexDatabase> dbs = new ArrayList<>();
+        try (IndexerParallelizer parallelizer = env.getIndexerParallelizer()) {
+            final CountDownLatch latch;
+            if (subFiles == null || subFiles.isEmpty()) {
+                latch = IndexDatabase.updateAll(progress);
+            } else {
+                List<IndexDatabase> dbs = new ArrayList<>();
 
-            for (String path : subFiles) {
-                Project project = Project.getProject(path);
-                if (project == null && env.hasProjects()) {
-                    LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
-                } else {
-                    IndexDatabase db;
-                    if (project == null) {
-                        db = new IndexDatabase();
+                for (String path : subFiles) {
+                    Project project = Project.getProject(path);
+                    if (project == null && env.hasProjects()) {
+                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
-                        db = new IndexDatabase(project);
-                    }
-                    int idx = dbs.indexOf(db);
-                    if (idx != -1) {
-                        db = dbs.get(idx);
-                    }
-
-                    if (db.addDirectory(path)) {
-                        if (idx == -1) {
-                            dbs.add(db);
+                        IndexDatabase db;
+                        if (project == null) {
+                            db = new IndexDatabase();
+                        } else {
+                            db = new IndexDatabase(project);
                         }
-                    } else {
-                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        int idx = dbs.indexOf(db);
+                        if (idx != -1) {
+                            db = dbs.get(idx);
+                        }
+
+                        if (db.addDirectory(path)) {
+                            if (idx == -1) {
+                                dbs.add(db);
+                            }
+                        } else {
+                            LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        }
                     }
+                }
+
+                latch = new CountDownLatch(dbs.size());
+                for (final IndexDatabase db : dbs) {
+                    db.addIndexChangedListener(progress);
+                    parallelizer.getFixedExecutor().submit(() -> {
+                        try {
+                            db.update();
+                        } catch (Throwable e) {
+                            LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                 }
             }
 
-            latch = new CountDownLatch(dbs.size());
-            for (final IndexDatabase db : dbs) {
-                db.addIndexChangedListener(progress);
-                parallelizer.getFixedExecutor().submit(() -> {
-                    try {
-                        db.update();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
-                    } finally {
-                        latch.countDown();
-                    }
-                });
+            // Wait forever for the executors to finish.
+            try {
+                LOGGER.info("Waiting for the executors to finish");
+                latch.await();
+            } catch (InterruptedException exp) {
+                LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
+                        " for executor to finish", exp);
             }
-        }
+            elapsed.report(LOGGER, "Done indexing data of all repositories", "indexer.repository.indexing");
 
-        // Wait forever for the executors to finish.
-        try {
-            LOGGER.info("Waiting for the executors to finish");
-            latch.await();
-        } catch (InterruptedException exp) {
-            LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
-                    " for executor to finish", exp);
+            CtagsUtil.deleteTempFiles();
         }
-        elapsed.report(LOGGER, "Done indexing data of all repositories", "indexer.repository.indexing");
-
-        CtagsUtil.deleteTempFiles();
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String host) {
