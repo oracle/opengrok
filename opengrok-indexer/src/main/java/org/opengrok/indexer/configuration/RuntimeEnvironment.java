@@ -1607,17 +1607,17 @@ public final class RuntimeEnvironment {
     /**
      * Write the current configuration to a socket and waits for the result.
      *
-     * @param host the host address to receive the configuration
+     * @param webAppURI                 webapp URI
      * @throws IOException              if an error occurs
      * @throws InterruptedException     on timeout
      * @throws IllegalArgumentException on invalid configuration
      */
-    public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
+    public void writeConfiguration(String webAppURI) throws IOException, InterruptedException, IllegalArgumentException {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
         try (Response response = ClientBuilder.newBuilder().
                 connectTimeout(getConnectTimeout(), TimeUnit.SECONDS).build()
-                .target(host)
+                .target(webAppURI)
                 .path("api")
                 .path("v1")
                 .path("configuration")

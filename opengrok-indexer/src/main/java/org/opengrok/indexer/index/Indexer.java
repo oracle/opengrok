@@ -1189,14 +1189,14 @@ public final class Indexer {
         }
     }
 
-    public void sendToConfigHost(RuntimeEnvironment env, String host) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
+    public void sendToConfigHost(RuntimeEnvironment env, String webAppURI) {
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}", webAppURI);
         try {
-            env.writeConfiguration(host);
+            env.writeConfiguration(webAppURI);
         } catch (IOException | IllegalArgumentException ex) {
             LOGGER.log(Level.SEVERE, String.format(
                     "Failed to send configuration to %s "
-                    + "(is web application server running with opengrok deployed?)", host), ex);
+                    + "(is web application server running with opengrok deployed?)", webAppURI), ex);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "interrupted while sending configuration");
         }
