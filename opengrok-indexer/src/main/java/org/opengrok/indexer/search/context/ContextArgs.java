@@ -78,7 +78,7 @@ public class ContextArgs {
      * is displayed to allow the user to view full match results.
      * <p>
      * (N.b. the value is used with Lucene {@code uhighlight}, and {@code short}
-     * is safer, though syntactically inconvenient, to avoid numeric overlow
+     * is safer, though syntactically inconvenient, to avoid numeric overflow
      * that may occur with {@code int} in that library.)
      * @return a positive value
      */

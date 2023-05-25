@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ */
+/*
+ * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -37,6 +40,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.uhighlight.PassageScorer;
 import org.apache.lucene.search.uhighlight.UHComponents;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.util.BytesRef;
@@ -323,5 +327,10 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             StandardCharsets.UTF_8.name());
         BufferedReader bufrdr = new BufferedReader(bsrdr);
         return ExpandTabsReader.wrap(bufrdr, tabSize);
+    }
+
+    @Override
+    protected PassageScorer getScorer(String field) {
+        return new OGPassageScorer();
     }
 }

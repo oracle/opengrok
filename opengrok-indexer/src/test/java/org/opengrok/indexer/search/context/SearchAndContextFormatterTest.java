@@ -100,7 +100,7 @@ class SearchAndContextFormatterTest {
         instance.setFile("bkexlib.cpp");
         int noHits = instance.search();
         assertTrue(noHits > 0, "noHits should be positive");
-        String[] frags = getFirstFragments(instance);
+        String[] frags = getFirstFragments(instance, env, new ContextArgs((short) 1, (short) 10));
         assertNotNull(frags, "getFirstFragments() should return something");
         assertEquals(1, frags.length, "frags should have one element");
 
@@ -113,9 +113,8 @@ class SearchAndContextFormatterTest {
         instance.destroy();
     }
 
-    private String[] getFirstFragments(SearchEngine instance) throws IOException {
-
-        ContextArgs args = new ContextArgs((short) 1, (short) 10);
+    static String[] getFirstFragments(SearchEngine instance, RuntimeEnvironment env, ContextArgs args)
+            throws IOException {
 
         /*
          * The following `anz' should go unused, but UnifiedHighlighter demands
