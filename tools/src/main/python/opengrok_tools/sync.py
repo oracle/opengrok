@@ -160,7 +160,7 @@ def main():
     parser.add_argument('-f', '--driveon', action='store_true', default=False,
                         help='continue command sequence processing even '
                         'if one of the commands requests break')
-    parser.add_argument('--nolock', action='store_false', default=True,
+    parser.add_argument('--nolock', action='store_true', default=False,
                         help='do not acquire lock that prevents multiple '
                         'instances from running')
     parser.add_argument('--api_timeout', type=int, default=3,
