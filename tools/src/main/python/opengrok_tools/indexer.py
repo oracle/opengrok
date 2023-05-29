@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -59,11 +59,48 @@ def get_project_from_options(options):
     return None
 
 
+def run_indexer(logger, args):
+    """
+    Run the indexer and wait for its completion.
+    :return: FAILURE_EXITVAL or SUCCESS_EXITVAL
+    """
+    if args.doprint is None:
+        logger.debug("Console logging is enabled by default")
+        doprint = True
+    else:
+        doprint = args.doprint[0]
+        logger.debug("Console logging: {}".format(doprint))
+
+    optional_args = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
+    options = args.options
+    if optional_args and len(optional_args) > 0 and options:
+        logger.debug("adding optional indexer arguments: {}".
+                     format(optional_args))
+        if options:
+            options.extend(optional_args.split())
+
+    indexer = Indexer(options, logger=logger, java=args.java,
+                      jar=args.jar, java_opts=args.java_opts,
+                      env_vars=args.environment, doprint=doprint)
+    indexer.execute()
+    ret = indexer.getretcode()
+    if ret is None or ret != SUCCESS_EXITVAL:
+        # The output is already printed thanks to 'doprint' above.
+        logger.error("Indexer command failed (return code {})".
+                     format(ret))
+        return FAILURE_EXITVAL
+
+    return SUCCESS_EXITVAL
+
+
 def main():
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper',
                                      parents=[get_java_parser()])
     parser.add_argument('-C', '--no_ctags_check', action='store_true',
                         default=False, help='Suppress checking for ctags')
+    parser.add_argument('--nolock', action='store_true', default=False,
+                        help='do not acquire lock that prevents multiple '
+                        'instances from running')
 
     try:
         args = parser.parse_args()
@@ -79,43 +116,22 @@ def main():
     if not args.no_ctags_check and not FindCtags(logger):
         logger.warning("Unable to determine Universal CTags command")
 
-    if args.doprint is None:
-        logger.debug("Console logging is enabled by default")
-        doprint = True
-    else:
-        doprint = args.doprint[0]
-        logger.debug("Console logging: {}".format(doprint))
-
     project = get_project_from_options(args.options)
     if project:
         lockfile = project + "-indexer"
     else:
         lockfile = os.path.basename(sys.argv[0])
 
-    lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
-    try:
-        with lock.acquire(timeout=0):
-            optional_args = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
-            options = args.options
-            if optional_args and len(optional_args) > 0 and options:
-                logger.debug("adding optional indexer arguments: {}".
-                             format(optional_args))
-                if options:
-                    options.extend(optional_args.split())
-
-            indexer = Indexer(options, logger=logger, java=args.java,
-                              jar=args.jar, java_opts=args.java_opts,
-                              env_vars=args.environment, doprint=doprint)
-            indexer.execute()
-            ret = indexer.getretcode()
-            if ret is None or ret != SUCCESS_EXITVAL:
-                # The output is already printed thanks to 'doprint' above.
-                logger.error("Indexer command failed (return code {})".
-                             format(ret))
-                return FAILURE_EXITVAL
-    except Timeout:
-        logger.warning("Already running, exiting.")
-        return FAILURE_EXITVAL
+    if args.nolock:
+        return run_indexer(logger, args)
+    else:
+        lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
+        try:
+            with lock.acquire(timeout=0):
+                return run_indexer(logger, args)
+        except Timeout:
+            logger.warning("Already running, exiting.")
+            return FAILURE_EXITVAL
 
 
 if __name__ == '__main__':
