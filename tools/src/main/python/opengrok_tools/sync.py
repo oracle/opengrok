@@ -27,6 +27,7 @@
 """
 
 import argparse
+import fnmatch
 import logging
 import multiprocessing
 import os
@@ -152,7 +153,8 @@ def main():
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('--ignore_project', nargs='+',
-                        help='do not process given project(s)')
+                        help='do not process given project(s). '
+                             'The project name can be fnmatch-like pattern')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
@@ -273,8 +275,15 @@ def main():
         ignored_projects.extend(args.ignore_project)
 
     if ignored_projects:
-        dirs_to_process = list(set(dirs_to_process) - set(ignored_projects))
-        logger.debug("Removing projects: {}".format(ignored_projects))
+        logger.debug("Removing projects based on the list: {}".format(ignored_projects))
+        filtered_dirs = set(dirs_to_process)
+        for dir in dirs_to_process:
+            for ignore_pattern in ignored_projects:
+                if fnmatch.fnmatchcase(dir, ignore_pattern):
+                    logger.debug(f"project {dir} matched {ignore_pattern} => removing")
+                    filtered_dirs.remove(dir)
+
+        dirs_to_process = list(filtered_dirs)
 
     logger.debug("directories to process: {}".format(dirs_to_process))
 
