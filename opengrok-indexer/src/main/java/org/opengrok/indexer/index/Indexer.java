@@ -422,6 +422,12 @@ public final class Indexer {
             System.exit(1);
         } finally {
             env.shutdownSearchExecutor();
+            /*
+             * Normally the IndexParallelizer is bounced (i.e. thread pools within are terminated)
+             * via auto-closed in doIndexerExecution(), however there are cases (--noIndex) that
+             * avoid that path, yet use the IndexParallelizer. So, bounce it here for a good measure.
+             */
+            env.getIndexerParallelizer().bounce();
             stats.report(LOGGER, "Indexer finished", "indexer.total");
         }
     }
@@ -1046,7 +1052,7 @@ public final class Indexer {
                                List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
-            throw new IndexerException("Could not find working Universal ctags. " +
+            throw new IndexerException("Could not find working Universal  . " +
                     "Pro tip: avoid installing Universal ctags from snap packages.");
         }
 
