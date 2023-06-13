@@ -27,7 +27,7 @@ version control histories of many source code management systems.
 Official page of the project is on:
 <https://oracle.github.io/opengrok/>
 
-## 2. OpenGrok install and setup
+## 2. Installation
 
 See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
@@ -58,3 +58,15 @@ Use the [Github Discussions](https://github.com/oracle/opengrok/discussions).
 ## 6. Run as container
 
 You can run OpenGrok as a Docker container as described [here](docker/README.md).
+
+## Contributing
+
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
+## License
+
+Copyright (c) 2006, 2023 Oracle and/or its affiliates.
