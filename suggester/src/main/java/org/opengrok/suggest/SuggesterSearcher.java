@@ -73,12 +73,15 @@ class SuggesterSearcher extends IndexSearcher {
 
     private final int numDocs;
 
+    private final IndexSearcher is;
+
     /**
      * @param reader reader of the index for which to provide suggestions
      * @param resultSize size of the results
      */
     SuggesterSearcher(final IndexReader reader, final int resultSize) {
         super(reader);
+        is = new IndexSearcher(reader);
         numDocs = reader.numDocs();
         this.resultSize = resultSize;
     }
@@ -105,7 +108,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         try {
             if (query != null) {
-                rewrittenQuery = query.rewrite(getIndexReader());
+                rewrittenQuery = query.rewrite(is);
             }
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not rewrite query", e);
