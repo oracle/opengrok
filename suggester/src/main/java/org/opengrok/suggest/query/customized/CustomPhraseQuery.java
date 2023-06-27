@@ -16,7 +16,6 @@
  */
 package org.opengrok.suggest.query.customized;
 
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
@@ -232,7 +231,7 @@ public class CustomPhraseQuery extends Query {
     }
 
     @Override
-    public Query rewrite(IndexReader reader) {
+    public Query rewrite(IndexSearcher indexSearcher) {
         if (terms.length == 0) {
             return new MatchAllDocsQuery();
         }
