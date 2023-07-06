@@ -4,7 +4,7 @@
 
 Built from official source: https://github.com/oracle/opengrok/releases/
 
-You can learn more about OpenGrok at http://oracle.github.io/opengrok/
+You can learn more about OpenGrok at https://oracle.github.io/opengrok/
 
 The container is available from DockerHub at https://hub.docker.com/r/opengrok/docker/
 
