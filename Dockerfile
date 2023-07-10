@@ -4,7 +4,7 @@
 FROM ubuntu:jammy as build
 
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install --no-install-recommends -y maven python3 python3-venv && \
+RUN apt-get update && apt-get install --no-install-recommends -y openjdk-11-jdk python3 python3-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y maven python3 p
 # Incremental docker builds will always resume after that, unless you update the pom
 WORKDIR /mvn
 COPY pom.xml /mvn/
+COPY mvnw /mvn/
+COPY .mvn /mvn/.mvn
 COPY opengrok-indexer/pom.xml /mvn/opengrok-indexer/
 COPY opengrok-web/pom.xml /mvn/opengrok-web/
 COPY plugins/pom.xml /mvn/plugins/
@@ -26,18 +28,18 @@ RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml && \
     touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies
-RUN mvn -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
+RUN ./mvnw -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
 
 # build the project
 COPY ./ /opengrok-source
 WORKDIR /opengrok-source
 
-RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
+RUN /mvn/mvnw -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
 # hadolint ignore=SC2012,DL4006
 RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
 # Store the version in a file so that the tools can report it.
-RUN mvn help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
+RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
 FROM tomcat:10.1-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
