@@ -34,6 +34,10 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+/**
+ * Tests for the {@link Groups} command.
+ */
 public class GroupsTest {
 
     Configuration cfg;
@@ -51,17 +55,18 @@ public class GroupsTest {
     @Test
     public void testDeleteGroup() {
         Map<String, Group> groups = cfg.getGroups();
+        int origSize = groups.size();
         invokeMethod("deleteGroup",
                 new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "random not existing group"});
 
-        assertEquals(6, groups.size());
+        assertEquals(origSize, groups.size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "apache"});
 
-        assertEquals(5, groups.size());
+        assertEquals(origSize - 1, groups.size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Map.class, String.class},
@@ -73,6 +78,7 @@ public class GroupsTest {
     @Test
     public void testAddGroup() {
         Map<String, Group> groups = cfg.getGroups();
+        int origSize = groups.size();
         Group grp = findGroup(groups, "new fantastic group");
         assertNull(grp);
 
@@ -80,7 +86,7 @@ public class GroupsTest {
                 new Class<?>[]{Map.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", null});
 
-        assertEquals(7, groups.size());
+        assertEquals(origSize + 1, groups.size());
 
         grp = findGroup(groups, "new fantastic group");
         assertNotNull(grp);
@@ -91,6 +97,7 @@ public class GroupsTest {
     @Test
     public void testAddGroupToParent() {
         Map<String, Group> groups = cfg.getGroups();
+        int origSize = groups.size();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
 
@@ -101,7 +108,7 @@ public class GroupsTest {
                 new Class<?>[]{Map.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", "apache"});
 
-        assertEquals(7, groups.size());
+        assertEquals(origSize + 1, groups.size());
 
         grp = findGroup(groups, "apache");
         assertNotNull(grp);
