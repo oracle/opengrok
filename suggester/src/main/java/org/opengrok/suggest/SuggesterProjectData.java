@@ -170,7 +170,8 @@ class SuggesterProjectData implements Closeable {
     private long getCommitVersion() throws IOException {
         List<IndexCommit> commits = DirectoryReader.listCommits(indexDir);
         if (commits.size() > 1) {
-            throw new IllegalStateException("IndexDeletionPolicy changed, normally only one commit should be stored");
+            throw new IllegalStateException(String.format("IndexDeletionPolicy changed, normally only one commit "
+                    + "should be stored. There are %d commits in '%s'", commits.size(), indexDir));
         }
         IndexCommit commit = commits.get(0);
 
@@ -283,7 +284,7 @@ class SuggesterProjectData implements Closeable {
         if (!suggesterDir.toFile().exists()) {
             boolean directoryCreated = suggesterDir.toFile().mkdirs();
             if (!directoryCreated) {
-                throw new IOException("Could not create suggester directory " + suggesterDir);
+                throw new IOException(String.format("Could not create suggester directory '%s'", suggesterDir));
             }
         }
     }
@@ -296,8 +297,8 @@ class SuggesterProjectData implements Closeable {
         for (String field : fields) {
             int numEntries = (int) lookups.get(field).getCount();
             if (numEntries == 0) {
-                logger.log(Level.FINE, "Skipping creation of ChronicleMap for field " + field + " in directory "
-                        + suggesterDir + " due to zero number of entries");
+                logger.log(Level.FINE, String.format("Skipping creation of ChronicleMap for field %s " +
+                        "in directory '%s' due to zero number of entries", field, suggesterDir));
                 continue;
             }
 
@@ -313,18 +314,18 @@ class SuggesterProjectData implements Closeable {
             try {
                 m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
             } catch (IllegalArgumentException e) {
-                logger.log(Level.SEVERE, "Could not create ChronicleMap for field " + field + " in directory "
-                        + suggesterDir + " due to invalid key size ("
-                        + conf.getAverageKeySize() + ") or number of entries: (" + conf.getEntries() + "):", e);
+                logger.log(Level.SEVERE, String.format("Could not create ChronicleMap for field %s in directory " +
+                        "'%s' due to invalid key size (%f) or number of entries: (%d):",
+                        field, suggesterDir,  conf.getAverageKeySize(), conf.getEntries()), e);
                 return;
             } catch (Throwable t) {
                 logger.log(Level.SEVERE,
-                        "Could not create ChronicleMap for field " + field + " in directory "
-                                + suggesterDir + " , most popular completion disabled, if you are using "
+                        String.format("Could not create ChronicleMap for field %s in directory '%s'"
+                                +  " , most popular completion disabled, if you are using "
                                 + "JDK9+ make sure to specify: "
                                 + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
                                 + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
-                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", t);
+                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", field, suggesterDir), t);
                 return;
             }
 
@@ -396,13 +397,13 @@ class SuggesterProjectData implements Closeable {
             try {
                 close();
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Could not close opened index directory {0}", indexDir);
+                logger.log(Level.WARNING, "Could not close opened index directory ''{0}''", indexDir);
             }
 
             try {
                 FileUtils.deleteDirectory(suggesterDir.toFile());
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Cannot remove suggester data: {0}", suggesterDir);
+                logger.log(Level.WARNING, "Cannot remove suggester data in ''{0}''", suggesterDir);
             }
         } finally {
             lock.writeLock().unlock();
@@ -439,7 +440,7 @@ class SuggesterProjectData implements Closeable {
         } else {
             gotLock = lock.readLock().tryLock();
             if (!gotLock) {
-                logger.log(Level.INFO, "Cannot increment search count for term {0} in {1}, rebuild in progress",
+                logger.log(Level.INFO, "Cannot increment search count for term {0} in ''{1}'', rebuild in progress",
                         new Object[]{term, suggesterDir});
                 return false;
             }
@@ -448,7 +449,7 @@ class SuggesterProjectData implements Closeable {
         try {
             WFSTCompletionLookup lookup = lookups.get(term.field());
             if (lookup == null || lookup.get(term.text()) == null) {
-                logger.log(Level.FINE, "Cannot increment search count for unknown term {0} in {1}",
+                logger.log(Level.FINE, "Cannot increment search count for unknown term {0} in ''{1}''",
                         new Object[]{term, suggesterDir});
                 return false; // unknown term
             }
@@ -648,5 +649,4 @@ class SuggesterProjectData implements Closeable {
             return last;
         }
     }
-
 }
