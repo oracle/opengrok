@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -29,12 +29,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+/**
+ * Tests for the {@link Groups} command.
+ */
 public class GroupsTest {
 
     Configuration cfg;
@@ -51,21 +54,22 @@ public class GroupsTest {
 
     @Test
     public void testDeleteGroup() {
-        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
+        Map<String, Group> groups = cfg.getGroups();
+        final int origSize = groups.size();
         invokeMethod("deleteGroup",
-                new Class<?>[]{Set.class, String.class},
+                new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "random not existing group"});
 
-        assertEquals(6, groups.size());
+        assertEquals(origSize, groups.size());
 
         invokeMethod("deleteGroup",
-                new Class<?>[]{Set.class, String.class},
+                new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "apache"});
 
-        assertEquals(5, groups.size());
+        assertEquals(origSize - 1, groups.size());
 
         invokeMethod("deleteGroup",
-                new Class<?>[]{Set.class, String.class},
+                new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "ctags"});
 
         assertEquals(1, groups.size());
@@ -73,15 +77,16 @@ public class GroupsTest {
 
     @Test
     public void testAddGroup() {
-        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
+        Map<String, Group> groups = cfg.getGroups();
+        final int origSize = groups.size();
         Group grp = findGroup(groups, "new fantastic group");
         assertNull(grp);
 
         invokeMethod("modifyGroup",
-                new Class<?>[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Map.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", null});
 
-        assertEquals(7, groups.size());
+        assertEquals(origSize + 1, groups.size());
 
         grp = findGroup(groups, "new fantastic group");
         assertNotNull(grp);
@@ -91,7 +96,8 @@ public class GroupsTest {
 
     @Test
     public void testAddGroupToParent() {
-        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
+        Map<String, Group> groups = cfg.getGroups();
+        final int origSize = groups.size();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
 
@@ -99,10 +105,10 @@ public class GroupsTest {
         assertNull(grp);
 
         invokeMethod("modifyGroup",
-                new Class<?>[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Map.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", "apache"});
 
-        assertEquals(7, groups.size());
+        assertEquals(origSize + 1, groups.size());
 
         grp = findGroup(groups, "apache");
         assertNotNull(grp);
@@ -118,14 +124,14 @@ public class GroupsTest {
 
     @Test
     public void testModifyGroup() {
-        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
+        Map<String, Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
         assertEquals(grp.getName(), "apache");
         assertEquals(grp.getPattern(), "apache-.*");
 
         invokeMethod("modifyGroup",
-                new Class<?>[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Map.class, String.class, String.class, String.class},
                 new Object[]{groups, "apache", "different pattern", null});
 
         grp = findGroup(groups, "apache");
@@ -146,18 +152,18 @@ public class GroupsTest {
             {"opengrok-12.0-rc3", 1},
             {"opengrk", 0}
         };
-        Set<Group> groups = new HashSet<>(cfg.getGroups().values());
+        Map<String, Group> groups = cfg.getGroups();
 
         for (Object[] test : tests) {
             testSingleMatch(groups, (int) test[1], (String) test[0]);
         }
     }
 
-    private void testSingleMatch(Set<Group> groups, int expectedlines, String match) {
+    private void testSingleMatch(Map<String, Group> groups, int expectedlines, String match) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(os);
         invokeMethod("matchGroups",
-                new Class<?>[]{PrintStream.class, Set.class, String.class},
+                new Class<?>[]{PrintStream.class, Map.class, String.class},
                 new Object[]{out, groups, match});
 
         String output = os.toString();
@@ -177,13 +183,8 @@ public class GroupsTest {
         }
     }
 
-    private Group findGroup(Set<Group> groups, String needle) {
-        for (Group g : groups) {
-            if (g.getName().equals(needle)) {
-                return g;
-            }
-        }
-        return null;
+    private Group findGroup(Map<String, Group> groups, String needle) {
+        return groups.get(needle);
     }
 
     static final String BASIC_CONFIGURATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

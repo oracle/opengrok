@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -70,7 +70,7 @@ class GroupsControllerTest extends OGKJerseyTest {
 
     @Test
     void emptyGroups() {
-        env.setGroups(new HashMap<>());
+        env.setGroups(new TreeMap<>());
         assertFalse(env.hasGroups());
         List<String> groups = listGroups();
         assertNotNull(groups);

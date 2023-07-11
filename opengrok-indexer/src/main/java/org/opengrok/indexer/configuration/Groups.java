@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.opengrok.indexer.util.Getopt;
 
@@ -152,7 +153,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            matchGroups(System.out, new HashSet<>(cfg.getGroups().values()), match);
+            matchGroups(System.out, cfg.getGroups(), match);
         } else if (empty) {
             // just list the groups
             if (parent != null || groupname != null || grouppattern != null) {
@@ -174,7 +175,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            deleteGroup(new HashSet<>(cfg.getGroups().values()), groupname);
+            deleteGroup(cfg.getGroups(), groupname);
             out = prepareOutput(outFile);
             printOut(list, cfg, out);
         } else if (groupname != null) {
@@ -182,7 +183,7 @@ public final class Groups {
                 grouppattern = "";
             }
             // perform insert/update. parent may be null
-            if (!modifyGroup(new HashSet<>(cfg.getGroups().values()), groupname, grouppattern, parent)) {
+            if (!modifyGroup(cfg.getGroups(), groupname, grouppattern, parent)) {
                 System.err.println("Parent group does not exist \"" + parent + "\"");
             } else {
                 out = prepareOutput(outFile);
@@ -207,9 +208,8 @@ public final class Groups {
      * Prints the configuration to the stream.
      *
      * @param list if true then it lists all available groups in configuration
-     * if @param out is different than stdout it also prints the current
+     * if @param out is different from stdout it also prints the current
      * configuration to that stream otherwise it prints the configuration to the
-     * @param out stream.
      * @param cfg configuration
      * @param out output stream
      */
@@ -261,7 +261,7 @@ public final class Groups {
      * @param groups set of groups
      * @param match project name
      */
-    private static void matchGroups(PrintStream out, Set<Group> groups, String match) {
+    private static void matchGroups(PrintStream out, Map<String, Group> groups, String match) {
         Project p = new Project(match);
 
         List<Group> matched = new ArrayList<>();
@@ -280,32 +280,32 @@ public final class Groups {
 
     /**
      * Adds a group into the xml tree.
-     *
+     * <p>
      * If group already exists, only the pattern is modified. Parent group can
      * be null, in that case a new group is inserted as a top level group.
-     *
+     * </p>
      * @param groups existing groups
-     * @param groupname new group name
-     * @param grouppattern new group pattern
+     * @param groupName new group name
+     * @param groupPattern new group pattern
      * @param parent parent
      * @return false if parent group was not found, true otherwise
      */
-    private static boolean modifyGroup(Set<Group> groups, String groupname, String grouppattern, String parent) {
-        Group g = new Group(groupname, grouppattern);
+    private static boolean modifyGroup(Map<String, Group> groups, String groupName, String groupPattern, String parent) {
+        Group g = new Group(groupName, groupPattern);
 
-        if (updateGroup(groups, groupname, grouppattern)) {
+        if (updateGroup(groups, groupName, groupPattern)) {
             return true;
         }
 
         if (parent != null) {
             if (insertToParent(groups, parent, g)) {
-                groups.add(g);
+                groups.put(groupName, g);
                 return true;
             }
             return false;
         }
 
-        groups.add(g);
+        groups.put(groupName, g);
         return true;
     }
 
@@ -315,12 +315,12 @@ public final class Groups {
      * @param groups existing groups
      * @param groupname group to remove
      */
-    private static void deleteGroup(Set<Group> groups, String groupname) {
-        for (Group g : groups) {
-            if (g.getName().equals(groupname)) {
-                groups.remove(g);
-                groups.removeAll(g.getDescendants());
-                return;
+    private static void deleteGroup(Map<String, Group> groups, String groupname) {
+        Group group = groups.get(groupname);
+        if (group != null) {
+            groups.remove(groupname);
+            for (Group g : group.getDescendants()) {
+                groups.remove(g.getName());
             }
         }
     }
@@ -370,8 +370,8 @@ public final class Groups {
      * traversed group
      * @return true if {@code walker} emits true for any of the groups; false
      */
-    private static boolean linearTraverseGroups(Set<Group> groups, Walker walker) {
-        for (Group g : groups) {
+    private static boolean linearTraverseGroups(Map<String, Group> groups, Walker walker) {
+        for (Group g : groups.values()) {
             if (walker.call(g)) {
                 return true;
             }
@@ -379,7 +379,7 @@ public final class Groups {
         return false;
     }
 
-    private static boolean insertToParent(Set<Group> groups, String parent, Group g) {
+    private static boolean insertToParent(Map<String, Group> groups, String parent, Group g) {
         return linearTraverseGroups(groups, x -> {
             if (x.getName().equals(parent)) {
                 x.addGroup(g);
@@ -394,7 +394,7 @@ public final class Groups {
         });
     }
 
-    private static boolean updateGroup(Set<Group> groups, String groupname, String grouppattern) {
+    private static boolean updateGroup(Map<String, Group> groups, String groupname, String grouppattern) {
         return linearTraverseGroups(groups, g -> {
             if (g.getName().equals(groupname)) {
                 g.setPattern(grouppattern);

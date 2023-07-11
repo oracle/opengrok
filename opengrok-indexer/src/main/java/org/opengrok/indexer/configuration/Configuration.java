@@ -576,7 +576,7 @@ public final class Configuration {
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
-        setGroups(new HashMap<>());
+        setGroups(new TreeMap<>());
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryBasedReindex(true);
