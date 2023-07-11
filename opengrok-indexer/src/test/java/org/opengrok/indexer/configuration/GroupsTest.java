@@ -55,7 +55,7 @@ public class GroupsTest {
     @Test
     public void testDeleteGroup() {
         Map<String, Group> groups = cfg.getGroups();
-        int origSize = groups.size();
+        final int origSize = groups.size();
         invokeMethod("deleteGroup",
                 new Class<?>[]{Map.class, String.class},
                 new Object[]{groups, "random not existing group"});
@@ -78,7 +78,7 @@ public class GroupsTest {
     @Test
     public void testAddGroup() {
         Map<String, Group> groups = cfg.getGroups();
-        int origSize = groups.size();
+        final int origSize = groups.size();
         Group grp = findGroup(groups, "new fantastic group");
         assertNull(grp);
 
@@ -97,7 +97,7 @@ public class GroupsTest {
     @Test
     public void testAddGroupToParent() {
         Map<String, Group> groups = cfg.getGroups();
-        int origSize = groups.size();
+        final int origSize = groups.size();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
 
