@@ -221,10 +221,10 @@ public final class Suggester implements Closeable {
             if (indexExists(indexDir.path)) {
                 executorService.submit(getInitRunnable(indexDir, progress));
             } else {
-                LOGGER.log(Level.FINE, "Index in {0} directory does not exist, skipping...", indexDir);
+                LOGGER.log(Level.FINE, "Index in ''{0}'' directory does not exist, skipping...", indexDir);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Could not check if index exists", e);
+            LOGGER.log(Level.WARNING, String.format("Could not check if index in '%s' exists", indexDir), e);
         }
     }
 
@@ -236,7 +236,7 @@ public final class Suggester implements Closeable {
                 }
 
                 Instant start = Instant.now();
-                LOGGER.log(Level.FINE, "Initializing {0}", indexDir);
+                LOGGER.log(Level.FINE, "Initializing suggester data in ''{0}''", indexDir);
 
                 SuggesterProjectData wfst = new SuggesterProjectData(FSDirectory.open(indexDir.path),
                         getSuggesterDir(indexDir.name), allowMostPopular, allowedFields);
@@ -248,10 +248,11 @@ public final class Suggester implements Closeable {
                 }
 
                 Duration d = Duration.between(start, Instant.now());
-                LOGGER.log(Level.FINE, "Finished initialization of {0}, took {1}", new Object[] {indexDir, d});
+                LOGGER.log(Level.FINE, "Finished initialization of suggester data in ''{0}'', took {1}",
+                        new Object[] {indexDir, d});
                 progress.increment();
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for %s", indexDir), e);
+                LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for '%s'", indexDir), e);
             }
         };
     }
@@ -830,5 +831,4 @@ public final class Suggester implements Closeable {
         private volatile boolean value;
 
     }
-
 }
