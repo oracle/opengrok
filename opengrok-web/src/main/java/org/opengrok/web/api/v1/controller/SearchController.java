@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -91,7 +91,8 @@ public class SearchController {
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
                     .collect(Collectors.groupingBy(Hit::getPath,
-                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno()), Collectors.toList())));
+                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno(), h.getTag()),
+                                    Collectors.toList())));
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
@@ -220,9 +221,12 @@ public class SearchController {
 
         private final String lineNumber;
 
-        private SearchHit(final String line, final String lineNumber) {
+        private final String tag;
+
+        private SearchHit(final String line, final String lineNumber, final String tag) {
             this.line = line;
             this.lineNumber = lineNumber;
+            this.tag = tag;
         }
 
         public String getLine() {
@@ -231,6 +235,10 @@ public class SearchController {
 
         public String getLineNumber() {
             return lineNumber;
+        }
+
+        public String getTag() {
+            return tag;
         }
     }
 

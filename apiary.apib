@@ -576,19 +576,32 @@ The repository path is relative to source root.
   + Body
   
             {
-              "time": 13,
-              "resultCount": 35,
+              "time": 1229,
+              "resultCount": 8,
               "startDocument": 0,
-              "endDocument": 0,
+              "endDocument": 7,
               "results": {
-                "/opengrok/test/org/opensolaris/opengrok/history/hg-export-renamed.txt": [{
-                  "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
-                  "lineNumber": "19"
-                },{
-                  "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
-                  "lineNumber":"29"
-                }]
+                "/onnv/usr/src/lib/libnisdb/db_pickle.cc": [
+                  {
+                    "line": "pickle_file::<b>transfer</b>(pptr p, bool_t (*f) (XDR*, pptr))",
+                    "lineNumber": "106",
+                    "tag": "function in pickle_file"
+                  }
+                ],
+                "/onnv/usr/src/cmd/pools/poold/com/sun/solaris/service/pools/Resource.java": [
+                  {
+                    "line": "\tpublic void <b>transfer</b>(Resource donor, long qty) throws PoolsException",
+                    "lineNumber": "93",
+                    "tag": "method in Resource"
+                  },
+                  {
+                    "line": "\tpublic void <b>transfer</b>(Resource donor, List components)",
+                    "lineNumber": "110",
+                    "tag": "method in Resource"
+                  }
+                ],
               }
+            }
 
 ## Suggester [/suggest{?projects,field,caret,full,defs,refs,path,hist,type}]
 
