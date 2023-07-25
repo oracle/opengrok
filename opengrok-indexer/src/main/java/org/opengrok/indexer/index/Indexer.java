@@ -1052,7 +1052,7 @@ public final class Indexer {
                                List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
-            throw new IndexerException("Could not find working Universal  . " +
+            throw new IndexerException("Could not find working Universal ctags. " +
                     "Pro tip: avoid installing Universal ctags from snap packages.");
         }
 
