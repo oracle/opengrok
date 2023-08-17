@@ -198,7 +198,7 @@ public class IncomingFilterTest {
 
     @Test
     public void localhostTest() throws Exception {
-        assertFilterDoesNotBlockAddress("127.0.0.1","test");
+        assertFilterDoesNotBlockAddress("127.0.0.1", "test");
     }
 
     private void assertFilterDoesNotBlockAddress(final String remoteAddr, final String url) throws Exception {
@@ -215,17 +215,17 @@ public class IncomingFilterTest {
 
     @Test
     public void localhostIPv6Test() throws Exception {
-        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1","test");
+        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1", "test");
     }
 
     @Test
     public void searchTest() throws Exception {
-        assertFilterDoesNotBlockAddress("10.0.0.1","search");
+        assertFilterDoesNotBlockAddress("10.0.0.1", "search");
     }
 
     @Test
     public void systemPingRemoteWithoutTokenTest() throws Exception {
-        assertFilterDoesNotBlockAddress("10.0.0.1","system/ping");
+        assertFilterDoesNotBlockAddress("10.0.0.1", "system/ping");
     }
 
     @Test
