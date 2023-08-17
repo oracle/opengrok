@@ -47,8 +47,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Path("/system")
+@Path(SystemController.PATH)
 public class SystemController {
+
+    public static final String PATH = "system";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
