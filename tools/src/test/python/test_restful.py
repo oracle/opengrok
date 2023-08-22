@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pytest
@@ -30,7 +30,7 @@ from requests.exceptions import HTTPError
 
 from mockito import verify, patch, mock
 
-from opengrok_tools.utils.restful import call_rest_api,\
+from opengrok_tools.utils.restful import call_rest_api, \
     CONTENT_TYPE, APPLICATION_JSON, do_api_call
 from opengrok_tools.utils.commandsequence import ApiCall
 

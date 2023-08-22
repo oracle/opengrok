@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 import os
 import tempfile
@@ -37,5 +37,5 @@ def test_read_config_empty_yaml():
     res = read_config(mock(spec=logging.Logger, strict=False), tmpf.name)
     os.remove(tmpf.name)
     assert res is not None
-    assert type(res) == dict
+    assert type(res) is dict
     assert len(res) == 0
