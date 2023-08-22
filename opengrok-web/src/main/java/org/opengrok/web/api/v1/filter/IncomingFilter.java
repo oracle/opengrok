@@ -39,6 +39,7 @@ import org.opengrok.web.api.v1.controller.FileController;
 import org.opengrok.web.api.v1.controller.HistoryController;
 import org.opengrok.web.api.v1.controller.SearchController;
 import org.opengrok.web.api.v1.controller.SuggesterController;
+import org.opengrok.web.api.v1.controller.SystemController;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -70,7 +71,8 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
      */
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
             SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config",
-            HistoryController.PATH, FileController.PATH, AnnotationController.PATH));
+            HistoryController.PATH, FileController.PATH, AnnotationController.PATH,
+            SystemController.PATH + "/ping"));
 
     @Context
     private HttpServletRequest request;
@@ -136,7 +138,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
         }
 
         if (allowedPaths.contains(path)) {
-            LOGGER.log(Level.FINEST, "allowing request to {0} based on whitelisted path", path);
+            LOGGER.log(Level.FINEST, "allowing request to {0} based on allow listed path", path);
             return;
         }
 

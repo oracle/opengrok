@@ -198,13 +198,13 @@ public class IncomingFilterTest {
 
     @Test
     public void localhostTest() throws Exception {
-        assertFilterDoesNotBlockAddress("127.0.0.1");
+        assertFilterDoesNotBlockAddress("127.0.0.1", "test");
     }
 
-    private void assertFilterDoesNotBlockAddress(final String remoteAddr) throws Exception {
+    private void assertFilterDoesNotBlockAddress(final String remoteAddr, final String url) throws Exception {
         IncomingFilter filter = mockWithRemoteAddress(remoteAddr);
 
-        ContainerRequestContext context = mockContainerRequestContext("test");
+        ContainerRequestContext context = mockContainerRequestContext(url);
 
         ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
 
@@ -215,19 +215,32 @@ public class IncomingFilterTest {
 
     @Test
     public void localhostIPv6Test() throws Exception {
-        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1");
+        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1", "test");
     }
 
     @Test
     public void searchTest() throws Exception {
-        IncomingFilter filter = mockWithRemoteAddress("10.0.0.1");
+        assertFilterDoesNotBlockAddress("10.0.0.1", "search");
+    }
 
-        ContainerRequestContext context = mockContainerRequestContext("search");
+    @Test
+    public void systemPingRemoteWithoutTokenTest() throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", "system/ping");
+    }
+
+    @Test
+    public void systemPathDescWithoutTokenTest() throws Exception {
+
+        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
+
+        ContainerRequestContext context = mockContainerRequestContext("system/pathdesc");
 
         ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
 
         filter.filter(context);
 
-        verify(context, never()).abortWith(captor.capture());
+        verify(context).abortWith(captor.capture());
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
     }
 }
