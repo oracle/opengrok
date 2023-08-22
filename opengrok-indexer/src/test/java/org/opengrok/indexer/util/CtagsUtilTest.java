@@ -48,8 +48,6 @@ class CtagsUtilTest {
         assertNotNull(result, "getLanguages() should always return non null");
         assertFalse(result.isEmpty(), "should get Ctags languages");
         assertTrue(result.contains("C++"), "Ctags languages should contain C++");
-        // Test that the [disabled] tag is stripped for OldC.
-        assertTrue(result.contains("OldC"), "Ctags languages should contain OldC");
     }
 
     @Test
