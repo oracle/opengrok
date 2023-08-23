@@ -99,12 +99,12 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
-        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, subFiles);
+        IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, subFiles);
     }
 
     @Test
     void testIndexVersionNoIndex() {
-        IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
+        IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
     }
 
     @Test
@@ -138,7 +138,7 @@ class IndexCheckTest {
         configuration.setDataRoot(oldIndexDataDir.toString());
         env.setProjectsEnabled(false);
         configuration.setProjectsEnabled(false);
-        assertFalse(IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
+        assertFalse(IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
 
         assertThrows(IndexCheck.IndexVersionException.class, () ->
                 IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION));
@@ -148,5 +148,20 @@ class IndexCheckTest {
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
         IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION);
+    }
+
+    /**
+     * Check that {@link IOException} thrown during index check is treated as success.
+     */
+    @Test
+    void testIndexCheckIOException() {
+        configuration.setDataRoot("/nonexistent");
+        configuration.setProjectsEnabled(false);
+
+        IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
+        assertThrows(IOException.class, () -> IndexCheck.checkDir(Path.of(configuration.getDataRoot()), mode));
+        // Assumes that IndexCheck.checkDir() is called via IndexCheck.isOkay() and the latter method
+        // infers the result from the call.
+        assertTrue(IndexCheck.isOkay(configuration, mode, new ArrayList<>()));
     }
 }
