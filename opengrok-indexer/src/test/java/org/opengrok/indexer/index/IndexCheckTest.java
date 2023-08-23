@@ -43,6 +43,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -152,10 +154,15 @@ class IndexCheckTest {
 
     /**
      * Check that {@link IOException} thrown during index check is treated as success.
+     * Runs only on Unix systems because the {@link IOException} is not thrown on Windows
+     * for non-existent directories.
      */
     @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
     void testIndexCheckIOException() {
+        // This is set to simulate IOException in IndexCheck.checkDir().
         configuration.setDataRoot("/nonexistent");
+
         configuration.setProjectsEnabled(false);
 
         IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
