@@ -173,7 +173,7 @@ public class IndexCheck {
     private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode, String projectName) {
         try {
             LOGGER.log(Level.INFO, "Checking index in ''{0}''", indexPath);
-            checkDir(indexPath, mode, projectName);
+            checkDir(indexPath, mode);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
             return 1;
@@ -188,12 +188,11 @@ public class IndexCheck {
      * in the Lucene segment file were done with the same version.
      *
      * @param indexPath directory with index to check
-     * @param mode index check mode
-     * @param projectName name of the project, can be empty
-     * @throws IOException if the directory cannot be opened
+     * @param mode      index check mode
+     * @throws IOException           if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
      */
-    public static void checkDir(Path indexPath, IndexCheckMode mode, String projectName)
+    public static void checkDir(Path indexPath, IndexCheckMode mode)
             throws IndexVersionException, IndexDocumentException, IOException {
 
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
@@ -293,8 +292,7 @@ public class IndexCheck {
         }
     }
 
-    private static void checkDuplicateDocuments(Path indexPath)
-            throws IOException, IndexDocumentException {
+    private static void checkDuplicateDocuments(Path indexPath) throws IOException, IndexDocumentException {
 
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
         Statistics stat = new Statistics();
