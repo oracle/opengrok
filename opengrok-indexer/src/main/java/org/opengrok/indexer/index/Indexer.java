@@ -268,7 +268,7 @@ public final class Indexer {
                     System.exit(1);
                 }
 
-                if (!IndexCheck.check(cfg, indexCheckMode, subFileArgs)) {
+                if (!IndexCheck.isOkay(cfg, indexCheckMode, subFileArgs)) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
                             (!subFilePaths.isEmpty() ? "data for projects " + String.join(",", subFilePaths) :

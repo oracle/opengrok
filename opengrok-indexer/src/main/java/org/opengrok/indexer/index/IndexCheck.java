@@ -137,8 +137,8 @@ public class IndexCheck {
      *                     on whether projects are enabled in the configuration.
      * @return true on success, false on failure
      */
-    public static boolean check(@NotNull Configuration configuration, IndexCheckMode mode,
-                                Collection<String> projectNames) {
+    public static boolean isOkay(@NotNull Configuration configuration, IndexCheckMode mode,
+                                 Collection<String> projectNames) {
 
         if (mode.equals(IndexCheckMode.NO_CHECK)) {
             LOGGER.log(Level.WARNING, "no index check mode selected");
@@ -151,15 +151,15 @@ public class IndexCheck {
         if (!projectNames.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : projectNames) {
-                ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
+                ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode);
             }
         } else {
             if (configuration.isProjectsEnabled()) {
                 for (String projectName : configuration.getProjects().keySet()) {
-                    ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode, projectName);
+                    ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode);
                 }
             } else {
-                ret |= checkDirNoExceptions(indexRoot, mode, "");
+                ret |= checkDirNoExceptions(indexRoot, mode);
             }
         }
 
@@ -170,10 +170,13 @@ public class IndexCheck {
      * @param indexPath directory with index
      * @return 0 on success, 1 on failure
      */
-    private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode, String projectName) {
+    private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode) {
         try {
             LOGGER.log(Level.INFO, "Checking index in ''{0}''", indexPath);
             checkDir(indexPath, mode);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Could not perform index check for directory '%s'", indexPath), e);
+            return 0;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
             return 1;
@@ -191,6 +194,7 @@ public class IndexCheck {
      * @param mode      index check mode
      * @throws IOException           if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
+     * @throws IndexDocumentException if there are duplicate documents in the index
      */
     public static void checkDir(Path indexPath, IndexCheckMode mode)
             throws IndexVersionException, IndexDocumentException, IOException {
