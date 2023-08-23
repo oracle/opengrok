@@ -141,12 +141,12 @@ class IndexCheckTest {
         assertFalse(IndexCheck.check(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
 
         assertThrows(IndexCheck.IndexVersionException.class, () ->
-                IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION, ""));
+                IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION));
     }
 
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION, "");
+        IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION);
     }
 }
