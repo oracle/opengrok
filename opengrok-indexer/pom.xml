@@ -236,7 +236,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>5.12.0.202106070339-r</version>
+            <version>6.6.1.202309021850-r</version>
         </dependency>
         <dependency>
             <groupId>io.github.g00fy2</groupId>
