@@ -23,7 +23,7 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets YAML symbols - ignores comments, strings, keywords
  */
 
 package org.opengrok.indexer.analysis.yaml;
