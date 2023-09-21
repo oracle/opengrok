@@ -59,7 +59,7 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
     unzip inotify-tools python3 python3-pip \
-    python3-venv python3-setuptools openssh-client
+    python3-venv python3-setuptools openssh-client libyaml-dev
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
