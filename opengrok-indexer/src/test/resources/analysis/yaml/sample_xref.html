@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<script type="text/javascript">/* <![CDATA[ */
+function get_sym_list(){return [];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><a href="/source/s?full=name">name</a>: Check Apiary blueprint
+<a class="l" name="2" href="#2">2</a>
+<a class="l" name="3" href="#3">3</a><a href="/source/s?full=on">on</a>:
+<a class="l" name="4" href="#4">4</a>  <a href="/source/s?full=push">push</a>:
+<a class="l" name="5" href="#5">5</a>    <a href="/source/s?full=paths">paths</a>:
+<a class="l" name="6" href="#6">6</a>      - &amp;<a class="d" name="apiarypath"/><a href="/source/s?refs=apiarypath" class="d intelliWindow-symbol" data-definition-place="def">apiarypath</a> apiary.apib
+<a class="l" name="7" href="#7">7</a>    <a href="/source/s?full=branches">branches</a>:
+<a class="l" name="8" href="#8">8</a>      - master
+<a class="l" name="9" href="#9">9</a>  <a href="/source/s?full=pull_request">pull_request</a>:
+<a class="hl" name="10" href="#10">10</a>    <a href="/source/s?full=paths">paths</a>:
+<a class="l" name="11" href="#11">11</a>      - *<a class="d intelliWindow-symbol" href="#apiarypath" data-definition-place="defined-in-file">apiarypath</a>
+<a class="l" name="12" href="#12">12</a>
+<a class="l" name="13" href="#13">13</a><a href="/source/s?full=jobs">jobs</a>:
+<a class="l" name="14" href="#14">14</a>  <a href="/source/s?full=ubuntu">ubuntu</a>:
+<a class="l" name="15" href="#15">15</a>    <a href="/source/s?full=name">name</a>: Ubuntu
+<a class="l" name="16" href="#16">16</a>    <a href="/source/s?full=runs%5C-on">runs-on</a>: ubuntu-latest
+<a class="l" name="17" href="#17">17</a>    <a href="/source/s?full=steps">steps</a>:
+<a class="l" name="18" href="#18">18</a>      - name: Checkout master branch
+<a class="l" name="19" href="#19">19</a>        <a href="/source/s?full=uses">uses</a>: actions/checkout@v2
+<a class="hl" name="20" href="#20">20</a>      - name: Install drafter
+<a class="l" name="21" href="#21">21</a>        <a href="/source/s?full=run">run</a>: npm install drafter
+<a class="l" name="22" href="#22">22</a>      - name: Build
+<a class="l" name="23" href="#23">23</a>        <a href="/source/s?full=run">run</a>: node dev/parse.js
+<a class="l" name="24" href="#24">24</a></body>
+</html>
