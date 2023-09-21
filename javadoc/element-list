@@ -47,6 +47,7 @@ org.opengrok.indexer.analysis.typescript
 org.opengrok.indexer.analysis.uue
 org.opengrok.indexer.analysis.vb
 org.opengrok.indexer.analysis.verilog
+org.opengrok.indexer.analysis.yaml
 org.opengrok.indexer.authorization
 org.opengrok.indexer.configuration
 org.opengrok.indexer.framework
