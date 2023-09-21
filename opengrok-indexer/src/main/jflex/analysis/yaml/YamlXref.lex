@@ -23,7 +23,7 @@
  */
 
 /*
- * Cross reference a Java file
+ * Cross reference a YAML file
  */
 
 package org.opengrok.indexer.analysis.yaml;
