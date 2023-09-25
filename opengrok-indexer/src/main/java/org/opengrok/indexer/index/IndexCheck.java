@@ -215,7 +215,7 @@ public class IndexCheck {
      * @throws IndexDocumentException if there are duplicate documents in the index
      */
     public static void checkDir(Path sourcePath, Path indexPath, IndexCheckMode mode)
-            throws IndexVersionException, IndexDocumentException, IOException, ParseException, ClassNotFoundException {
+            throws IndexVersionException, IndexDocumentException, IOException {
 
         switch (mode) {
             case VERSION:
