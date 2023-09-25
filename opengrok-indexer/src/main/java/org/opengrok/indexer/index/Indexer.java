@@ -261,24 +261,6 @@ public final class Indexer {
                 }
             }
 
-            // Check index(es). Exit with return code upon failure.
-            if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
-                if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
-                    System.err.println("Empty data root in configuration");
-                    System.exit(1);
-                }
-
-                if (!IndexCheck.isOkay(cfg, indexCheckMode, subFileArgs)) {
-                    System.err.printf("Index check failed%n");
-                    System.err.print("You might want to remove " +
-                            (!subFilePaths.isEmpty() ? "data for projects " + String.join(",", subFilePaths) :
-                                    "all data") + " under the data root and reindex\n");
-                    System.exit(1);
-                }
-
-                System.exit(0);
-            }
-
             // Set updated configuration in RuntimeEnvironment. This is called so that the tunables set
             // via command line options are available.
             env.setConfiguration(cfg, subFilePaths, CommandTimeoutType.INDEXER);
@@ -287,6 +269,31 @@ public final class Indexer {
             // This changes env so is called after the setConfiguration()
             // call above.
             RepositoryFactory.initializeIgnoredNames(env);
+
+            // Check index(es). Exit with return code upon failure.
+            if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
+                if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
+                    System.err.println("Empty data root in configuration");
+                    System.exit(1);
+                }
+
+                try {
+                    if (!IndexCheck.isOkay(cfg, indexCheckMode, subFileArgs)) {
+                        System.err.printf("Index check failed%n");
+                        System.err.print("You might want to remove " +
+                                (!subFilePaths.isEmpty() ? "data for projects " + String.join(",", subFilePaths) :
+                                        "all data") + " under the data root and reindex\n");
+                        System.exit(1);
+                    }
+                } catch (IOException e) {
+                    // Use separate return code for cases where the index could not be read.
+                    // This avoids problems with wiping out the index based on the check.
+                    LOGGER.log(Level.WARNING, String.format("Could not perform index check for '%s'", subFileArgs), e);
+                    System.exit(2);
+                }
+
+                System.exit(0);
+            }
 
             if (bareConfig) {
                 // Set updated configuration in RuntimeEnvironment.
@@ -577,12 +584,14 @@ public final class Indexer {
 
             parser.on("--checkIndex", "=[mode]",
                     "Check index, exit with 0 on success,",
-                    "with 1 on failure.",
-                    "With no mode specified, performs basic index check.",
+                    "with 1 on legitimate failure, 2 on I/O error.",
                     "Has to be used with the -R option to read the configuration ",
                     "saved by previous indexer run via the -W option.",
-                    "Selectable modes (performs given test on top of the basic check):",
-                    "  documents - checks duplicate documents in the index"
+                    "Selectable modes (exclusive):",
+                    "  version - checks document version against indexer version",
+                    "  documents - checks duplicate documents in the index",
+                    "  definitions - cross check document definitions against file content",
+                    "With no mode specified, performs the version check."
                     ).execute(v -> {
                         if (!gotReadonlyConfiguration) {
                             die("option --checkIndex requires -R");
@@ -591,10 +600,18 @@ public final class Indexer {
                         indexCheckMode = IndexCheck.IndexCheckMode.VERSION;
                         String mode = (String) v;
                         if (mode != null && !mode.isEmpty()) {
-                            if (mode.equals("documents")) {
-                                indexCheckMode = IndexCheck.IndexCheckMode.DOCUMENTS;
-                            } else {
-                                die("mode '" + mode + "' is not valid.");
+                            switch (mode) {
+                                case "documents":
+                                    indexCheckMode = IndexCheck.IndexCheckMode.DOCUMENTS;
+                                    break;
+                                case "definitions":
+                                    indexCheckMode = IndexCheck.IndexCheckMode.DEFINITIONS;
+                                    break;
+                                case "version":
+                                    break;
+                                default:
+                                    die("mode '" + mode + "' is not valid.");
+                                    break;
                             }
                         }
                     }
@@ -657,7 +674,7 @@ public final class Indexer {
                             "projects to be enabled. This should be much faster than the ",
                             "classic way of traversing the directory structure. ",
                             "The default is on. If you need to e.g. index files untracked by ",
-                            "SCM, set this to off. Currently works only for Git.",
+                            "SCM, set this to off. Currently works only for Git and Mercurial.",
                             "All repositories in a project need to support this in order ",
                             "to be indexed using history.").
                     execute(v -> cfg.setHistoryBasedReindex((Boolean) v));
