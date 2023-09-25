@@ -90,9 +90,9 @@ class IndexCheckTest {
     }
 
     /**
-     * Generate index(es) and check version.
+     * Generate index(es) with history enabled, check the index.
      */
-    private void testIndexVersion(boolean projectsEnabled, List<String> subFiles) throws Exception {
+    private void testIndex(boolean projectsEnabled, List<String> subFiles, IndexCheck.IndexCheckMode mode) throws Exception {
         env.setHistoryEnabled(false);
         configuration.setHistoryEnabled(false);
         env.setProjectsEnabled(projectsEnabled);
@@ -101,27 +101,27 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
-        IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, subFiles);
+        IndexCheck.isOkay(configuration, mode, subFiles);
     }
 
     @Test
-    void testIndexVersionNoIndex() {
+    void testIndexVersionNoIndex() throws Exception {
         IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
     }
 
     @Test
     void testIndexVersionProjects() throws Exception {
-        testIndexVersion(true, new ArrayList<>());
+        testIndex(true, new ArrayList<>(), IndexCheck.IndexCheckMode.VERSION);
     }
 
     @Test
     void testIndexVersionSelectedProjects() throws Exception {
-        testIndexVersion(true, Arrays.asList("mercurial", "git"));
+        testIndex(true, Arrays.asList("mercurial", "git"), IndexCheck.IndexCheckMode.VERSION);
     }
 
     @Test
     void testIndexVersionNoProjects() throws Exception {
-        testIndexVersion(false, new ArrayList<>());
+        testIndex(false, new ArrayList<>(), IndexCheck.IndexCheckMode.VERSION);
     }
 
     @Test
@@ -143,32 +143,43 @@ class IndexCheckTest {
         assertFalse(IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
 
         assertThrows(IndexCheck.IndexVersionException.class, () ->
-                IndexCheck.checkDir(indexPath, IndexCheck.IndexCheckMode.VERSION));
+                IndexCheck.checkDir(Path.of(env.getSourceRootPath()), indexPath, IndexCheck.IndexCheckMode.VERSION));
     }
 
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
         assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(tempDir, IndexCheck.IndexCheckMode.VERSION);
+        IndexCheck.checkDir(null, tempDir, IndexCheck.IndexCheckMode.VERSION);
     }
 
     /**
-     * Check that {@link IOException} thrown during index check is treated as success.
+     * Check that {@link IOException} thrown during index check is propagated further.
      * Runs only on Unix systems because the {@link IOException} is not thrown on Windows
      * for non-existent directories.
      */
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC})
-    void testIndexCheckIOException() {
+    void testIndexCheckIOException() throws Exception {
         // This is set to simulate IOException in IndexCheck.checkDir().
         configuration.setDataRoot("/nonexistent");
 
         configuration.setProjectsEnabled(false);
 
         IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
-        assertThrows(IOException.class, () -> IndexCheck.checkDir(Path.of(configuration.getDataRoot()), mode));
+        assertThrows(IOException.class, () -> IndexCheck.checkDir(Path.of(configuration.getSourceRoot()),
+                Path.of(configuration.getDataRoot()), mode));
         // Assumes that IndexCheck.checkDir() is called via IndexCheck.isOkay() and the latter method
         // infers the result from the call.
-        assertTrue(IndexCheck.isOkay(configuration, mode, new ArrayList<>()));
+        assertThrows(IOException.class, () -> IndexCheck.isOkay(configuration, mode, new ArrayList<>()));
+    }
+
+    @Test
+    void testIndexDocumentsCheckProjects() throws Exception {
+        testIndex(true, Arrays.asList("mercurial", "git"), IndexCheck.IndexCheckMode.DEFINITIONS);
+    }
+
+    @Test
+    void testIndexDocumentsCheckNoProjects() throws Exception {
+        testIndex(false, new ArrayList<>(), IndexCheck.IndexCheckMode.DEFINITIONS);
     }
 }

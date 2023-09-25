@@ -157,7 +157,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
                     executor.submit(() -> {
                         try {
-                            IndexCheck.checkDir(Path.of(indexRoot.toString(), projectEntry.getKey()),
+                            IndexCheck.checkDir(Path.of(env.getSourceRootPath(), projectEntry.getKey()),
+                                    Path.of(indexRoot.toString(), projectEntry.getKey()),
                                     IndexCheck.IndexCheckMode.VERSION);
                         } catch (Exception e) {
                             LOGGER.log(Level.WARNING,
@@ -183,7 +184,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         } else {
             LOGGER.log(Level.FINE, "Checking index");
             try {
-                IndexCheck.checkDir(Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR),
+                IndexCheck.checkDir(Path.of(env.getSourceRootPath()),
+                        Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR),
                         IndexCheck.IndexCheckMode.VERSION);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "index check failed", e);

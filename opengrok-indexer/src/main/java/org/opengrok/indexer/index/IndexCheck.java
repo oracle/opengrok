@@ -23,8 +23,14 @@
  */
 package org.opengrok.indexer.index;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +51,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiBits;
 import org.apache.lucene.index.SegmentInfos;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
@@ -51,7 +61,9 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.Statistics;
@@ -71,6 +83,7 @@ public class IndexCheck {
     public enum IndexCheckMode {
         NO_CHECK,
         VERSION,
+        DEFINITIONS,
         DOCUMENTS
     }
 
@@ -138,7 +151,7 @@ public class IndexCheck {
      * @return true on success, false on failure
      */
     public static boolean isOkay(@NotNull Configuration configuration, IndexCheckMode mode,
-                                 Collection<String> projectNames) {
+                                 Collection<String> projectNames) throws IOException {
 
         if (mode.equals(IndexCheckMode.NO_CHECK)) {
             LOGGER.log(Level.WARNING, "no index check mode selected");
@@ -151,15 +164,17 @@ public class IndexCheck {
         if (!projectNames.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : projectNames) {
-                ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode);
+                ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()),
+                        Path.of(indexRoot.toString(), projectName), mode);
             }
         } else {
             if (configuration.isProjectsEnabled()) {
                 for (String projectName : configuration.getProjects().keySet()) {
-                    ret |= checkDirNoExceptions(Path.of(indexRoot.toString(), projectName), mode);
+                    ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()),
+                            Path.of(indexRoot.toString(), projectName), mode);
                 }
             } else {
-                ret |= checkDirNoExceptions(indexRoot, mode);
+                ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()), indexRoot, mode);
             }
         }
 
@@ -168,15 +183,15 @@ public class IndexCheck {
 
     /**
      * @param indexPath directory with index
-     * @return 0 on success, 1 on failure
+     * @return 0 on success, 1 on failure (index check failed)
+     * @throws IOException on I/O error
      */
-    private static int checkDirNoExceptions(Path indexPath, IndexCheckMode mode) {
+    private static int checkDirFilterExceptions(Path sourcePath, Path indexPath, IndexCheckMode mode) throws IOException {
         try {
-            LOGGER.log(Level.INFO, "Checking index in ''{0}''", indexPath);
-            checkDir(indexPath, mode);
+            LOGGER.log(Level.INFO, "Checking index in ''{0}'' (mode {1})", new Object[]{indexPath, mode});
+            checkDir(sourcePath, indexPath, mode);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("Could not perform index check for directory '%s'", indexPath), e);
-            return 0;
+            throw e;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
             return 1;
@@ -190,15 +205,174 @@ public class IndexCheck {
      * Check index in given directory. It assumes that that all commits (if any)
      * in the Lucene segment file were done with the same version.
      *
+     * @param sourcePath path to source directory
      * @param indexPath directory with index to check
      * @param mode      index check mode
      * @throws IOException           if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
      * @throws IndexDocumentException if there are duplicate documents in the index
      */
-    public static void checkDir(Path indexPath, IndexCheckMode mode)
-            throws IndexVersionException, IndexDocumentException, IOException {
+    public static void checkDir(Path sourcePath, Path indexPath, IndexCheckMode mode)
+            throws IndexVersionException, IndexDocumentException, IOException, ParseException, ClassNotFoundException {
 
+        switch (mode) {
+            case VERSION:
+                checkVersion(indexPath);
+                break;
+            case DOCUMENTS:
+                checkDuplicateDocuments(indexPath);
+                break;
+            case DEFINITIONS:
+                checkDefinitions(sourcePath, indexPath);
+        }
+    }
+
+    private static List<String> getLines(Path path) throws IOException {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path.toFile()))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+
+        return lines;
+    }
+
+    /**
+     * Crosscheck definitions found in the index for given file w.r.t. actual file contents.
+     * There is a number of cases this check can fail even for legitimate cases. This is why
+     * certain patterns are skipped.
+     * @param path path to the file being checked
+     * @return okay indication
+     */
+    private static boolean checkDefinitionsForFile(Path path) throws ParseException, IOException, ClassNotFoundException {
+
+        // Avoid paths with certain suffixes. These exhibit some behavior that cannot be handled
+        // For example, '1;' in Perl code is interpreted by Universal Ctags as 'STDOUT'.
+        Set<String> suffixesToAvoid = Set.of(".sh", ".SH", ".pod", ".pl", ".pm", ".js", ".json", ".css");
+        if (suffixesToAvoid.stream().anyMatch(s -> path.toString().endsWith(s))) {
+            return true;
+        }
+
+        boolean okay = true;
+        Definitions defs = IndexDatabase.getDefinitions(path.toFile());
+        if (defs != null) {
+            LOGGER.log(Level.FINE, "checking definitions for ''{0}''", path);
+            List<String> lines = getLines(path);
+
+            for (Definitions.Tag tag : defs.getTags()) {
+                // These symbols are sometimes produced by Universal Ctags even though they are not
+                // actually present in the file.
+                if (tag.symbol.startsWith("__anon")) {
+                    continue;
+                }
+
+                // Needed for some TeX definitions.
+                String symbol = tag.symbol;
+                if (symbol.contains("\\")) {
+                    symbol = symbol.replace("\\", "");
+                }
+
+                // C++ operator overload symbol contains extra space, ignore them for now.
+                if (symbol.startsWith("operator ")) {
+                    continue;
+                }
+
+                // These could be e.g. C structure members, having their line number equal to
+                // where the structure definition starts, ignore.
+                if (tag.type.equals("argument")) {
+                    continue;
+                }
+
+                if (!lines.get(tag.line - 1).contains(symbol)) {
+                    // Line wrap, skip it.
+                    if (lines.get(tag.line - 1).endsWith("\\")) {
+                        continue;
+                    }
+
+                    // Line wraps cause the symbol to be reported on different line than it resides on.
+                    // Perform more thorough/expensive check.
+                    final String str = symbol;
+                    if (lines.stream().noneMatch(l -> l.contains(str))) {
+                        LOGGER.log(Level.WARNING, String.format("'%s' does not contain '%s' (should be on line %d)",
+                                path, symbol, tag.line));
+                        okay = false;
+                    }
+                }
+            }
+        }
+
+        return okay;
+    }
+
+    private static class GetFiles extends SimpleFileVisitor<Path> {
+        Set<Path> files = new HashSet<>();
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            if (RuntimeEnvironment.getInstance().getIgnoredNames().ignore(dir.toFile())) {
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (file.toFile().isFile()) {
+                files.add(file);
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+    }
+
+    private static void checkDefinitions(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
+
+        Statistics statistics = new Statistics();
+        GetFiles getFiles = new GetFiles();
+        Files.walkFileTree(sourcePath, getFiles);
+        Set<Path> paths = getFiles.files;
+        LOGGER.log(Level.FINE, "Checking definitions in ''{0}'' ({1} paths)",
+                new Object[]{indexPath, paths.size()});
+
+        long errors = 0;
+        ExecutorService executorService = RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor();
+        final CountDownLatch latch = new CountDownLatch(paths.size());
+        List<Future<Boolean>> futures = new ArrayList<>();
+        for (Path path : paths) {
+            futures.add(executorService.submit(() -> {
+                try {
+                    return checkDefinitionsForFile(path);
+                } finally {
+                    latch.countDown();
+                }
+            }));
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "failed to await", e);
+        }
+        for (Future<Boolean> future : futures) {
+            try {
+                if (!future.get()) {
+                    errors++;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "failure when checking definitions", e);
+            }
+        }
+        statistics.report(LOGGER, Level.FINE, String.format("checked %d files", paths.size()));
+
+        if (errors > 0) {
+            throw new IndexDocumentException(String.format("document check failed for (%d documents out of %d)",
+                    errors, paths.size()));
+        }
+    }
+
+    private static boolean checkVersion(Path indexPath) throws IOException, IndexVersionException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -208,7 +382,7 @@ public class IndexCheck {
                 segVersion = segInfos.getIndexCreatedVersionMajor();
             } catch (IndexNotFoundException e) {
                 LOGGER.log(Level.WARNING, "no index found in ''{0}''", indexDirectory);
-                return;
+                return true;
             }
         }
 
@@ -219,9 +393,7 @@ public class IndexCheck {
                     Version.LATEST.major, segVersion);
         }
 
-        if (mode.ordinal() >= IndexCheckMode.DOCUMENTS.ordinal()) {
-            checkDuplicateDocuments(indexPath);
-        }
+        return false;
     }
 
     public static IndexReader getIndexReader(Path indexPath) throws IOException {
