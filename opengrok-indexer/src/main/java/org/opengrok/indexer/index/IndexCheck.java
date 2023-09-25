@@ -330,6 +330,14 @@ public class IndexCheck {
         }
     }
 
+    /**
+     * Check definitions stored in documents against definitions found by ctags in the respective input files.
+     * This check parallelized.
+     * @param sourcePath path to source root subtree
+     * @param indexPath path to index to check
+     * @throws IOException on I/O error
+     * @throws IndexDocumentException if there are any documents with definitions not matching definitions found by ctags
+     */
     private static void checkDefinitions(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
 
         Statistics statistics = new Statistics();
