@@ -212,7 +212,7 @@ public class IndexCheck {
      * @param mode      index check mode
      * @throws IOException           if the directory cannot be opened
      * @throws IndexVersionException if the version of the index does not match Lucene index version
-     * @throws IndexDocumentException if there are duplicate documents in the index
+     * @throws IndexDocumentException if there are duplicate documents in the index or not matching definitions
      */
     public static void checkDir(Path sourcePath, Path indexPath, IndexCheckMode mode)
             throws IndexVersionException, IndexDocumentException, IOException {
