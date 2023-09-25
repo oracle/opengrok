@@ -270,7 +270,7 @@ public final class Indexer {
             // call above.
             RepositoryFactory.initializeIgnoredNames(env);
 
-            // Check index(es). Exit with return code upon failure.
+            // Check index(es). Exit with distinct return code upon failure.
             if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
                 if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
                     System.err.println("Empty data root in configuration");
