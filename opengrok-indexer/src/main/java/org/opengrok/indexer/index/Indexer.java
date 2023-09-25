@@ -590,7 +590,7 @@ public final class Indexer {
                     "Selectable modes (exclusive):",
                     "  version - checks document version against indexer version",
                     "  documents - checks duplicate documents in the index",
-                    "  definitions - cross check document definitions against file content",
+                    "  definitions - check document definitions against file content (experimental)",
                     "With no mode specified, performs the version check."
                     ).execute(v -> {
                         if (!gotReadonlyConfiguration) {
@@ -608,6 +608,7 @@ public final class Indexer {
                                     indexCheckMode = IndexCheck.IndexCheckMode.DEFINITIONS;
                                     break;
                                 case "version":
+                                    // already set above
                                     break;
                                 default:
                                     die("mode '" + mode + "' is not valid.");
