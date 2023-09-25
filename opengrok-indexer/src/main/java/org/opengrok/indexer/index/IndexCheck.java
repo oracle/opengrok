@@ -382,7 +382,13 @@ public class IndexCheck {
         }
     }
 
-    private static boolean checkVersion(Path indexPath) throws IOException, IndexVersionException {
+    /**
+     * @param indexPath path to the index directory
+     * @throws IOException on I/O error
+     * @throws IndexVersionException if the version stored in the document does not match the version
+     * used by the running program
+     */
+    private static void checkVersion(Path indexPath) throws IOException, IndexVersionException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -392,18 +398,17 @@ public class IndexCheck {
                 segVersion = segInfos.getIndexCreatedVersionMajor();
             } catch (IndexNotFoundException e) {
                 LOGGER.log(Level.WARNING, "no index found in ''{0}''", indexDirectory);
-                return true;
+                return;
             }
         }
 
-        LOGGER.log(Level.FINE, "Checking index version in ''{0}''", indexPath);
+        LOGGER.log(Level.FINE, "Checking index version in ''{0}'': index={1} program={2}",
+                new Object[]{indexPath, segVersion, Version.LATEST.major});
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
                 String.format("Directory '%s' has index version discrepancy", indexPath),
                     Version.LATEST.major, segVersion);
         }
-
-        return false;
     }
 
     public static IndexReader getIndexReader(Path indexPath) throws IOException {
