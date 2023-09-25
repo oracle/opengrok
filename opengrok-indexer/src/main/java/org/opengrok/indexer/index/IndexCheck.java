@@ -244,7 +244,7 @@ public class IndexCheck {
     /**
      * Crosscheck definitions found in the index for given file w.r.t. actual file contents.
      * There is a number of cases this check can fail even for legitimate cases. This is why
-     * certain patterns are skipped.
+     * certain patterns and file types are skipped.
      * @param path path to the file being checked
      * @return okay indication
      */
@@ -332,6 +332,7 @@ public class IndexCheck {
 
     /**
      * Check definitions stored in documents against definitions found by ctags in the respective input files.
+     * This is done only for a subset of files, see {@link #checkDefinitionsForFile(Path)}.
      * This check parallelized.
      * @param sourcePath path to source root subtree
      * @param indexPath path to index to check
