@@ -182,6 +182,8 @@ public class IndexCheck {
     }
 
     /**
+     * Perform specified check on given index directory. All exceptions except {@code IOException} are swallowed
+     * and result in return value of 1.
      * @param indexPath directory with index
      * @return 0 on success, 1 on failure (index check failed)
      * @throws IOException on I/O error
