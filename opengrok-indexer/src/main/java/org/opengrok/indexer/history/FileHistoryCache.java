@@ -294,14 +294,14 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      * @param file file to store the history object into
      * @param repo repository for the file
      * @param mergeHistory whether to merge the history with existing or store the histNew as is
+     * @throws HistoryException if there was any problem with history cache generation
      */
     private void storeFile(History histNew, File file, Repository repo, boolean mergeHistory) throws HistoryException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
         } catch (CacheException e) {
-            LOGGER.log(Level.FINER, e.getMessage());
-            return;
+            throw new HistoryException(e);
         }
 
         File dir = cacheFile.getParentFile();
