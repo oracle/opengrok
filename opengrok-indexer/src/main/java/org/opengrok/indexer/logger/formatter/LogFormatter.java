@@ -93,7 +93,7 @@ public class LogFormatter extends Formatter {
                 record.getSourceClassName(),           //%7
                 record.getSourceMethodName(),          //%8
                 className(record.getSourceClassName()), //%9
-                record.getThreadID(),                  //%10
+                record.getLongThreadID(),                  //%10
                 record.getMessage(),                   //%11
                 version
                 );

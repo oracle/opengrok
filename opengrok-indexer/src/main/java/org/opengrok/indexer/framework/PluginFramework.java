@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -382,7 +380,7 @@ public abstract class PluginFramework<PluginType> {
 
         // trashing out the old instance of the loader enables us
         // to reload the stack at runtime
-        loader = AccessController.doPrivileged((PrivilegedAction<PluginClassLoader>) () -> new PluginClassLoader(pluginDirectory));
+        loader = new PluginClassLoader(pluginDirectory);
 
         // notify the implementing class that the reload is about to begin
         beforeReload();

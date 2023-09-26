@@ -62,9 +62,8 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     <properties>
         <lucene.version>9.8.0</lucene.version>
         <mavenjavadocplugin.version>3.2.0</mavenjavadocplugin.version>
-        <!-- The following changed syntax from e.g. 1.8 to 11. -->
-        <compileSource>11</compileSource>
-        <compileTarget>11</compileTarget>
+        <compileSource>17</compileSource>
+        <compileTarget>17</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>3.1.0</jersey.version>
         <!-- Jackson version needs to match the version of Jackson which Jersey
@@ -231,7 +230,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                           <version>3.0.5</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                          <version>11</version>
+                          <version>17</version>
                         </requireJavaVersion>
                       </rules>
                     </configuration>
@@ -411,22 +410,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     </build>
 
     <profiles>
-        <profile>
-            <id>java12plus-11-release</id>
-            <activation>
-                <jdk>[12,20]</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <release>11</release>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>dependency-check</id>
             <build>
