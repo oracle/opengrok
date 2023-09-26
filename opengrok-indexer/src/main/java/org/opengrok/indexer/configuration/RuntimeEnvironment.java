@@ -1849,7 +1849,7 @@ public final class RuntimeEnvironment {
      * @param reindex is the message result of reindex
      * @param cmdType command timeout type
      * @see ConfigurationChangedListener
-     * </p>
+     *
      */
     public void applyConfig(Configuration config, boolean reindex, CommandTimeoutType cmdType) {
         setConfiguration(config, cmdType);
