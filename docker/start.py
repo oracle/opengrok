@@ -465,7 +465,7 @@ def check_index_and_wipe_out(logger):
     check_index = os.environ.get("CHECK_INDEX")
     if check_index and os.path.exists(OPENGROK_CONFIG_FILE):
         logger.info("Checking if index matches current version")
-        indexer_options = ["-R", OPENGROK_CONFIG_FILE, "--checkIndex"]
+        indexer_options = ["-R", OPENGROK_CONFIG_FILE, "--checkIndex", "version"]
         indexer = Indexer(
             indexer_options, logger=logger, jar=OPENGROK_JAR, doprint=True
         )
