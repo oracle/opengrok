@@ -62,8 +62,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     <properties>
         <lucene.version>9.8.0</lucene.version>
         <mavenjavadocplugin.version>3.6.0</mavenjavadocplugin.version>
-        <compileSource>17</compileSource>
-        <compileTarget>17</compileTarget>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>3.1.0</jersey.version>
         <!-- Jackson version needs to match the version of Jackson which Jersey
@@ -230,7 +229,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                           <version>3.0.5</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                          <version>17</version>
+                          <version>${java.version}</version>
                         </requireJavaVersion>
                       </rules>
                     </configuration>
@@ -250,8 +249,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${compileSource}</source>
-                    <target>${compileTarget}</target>
+                    <release>${java.version}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <compilerArgs>
                       <arg>-Xlint:all</arg>
