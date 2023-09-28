@@ -61,24 +61,25 @@ public class LogFormatter extends Formatter {
     }
 
     @Override
-    public String format(LogRecord record) {
-        Date dat = new Date(record.getMillis());
+    @SuppressWarnings("deprecation")
+    public String format(LogRecord logRecord) {
+        Date dat = new Date(logRecord.getMillis());
         StringBuilder source = new StringBuilder();
-        if (record.getSourceClassName() != null) {
-            source.append(record.getSourceClassName());
-            if (record.getSourceMethodName() != null) {
-                source.append(' ').append(record.getSourceMethodName());
+        if (logRecord.getSourceClassName() != null) {
+            source.append(logRecord.getSourceClassName());
+            if (logRecord.getSourceMethodName() != null) {
+                source.append(' ').append(logRecord.getSourceMethodName());
             }
         } else {
-            source.append(record.getLoggerName());
+            source.append(logRecord.getLoggerName());
         }
 
         StringBuilder throwable = new StringBuilder();
-        if (record.getThrown() != null) {
+        if (logRecord.getThrown() != null) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             pw.println();
-            record.getThrown().printStackTrace(pw);
+            logRecord.getThrown().printStackTrace(pw);
             pw.close();
             throwable.append(sw.toString());
         }
@@ -86,15 +87,15 @@ public class LogFormatter extends Formatter {
         return String.format(format,
                 dat,                                   //%1
                 source.toString(),                     //%2
-                record.getLoggerName(),                //%3
-                record.getLevel().getLocalizedName(),  //%4
-                formatMessage(record),                 //%5
+                logRecord.getLoggerName(),                //%3
+                logRecord.getLevel().getLocalizedName(),  //%4
+                formatMessage(logRecord),                 //%5
                 throwable,                             //%6 (till here the same as JDK7's SimpleFormatter)
-                record.getSourceClassName(),           //%7
-                record.getSourceMethodName(),          //%8
-                className(record.getSourceClassName()), //%9
-                record.getLongThreadID(),                  //%10
-                record.getMessage(),                   //%11
+                logRecord.getSourceClassName(),           //%7
+                logRecord.getSourceMethodName(),          //%8
+                className(logRecord.getSourceClassName()), //%9
+                logRecord.getThreadID(),                  //%10
+                logRecord.getMessage(),                   //%11
                 version
                 );
     }
