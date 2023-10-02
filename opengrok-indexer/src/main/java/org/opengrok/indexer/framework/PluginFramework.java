@@ -380,7 +380,7 @@ public abstract class PluginFramework<PluginType> {
 
         LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
 
-        // trashing out the old instance of the loaded enables us
+        // trashing out the old instance of the loader enables us
         // to reload the stack at runtime
         loader = AccessController.doPrivileged((PrivilegedAction<PluginClassLoader>) () -> new PluginClassLoader(pluginDirectory));
 
