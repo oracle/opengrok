@@ -485,7 +485,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                     <rulesets>
                         <ruleset>dev/pmd_ruleset.xml</ruleset>
                     </rulesets>
-                    <targetJdk>${compileTarget}</targetJdk>
+                    <targetJdk>${java.version}</targetJdk>
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>
