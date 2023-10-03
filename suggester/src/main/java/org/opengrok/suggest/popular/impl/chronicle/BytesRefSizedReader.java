@@ -46,7 +46,6 @@ public class BytesRefSizedReader implements SizedReader<BytesRef>, Marshallable,
 
     @NotNull
     @Override
-    @SuppressWarnings("rawtypes")
     public BytesRef read(Bytes in, long size, @Nullable BytesRef using) {
         if (size < 0L || size > (long) Integer.MAX_VALUE) {
             throw new IORuntimeException("byte[] size should be non-negative int, " +

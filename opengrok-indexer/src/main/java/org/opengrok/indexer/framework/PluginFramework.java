@@ -380,9 +380,7 @@ public abstract class PluginFramework<PluginType> {
 
         // trashing out the old instance of the loader enables us
         // to reload the stack at runtime
-        loader = java.security.AccessController.doPrivileged(
-                (java.security.PrivilegedAction<PluginClassLoader>) () -> new PluginClassLoader(pluginDirectory)
-        );
+        loader = new PluginClassLoader(pluginDirectory);
 
         // notify the implementing class that the reload is about to begin
         beforeReload();

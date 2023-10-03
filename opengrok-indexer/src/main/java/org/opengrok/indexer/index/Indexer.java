@@ -96,7 +96,7 @@ import org.opengrok.indexer.util.Statistics;
  * Windows already supports opening {@code /var/opengrok} as {@code C:\var\opengrok}
  * </p>
  */
-@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
+@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln", "java:S106"})
 public final class Indexer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Indexer.class);
@@ -162,7 +162,6 @@ public final class Indexer {
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String[] argv) {
         Statistics stats = new Statistics(); //this won't count JVM creation though
-        boolean update = true;
 
         Executor.registerErrorHandler();
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
