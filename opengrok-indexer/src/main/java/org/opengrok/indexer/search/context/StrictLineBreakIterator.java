@@ -167,7 +167,7 @@ public class StrictLineBreakIterator extends BreakIterator {
             return BreakIterator.DONE;
         }
 
-        int noff = BreakIterator.DONE;
+        int noff;
         do {
             noff = next();
             if (noff > offset) {
