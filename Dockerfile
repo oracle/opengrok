@@ -4,7 +4,7 @@
 FROM ubuntu:jammy as build
 
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install --no-install-recommends -y openjdk-11-jdk python3 python3-venv && \
+RUN apt-get update && apt-get install --no-install-recommends -y openjdk-17-jdk python3 python3-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1-jdk11
+FROM tomcat:10.1.13-jdk17
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # Add Perforce apt source.
@@ -93,6 +93,11 @@ ENV CATALINA_BASE /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
 ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
+ENV JAVA_OPTS="--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED --add-exports=java.base/sun.nio.ch=ALL-UNNAMED \
+--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+--add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED \
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED \
+--add-opens=java.base/java.util=ALL-UNNAMED"
 
 # disable all file logging
 COPY docker/logging.properties /usr/local/tomcat/conf/logging.properties

@@ -37,7 +37,6 @@ import java.util.logging.Logger;
  *
  * @author Trond Norbye
  */
-@SuppressWarnings("PMD.SystemPrintln")
 public class DefaultIndexChangedListener implements IndexChangedListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultIndexChangedListener.class);

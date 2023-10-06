@@ -80,7 +80,6 @@ public class Message implements Comparable<Message>, JSONable {
             return messageLevelString;
         }
 
-        @SuppressWarnings("rawtypes")
         public static final Comparator<MessageLevel> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
     }
 

@@ -237,7 +237,6 @@ class SuggesterQueryParser extends CustomQueryParser {
                 replaceIdentifier(term.field(), term.text() + "~" + ((int) minimumSimilarity));
             }
 
-            @SuppressWarnings("deprecation")
             int numEdits = FuzzyQuery.floatToEdits(minimumSimilarity,
                     newTerm.text().codePointCount(0, newTerm.text().length()));
 

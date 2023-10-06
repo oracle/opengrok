@@ -596,7 +596,6 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked") // for contains
     void testGetPopularityDataSimple() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("rust",
                 new Term(QueryBuilder.FULL, "main"), 10, true));
@@ -611,7 +610,6 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked") // for contains
     void testGetPopularityDataAll() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
                 new Term(QueryBuilder.FULL, "mynamespace"), 10, true));
@@ -630,7 +628,6 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked") // for contains
     void testGetPopularityDataDifferentField() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
                 new Term(QueryBuilder.FULL, "print"), 10, true));

@@ -26,7 +26,7 @@ image based on the official one.
 ## Additional info about the image
 
 * Tomcat 10
-* JRE 11
+* JRE 17
 * Configurable mirroring/reindexing (default every 10 min)
 
 The mirroring step works by going through all projects and attempting to

@@ -143,7 +143,6 @@ public class BazaarHistoryParserTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void parseLogDirectory() throws Exception {
         String revId1 = "1234";
         String author1 = "username@example.com";

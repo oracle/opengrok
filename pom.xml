@@ -61,23 +61,21 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <properties>
         <lucene.version>9.8.0</lucene.version>
-        <mavenjavadocplugin.version>3.2.0</mavenjavadocplugin.version>
-        <!-- The following changed syntax from e.g. 1.8 to 11. -->
-        <compileSource>11</compileSource>
-        <compileTarget>11</compileTarget>
+        <mavenjavadocplugin.version>3.6.0</mavenjavadocplugin.version>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jersey.version>3.1.0</jersey.version>
+        <jersey.version>3.1.3</jersey.version>
         <!-- Jackson version needs to match the version of Jackson which Jersey
         (notably the jersey-media-json-jackson artifact used in opengrok-web)
         depends on or otherwise weird things will happen. -->
-        <jackson.version>2.14.1</jackson.version>
-        <junit.version>5.7.2</junit.version>
+        <jackson.version>2.15.2</jackson.version>
+        <junit.version>5.10.0</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
         <maven-surefire.version>3.0.0-M5</maven-surefire.version>
-        <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
-        <micrometer.version>1.8.2</micrometer.version>
+        <apache-commons-lang3.version>3.13.0</apache-commons-lang3.version>
+        <micrometer.version>1.11.4</micrometer.version>
         <mockito.version>3.12.4</mockito.version>
-        <commons-io.version>1.3.2</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
     </properties>
 
     <dependencyManagement>
@@ -231,7 +229,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                           <version>3.0.5</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                          <version>11</version>
+                          <version>${java.version}</version>
                         </requireJavaVersion>
                       </rules>
                     </configuration>
@@ -251,8 +249,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${compileSource}</source>
-                    <target>${compileTarget}</target>
+                    <release>${java.version}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <compilerArgs>
                       <arg>-Xlint:all</arg>
@@ -412,22 +409,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <profiles>
         <profile>
-            <id>java12plus-11-release</id>
-            <activation>
-                <jdk>[12,20]</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <release>11</release>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>dependency-check</id>
             <build>
                 <plugins>
@@ -504,7 +485,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                     <rulesets>
                         <ruleset>dev/pmd_ruleset.xml</ruleset>
                     </rulesets>
-                    <targetJdk>${compileTarget}</targetJdk>
+                    <targetJdk>${java.version}</targetJdk>
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>

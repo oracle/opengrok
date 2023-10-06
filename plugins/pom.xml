@@ -119,7 +119,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
                     </systemPropertyVariables>
                     <argLine>
                         @{surefireArgLine}
-                        --illegal-access=permit
+
                     </argLine>
                 </configuration>
             </plugin>
