@@ -35,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * {@link BytesRef} data serializer for {@link net.openhft.chronicle.map.ChronicleMap}.
- * Modified from https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc
+ * Modified from <a href="https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc">...</a>
  */
 public class BytesRefSizedReader implements SizedReader<BytesRef>, Marshallable, ReadResolvable<BytesRefSizedReader> {
 
@@ -46,8 +46,9 @@ public class BytesRefSizedReader implements SizedReader<BytesRef>, Marshallable,
 
     @NotNull
     @Override
+    @SuppressWarnings({"rawtypes"})
     public BytesRef read(Bytes in, long size, @Nullable BytesRef using) {
-        if (size < 0L || size > (long) Integer.MAX_VALUE) {
+        if (size < 0L || size > Integer.MAX_VALUE) {
             throw new IORuntimeException("byte[] size should be non-negative int, " +
                     size + " given. Memory corruption?");
         }
