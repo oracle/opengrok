@@ -761,6 +761,12 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         return rev;
     }
 
+    /**
+     * Attempt to fill the date and description for the input instances from pertaining last history entries.
+     * @param entries list of {@link DirectoryEntry} instances
+     * @return true if all of them were filled, false otherwise in which case the date/description field
+     * for the entries will be zeroed.
+     */
     @Override
     public boolean fillLastHistoryEntries(List<DirectoryEntry> entries) {
         if (entries == null) {
@@ -800,15 +806,14 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             }));
         }
 
+        // Wait for all the futures to complete. This is important as they are modifying the input parameter.
         for (Future<Boolean> future : futures) {
             try {
                 if (!future.get()) {
                     ret = false;
-                    break;
                 }
             } catch (Exception e) {
                 ret = false;
-                break;
             }
         }
 
