@@ -804,11 +804,9 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             try {
                 if (!future.get()) {
                     ret = false;
-                    break;
                 }
             } catch (Exception e) {
                 ret = false;
-                break;
             }
         }
 
