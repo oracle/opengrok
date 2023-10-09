@@ -22,7 +22,7 @@
  */
 package org.opengrok.suggest.popular.impl.chronicle;
 
-import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.bytes.HeapBytesStore;
 import net.openhft.chronicle.bytes.RandomDataInput;
 import net.openhft.chronicle.hash.AbstractData;
 import net.openhft.chronicle.hash.Data;
@@ -35,12 +35,13 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * {@link BytesRef} data serializer for {@link net.openhft.chronicle.map.ChronicleMap}.
- * Modified from <a href="https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc">...</a>
+ * Modified from https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc
  */
+@SuppressWarnings("deprecation")
 public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAccess<BytesRef> {
 
     /** Cache field. */
-    private transient BytesStore<?, ?> bs;
+    private transient HeapBytesStore<byte[]> bs;
 
     /** State field. */
     private transient byte[] array;
@@ -94,7 +95,7 @@ public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAc
             array = new byte[instance.length];
             System.arraycopy(instance.bytes, instance.offset, array, 0, instance.length);
         }
-        bs = BytesStore.wrap(array);
+        bs = HeapBytesStore.wrap(array);
         return this;
     }
 
