@@ -101,7 +101,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.21.85</version>
+            <version>3.22.9</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>
