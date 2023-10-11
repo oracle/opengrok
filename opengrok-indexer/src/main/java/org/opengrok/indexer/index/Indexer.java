@@ -265,30 +265,27 @@ public final class Indexer {
             env.setConfiguration(cfg, subFilePaths, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
-            // This changes env so is called after the setConfiguration()
-            // call above.
+            // This changes env so is called after the setConfiguration() call above.
             RepositoryFactory.initializeIgnoredNames(env);
 
-            // Check index(es). Exit with distinct return code upon failure.
+            // Check index(es) and exit. Use distinct return code upon failure.
             if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
                 if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
                     System.err.println("Empty data root in configuration");
                     System.exit(1);
                 }
 
-                try {
-                    if (!IndexCheck.isOkay(cfg, indexCheckMode, subFileArgs)) {
-                        System.err.printf("Index check failed%n");
-                        System.err.print("You might want to remove " +
-                                (!subFilePaths.isEmpty() ? "data for projects " + String.join(",", subFilePaths) :
-                                        "all data") + " under the data root and reindex\n");
-                        System.exit(1);
-                    }
+                try (IndexCheck indexCheck = new IndexCheck(cfg, subFileArgs)) {
+                    indexCheck.check(indexCheckMode);
                 } catch (IOException e) {
                     // Use separate return code for cases where the index could not be read.
                     // This avoids problems with wiping out the index based on the check.
                     LOGGER.log(Level.WARNING, String.format("Could not perform index check for '%s'", subFileArgs), e);
                     System.exit(2);
+                } catch (IndexCheck.IndexCheckException e) {
+                    System.err.printf("Index check failed%n");
+                    System.err.print("You might want to remove " + e.getFailedPaths());
+                    System.exit(1);
                 }
 
                 System.exit(0);

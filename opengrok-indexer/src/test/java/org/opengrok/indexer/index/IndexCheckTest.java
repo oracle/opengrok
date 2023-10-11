@@ -32,25 +32,33 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.FileUtilities;
-import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -61,7 +69,6 @@ class IndexCheckTest {
 
     private TestRepository repository;
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-    private Path oldIndexDataDir;
     private Configuration configuration;
 
     @BeforeAll
@@ -74,7 +81,7 @@ class IndexCheckTest {
     public void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResource("/repositories"));
-        oldIndexDataDir = null;
+
         configuration = new Configuration();
         configuration.setDataRoot(env.getDataRootPath());
         configuration.setSourceRoot(env.getSourceRootPath());
@@ -83,10 +90,6 @@ class IndexCheckTest {
     @AfterEach
     public void tearDown() throws IOException {
         repository.destroy();
-
-        if (oldIndexDataDir != null) {
-            IOUtils.removeRecursive(oldIndexDataDir);
-        }
     }
 
     /**
@@ -101,12 +104,16 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
-        IndexCheck.isOkay(configuration, mode, subFiles);
+        try (IndexCheck indexCheck = new IndexCheck(configuration, subFiles)) {
+            indexCheck.check(mode);
+        }
     }
 
     @Test
     void testIndexVersionNoIndex() throws Exception {
-        IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>());
+        try (IndexCheck indexCheck = new IndexCheck(configuration)) {
+            indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
+        }
     }
 
     @Test
@@ -124,11 +131,47 @@ class IndexCheckTest {
         testIndex(false, new ArrayList<>(), IndexCheck.IndexCheckMode.VERSION);
     }
 
-    @Test
-    void testIndexVersionOldIndex() throws Exception {
-        oldIndexDataDir = Files.createTempDirectory("data");
-        Path indexPath = oldIndexDataDir.resolve("index");
-        Files.createDirectory(indexPath);
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testIndexVersionOldIndex(boolean isProjectsEnabled) throws Exception {
+        Path indexPath = Path.of(configuration.getDataRoot(), "index");
+
+        configuration.setProjectsEnabled(isProjectsEnabled);
+        if (isProjectsEnabled) {
+            final String[] projectNames = new String[]{"foo", "bar"};
+            Files.createDirectory(indexPath);
+            for (String projectName : projectNames) {
+                Path i = indexPath.resolve(projectName);
+                Files.createDirectory(i);
+                extractOldIndex(i);
+            }
+            configuration.setProjects(Arrays.stream(projectNames).map(Project::new).
+                    collect(Collectors.toMap(Project::getName, Function.identity())));
+        } else {
+            Files.createDirectory(indexPath);
+            extractOldIndex(indexPath);
+        }
+
+        try (IndexCheck indexCheck = new IndexCheck(configuration)) {
+            IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
+            assertThrows(IndexCheck.IndexCheckException.class, () -> indexCheck.check(mode));
+
+            // For configuration with projects, recheck to see if the exception contains the expected list of paths
+            // that failed the check.
+            if (isProjectsEnabled) {
+                IndexCheck.IndexCheckException exception = null;
+                try {
+                    indexCheck.check(mode);
+                } catch (IndexCheck.IndexCheckException e) {
+                    exception = e;
+                }
+                assertNotNull(exception);
+                assertEquals(configuration.getProjects().keySet().size(), exception.getFailedPaths().size());
+            }
+        }
+    }
+
+    private void extractOldIndex(Path indexPath) throws IOException {
         File indexDir = new File(indexPath.toString());
         assertTrue(indexDir.isDirectory(), "index directory check");
         URL oldIndex = getClass().getResource("/index/oldindex.zip");
@@ -136,20 +179,17 @@ class IndexCheckTest {
         File archive = new File(oldIndex.getPath());
         assertTrue(archive.isFile(), "archive exists");
         FileUtilities.extractArchive(archive, indexDir);
-        env.setDataRoot(oldIndexDataDir.toString());
-        configuration.setDataRoot(oldIndexDataDir.toString());
-        env.setProjectsEnabled(false);
-        configuration.setProjectsEnabled(false);
-        assertFalse(IndexCheck.isOkay(configuration, IndexCheck.IndexCheckMode.VERSION, new ArrayList<>()));
-
-        assertThrows(IndexCheck.IndexVersionException.class, () ->
-                IndexCheck.checkDir(Path.of(env.getSourceRootPath()), indexPath, IndexCheck.IndexCheckMode.VERSION));
     }
 
+    /**
+     * Empty directory should pass the index version check.
+     */
     @Test
     void testEmptyDir(@TempDir Path tempDir) throws Exception {
-        assertEquals(0, tempDir.toFile().list().length);
-        IndexCheck.checkDir(null, tempDir, IndexCheck.IndexCheckMode.VERSION);
+        assertEquals(0, Objects.requireNonNull(tempDir.toFile().list()).length);
+        try (IndexCheck indexCheck = new IndexCheck(configuration)) {
+            indexCheck.checkDir(null, tempDir, IndexCheck.IndexCheckMode.VERSION);
+        }
     }
 
     /**
@@ -157,20 +197,22 @@ class IndexCheckTest {
      * Runs only on Unix systems because the {@link IOException} is not thrown on Windows
      * for non-existent directories.
      */
-    @Test
-    @EnabledOnOs({OS.LINUX, OS.MAC})
-    void testIndexCheckIOException() throws Exception {
-        // This is set to simulate IOException in IndexCheck.checkDir().
-        configuration.setDataRoot("/nonexistent");
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testIndexCheckIOException(boolean isProjectsEnabled) throws Exception {
+        configuration.setProjectsEnabled(isProjectsEnabled);
+        if (isProjectsEnabled) {
+            final String projectName = "foo";
+            configuration.setProjects(Map.of(projectName, new Project(projectName)));
+        }
 
-        configuration.setProjectsEnabled(false);
+        final IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
+        try (IndexCheck indexCheck = Mockito.spy(new IndexCheck(configuration))) {
+            doThrow(IOException.class).when(indexCheck).checkDir(isA(Path.class), isA(Path.class), eq(mode));
 
-        IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
-        assertThrows(IOException.class, () -> IndexCheck.checkDir(Path.of(configuration.getSourceRoot()),
-                Path.of(configuration.getDataRoot()), mode));
-        // Assumes that IndexCheck.checkDir() is called via IndexCheck.isOkay() and the latter method
-        // infers the result from the call.
-        assertThrows(IOException.class, () -> IndexCheck.isOkay(configuration, mode, new ArrayList<>()));
+            assertThrows(IOException.class, () -> indexCheck.check(mode));
+            verify(indexCheck).checkDir(isA(Path.class), isA(Path.class), eq(mode));
+        }
     }
 
     @Test
@@ -181,5 +223,27 @@ class IndexCheckTest {
     @Test
     void testIndexDocumentsCheckNoProjects() throws Exception {
         testIndex(false, new ArrayList<>(), IndexCheck.IndexCheckMode.DEFINITIONS);
+    }
+
+    /**
+     * Make sure the {@link IndexCheck#check(IndexCheck.IndexCheckMode)} can be called multiple times
+     * from the same {@link IndexCheck} instance.
+     * This is essentially testing that the executor used within is not shutdown at the end of each check.
+     */
+    @Test
+    void testMultipleTestsWithSameInstance() throws Exception {
+        env.setHistoryEnabled(false);
+        configuration.setHistoryEnabled(false);
+        env.setProjectsEnabled(true);
+        configuration.setProjectsEnabled(true);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
+
+        try (IndexCheck indexCheck = new IndexCheck(configuration)) {
+            for (int i = 0; i < 3; i++) {
+                indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
+            }
+        }
     }
 }
