@@ -93,6 +93,10 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
+    # Nothing to do.
+    if len(commands) == 0:
+        return SUCCESS_EXITVAL
+
     cmds_base = []
     for directory in dirs_to_process:
         cmd_base = CommandSequenceBase(directory, commands, loglevel=loglevel,
@@ -104,6 +108,11 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
         cmds_base.append(cmd_base)
 
     if check_config:
+        #
+        # The configuration check was done unconditionally in CommandSequenceBase initialization above.
+        # If there was a problem with the configuration, the CommandConfigurationException was raised,
+        # so if the code flow arrived to this very block, this means that the check had been successful.
+        #
         if not logger:
             logger = logging.getLogger(__name__)
         logger.info("Configuration check passed")
