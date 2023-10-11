@@ -315,7 +315,7 @@ class SuggesterProjectData implements Closeable {
                 m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
             } catch (IllegalArgumentException e) {
                 logger.log(Level.SEVERE, String.format("Could not create ChronicleMap for field %s in directory " +
-                        "'%s' due to invalid key size (%f) or number of entries: (%d):",
+                                "'%s' due to invalid key size (%f) or number of entries: (%d):",
                         field, suggesterDir,  conf.getAverageKeySize(), conf.getEntries()), e);
                 return;
             } catch (Throwable t) {
@@ -324,8 +324,14 @@ class SuggesterProjectData implements Closeable {
                                 +  " , most popular completion disabled, if you are using "
                                 + "JDK9+ make sure to specify: "
                                 + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
-                                + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
-                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", field, suggesterDir), t);
+                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED "
+                                + "--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED "
+                                + "--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED "
+                                + "--add-opens jdk.compiler/com.sun.tools.javac=ALL-UNNAMED "
+                                + "--add-opens java.base/java.lang=ALL-UNNAMED "
+                                + "--add-opens java.base/java.lang.reflect=ALL-UNNAMED "
+                                + "--add-opens java.base/java.io=ALL-UNNAMED "
+                                + "--add-opens java.base/java.util=ALL-UNNAMED", field, suggesterDir), t);
                 return;
             }
 
