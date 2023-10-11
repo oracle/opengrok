@@ -293,7 +293,7 @@ class SuggesterSearcher extends IndexSearcher {
         while (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
             int docId = postingsEnum.docID();
             if (data.documentIds.has(docBase + docId)) {
-                IntsHolder positions = data.scorer.getPositions(docBase + docId);
+                IntsHolder positions = data.scorer.getPositions(docId);
                 if (positions == null) {
                     continue;
                 }
