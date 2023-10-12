@@ -37,6 +37,10 @@ from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 
 @pytest.mark.parametrize('check_config', [True, False])
 def test_dosync_empty_commands(check_config):
+    """
+    If the commands structure is empty, the do_sync() code should never make it to the Pool.map() call,
+    regardless of the check_config parameter value.
+    """
     commands = []
     with patch(pool.Pool.map, lambda x, y, z: []):
         assert do_sync(logging.INFO, commands, None, ["foo", "bar"], [],
@@ -46,7 +50,11 @@ def test_dosync_empty_commands(check_config):
 
 @pytest.mark.parametrize(['check_config', 'expected_times'], [(True, 0), (False, 1)])
 def test_dosync_check_config(check_config, expected_times):
-    # The port used in the call within the commands structure is not expected to be reachable.
+    """
+    If the check_config parameter is True, the do_sync() code should never make it to the Pool.map() call.
+    """
+    # The port used in the call within the commands structure is not expected to be reachable
+    # since there is no call made because the map() function is patched below.
     commands = [{"call": {"uri": "http://localhost:11"}}]
     with patch(pool.Pool.map, lambda x, y, z: []):
         assert do_sync(logging.INFO, commands, None, ["foo", "bar"], [],
