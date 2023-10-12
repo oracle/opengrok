@@ -56,7 +56,7 @@ def test_dosync_check_config(check_config, expected_times):
 
 def test_dosync_check_config_invalid():
     """
-    The commands structure should be a dictionary and the config check should recognize this
+    The commands list should contain a dictionary and the config check should recognize this
     and raise CommandConfigurationException.
     """
     commands = ["foo"]
