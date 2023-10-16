@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2022, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
@@ -103,16 +103,19 @@ public class Scripts implements Iterable<Scripts.Script> {
 
     private static final WebJarAssetLocator assetLocator = new WebJarAssetLocator();
 
-    /**
+    /*
      * Aliases for the page scripts. The path in the FileScript is relatively to
      * the request's context path.
      *
      * @see HttpServletRequest#getContextPath()
      */
     static {
-        putFromWebJar("jquery", "jquery.min.js", 10);
+        // Due to the behavior of the webjar scanner, it is necessary for the paths to contain a version.
+        // Otherwise, with multiple versions of the webapp deployed within the same application server,
+        // an exception will be thrown and the deployment will fail.
+        putFromWebJar("jquery", "3.6.4/jquery.min.js", 10);
         putjs("jquery-ui", "js/jquery-ui-1.12.1-custom", 11);
-        putFromWebJar("jquery-tablesorter", "jquery.tablesorter.min.js", 12);
+        putFromWebJar("jquery-tablesorter", "2.31.3/dist/js/jquery.tablesorter.min.js", 12);
         putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.3", 13, true);
         putjs("searchable-option-list", "js/searchable-option-list-2.0.15", 14, true);
         putjs("utils", "js/utils-0.0.46", 15, true);
