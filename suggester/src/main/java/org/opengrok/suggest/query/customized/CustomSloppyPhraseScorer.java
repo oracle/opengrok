@@ -23,7 +23,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ConjunctionUtils;
@@ -32,6 +35,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.FixedBitSet;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
@@ -60,9 +64,9 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     private PhrasePositions[] rptStack; // temporary stack for switching colliding repeating pps
 
     // custom begins
-    private int offset;
+    private final int offset;
 
-    private Map<Integer, IntsHolder> documentsToPositionsMap = new HashMap<>();
+    private final Map<Integer, IntsHolder> documentsToPositionsMap = new HashMap<>();
     // custom ends
 
     // custom – constructor parameters
@@ -84,20 +88,24 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         this.offset = offset; // custom
         this.numPostings = postings.length;
         pq = new PhraseQueue(postings.length);
-        DocIdSetIterator[] iterators = new DocIdSetIterator[postings.length];
         phrasePositions = new PhrasePositions[postings.length];
         for (int i = 0; i < postings.length; ++i) {
-            iterators[i] = postings[i].postings;
             phrasePositions[i] = new PhrasePositions(postings[i].postings, postings[i].position, i, postings[i].terms);
         }
         // custom begins – support for single term
-        if (iterators.length == 1) {
-            conjunction = iterators[0];
-        } else {
-            conjunction = ConjunctionUtils.intersectIterators(Arrays.asList(iterators));
-        }
+        conjunction = generateDocIdSetIterator(Arrays.stream(postings)
+                .map(p -> p.postings).collect(Collectors.toList()));
         // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;
+
+    }
+
+    private DocIdSetIterator generateDocIdSetIterator(@NotNull List<DocIdSetIterator> listOfDocIdSetIterator) {
+        return Optional.of(listOfDocIdSetIterator)
+                .filter(p -> p.size() > 1)
+                .map(ConjunctionUtils::intersectIterators)
+                .orElse(listOfDocIdSetIterator.get(0));
+
     }
 
     /**

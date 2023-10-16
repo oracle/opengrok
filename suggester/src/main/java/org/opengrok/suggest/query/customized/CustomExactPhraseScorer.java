@@ -17,10 +17,12 @@
 package org.opengrok.suggest.query.customized;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.search.ConjunctionUtils;
@@ -28,6 +30,7 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
@@ -50,9 +53,9 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
     }
 
     // custom begins – only necessary attributes
-    private Map<Integer, IntsHolder> documentToPositionsMap = new HashMap<>();
+    private final Map<Integer, IntsHolder> documentToPositionsMap = new HashMap<>();
 
-    private int offset;
+    private final int offset;
 
     private final DocIdSetIterator conjunction;
     private final PostingsAndPosition[] postings;
@@ -74,21 +77,22 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
 
         this.offset = offset; // custom
 
-        List<DocIdSetIterator> iterators = new ArrayList<>();
-        List<PostingsAndPosition> postingsAndPositions = new ArrayList<>();
-        for (CustomPhraseQuery.PostingsAndFreq posting : postings) {
-            iterators.add(posting.postings);
-            postingsAndPositions.add(new PostingsAndPosition(posting.postings, posting.position));
-        }
         // custom begins – support for single term
-        if (iterators.size() == 1) {
-            conjunction = iterators.get(0);
-        } else {
-            conjunction = ConjunctionUtils.intersectIterators(iterators);
-        }
+        conjunction = generateDocIdSetIterator(Arrays.stream(postings)
+                .map(p -> p.postings).collect(Collectors.toList()));
         // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;
-        this.postings = postingsAndPositions.toArray(new PostingsAndPosition[postingsAndPositions.size()]);
+        this.postings = Arrays.stream(postings)
+                .map(p -> new PostingsAndPosition(p.postings, p.position))
+                .toArray(PostingsAndPosition[]::new);
+    }
+
+    private DocIdSetIterator generateDocIdSetIterator(@NotNull List<DocIdSetIterator> listOfDocIdSetIterator) {
+        return Optional.of(listOfDocIdSetIterator)
+                .filter(p -> p.size() > 1)
+                .map(ConjunctionUtils::intersectIterators)
+                .orElse(listOfDocIdSetIterator.get(0));
+
     }
 
     @Override

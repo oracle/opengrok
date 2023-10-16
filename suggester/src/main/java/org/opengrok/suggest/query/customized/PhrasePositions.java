@@ -33,7 +33,6 @@ final class PhrasePositions {
     int offset;           // position in phrase
     final int ord;                                  // unique across all PhrasePositions instances
     final PostingsEnum postings;            // stream of docs & positions
-    PhrasePositions next;                           // used to make lists
     int rptGroup = -1; // >=0 indicates that this is a repeating PP
     int rptInd; // index in the rptGroup
     final Term[] terms; // for repetitions initialization
