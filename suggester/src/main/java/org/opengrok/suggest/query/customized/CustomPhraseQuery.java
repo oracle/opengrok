@@ -40,7 +40,7 @@ import org.apache.lucene.util.BytesRef;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * Modified Apache Lucene's {@link PhraseQuery} to allow to use {@link CustomExactPhraseScorer} and
@@ -93,27 +93,19 @@ public class CustomPhraseQuery extends Query {
     }
 
     private static int[] incrementalPositions(int length) {
-        int[] positions = new int[length];
-        for (int i = 0; i < length; ++i) {
-            positions[i] = i;
-        }
-        return positions;
+        return IntStream.range(0,length).toArray();
     }
 
     private static Term[] toTerms(String field, String... termStrings) {
-        Term[] terms = new Term[termStrings.length];
-        for (int i = 0; i < terms.length; ++i) {
-            terms[i] = new Term(field, termStrings[i]);
-        }
-        return terms;
+        return Arrays.stream(termStrings)
+                .map(termString -> new Term(field,termString))
+                .toArray(Term[]::new);
     }
 
     private static Term[] toTerms(String field, BytesRef... termBytes) {
-        Term[] terms = new Term[termBytes.length];
-        for (int i = 0; i < terms.length; ++i) {
-            terms[i] = new Term(field, termBytes[i]);
-        }
-        return terms;
+        return Arrays.stream(termBytes)
+                .map(termByte -> new Term(field,termByte))
+                .toArray(Term[]::new);
     }
 
     /**
@@ -251,9 +243,9 @@ public class CustomPhraseQuery extends Query {
 
     private static class CustomPhraseWeight extends Weight {
 
-        private CustomPhraseQuery query;
+        private final CustomPhraseQuery query;
 
-        private TermStates[] states;
+        private final TermStates[] states;
 
         CustomPhraseWeight(IndexSearcher searcher, CustomPhraseQuery query) throws IOException {
             super(query);
@@ -266,11 +258,6 @@ public class CustomPhraseQuery extends Query {
                 Term term = query.terms[i];
                 this.states[i] = TermStates.build(context, term, false);
             }
-        }
-
-        @Deprecated
-        public void extractTerms(Set<Term> set) {
-            throw new UnsupportedOperationException();
         }
 
         @Override
