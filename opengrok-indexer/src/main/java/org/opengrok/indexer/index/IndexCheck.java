@@ -337,10 +337,10 @@ public class IndexCheck implements AutoCloseable {
 
         switch (mode) {
             case VERSION:
-                checkVersion(indexPath);
+                checkVersion(sourcePath, indexPath);
                 break;
             case DOCUMENTS:
-                checkDuplicateDocuments(indexPath);
+                checkDuplicateDocuments(sourcePath, indexPath);
                 break;
             case DEFINITIONS:
                 checkDefinitions(sourcePath, indexPath);
@@ -503,12 +503,13 @@ public class IndexCheck implements AutoCloseable {
     }
 
     /**
+     * @param sourcePath path to the source
      * @param indexPath path to the index directory
      * @throws IOException on I/O error
      * @throws IndexVersionException if the version stored in the document does not match the version
      * used by the running program
      */
-    private void checkVersion(Path indexPath) throws IOException, IndexVersionException {
+    private void checkVersion(Path sourcePath, Path indexPath) throws IOException, IndexVersionException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -526,7 +527,7 @@ public class IndexCheck implements AutoCloseable {
                 new Object[]{indexPath, segVersion, Version.LATEST.major});
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
-                String.format("Directory '%s' has index version discrepancy", indexPath), indexPath,
+                String.format("Index for '%s' has index version discrepancy", sourcePath), sourcePath,
                     Version.LATEST.major, segVersion);
         }
     }
@@ -606,7 +607,7 @@ public class IndexCheck implements AutoCloseable {
         }
     }
 
-    private static void checkDuplicateDocuments(Path indexPath) throws IOException, IndexDocumentException {
+    private static void checkDuplicateDocuments(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
 
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
         Statistics stat = new Statistics();
@@ -640,8 +641,8 @@ public class IndexCheck implements AutoCloseable {
 
         stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
         if (!fileMap.isEmpty()) {
-            throw new IndexDocumentException(String.format("index in '%s' contains duplicate live documents",
-                    indexPath), indexPath, fileMap);
+            throw new IndexDocumentException(String.format("index for '%s' contains duplicate live documents",
+                    sourcePath), sourcePath, fileMap);
         }
     }
 }

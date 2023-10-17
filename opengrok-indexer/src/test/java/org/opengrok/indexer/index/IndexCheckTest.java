@@ -34,10 +34,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -156,17 +158,23 @@ class IndexCheckTest {
             IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
             assertThrows(IndexCheck.IndexCheckException.class, () -> indexCheck.check(mode));
 
-            // For configuration with projects, recheck to see if the exception contains the expected list of paths
-            // that failed the check.
+            // Recheck to see if the exception contains the expected list of paths that failed the check.
+            IndexCheck.IndexCheckException exception = null;
+            try {
+                indexCheck.check(mode);
+            } catch (IndexCheck.IndexCheckException e) {
+                exception = e;
+            }
+            assertNotNull(exception);
+
+            // The webapp index check handling relies on the paths to be the source root paths.
+            Set<Path> failedPaths = exception.getFailedPaths();
+            assertFalse(failedPaths.isEmpty());
+            assertEquals(0,
+                    failedPaths.stream().filter(p -> !p.startsWith(configuration.getSourceRoot())).count());
+
             if (isProjectsEnabled) {
-                IndexCheck.IndexCheckException exception = null;
-                try {
-                    indexCheck.check(mode);
-                } catch (IndexCheck.IndexCheckException e) {
-                    exception = e;
-                }
-                assertNotNull(exception);
-                assertEquals(configuration.getProjects().keySet().size(), exception.getFailedPaths().size());
+                assertEquals(configuration.getProjects().keySet().size(), failedPaths.size());
             }
         }
     }
