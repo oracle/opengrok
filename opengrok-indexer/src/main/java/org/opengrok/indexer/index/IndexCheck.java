@@ -466,7 +466,6 @@ public class IndexCheck implements AutoCloseable {
         LOGGER.log(Level.FINE, "Checking definitions in ''{0}'' ({1} paths)",
                 new Object[]{indexPath, paths.size()});
 
-        // TODO: reconcile this with the executor used for this class
         long errors = 0;
         ExecutorService executorService = RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor();
         List<Future<Boolean>> futures = new ArrayList<>();
