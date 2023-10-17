@@ -139,10 +139,8 @@ public final class WebappListener implements ServletContextListener, ServletRequ
      * @param env {@link RuntimeEnvironment} instance
      */
     private static void indexCheck(String configPath, RuntimeEnvironment env) {
-        try {
-            try (IndexCheck indexCheck = new IndexCheck(Configuration.read(new File(configPath)))) {
+        try (IndexCheck indexCheck = new IndexCheck(Configuration.read(new File(configPath)))) {
                 indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
-            }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "could not perform index check", e);
         } catch (IndexCheck.IndexCheckException e) {
