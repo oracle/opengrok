@@ -153,6 +153,9 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                         project.setIndexed(false);
                     }
                 }
+            } else {
+                // Fail the deployment. The index check would fail only on legitimate version discrepancy.
+                throw new Error("index version check failed", e);
             }
         }
     }
