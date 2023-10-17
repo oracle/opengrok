@@ -491,6 +491,11 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
+        if (repository == null) {
+            LOGGER.log(Level.WARNING, "no repository found for ''{0}''", file);
+            return null;
+        }
+
         History history;
         try {
             history = getHistoryFromCache(file, repository, withFiles);
