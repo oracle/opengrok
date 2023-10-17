@@ -188,7 +188,7 @@ public class IndexCheck implements AutoCloseable {
         }
 
         executor = Executors.newFixedThreadPool(RuntimeEnvironment.getInstance().getRepositoryInvalidationParallelism(),
-                new OpenGrokThreadFactory("webapp-index-check"));
+                new OpenGrokThreadFactory("index-check"));
     }
 
     public void close() {
