@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
+class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 
     @BeforeAll
     public static void setUpClass() {
@@ -124,7 +124,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testGetAllowedGroupSubgroups() {
+    void testGetAllowedGroupSubgroups() {
         Set<Group> result = helper.getSubgroups(getAllowedGroupWithSubgroups());
         assertEquals(1, result.size());
         for (Group p : result) {
@@ -133,37 +133,37 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testGetUnAllowedGroupSubgroups() {
+    void testGetUnAllowedGroupSubgroups() {
         Set<Group> result = helper.getSubgroups(getUnAllowedGroupWithSubgroups());
         assertEquals(0, result.size());
     }
 
     @Test
-    public void testHasAllowedSubgroupAllowedSubgroups() {
+    void testHasAllowedSubgroupAllowedSubgroups() {
         Group g = getAllowedGroupWithSubgroups();
         assertTrue(helper.hasAllowedSubgroup(g));
     }
 
     @Test
-    public void testHasAllowedSubgroupUnAllowedSubgroups() {
+    void testHasAllowedSubgroupUnAllowedSubgroups() {
         Group g = getUnAllowedGroupWithSubgroups();
         assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
-    public void testHasAllowedSubgroupAllowedNoSubgroups() {
+    void testHasAllowedSubgroupAllowedNoSubgroups() {
         Group g = getAllowedGroupWithoutSubgroups();
         assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
-    public void testHasAllowedSubgroupUnAllowedNoSubgroups() {
+    void testHasAllowedSubgroupUnAllowedNoSubgroups() {
         Group g = getUnAllowedGroupWithoutSubgroups();
         assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
-    public void testIsFavourite() {
+    void testIsFavourite() {
         setupPageConfigRequest("grouped_project_0_1,"
                 + "grouped_repository_2_2,"
                 + "allowed_grouped_repository_0_2,"
@@ -192,7 +192,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testHasUngroupedFavouritePositive() {
+    void testHasUngroupedFavouritePositive() {
         setupPageConfigRequest("grouped_project_0_1,"
                 + "grouped_repository_2_2,"
                 + "allowed_grouped_repository_0_2,"
@@ -204,7 +204,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testHasUngroupedFavouriteNegative() {
+    void testHasUngroupedFavouriteNegative() {
         setupPageConfigRequest("grouped_project_0_1,"
                 + "grouped_repository_2_2,"
                 + "allowed_grouped_repository_0_2,"
@@ -215,7 +215,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testHasFavourite() {
+    void testHasFavourite() {
         String[] cookie = new String[] {
                 "grouped_project_2_1",
                 "allowed_grouped_project_2_1",

@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterWildcardQueryTest {
+class SuggesterWildcardQueryTest {
 
     @Test
-    public void testLength() {
+    void testLength() {
         SuggesterWildcardQuery q = new SuggesterWildcardQuery(new Term("test", "m?t"));
         assertEquals("m?t".length(), q.length());
     }

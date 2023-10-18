@@ -46,13 +46,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ProjectHelperTest extends ProjectHelperTestBase {
+class ProjectHelperTest extends ProjectHelperTestBase {
 
     /**
      * Test of getInstance method, of class ProjectHelper.
      */
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         ProjectHelper result = ProjectHelper.getInstance(cfg);
         assertNotNull(result, "Project helper should not be null");
         assertSame(result.getClass(), ProjectHelper.class);
@@ -65,7 +65,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * updates the projects in the UI.
      */
     @Test
-    public void testSynchronization() {
+    void testSynchronization() {
         HashMap<String, Project> oldProjects = new HashMap<>(env.getProjects());
         List<RepositoryInfo> oldRepositories = new ArrayList<>(env.getRepositories());
         Set<Group> oldGroups = new TreeSet<>(env.getGroups().values());
@@ -138,7 +138,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getRepositoryInfo method, of class ProjectHelper.
      */
     @Test
-    public void testUnAllowedGetRepositoryInfo() {
+    void testUnAllowedGetRepositoryInfo() {
         Project p = new Project("repository_2_1");
         p.setIndexed(true);
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
@@ -149,7 +149,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getRepositoryInfo method, of class ProjectHelper.
      */
     @Test
-    public void testAllowedGetRepositoryInfo() {
+    void testAllowedGetRepositoryInfo() {
         Project p = new Project("allowed_grouped_repository_0_1");
         p.setIndexed(true);
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
@@ -161,7 +161,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getGroups method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllowedGroups() {
+    void testGetAllowedGroups() {
         Set<Group> result = helper.getGroups();
         assertEquals(2, result.size());
         for (Group g : result) {
@@ -173,7 +173,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllowedProjects() {
+    void testGetAllowedProjects() {
         Set<Project> result = helper.getProjects();
         assertEquals(2, result.size());
         for (Project p : result) {
@@ -185,7 +185,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getRepositories method, of class ProjectHelper.
      */
     @Test
-    public void testGetRepositories() {
+    void testGetRepositories() {
         Set<Project> result = helper.getRepositories();
         assertEquals(2, result.size());
         for (Project p : result) {
@@ -197,7 +197,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetProjectsAllowedGroup() {
+    void testGetProjectsAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getProjects(g);
@@ -214,7 +214,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetProjectsUnAllowedGroup() {
+    void testGetProjectsUnAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getProjects(g).size());
@@ -228,7 +228,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getRepositories method, of class ProjectHelper.
      */
     @Test
-    public void testGetRepositoriesAllowedGroup() {
+    void testGetRepositoriesAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getRepositories(g);
@@ -245,7 +245,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getRepositories method, of class ProjectHelper.
      */
     @Test
-    public void testGetRepositoriesUnAllowedGroup() {
+    void testGetRepositoriesUnAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getRepositories(g).size());
@@ -259,7 +259,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getGroupedProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetGroupedProjects() {
+    void testGetGroupedProjects() {
         Set<Project> result = helper.getGroupedProjects();
         assertEquals(4, result.size());
         for (Project p : result) {
@@ -271,7 +271,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getGroupedRepositories method, of class ProjectHelper.
      */
     @Test
-    public void testGetGroupedRepositories() {
+    void testGetGroupedRepositories() {
         Set<Project> result = helper.getGroupedRepositories();
         assertEquals(4, result.size());
         for (Project p : result) {
@@ -283,7 +283,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getUngroupedProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetUngroupedProjects() {
+    void testGetUngroupedProjects() {
         Set<Project> result = helper.getUngroupedProjects();
         assertEquals(2, result.size());
         for (Project p : result) {
@@ -295,7 +295,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getUngroupedRepositories method, of class ProjectHelper.
      */
     @Test
-    public void testGetUngroupedRepositories() {
+    void testGetUngroupedRepositories() {
         Set<Project> result = helper.getUngroupedRepositories();
         assertEquals(2, result.size());
         for (Project p : result) {
@@ -307,7 +307,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getAllGrouped method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllGrouped() {
+    void testGetAllGrouped() {
         Set<Project> result = helper.getAllGrouped();
         assertEquals(8, result.size());
         for (Project p : result) {
@@ -319,7 +319,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getAllGrouped method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllGroupedAllowedGroup() {
+    void testGetAllGroupedAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("allowed_group_0")) {
                 Set<Project> result = helper.getAllGrouped(g);
@@ -333,7 +333,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     }
 
     @Test
-    public void testGetAllGroupedUnAllowedGroup() {
+    void testGetAllGroupedUnAllowedGroup() {
         for (Group g : RuntimeEnvironment.getInstance().getGroups().values()) {
             if (g.getName().startsWith("group_0")) {
                 assertEquals(0, helper.getAllGrouped(g).size());
@@ -346,7 +346,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getAllUngrouped method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllUngrouped() {
+    void testGetAllUngrouped() {
         Set<Project> result = helper.getAllUngrouped();
         assertEquals(4, result.size());
         for (Project p : result) {
@@ -358,7 +358,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test of getAllProjects method, of class ProjectHelper.
      */
     @Test
-    public void testGetAllProjects() {
+    void testGetAllProjects() {
         Set<Project> result = helper.getAllProjects();
         assertEquals(12, result.size());
         for (Project p : result) {

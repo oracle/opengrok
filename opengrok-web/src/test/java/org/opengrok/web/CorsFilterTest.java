@@ -37,14 +37,14 @@ import static org.mockito.Mockito.when;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
-public class CorsFilterTest {
+class CorsFilterTest {
     @Test
-    public void nonCorsTest() {
+    void nonCorsTest() {
         testBoth(null, null);
     }
 
     @Test
-    public void corsTest() {
+    void corsTest() {
         testBoth("https://example.org", List.of("*"));
     }
 

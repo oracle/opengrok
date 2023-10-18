@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
-public class SearchControllerTest extends OGKJerseyTest {
+class SearchControllerTest extends OGKJerseyTest {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

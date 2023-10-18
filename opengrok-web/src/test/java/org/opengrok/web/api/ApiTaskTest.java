@@ -56,7 +56,7 @@ class ApiTaskTest {
             value = 1;
         }
 
-        public void setValue(int value) {
+        void setValue(int value) {
             this.value = value;
         }
 

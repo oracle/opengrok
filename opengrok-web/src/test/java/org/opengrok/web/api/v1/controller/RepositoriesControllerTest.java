@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 @EnabledForRepository(MERCURIAL)
-public class RepositoriesControllerTest extends OGKJerseyTest {
+class RepositoriesControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -85,12 +85,12 @@ public class RepositoriesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetRepositoryTypeOfNonExistentRepository() {
+    void testGetRepositoryTypeOfNonExistentRepository() {
         assertThrows(NotFoundException.class, () -> getRepoType(Paths.get("/totally-nonexistent-repository").toString()));
     }
 
     @Test
-    public void testGetRepositoryType() throws Exception {
+    void testGetRepositoryType() throws Exception {
         // Create sub-repository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,

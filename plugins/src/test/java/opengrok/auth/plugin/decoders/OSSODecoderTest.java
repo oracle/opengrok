@@ -42,13 +42,13 @@ import org.junit.jupiter.api.Test;
  * Test OSSO header decoder.
  * @author Krystof Tulinger
  */
-public class OSSODecoderTest {
+class OSSODecoderTest {
 
     DummyHttpServletRequestUser dummyRequest;
     OSSOHeaderDecoder decoder = new OSSOHeaderDecoder();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
         dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, "5761172f");
         dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, "");
@@ -61,7 +61,7 @@ public class OSSODecoderTest {
     /**
      * Test of fromRequest method, of class User.
      */
-    public void testAll() {
+    void testAll() {
         dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, "5761172f");
         dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, "false");
         dummyRequest.setHeader(OSSO_SUBSCRIBER_DN_HEADER, "dn=example.com");
@@ -83,7 +83,7 @@ public class OSSODecoderTest {
      * Test of getUserId method, of class User.
      */
     @Test
-    public void testGetUserId() {
+    void testGetUserId() {
         String[] tests = {
                 "123456",
                 "sd45gfgf5sd4g5ffd54g",
@@ -102,7 +102,7 @@ public class OSSODecoderTest {
      * Test of getUserDn method, of class User.
      */
     @Test
-    public void testGetUserDn() {
+    void testGetUserDn() {
         String[] tests = {
                 "123456",
                 "sd45gfgf5sd4g5ffd54g",
@@ -121,7 +121,7 @@ public class OSSODecoderTest {
      * Test of getCookieTimestamp method, of class User.
      */
     @Test
-    public void testGetCookieTimestamp() {
+    void testGetCookieTimestamp() {
         String[] tests = {"123456", "5761172f", "58d137be"};
         long[] expected = {1193046000L, 1465980719000L, 1490106302000L};
 
@@ -137,7 +137,7 @@ public class OSSODecoderTest {
      * Test of getCookieTimestamp method, of class User.
      */
     @Test
-    public void testInvalidGetCookieTimestamp() {
+    void testInvalidGetCookieTimestamp() {
         String[] tests = {
                 "sd45gfgf5sd4g5ffd54g",
                 "ě5 1g56ew1tč6516re5g1g65d1g65d",
@@ -157,7 +157,7 @@ public class OSSODecoderTest {
      * Test of getTimeoutExceeded method, of class User.
      */
     @Test
-    public void testGetTimeouted() {
+    void testGetTimeouted() {
         String[] tests = {"false", "true", "FALSE", "TRUE", "abcd"};
         boolean[] expected = {false, true, false, true, false};
 

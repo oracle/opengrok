@@ -33,16 +33,16 @@ import static opengrok.auth.plugin.util.FilterUtil.doTransform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FilterUtilTest {
+class FilterUtilTest {
 
     @Test
-    public void testTransforms() {
+    void testTransforms() {
         assertEquals("FOO", doTransform("foo", "toUpperCase"));
         assertEquals("foo", doTransform("FOO", "toLowerCase"));
     }
 
     @Test
-    public void testTransformsUTF() throws UnsupportedEncodingException {
+    void testTransformsUTF() throws UnsupportedEncodingException {
         assertEquals(new String("ČUČKAŘ".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
                 doTransform(new String("čučkař".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), "toUpperCase"));
         assertEquals(new String("čučkař".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
@@ -50,12 +50,12 @@ public class FilterUtilTest {
     }
 
     @Test
-    public void testInvalidTransform() {
+    void testInvalidTransform() {
         assertThrows(UnsupportedOperationException.class, () -> doTransform("foo", "bar"));
     }
 
     @Test
-    public void testReplace() {
+    void testReplace() {
         Map<String, String> transforms = new TreeMap<>();
         transforms.put("uid", "toUpperCase");
         assertEquals("fooUSERbar",
@@ -63,7 +63,7 @@ public class FilterUtilTest {
     }
 
     @Test
-    public void testCheckTransforms() {
+    void testCheckTransforms() {
         Map<String, String> transforms = new TreeMap<>();
         transforms.put("uid", "xxx");
         assertThrows(UnsupportedOperationException.class, () -> FilterUtil.checkTransforms(transforms));

@@ -40,10 +40,10 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class SuggesterUtilsTest {
+class SuggesterUtilsTest {
 
     @Test
-    public void intoTermsTest() {
+    void intoTermsTest() {
         Term t = new Term("test", "test");
 
         Query q = new TermQuery(t);
@@ -55,7 +55,7 @@ public class SuggesterUtilsTest {
     }
 
     @Test
-    public void intoTermsComplexTest() {
+    void intoTermsComplexTest() {
         Term t = new Term("test", "term");
 
         BooleanQuery q = new BooleanQuery.Builder()
@@ -71,7 +71,7 @@ public class SuggesterUtilsTest {
     }
 
     @Test
-    public void intoTermExceptPhraseQueryTest() {
+    void intoTermExceptPhraseQueryTest() {
         Term t = new Term("test", "term");
         BooleanQuery q = new BooleanQuery.Builder()
                 .add(new TermQuery(t), BooleanClause.Occur.MUST)
@@ -85,12 +85,12 @@ public class SuggesterUtilsTest {
     }
 
     @Test
-    public void testIsComplexQuery() {
+    void testIsComplexQuery() {
         assertFalse(SuggesterUtils.isComplexQuery(null, new SuggesterPrefixQuery(new Term("test", "t"))));
     }
 
     @Test
-    public void testCombineResults() {
+    void testCombineResults() {
         LookupResultItem item1 = new LookupResultItem("test", "proj1", 10);
         LookupResultItem item2 = new LookupResultItem("test", "proj2", 10);
         LookupResultItem item3 = new LookupResultItem("test", "proj3", 10);

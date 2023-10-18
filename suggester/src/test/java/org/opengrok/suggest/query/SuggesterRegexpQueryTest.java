@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterRegexpQueryTest {
+class SuggesterRegexpQueryTest {
 
     @Test
-    public void testLength() {
+    void testLength() {
         SuggesterRegexpQuery q = new SuggesterRegexpQuery(new Term("test", ".*test"));
         assertEquals(".*test".length(), q.length());
     }

@@ -74,7 +74,7 @@ class SystemControllerTest extends OGKJerseyTest {
      * @throws IOException on error
      */
     @Test
-    public void testIncludeReload() throws IOException {
+    void testIncludeReload() throws IOException {
         // Set new include root directory.
         Path includeRootPath = Files.createTempDirectory("systemControllerTest");
         File includeRoot = includeRootPath.toFile();
@@ -115,7 +115,7 @@ class SystemControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testDtagsEftarReload() throws IOException {
+    void testDtagsEftarReload() throws IOException {
         // The output file will be located in a directory under data root so create it first.
         Path dataRoot = Files.createTempDirectory("api_dtags_test");
         env.setDataRoot(dataRoot.toString());
@@ -148,7 +148,7 @@ class SystemControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testIndexTime() throws IOException, ParseException {
+    void testIndexTime() throws IOException, ParseException {
         Path dataRoot = Files.createTempDirectory("indexTimetest");
         env.setDataRoot(dataRoot.toString());
         Path indexTimeFile = dataRoot.resolve("timestamp");

@@ -32,10 +32,10 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterPhraseQueryTest {
+class SuggesterPhraseQueryTest {
 
     @Test
-    public void prefixQueryTest() {
+    void prefixQueryTest() {
         SuggesterPhraseQuery q = new SuggesterPhraseQuery("test", "ident",
                 Arrays.asList("one", "two", "tident"), 0);
 
@@ -45,7 +45,7 @@ public class SuggesterPhraseQueryTest {
     }
 
     @Test
-    public void phraseQueryTest() throws Exception {
+    void phraseQueryTest() throws Exception {
         SuggesterPhraseQuery q = new SuggesterPhraseQuery("test", "ident",
                 Arrays.asList("one", "two", "tident"), 0);
 

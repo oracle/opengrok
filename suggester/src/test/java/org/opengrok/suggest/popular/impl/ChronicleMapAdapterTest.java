@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ChronicleMapAdapterTest {
+class ChronicleMapAdapterTest {
 
     private static final String FIELD = "test";
 
@@ -48,20 +48,20 @@ public class ChronicleMapAdapterTest {
     private Path tempFile;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         tempFile = Files.createTempFile("opengrok", "test");
 
         map = new ChronicleMapAdapter(FIELD, 3, 10, tempFile.toFile());
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    void tearDown() throws IOException {
         map.close();
         Files.delete(tempFile);
     }
 
     @Test
-    public void dataNotLostAfterResizeTest() throws IOException {
+    void dataNotLostAfterResizeTest() throws IOException {
         fillData(0, 10, map);
 
         map.resize(20, 20);
@@ -82,7 +82,7 @@ public class ChronicleMapAdapterTest {
     }
 
     @Test
-    public void testResize() throws IOException {
+    void testResize() throws IOException {
         fillData(0, 10, map);
 
         map.resize(500, 20);
@@ -94,7 +94,7 @@ public class ChronicleMapAdapterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    public void testGetPopularityData() {
+    void testGetPopularityData() {
         Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
         Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);
 
@@ -108,7 +108,7 @@ public class ChronicleMapAdapterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    public void testGetPopularityPaging() {
+    void testGetPopularityPaging() {
         Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
         Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);
         Entry<BytesRef, Integer> e3 = new SimpleEntry<>(new BytesRef("test3"), 3);

@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AnnotationControllerTest extends OGKJerseyTest {
+class AnnotationControllerTest extends OGKJerseyTest {
 
     private static final String HASH_BB74B7E8 = "bb74b7e849170c31dc1b1b5801c83bf0094a3b10";
     private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
@@ -112,7 +112,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAnnotationAPI() throws IOException {
+    void testAnnotationAPI() throws IOException {
         final String path = "git/Makefile";
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)
@@ -135,7 +135,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAnnotationAPIWithRevision() {
+    void testAnnotationAPIWithRevision() {
         final String path = "git/Makefile";
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)

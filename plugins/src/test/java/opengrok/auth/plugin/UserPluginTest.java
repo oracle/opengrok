@@ -40,17 +40,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Krystof Tulinger
  */
-public class UserPluginTest {
+class UserPluginTest {
 
     private UserPlugin plugin;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new UserPlugin(new OSSOHeaderDecoder());
     }
 
     @Test
-    public void testNoUser() {
+    void testNoUser() {
         assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Group()));
         assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Project()));
         assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createGroup("some group")));
@@ -58,7 +58,7 @@ public class UserPluginTest {
     }
 
     @Test
-    public void testUser() {
+    void testUser() {
         HttpServletRequest req;
         assertTrue(plugin.isAllowed(req = createRequest("007"), new Group()));
         assertEquals("007", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
@@ -71,7 +71,7 @@ public class UserPluginTest {
     }
 
     @Test
-    public void testTimeoutedUser() {
+    void testTimeoutedUser() {
         HttpServletRequest req;
         assertFalse(plugin.isAllowed(req = createRequest("007", true), new Group()));
         assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
@@ -83,11 +83,11 @@ public class UserPluginTest {
         assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
     }
 
-    protected HttpServletRequest createRequest(String email) {
+    HttpServletRequest createRequest(String email) {
         return createRequest(email, false);
     }
 
-    protected HttpServletRequest createRequest(String email, Boolean timeout) {
+    HttpServletRequest createRequest(String email, Boolean timeout) {
         return new DummyHttpServletRequestUser() {
             {
                 setHeader("osso-user-dn", email);
@@ -97,13 +97,13 @@ public class UserPluginTest {
         };
     }
 
-    protected Group createGroup(String name) {
+    Group createGroup(String name) {
         Group g = new Group();
         g.setName(name);
         return g;
     }
 
-    protected Project createProject(String name) {
+    Project createProject(String name) {
         Project g = new Project();
         g.setName(name);
         return g;

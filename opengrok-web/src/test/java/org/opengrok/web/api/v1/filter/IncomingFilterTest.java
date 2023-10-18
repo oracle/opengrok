@@ -47,14 +47,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class IncomingFilterTest {
+class IncomingFilterTest {
     @BeforeEach
-    public void beforeTest() {
+    void beforeTest() {
         RuntimeEnvironment.getInstance().setAuthenticationTokens(new HashSet<>());
     }
 
     @Test
-    public void nonLocalhostTestWithValidToken() throws Exception {
+    void nonLocalhostTestWithValidToken() throws Exception {
         String allowedToken = "foo";
 
         Set<String> tokens = new HashSet<>();
@@ -65,7 +65,7 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void nonLocalhostTestWithInvalidToken() throws Exception {
+    void nonLocalhostTestWithInvalidToken() throws Exception {
         String allowedToken = "bar";
 
         Set<String> tokens = new HashSet<>();
@@ -76,7 +76,7 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void nonLocalhostTestWithTokenChange() throws Exception {
+    void nonLocalhostTestWithTokenChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         String token = "foobar";
@@ -128,7 +128,7 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void localhostTestWithForwardedHeader() throws Exception {
+    void localhostTestWithForwardedHeader() throws Exception {
         Map<String, String> headers = new TreeMap<>();
         headers.put("X-Forwarded-For", "192.0.2.43, 2001:db8:cafe::17");
         IncomingFilter filter = mockWithRemoteAddress("127.0.0.1", headers, true);
@@ -144,7 +144,7 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void nonLocalhostTestWithoutToken() throws Exception {
+    void nonLocalhostTestWithoutToken() throws Exception {
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
 
         ContainerRequestContext context = mockContainerRequestContext("test");
@@ -197,7 +197,7 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void localhostTest() throws Exception {
+    void localhostTest() throws Exception {
         assertFilterDoesNotBlockAddress("127.0.0.1", "test");
     }
 
@@ -214,22 +214,22 @@ public class IncomingFilterTest {
     }
 
     @Test
-    public void localhostIPv6Test() throws Exception {
+    void localhostIPv6Test() throws Exception {
         assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1", "test");
     }
 
     @Test
-    public void searchTest() throws Exception {
+    void searchTest() throws Exception {
         assertFilterDoesNotBlockAddress("10.0.0.1", "search");
     }
 
     @Test
-    public void systemPingRemoteWithoutTokenTest() throws Exception {
+    void systemPingRemoteWithoutTokenTest() throws Exception {
         assertFilterDoesNotBlockAddress("10.0.0.1", "system/ping");
     }
 
     @Test
-    public void systemPathDescWithoutTokenTest() throws Exception {
+    void systemPathDescWithoutTokenTest() throws Exception {
 
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
 

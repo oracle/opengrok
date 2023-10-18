@@ -69,7 +69,7 @@ import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
 /**
  * Unit tests for the {@code PageConfig} class.
  */
-public class PageConfigTest {
+class PageConfigTest {
     private static final String HASH_BB74B7E8 = "bb74b7e849170c31dc1b1b5801c83bf0094a3b10";
     private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
     private static TestRepository repository = new TestRepository();

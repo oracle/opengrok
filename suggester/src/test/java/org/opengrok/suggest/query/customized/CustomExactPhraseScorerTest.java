@@ -26,15 +26,15 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class CustomExactPhraseScorerTest {
+class CustomExactPhraseScorerTest {
 
     @Test
-    public void simpleTestAfter() throws IOException {
+    void simpleTestAfter() throws IOException {
         CustomSloppyPhraseScorerTest.test(0, 2, new String[] {"one", "two"}, new Integer[] {3});
     }
 
     @Test
-    public void simpleTestBefore() throws IOException {
+    void simpleTestBefore() throws IOException {
         CustomSloppyPhraseScorerTest.test(0, -1, new String[] {"one", "two"}, new Integer[] {0});
     }
 

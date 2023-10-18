@@ -34,18 +34,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class MellonDecoderTest {
+class MellonDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
     MellonHeaderDecoder decoder = new MellonHeaderDecoder();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
         dummyRequest.setHeader(MELLON_EMAIL_HEADER, "foo@bar.cz");
     }
 
     @Test
-    public void testId() {
+    void testId() {
         User result = decoder.fromRequest(dummyRequest);
 
         assertNotNull(result);
@@ -55,12 +55,12 @@ public class MellonDecoderTest {
     }
 
     @Test
-    public void testMissingHeader() {
+    void testMissingHeader() {
         assertNull(decoder.fromRequest(new DummyHttpServletRequestUser()));
     }
 
     @Test
-    public void testUsername() {
+    void testUsername() {
         dummyRequest.setHeader(MELLON_USERNAME_HEADER, "foo");
         User result = decoder.fromRequest(dummyRequest);
 

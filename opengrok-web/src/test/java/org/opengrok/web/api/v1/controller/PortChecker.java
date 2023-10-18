@@ -27,7 +27,7 @@ import java.net.ServerSocket;
  * Represents a helper for checking a network port, borrowed from Apache
  * Usergrid's AvailablePortFinder.java.
  */
-public class PortChecker {
+class PortChecker {
     /** The minimum number of server port number. */
     public static final int MIN_PORT_NUMBER = 1;
 

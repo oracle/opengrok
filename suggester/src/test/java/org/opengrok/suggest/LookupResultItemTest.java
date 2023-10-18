@@ -29,10 +29,10 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LookupResultItemTest {
+class LookupResultItemTest {
 
     @Test
-    public void combineTest() {
+    void combineTest() {
         LookupResultItem item1 = new LookupResultItem("p1", "proj1", 2);
         LookupResultItem item2 = new LookupResultItem("p1", "proj2", 4);
 
@@ -44,7 +44,7 @@ public class LookupResultItemTest {
     }
 
     @Test
-    public void combineNullTest() {
+    void combineNullTest() {
         LookupResultItem item = new LookupResultItem("p1", "proj1", 2);
 
         assertThrows(IllegalArgumentException.class, () -> item.combine(null));
