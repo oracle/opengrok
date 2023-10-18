@@ -329,7 +329,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                   <execution>
                     <goals>
                       <goal>javadoc</goal>
-                      <goal>test-javadoc</goal>
                     </goals>
                     <phase>verify</phase>
                   </execution>
