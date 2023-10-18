@@ -38,6 +38,7 @@ import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexCheck;
+import org.opengrok.indexer.index.IndexCheckException;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.ApiTaskManager;
@@ -143,7 +144,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "could not perform index check", e);
-        } catch (IndexCheck.IndexCheckException e) {
+        } catch (IndexCheckException e) {
             if (env.isProjectsEnabled()) {
                 LOGGER.log(Level.INFO, "marking projects that failed the index check as not indexed");
 

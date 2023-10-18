@@ -282,7 +282,7 @@ public final class Indexer {
                     // This avoids problems with wiping out the index based on the check.
                     LOGGER.log(Level.WARNING, String.format("Could not perform index check for '%s'", subFileArgs), e);
                     System.exit(2);
-                } catch (IndexCheck.IndexCheckException e) {
+                } catch (IndexCheckException e) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " + e.getFailedPaths());
                     System.exit(1);

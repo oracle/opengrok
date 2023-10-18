@@ -156,13 +156,13 @@ class IndexCheckTest {
 
         try (IndexCheck indexCheck = new IndexCheck(configuration)) {
             IndexCheck.IndexCheckMode mode = IndexCheck.IndexCheckMode.VERSION;
-            assertThrows(IndexCheck.IndexCheckException.class, () -> indexCheck.check(mode));
+            assertThrows(IndexCheckException.class, () -> indexCheck.check(mode));
 
             // Recheck to see if the exception contains the expected list of paths that failed the check.
-            IndexCheck.IndexCheckException exception = null;
+            IndexCheckException exception = null;
             try {
                 indexCheck.check(mode);
-            } catch (IndexCheck.IndexCheckException e) {
+            } catch (IndexCheckException e) {
                 exception = e;
             }
             assertNotNull(exception);

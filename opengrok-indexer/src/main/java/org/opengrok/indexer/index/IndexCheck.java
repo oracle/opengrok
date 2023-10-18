@@ -33,7 +33,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -90,76 +89,6 @@ public class IndexCheck implements AutoCloseable {
         VERSION,
         DEFINITIONS,
         DOCUMENTS
-    }
-
-    /**
-     * Common exception for all check modes.
-     */
-    public static class IndexCheckException extends Exception {
-        private static final long serialVersionUID = 5693446916108385595L;
-
-        private final Set<Path> failedPaths = new HashSet<>();
-
-        public IndexCheckException(String s, Path path) {
-            super(s);
-            failedPaths.add(path);
-        }
-
-        public IndexCheckException(String s, Set<Path> paths) {
-            super(s);
-            failedPaths.addAll(paths);
-        }
-
-        public Set<Path> getFailedPaths() {
-            return Collections.unmodifiableSet(failedPaths);
-        }
-    }
-
-    /**
-     * Exception thrown when index version does not match Lucene version.
-     */
-    public static class IndexVersionException extends IndexCheckException {
-
-        private static final long serialVersionUID = 5693446916108385595L;
-
-        private final int luceneIndexVersion;
-        private final int indexVersion;
-
-        public IndexVersionException(String s, Path path, int luceneIndexVersion, int indexVersion) {
-            super(s, path);
-            this.indexVersion = indexVersion;
-            this.luceneIndexVersion = luceneIndexVersion;
-        }
-
-        @Override
-        public String toString() {
-            return getMessage() + ": " + String.format("Lucene version = %d", luceneIndexVersion) + ", " +
-                    String.format("index version = %d", indexVersion);
-        }
-    }
-
-    /**
-     * Exception thrown when index contains duplicate live documents.
-     */
-    public static class IndexDocumentException extends IndexCheckException {
-        private static final long serialVersionUID = 5693446916108385595L;
-
-        private final Map<String, Integer> fileMap;
-
-        public IndexDocumentException(String s, Path path) {
-            super(s, path);
-            this.fileMap = null;
-        }
-
-        public IndexDocumentException(String s, Path path, Map<String, Integer> fileMap) {
-            super(s, path);
-            this.fileMap = fileMap;
-        }
-
-        @Override
-        public String toString() {
-            return getMessage() + ": " + (fileMap == null ? "" : fileMap);
-        }
     }
 
     private final Configuration configuration;
