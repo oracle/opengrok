@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -107,14 +108,14 @@ class IndexCheckTest {
         Indexer.getInstance().doIndexerExecution(null, null);
 
         try (IndexCheck indexCheck = new IndexCheck(configuration, subFiles)) {
-            indexCheck.check(mode);
+            assertDoesNotThrow(() -> indexCheck.check(mode));
         }
     }
 
     @Test
     void testIndexVersionNoIndex() throws Exception {
         try (IndexCheck indexCheck = new IndexCheck(configuration)) {
-            indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
+            assertDoesNotThrow(() -> indexCheck.check(IndexCheck.IndexCheckMode.VERSION));
         }
     }
 
@@ -250,7 +251,7 @@ class IndexCheckTest {
 
         try (IndexCheck indexCheck = new IndexCheck(configuration)) {
             for (int i = 0; i < 3; i++) {
-                indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
+                assertDoesNotThrow(() -> indexCheck.check(IndexCheck.IndexCheckMode.VERSION));
             }
         }
     }
