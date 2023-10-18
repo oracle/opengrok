@@ -251,7 +251,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
-                <version>1.8.2</version>
+                <version>1.9.1</version>
                 <executions>
                     <execution>
                         <goals>
