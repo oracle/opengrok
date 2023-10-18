@@ -491,6 +491,11 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
 
+        if (repository == null) {
+            LOGGER.log(Level.WARNING, "no repository found for ''{0}''", file);
+            return null;
+        }
+
         History history;
         try {
             history = getHistoryFromCache(file, repository, withFiles);
@@ -1183,8 +1188,9 @@ public final class HistoryGuru {
     /**
      * Lookup repository for given file.
      * @param file file object source root
-     * @return repository object
+     * @return repository object or {@code null} if not found
      */
+    @Nullable
     public Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);
