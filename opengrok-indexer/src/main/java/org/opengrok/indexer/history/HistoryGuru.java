@@ -1188,8 +1188,9 @@ public final class HistoryGuru {
     /**
      * Lookup repository for given file.
      * @param file file object source root
-     * @return repository object
+     * @return repository object or {@code null} if not found
      */
+    @Nullable
     public Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);
