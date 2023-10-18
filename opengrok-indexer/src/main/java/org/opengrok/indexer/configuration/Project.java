@@ -570,8 +570,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Get the project for a specific file.
      *
-     * @param file the file to lookup
-     * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
+     * @param file file under source root
+     * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project,
+     * or it is a symbolic link that is not allowed)
      */
     @Nullable
     public static Project getProject(File file) {

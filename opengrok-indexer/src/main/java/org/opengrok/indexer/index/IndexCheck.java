@@ -38,9 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,8 +63,10 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -70,11 +74,11 @@ import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Index checker.
+ * Index checker. Offers multiple methods of checking the index. The main method is {@link #check(IndexCheckMode)}.
  *
  * @author Vladimír Kotal
  */
-public class IndexCheck {
+public class IndexCheck implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexCheck.class);
 
     /**
@@ -87,126 +91,169 @@ public class IndexCheck {
         DOCUMENTS
     }
 
-    /**
-     * Exception thrown when index version does not match Lucene version.
-     */
-    public static class IndexVersionException extends Exception {
+    private final Configuration configuration;
+    private final Set<String> projectNames = new HashSet<>();
 
-        private static final long serialVersionUID = 5693446916108385595L;
-
-        private final int luceneIndexVersion;
-        private final int indexVersion;
-
-        public IndexVersionException(String s, int luceneIndexVersion, int indexVersion) {
-            super(s);
-
-            this.indexVersion = indexVersion;
-            this.luceneIndexVersion = luceneIndexVersion;
-        }
-
-        @Override
-        public String toString() {
-            return getMessage() + ": " + String.format("Lucene version = %d", luceneIndexVersion) + ", " +
-                    String.format("index version = %d", indexVersion);
-        }
-    }
+    // Common executor for parallel processing.
+    private final ExecutorService executor;
 
     /**
-     * Exception thrown when index contains duplicate live documents.
-     */
-    public static class IndexDocumentException extends Exception {
-        private static final long serialVersionUID = 5693446916108385595L;
-
-        private final Map<String, Integer> fileMap;
-
-        public IndexDocumentException(String s) {
-            super(s);
-
-            this.fileMap = null;
-        }
-
-        public IndexDocumentException(String s, Map<String, Integer> fileMap) {
-            super(s);
-
-            this.fileMap = fileMap;
-        }
-
-        @Override
-        public String toString() {
-            return getMessage() + ": " + (fileMap == null ? "" : fileMap);
-        }
-    }
-
-    private IndexCheck() {
-        // utility class
-    }
-
-    /**
-     * Check index(es).
      * @param configuration configuration based on which to perform the check
-     * @param mode index check mode
+     */
+    public IndexCheck(@NotNull Configuration configuration) {
+        this(configuration, null);
+    }
+
+    /**
+     * @param configuration configuration based on which to perform the check
      * @param projectNames collection of project names. If non-empty, only projects matching these paths will be checked.
      *                     Otherwise, either the sole index or all project indexes will be checked, depending
      *                     on whether projects are enabled in the configuration.
-     * @return true on success, false on failure
      */
-    public static boolean isOkay(@NotNull Configuration configuration, IndexCheckMode mode,
-                                 Collection<String> projectNames) throws IOException {
+    public IndexCheck(@NotNull Configuration configuration, Collection<String> projectNames) {
+        this.configuration = configuration;
+        if (projectNames != null) {
+            this.projectNames.addAll(projectNames);
+        }
+
+        executor = Executors.newFixedThreadPool(RuntimeEnvironment.getInstance().getRepositoryInvalidationParallelism(),
+                new OpenGrokThreadFactory("index-check"));
+    }
+
+    public void close() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(configuration.getIndexCheckTimeout(), TimeUnit.SECONDS)) {
+                LOGGER.log(Level.WARNING, "index check took more than {0} seconds",
+                        configuration.getIndexCheckTimeout());
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "failed to await termination of index check");
+            executor.shutdownNow();
+        }
+    }
+
+    /**
+     * Perform index check of given projects in parallel.
+     * @param mode index check mode
+     * @param projectNames set of project names
+     * @throws IOException on I/O error
+     */
+    private void checkProjectsParallel(IndexCheckMode mode, Set<String> projectNames)
+            throws IOException, IndexCheckException {
+
+        Path indexRoot = Path.of(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
+
+        Set<Future<Exception>> futures = new HashSet<>();
+        for (String projectName : projectNames) {
+            futures.add(executor.submit(() -> {
+                try {
+                    checkDirWithLogging(Path.of(configuration.getSourceRoot(), projectName),
+                            Path.of(indexRoot.toString(), projectName),
+                            mode);
+                } catch (Exception e) {
+                    return e;
+                }
+                return null;
+            }));
+        }
+
+        IOException ioException = null;
+        Set<Path> paths = new HashSet<>();
+        /*
+         * In case od IndexCheckExceptions, assemble all the paths so they can be returned in a single exception.
+         * For IOExceptions, log them all and throw a common one at the end.
+         */
+        for (Future<Exception> future : futures) {
+            Exception exception = null;
+            try {
+                exception = future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.log(Level.WARNING, "failed to get future", e);
+            }
+            if (exception != null) {
+                if (exception instanceof IndexCheckException) {
+                    // The exception is logged because even though the path will be added to the common exception
+                    // at the end, the nature of the problem (i.e. specific kind of the index check and associated details)
+                    // would be lost.
+                    LOGGER.log(Level.WARNING, "index check failed", exception);
+                    paths.addAll(((IndexCheckException) exception).getFailedPaths());
+                } else if (exception instanceof IOException) {
+                    // There can be multiple IOExceptions so log them here and remember the last one.
+                    // It will be thrown once all the checks complete.
+                    LOGGER.log(Level.WARNING, "could not perform index check", exception);
+                    ioException = (IOException) exception;
+                }
+            }
+        }
+
+        // IOException trumps the IndexCheckException, so throw the last one here first.
+        if (ioException != null) {
+            throw ioException;
+        }
+
+        if (!paths.isEmpty()) {
+            throw new IndexCheckException("index check failed", paths);
+        }
+    }
+
+    /**
+     * Check index(es). If the check is successful, just return. On failure, an exception will be thrown.
+     * @param mode index check mode
+     * @throws IOException on I/O error
+     * @throws IndexCheckException if some of the indexes failed the check. The exception contains list of the paths.
+     */
+    public void check(IndexCheckMode mode) throws IOException, IndexCheckException {
 
         if (mode.equals(IndexCheckMode.NO_CHECK)) {
             LOGGER.log(Level.WARNING, "no index check mode selected");
-            return true;
+            return;
         }
 
-        Path indexRoot = Path.of(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
-        int ret = 0;
+        Statistics statistics = new Statistics();
 
         if (!projectNames.isEmpty()) {
             // Assumes projects are enabled.
-            for (String projectName : projectNames) {
-                ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()),
-                        Path.of(indexRoot.toString(), projectName), mode);
-            }
+            checkProjectsParallel(mode, projectNames);
         } else {
             if (configuration.isProjectsEnabled()) {
-                for (String projectName : configuration.getProjects().keySet()) {
-                    ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()),
-                            Path.of(indexRoot.toString(), projectName), mode);
-                }
+                checkProjectsParallel(mode, configuration.getProjects().keySet());
             } else {
-                ret |= checkDirFilterExceptions(Path.of(configuration.getSourceRoot()), indexRoot, mode);
+                checkDirWithLogging(Path.of(configuration.getSourceRoot()),
+                        Path.of(configuration.getDataRoot(), IndexDatabase.INDEX_DIR), mode);
             }
         }
 
-        return ret == 0;
+        statistics.report(LOGGER, Level.FINE, "Index check done");
     }
 
     /**
      * Perform specified check on given index directory. All exceptions except {@code IOException} are swallowed
      * and result in return value of 1.
      * @param indexPath directory with index
-     * @return 0 on success, 1 on failure (index check failed)
      * @throws IOException on I/O error
+     * @throws IndexCheckException if the index failed given check
      */
-    private static int checkDirFilterExceptions(Path sourcePath, Path indexPath, IndexCheckMode mode) throws IOException {
+    private void checkDirWithLogging(Path sourcePath, Path indexPath, IndexCheckMode mode)
+            throws IOException, IndexCheckException {
         try {
             LOGGER.log(Level.INFO, "Checking index in ''{0}'' (mode {1})", new Object[]{indexPath, mode});
             checkDir(sourcePath, indexPath, mode);
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IndexCheckException e) {
             LOGGER.log(Level.WARNING, String.format("Index check for directory '%s' failed", indexPath), e);
-            return 1;
+            throw e;
         }
 
         LOGGER.log(Level.INFO, "Index check for directory ''{0}'' passed", indexPath);
-        return 0;
     }
 
     /**
-     * Check index in given directory. It assumes that that all commits (if any)
+     * Check index in given directory. If the directory is empty, just return.
+     * <p>
+     * It assumes that that all commits (if any)
      * in the Lucene segment file were done with the same version.
-     *
+     * </p>
      * @param sourcePath path to source directory
      * @param indexPath directory with index to check
      * @param mode      index check mode
@@ -214,15 +261,15 @@ public class IndexCheck {
      * @throws IndexVersionException if the version of the index does not match Lucene index version
      * @throws IndexDocumentException if there are duplicate documents in the index or not matching definitions
      */
-    public static void checkDir(Path sourcePath, Path indexPath, IndexCheckMode mode)
+    void checkDir(Path sourcePath, Path indexPath, IndexCheckMode mode)
             throws IndexVersionException, IndexDocumentException, IOException {
 
         switch (mode) {
             case VERSION:
-                checkVersion(indexPath);
+                checkVersion(sourcePath, indexPath);
                 break;
             case DOCUMENTS:
-                checkDuplicateDocuments(indexPath);
+                checkDuplicateDocuments(sourcePath, indexPath);
                 break;
             case DEFINITIONS:
                 checkDefinitions(sourcePath, indexPath);
@@ -248,7 +295,7 @@ public class IndexCheck {
      * @param path path to the file being checked
      * @return okay indication
      */
-    private static boolean checkDefinitionsForFile(Path path) throws ParseException, IOException, ClassNotFoundException {
+    private boolean checkDefinitionsForFile(Path path) throws ParseException, IOException, ClassNotFoundException {
 
         // Avoid paths with certain suffixes. These exhibit some behavior that cannot be handled
         // For example, '1;' in Perl code is interpreted by Universal Ctags as 'STDOUT'.
@@ -339,7 +386,7 @@ public class IndexCheck {
      * @throws IOException on I/O error
      * @throws IndexDocumentException if there are any documents with definitions not matching definitions found by ctags
      */
-    private static void checkDefinitions(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
+    private void checkDefinitions(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
 
         Statistics statistics = new Statistics();
         GetFiles getFiles = new GetFiles();
@@ -350,22 +397,12 @@ public class IndexCheck {
 
         long errors = 0;
         ExecutorService executorService = RuntimeEnvironment.getInstance().getIndexerParallelizer().getFixedExecutor();
-        final CountDownLatch latch = new CountDownLatch(paths.size());
         List<Future<Boolean>> futures = new ArrayList<>();
         for (Path path : paths) {
-            futures.add(executorService.submit(() -> {
-                try {
-                    return checkDefinitionsForFile(path);
-                } finally {
-                    latch.countDown();
-                }
-            }));
+            futures.add(executorService.submit(() -> checkDefinitionsForFile(path)));
         }
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "failed to await", e);
-        }
+
+        IOException ioException = null;
         for (Future<Boolean> future : futures) {
             try {
                 if (!future.get()) {
@@ -373,23 +410,34 @@ public class IndexCheck {
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "failure when checking definitions", e);
+                final Throwable cause = e.getCause();
+                if (cause instanceof IOException) {
+                    ioException = (IOException) cause;
+                }
             }
         }
         statistics.report(LOGGER, Level.FINE, String.format("checked %d files", paths.size()));
 
+        // If there were multiple cases of IOException, they were logged above.
+        // Propagate the last one so that upper layers can properly decide on how to treat the index check.
+        if (ioException != null) {
+            throw ioException;
+        }
+
         if (errors > 0) {
             throw new IndexDocumentException(String.format("document check failed for (%d documents out of %d)",
-                    errors, paths.size()));
+                    errors, paths.size()), indexPath);
         }
     }
 
     /**
+     * @param sourcePath path to the source
      * @param indexPath path to the index directory
      * @throws IOException on I/O error
      * @throws IndexVersionException if the version stored in the document does not match the version
      * used by the running program
      */
-    private static void checkVersion(Path indexPath) throws IOException, IndexVersionException {
+    private void checkVersion(Path sourcePath, Path indexPath) throws IOException, IndexVersionException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
@@ -407,12 +455,13 @@ public class IndexCheck {
                 new Object[]{indexPath, segVersion, Version.LATEST.major});
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
-                String.format("Directory '%s' has index version discrepancy", indexPath),
+                String.format("Index for '%s' has index version discrepancy", sourcePath), sourcePath,
                     Version.LATEST.major, segVersion);
         }
     }
 
-    public static IndexReader getIndexReader(Path indexPath) throws IOException {
+    @VisibleForTesting
+    static IndexReader getIndexReader(Path indexPath) throws IOException {
         try (FSDirectory indexDirectory = FSDirectory.open(indexPath, NoLockFactory.INSTANCE)) {
             return DirectoryReader.open(indexDirectory);
         }
@@ -423,7 +472,8 @@ public class IndexCheck {
      * @return set of deleted uids in the index related to the project name
      * @throws IOException if the index cannot be read
      */
-    public static Set<String> getDeletedUids(Path indexPath) throws IOException {
+    @VisibleForTesting
+    static Set<String> getDeletedUids(Path indexPath) throws IOException {
         Set<String> deletedUids = new HashSet<>();
 
         try (IndexReader indexReader = getIndexReader(indexPath)) {
@@ -456,7 +506,8 @@ public class IndexCheck {
      * @throws IOException on I/O error
      */
     @Nullable
-    public static List<String> getLiveDocumentPaths(Path indexPath) throws IOException {
+    @VisibleForTesting
+    static List<String> getLiveDocumentPaths(Path indexPath) throws IOException {
         try (IndexReader indexReader = getIndexReader(indexPath)) {
             List<String> livePaths = new ArrayList<>();
 
@@ -484,13 +535,14 @@ public class IndexCheck {
         }
     }
 
-    private static void checkDuplicateDocuments(Path indexPath) throws IOException, IndexDocumentException {
+    private static void checkDuplicateDocuments(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
 
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
         Statistics stat = new Statistics();
         List<String> livePaths = getLiveDocumentPaths(indexPath);
         if (livePaths == null) {
-            throw new IndexDocumentException(String.format("cannot determine live paths for '%s'", indexPath));
+            throw new IndexDocumentException(String.format("cannot determine live paths for '%s'", indexPath),
+                    indexPath);
         }
         HashSet<String> pathSet = new HashSet<>(livePaths);
         Map<String, Integer> fileMap = new ConcurrentHashMap<>();
@@ -517,8 +569,8 @@ public class IndexCheck {
 
         stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
         if (!fileMap.isEmpty()) {
-            throw new IndexDocumentException(String.format("index in '%s' contains duplicate live documents",
-                    indexPath), fileMap);
+            throw new IndexDocumentException(String.format("index for '%s' contains duplicate live documents",
+                    sourcePath), sourcePath, fileMap);
         }
     }
 }

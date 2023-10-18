@@ -34,13 +34,12 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
+import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexCheck;
-import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.index.IndexCheckException;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.controller.ConfigurationController;
@@ -52,10 +51,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,12 +79,12 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
 
-        String config = context.getInitParameter("CONFIGURATION");
-        if (config == null) {
+        String configPath = context.getInitParameter("CONFIGURATION");
+        if (configPath == null) {
             throw new Error("CONFIGURATION parameter missing in the web.xml file");
         } else {
             try {
-                env.readConfiguration(new File(config), CommandTimeoutType.WEBAPP_START);
+                env.readConfiguration(new File(configPath), CommandTimeoutType.WEBAPP_START);
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Configuration error. Failed to read config file: ", ex);
             }
@@ -125,8 +120,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
             env.getWatchDog().start(new File(pluginDirectory));
         }
 
-        // Check index(es).
-        checkIndex(env);
+        indexCheck(configPath, env);
 
         env.startExpirationTimer();
 
@@ -141,56 +135,29 @@ public final class WebappListener implements ServletContextListener, ServletRequ
     }
 
     /**
-     * Checks the index(es). If projects are enabled then each project with invalid index
-     * is marked as not being indexed.
-     * @param env runtime environment
+     * Check index(es). If projects are enabled, those which failed the test will be marked as not indexed.
+     * @param configPath path to configuration
+     * @param env {@link RuntimeEnvironment} instance
      */
-    private void checkIndex(RuntimeEnvironment env) {
-        if (env.isProjectsEnabled()) {
-            Map<String, Project> projects = env.getProjects();
-            Path indexRoot = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
-            if (indexRoot.toFile().exists()) {
-                LOGGER.log(Level.FINE, "Checking index versions for all projects");
-                Statistics statistics = new Statistics();
-                ExecutorService executor = Executors.newFixedThreadPool(env.getRepositoryInvalidationParallelism(),
-                        new OpenGrokThreadFactory("webapp-index-check"));
-                for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
-                    executor.submit(() -> {
-                        try {
-                            IndexCheck.checkDir(Path.of(env.getSourceRootPath(), projectEntry.getKey()),
-                                    Path.of(indexRoot.toString(), projectEntry.getKey()),
-                                    IndexCheck.IndexCheckMode.VERSION);
-                        } catch (Exception e) {
-                            LOGGER.log(Level.WARNING,
-                                    String.format("Project %s index check failed, marking as not indexed",
-                                            projectEntry.getKey()), e);
-                            projectEntry.getValue().setIndexed(false);
-                        }
-                    });
-                }
-                executor.shutdown();
-                try {
-                    if (!executor.awaitTermination(env.getIndexCheckTimeout(), TimeUnit.SECONDS)) {
-                        LOGGER.log(Level.WARNING, "index version check took more than {0} seconds",
-                                env.getIndexCheckTimeout());
-                        executor.shutdownNow();
+    private static void indexCheck(String configPath, RuntimeEnvironment env) {
+        try (IndexCheck indexCheck = new IndexCheck(Configuration.read(new File(configPath)))) {
+                indexCheck.check(IndexCheck.IndexCheckMode.VERSION);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "could not perform index check", e);
+        } catch (IndexCheckException e) {
+            if (env.isProjectsEnabled()) {
+                LOGGER.log(Level.INFO, "marking projects that failed the index check as not indexed");
+
+                for (Path path : e.getFailedPaths()) {
+                    Project project = Project.getProject(path.toFile());
+                    if (project != null) {
+                        project.setIndexed(false);
                     }
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "failed to await termination of index version check");
-                    executor.shutdownNow();
                 }
-                statistics.report(LOGGER, Level.FINE, "Index version check for all projects done");
+            } else {
+                // Fail the deployment. The index check would fail only on legitimate version discrepancy.
+                throw new Error("index version check failed", e);
             }
-        } else {
-            LOGGER.log(Level.FINE, "Checking index");
-            try {
-                IndexCheck.checkDir(Path.of(env.getSourceRootPath()),
-                        Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR),
-                        IndexCheck.IndexCheckMode.VERSION);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "index check failed", e);
-            }
-            LOGGER.log(Level.FINE, "Index check done");
         }
     }
 
