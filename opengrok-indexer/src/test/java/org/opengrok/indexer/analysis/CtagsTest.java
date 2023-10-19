@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Lubos Kosco
  */
-public class CtagsTest {
+class CtagsTest {
 
     private static Ctags ctags;
     private static TestRepository repository;

@@ -35,13 +35,13 @@ import java.util.List;
 /**
  * Tests the {@link TypeScriptSymbolTokenizer} class.
  */
-public class TypeScriptSymbolTokenizerTest {
+class TypeScriptSymbolTokenizerTest {
 
     /**
      * Test sample.ts v. samplesymbols.txt
      */
     @Test
-    public void testTypeScriptSymbolStream() throws Exception {
+    void testTypeScriptSymbolStream() throws Exception {
         testSymbols("analysis/typescript/sample.ts", "analysis/typescript/samplesymbols.txt");
     }
 

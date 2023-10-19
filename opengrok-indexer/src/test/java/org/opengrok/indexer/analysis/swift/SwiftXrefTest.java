@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link SwiftXref} class.
  */
-public class SwiftXrefTest extends XrefTestBase {
+class SwiftXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new SwiftAnalyzerFactory(),
                 "analysis/swift/sample.swift",
                 "analysis/swift/sample_xref.html",
@@ -43,7 +43,7 @@ public class SwiftXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new SwiftAnalyzerFactory(),
                 "analysis/swift/truncated.swift",
                 "analysis/swift/truncated_xref.html", null, 1);

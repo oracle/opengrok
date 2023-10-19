@@ -29,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Tests for the RegexpMatcher class.
  */
-public class RegexpMatcherTest {
+class RegexpMatcherTest {
 
     /**
      * Test of match method.
      */
     @Test
-    public void testMatch() {
+    void testMatch() {
         RegexpMatcher m = new RegexpMatcher("reg[e]+x", true);
         assertEquals(LineMatcher.NOT_MATCHED, m.match("regx"));
         assertEquals(LineMatcher.MATCHED, m.match("regeex"));

@@ -30,10 +30,10 @@ import java.io.IOException;
 /**
  * Tests the {@link AdaXref} class.
  */
-public class AdaXrefTest extends XrefTestBase {
+class AdaXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new AdaAnalyzerFactory(),
                 "analysis/ada/sample.adb",
                 "analysis/ada/ada_xrefres.html", null, 19);

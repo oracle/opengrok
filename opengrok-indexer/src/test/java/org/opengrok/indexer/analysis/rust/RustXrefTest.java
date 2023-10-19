@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link RustXref} class.
  */
-public class RustXrefTest extends XrefTestBase {
+class RustXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new RustAnalyzerFactory(),
                 "analysis/rust/sample.rs",
                 "analysis/rust/sample_xref.html",
@@ -43,7 +43,7 @@ public class RustXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new RustAnalyzerFactory(),
                 "analysis/rust/truncated.rs",
                 "analysis/rust/truncated_xref.html", null, 1);

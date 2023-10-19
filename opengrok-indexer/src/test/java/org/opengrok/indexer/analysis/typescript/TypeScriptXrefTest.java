@@ -32,10 +32,10 @@ import java.io.IOException;
 /**
  * Tests the {@link TypeScriptXref} class.
  */
-public class TypeScriptXrefTest extends XrefTestBase {
+class TypeScriptXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new TypeScriptAnalyzerFactory(),
                 "analysis/typescript/sample.ts",
                 "analysis/typescript/sample_xref.html",
@@ -43,7 +43,7 @@ public class TypeScriptXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TypeScriptAnalyzerFactory(),
                 "analysis/typescript/truncated.ts",
                 "analysis/typescript/truncated_xref.html", null, 1);

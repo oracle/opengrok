@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StatsdConfigTest {
+class StatsdConfigTest {
     @Test
-    public void testIsEnabled() {
+    void testIsEnabled() {
         StatsdConfig config = new StatsdConfig();
         assertFalse(config.isEnabled());
         config.setPort(3141);

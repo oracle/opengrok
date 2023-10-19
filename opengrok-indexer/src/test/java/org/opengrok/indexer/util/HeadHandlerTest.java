@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test the behavior of the {@code HeadHandler} class. The main aspect to check is that the
  * input stream is read whole.
  */
-public class HeadHandlerTest {
+class HeadHandlerTest {
 
     public static Collection<int[]> data() {
         List<int[]> tests = new ArrayList<>();
@@ -135,7 +135,7 @@ public class HeadHandlerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testHeadHandler(int[] data) throws IOException {
+    void testHeadHandler(int[] data) throws IOException {
         int lineCnt = data[0];
         int headLineCnt = data[1];
         int totalCharCount = data[2];

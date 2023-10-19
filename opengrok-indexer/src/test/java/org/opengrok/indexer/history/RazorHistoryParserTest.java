@@ -38,17 +38,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author austvik
  */
-public class RazorHistoryParserTest {
+class RazorHistoryParserTest {
 
     RazorHistoryParser instance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new RazorHistoryParser();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 
@@ -56,7 +56,7 @@ public class RazorHistoryParserTest {
      * Test of parse method, of class RazorHistoryParser.
      */
     @Test
-    public void testParseEmpty() throws Exception {
+    void testParseEmpty() throws Exception {
         String output = "";
         History result = instance.parseContents(new BufferedReader(new StringReader(output)));
         assertEquals(0, result.getHistoryEntries().size());
@@ -66,7 +66,7 @@ public class RazorHistoryParserTest {
      * Test of parse method, of class RazorHistoryParser.
      */
     @Test
-    public void testParse() throws Exception {
+    void testParse() throws Exception {
         String user1 = "auser";
         String user2 = "otheruser";
         String date1 = "2009/01/23,05:56:24";

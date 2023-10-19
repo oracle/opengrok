@@ -96,12 +96,12 @@ public class MercurialRepositoryTest {
     }
 
     @BeforeEach
-    public void setup() throws IOException, URISyntaxException {
+    void setup() throws IOException, URISyntaxException {
         setUpTestRepository();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         if (repository != null) {
             repository.destroy();
             repository = null;
@@ -109,7 +109,7 @@ public class MercurialRepositoryTest {
     }
 
     @Test
-    public void testGetHistory() throws Exception {
+    void testGetHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         History hist = mr.getHistory(root);
@@ -126,7 +126,7 @@ public class MercurialRepositoryTest {
     }
 
     @Test
-    public void testGetHistorySubdir() throws Exception {
+    void testGetHistorySubdir() throws Exception {
         // Add a subdirectory with some history.
         runHgCommand(repositoryRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
@@ -142,7 +142,7 @@ public class MercurialRepositoryTest {
      * revision number. This works for directories only.
      */
     @Test
-    public void testGetHistoryPartial() throws Exception {
+    void testGetHistoryPartial() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         // Get all but the oldest revision.
         History hist = mr.getHistory(repositoryRoot, REVISIONS[REVISIONS.length - 1]);
@@ -183,7 +183,7 @@ public class MercurialRepositoryTest {
      * default branch as well.
      */
     @Test
-    public void testGetHistoryBranch() throws Exception {
+    void testGetHistoryBranch() throws Exception {
         // Branch the repo and add one changeset.
         runHgCommand(repositoryRoot, "unbundle",
                 Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
@@ -226,7 +226,7 @@ public class MercurialRepositoryTest {
      * Test that contents of last revision of a text file match expected content.
      */
     @Test
-    public void testGetHistoryGet() throws Exception {
+    void testGetHistoryGet() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         String exp_str = "This will be a first novel of mine.\n"
                 + "\n"
@@ -254,7 +254,7 @@ public class MercurialRepositoryTest {
      * Test that it is possible to get contents of multiple revisions of a file.
      */
     @Test
-    public void testgetHistoryGetForAll() throws Exception {
+    void testgetHistoryGetForAll() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         for (String rev : REVISIONS_novel) {
@@ -268,7 +268,7 @@ public class MercurialRepositoryTest {
      * Test that {@code getHistoryGet()} returns historical contents of renamed file.
      */
     @Test
-    public void testGetHistoryGetRenamed() throws Exception {
+    void testGetHistoryGetRenamed() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
@@ -291,7 +291,7 @@ public class MercurialRepositoryTest {
      * argument doesn't match any of the revisions in the history.
      */
     @Test
-    public void testGetHistoryWithNoSuchRevision() throws Exception {
+    void testGetHistoryWithNoSuchRevision() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         // Get the sequence number and the hash from one of the revisions.

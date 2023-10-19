@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Unit tests for {@link PerlSymbolTokenizer}.
  */
-public class PerlSymbolTokenizerTest {
+class PerlSymbolTokenizerTest {
 
     /**
      * Helper method for {@link #testOffsetAttribute()} that runs the test on
@@ -74,7 +74,7 @@ public class PerlSymbolTokenizerTest {
     }
 
     @Test
-    public void testPerlVariableInBraces() throws Exception {
+    void testPerlVariableInBraces() throws Exception {
         // Perl command to tokenize
         String inputText = "$ {abc} = 1; '$gh'; \"$ { VARIABLE  } $def xyz\";";
         String[] expectedTokens = {"abc", "VARIABLE", "def"};
@@ -82,7 +82,7 @@ public class PerlSymbolTokenizerTest {
     }
 
     @Test
-    public void testPerlWordCharDelimiters() throws Exception {
+    void testPerlWordCharDelimiters() throws Exception {
         // Perl command to tokenize
         String inputText = "qr z$abcz; qr z$defziz; qr i$ghixi;";
 
@@ -95,7 +95,7 @@ public class PerlSymbolTokenizerTest {
      * @throws Exception exception
      */
     @Test
-    public void testPerlSymbolStream() throws Exception {
+    void testPerlSymbolStream() throws Exception {
         InputStream plres = getClass().getClassLoader().getResourceAsStream(
             "analysis/perl/sample.pl");
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(

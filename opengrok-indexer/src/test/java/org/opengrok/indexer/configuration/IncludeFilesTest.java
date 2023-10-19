@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Vladimir Kotal
  */
-public class IncludeFilesTest {
+class IncludeFilesTest {
     static Path includeRoot;
     static final String CONTENT_1 = "foo";
     static final String CONTENT_2 = "bar";
@@ -55,7 +55,7 @@ public class IncludeFilesTest {
     }
 
     @Test
-    public void testGetHeaderIncludeFileContent() throws IOException {
+    void testGetHeaderIncludeFileContent() throws IOException {
         Path file = includeRoot.resolve(Configuration.HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1, env.includeFiles.getHeaderIncludeFileContent(false));
@@ -64,7 +64,7 @@ public class IncludeFilesTest {
     }
 
     @Test
-    public void testGetBodyIncludeFileContent() throws IOException {
+    void testGetBodyIncludeFileContent() throws IOException {
         Path file = includeRoot.resolve(Configuration.BODY_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1, env.includeFiles.getBodyIncludeFileContent(false));
@@ -73,7 +73,7 @@ public class IncludeFilesTest {
     }
 
     @Test
-    public void testGetFooterIncludeFileContent() throws IOException {
+    void testGetFooterIncludeFileContent() throws IOException {
         Path file = includeRoot.resolve(Configuration.FOOTER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1, env.includeFiles.getFooterIncludeFileContent(false));
@@ -82,7 +82,7 @@ public class IncludeFilesTest {
     }
 
     @Test
-    public void testGetForbiddenIncludeFileContent() throws IOException {
+    void testGetForbiddenIncludeFileContent() throws IOException {
         Path file = includeRoot.resolve(Configuration.E_FORBIDDEN_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1, env.includeFiles.getForbiddenIncludeFileContent(false));
@@ -91,7 +91,7 @@ public class IncludeFilesTest {
     }
 
     @Test
-    public void testGetHttpHeaderIncludeFileContent() throws IOException {
+    void testGetHttpHeaderIncludeFileContent() throws IOException {
         Path file = includeRoot.resolve(Configuration.HTTP_HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1, env.includeFiles.getHttpHeaderIncludeFileContent(false));

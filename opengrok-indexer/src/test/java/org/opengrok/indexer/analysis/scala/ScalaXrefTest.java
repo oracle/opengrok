@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link ScalaXref} class.
  */
-public class ScalaXrefTest extends XrefTestBase {
+class ScalaXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new ScalaAnalyzerFactory(),
                 "analysis/scala/sample.scala",
                 "analysis/scala/sample_xref.html",
@@ -43,7 +43,7 @@ public class ScalaXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new ScalaAnalyzerFactory(),
                 "analysis/scala/truncated.scala",
                 "analysis/scala/truncated_xref.html", null, 1);

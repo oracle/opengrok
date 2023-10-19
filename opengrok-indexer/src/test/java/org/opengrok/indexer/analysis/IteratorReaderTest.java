@@ -41,13 +41,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Do basic testing of the IteratorReader class.
  * @author Trond Norbye
  */
-public class IteratorReaderTest {
+class IteratorReaderTest {
 
     /**
      * Test that we don't get an error when the list is empty.
      */
     @Test
-    public void testBug3094() throws IOException {
+    void testBug3094() throws IOException {
         List<String> empty = Collections.emptyList();
         try (IteratorReader instance = new IteratorReader(empty)) {
             assertNotNull(instance);
@@ -60,7 +60,7 @@ public class IteratorReaderTest {
      * where the list is {@code null}.
      */
     @Test
-    public void testFailfastOnNull() {
+    void testFailfastOnNull() {
         assertThrows(IllegalArgumentException.class, () -> new IteratorReader((List<String>) null));
     }
 
@@ -69,7 +69,7 @@ public class IteratorReaderTest {
      * when using the constructor that takes an {@code Iterator}.
      */
     @Test
-    public void testFailfastOnNullIterator() {
+    void testFailfastOnNullIterator() {
         assertThrows(IllegalArgumentException.class, () -> new IteratorReader((Iterator<String>) null));
     }
 
@@ -80,7 +80,7 @@ public class IteratorReaderTest {
      * tokens.
      */
     @Test
-    public void testReadAllTokens() throws IOException {
+    void testReadAllTokens() throws IOException {
         try (BufferedReader instance = new BufferedReader(new IteratorReader(Arrays.asList("abc.def", "ghi.jkl")))) {
             assertEquals("abc.def", instance.readLine());
             assertEquals("ghi.jkl", instance.readLine());

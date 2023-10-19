@@ -42,7 +42,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.RCS;
  * @author Vladimir Kotal
  */
 @EnabledForRepository(RCS)
-public class RCSRepositoryTest {
+class RCSRepositoryTest {
 
     private static TestRepository repository = new TestRepository();
 
@@ -65,14 +65,14 @@ public class RCSRepositoryTest {
     }
 
     @Test
-    public void testRepositoryDetection() throws Exception {
+    void testRepositoryDetection() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         Object ret = RepositoryFactory.getRepository(root);
         assertTrue(ret instanceof RCSRepository);
     }
 
     @Test
-    public void testAnnotation() throws Exception {
+    void testAnnotation() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
         File header = new File(root, "header.h");
@@ -87,7 +87,7 @@ public class RCSRepositoryTest {
     }
 
     @Test
-    public void testGetHistory() throws Exception {
+    void testGetHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
         History hist = repo.getHistory(new File(root, "Makefile"));

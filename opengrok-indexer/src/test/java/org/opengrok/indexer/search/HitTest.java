@@ -36,10 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Do basic sanity testing of the Hit class.
  * @author Trond Norbye
  */
-public class HitTest {
+class HitTest {
 
     @Test
-    public void testFilename() {
+    void testFilename() {
         Hit instance = new Hit();
         assertNull(instance.getFilename());
         String expResult = "foobar";
@@ -48,14 +48,14 @@ public class HitTest {
     }
 
     @Test
-    public void testPath() {
+    void testPath() {
         Hit instance = new Hit("/foo/bar", null, null, false, false);
         assertEquals("/foo/bar", instance.getPath());
         assertEquals(File.separator + "foo", instance.getDirectory());
     }
 
     @Test
-    public void testLine() {
+    void testLine() {
         Hit instance = new Hit();
         assertNull(instance.getLine());
         String expResult = "This is a line of text";
@@ -64,7 +64,7 @@ public class HitTest {
     }
 
     @Test
-    public void testLineno() {
+    void testLineno() {
         Hit instance = new Hit();
         assertNull(instance.getLineno());
         String expResult = "12";
@@ -73,7 +73,7 @@ public class HitTest {
     }
 
     @Test
-    public void testCompareTo() {
+    void testCompareTo() {
         Hit o1 = new Hit("/foo", null, null, false, false);
         Hit o2 = new Hit("/foo", "hi", "there", false, false);
         assertEquals(o2.compareTo(o1), o1.compareTo(o2));
@@ -82,7 +82,7 @@ public class HitTest {
     }
 
     @Test
-    public void testBinary() {
+    void testBinary() {
         Hit instance = new Hit();
         assertFalse(instance.isBinary());
         instance.setBinary(true);
@@ -90,7 +90,7 @@ public class HitTest {
     }
 
     @Test
-    public void testTag() {
+    void testTag() {
         Hit instance = new Hit();
         assertNull(instance.getTag());
         String expResult = "foobar";
@@ -100,7 +100,7 @@ public class HitTest {
 
 
     @Test
-    public void testAlt() {
+    void testAlt() {
         Hit instance = new Hit();
         assertFalse(instance.getAlt());
         Hit o2 = new Hit(null, null, null, false, true);
@@ -108,7 +108,7 @@ public class HitTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Hit o1 = new Hit("/foo", null, null, false, false);
         Hit o2 = new Hit("/foo", "hi", "there", false, false);
         assertEquals(o2.equals(o1), o1.equals(o2));
@@ -119,7 +119,7 @@ public class HitTest {
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         String filename = "bar";
         Hit instance = new Hit(filename, null, null, false, false);
         assertEquals(filename.hashCode(), instance.hashCode());

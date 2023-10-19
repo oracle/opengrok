@@ -34,14 +34,14 @@ import java.util.List;
 /**
  * Tests the {@link AdaSymbolTokenizer} class.
  */
-public class AdaSymbolTokenizerTest {
+class AdaSymbolTokenizerTest {
 
     /**
      * Test sample.adb v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testPerlSymbolStream() throws Exception {
+    void testPerlSymbolStream() throws Exception {
         InputStream adbres = getClass().getClassLoader().getResourceAsStream(
             "analysis/ada/sample.adb");
         assertNotNull(adbres, "despite sample.adb as resource,");

@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author austvik
  */
-public class GitRepositoryTest {
+class GitRepositoryTest {
 
     private static final String HASH_84821564 = "8482156421620efbb44a7b6f0eb19d1f191163c7";
     private static final String HASH_AA35C258 = "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a";
@@ -105,12 +105,12 @@ public class GitRepositoryTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new GitRepository();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 

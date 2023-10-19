@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link EiffelXref} class.
  */
-public class EiffelXrefTest extends XrefTestBase {
+class EiffelXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new EiffelAnalyzerFactory(),
                 "analysis/eiffel/sample.e",
                 "analysis/eiffel/sample_xref.html",
@@ -43,7 +43,7 @@ public class EiffelXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new EiffelAnalyzerFactory(),
                 "analysis/eiffel/truncated.e",
                 "analysis/eiffel/truncated_xref.html", null, 1);

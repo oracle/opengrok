@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Trond Norbye
  */
-public class SearchEngineTest {
+class SearchEngineTest {
 
     static TestRepository repository;
     static File configFile;
@@ -150,7 +150,7 @@ public class SearchEngineTest {
 
     /* see https://github.com/oracle/opengrok/issues/2030
     @Test
-    public void testSearch() {
+    void testSearch() {
         List<Hit> hits = new ArrayList<>();
 
         SearchEngine instance = new SearchEngine();

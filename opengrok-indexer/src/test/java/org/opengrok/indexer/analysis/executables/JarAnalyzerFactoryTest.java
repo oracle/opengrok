@@ -35,14 +35,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Represents a container for tests of {@link JarAnalyzerFactory}.
  */
-public class JarAnalyzerFactoryTest {
+class JarAnalyzerFactoryTest {
 
     /**
      * Tests a JAR file.
      * @throws IOException
      */
     @Test
-    public void testJarWrtAnalyzerGuru() throws IOException {
+    void testJarWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/javajar.bin");
         assertNotNull(res, "javajar.bin should be available,");

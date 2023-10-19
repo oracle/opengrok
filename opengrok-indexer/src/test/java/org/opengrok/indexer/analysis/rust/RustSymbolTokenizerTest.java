@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link RustSymbolTokenizer} class.
  */
-public class RustSymbolTokenizerTest {
+class RustSymbolTokenizerTest {
 
     /**
      * Test sample.rs v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testRustSymbolStream() throws Exception {
+    void testRustSymbolStream() throws Exception {
         InputStream rsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/rust/sample.rs");
         assertNotNull(rsres, "despite sample.rs as resource,");

@@ -48,7 +48,7 @@ import static org.opengrok.indexer.search.context.SearchAndContextFormatterTest.
 /**
  * Make sure that passages within search results are ordered strictly based on the line numbers.
  */
-public class PassageScorerTest {
+class PassageScorerTest {
     private static RuntimeEnvironment env;
     private static TestRepository repository;
 

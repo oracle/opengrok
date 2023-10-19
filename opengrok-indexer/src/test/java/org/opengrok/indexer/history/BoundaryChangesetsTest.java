@@ -44,14 +44,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BoundaryChangesetsTest {
+class BoundaryChangesetsTest {
 
     private TestRepository repositories;
 
     private GitRepository gitRepository;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
 
@@ -64,7 +64,7 @@ public class BoundaryChangesetsTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repositories.destroy();
         repositories = null;
     }

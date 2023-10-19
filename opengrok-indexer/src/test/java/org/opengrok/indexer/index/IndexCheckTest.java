@@ -81,7 +81,7 @@ class IndexCheckTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, URISyntaxException {
+    void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResource("/repositories"));
 
@@ -91,7 +91,7 @@ class IndexCheckTest {
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    void tearDown() throws IOException {
         repository.destroy();
     }
 

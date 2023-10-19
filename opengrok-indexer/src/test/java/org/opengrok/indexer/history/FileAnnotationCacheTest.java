@@ -57,7 +57,7 @@ class FileAnnotationCacheTest {
     private FileAnnotationCache cache;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
 
@@ -72,7 +72,7 @@ class FileAnnotationCacheTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repositories.destroy();
         repositories = null;
 

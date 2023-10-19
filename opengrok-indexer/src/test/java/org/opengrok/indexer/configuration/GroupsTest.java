@@ -38,22 +38,22 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Tests for the {@link Groups} command.
  */
-public class GroupsTest {
+class GroupsTest {
 
     Configuration cfg;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         cfg = Configuration.makeXMLStringAsConfiguration(BASIC_CONFIGURATION);
     }
 
     @Test
-    public void testBasicConfiguration() {
+    void testBasicConfiguration() {
         assertEquals(6, cfg.getGroups().size(), "Initial configuration should contain 6 groups");
     }
 
     @Test
-    public void testDeleteGroup() {
+    void testDeleteGroup() {
         Map<String, Group> groups = cfg.getGroups();
         final int origSize = groups.size();
         invokeMethod("deleteGroup",
@@ -76,7 +76,7 @@ public class GroupsTest {
     }
 
     @Test
-    public void testAddGroup() {
+    void testAddGroup() {
         Map<String, Group> groups = cfg.getGroups();
         final int origSize = groups.size();
         Group grp = findGroup(groups, "new fantastic group");
@@ -95,7 +95,7 @@ public class GroupsTest {
     }
 
     @Test
-    public void testAddGroupToParent() {
+    void testAddGroupToParent() {
         Map<String, Group> groups = cfg.getGroups();
         final int origSize = groups.size();
         Group grp = findGroup(groups, "apache");
@@ -123,7 +123,7 @@ public class GroupsTest {
     }
 
     @Test
-    public void testModifyGroup() {
+    void testModifyGroup() {
         Map<String, Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
@@ -141,7 +141,7 @@ public class GroupsTest {
     }
 
     @Test
-    public void testMatchGroup() {
+    void testMatchGroup() {
         Object[][] tests = new Object[][]{
             {"null", 0},
             {"apache", 0},

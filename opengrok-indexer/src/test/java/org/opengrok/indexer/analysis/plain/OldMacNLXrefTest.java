@@ -31,10 +31,10 @@ import java.io.IOException;
 /**
  * Represents a container for tests of old Mac newlines.
  */
-public class OldMacNLXrefTest extends XrefTestBase {
+class OldMacNLXrefTest extends XrefTestBase {
 
     @Test
-    public void shouldCountMultipleLinesForOldMacFile() throws IOException {
+    void shouldCountMultipleLinesForOldMacFile() throws IOException {
         writeAndCompare(PlainAnalyzerFactory.DEFAULT_INSTANCE,
                 "analysis/plain/ErrorList.r.txt",
                 "analysis/plain/ErrorList_r_xref.html", null, 67);

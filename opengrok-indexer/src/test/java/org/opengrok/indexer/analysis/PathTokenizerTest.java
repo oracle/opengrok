@@ -34,13 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Unit test class for PathTokenizer.
  * @author Lubos Kosco
  */
-public class PathTokenizerTest {
+class PathTokenizerTest {
 
     /**
      * Test of incrementToken method, of class PathTokenizer.
      */
     @Test
-    public void testIncrementToken() throws Exception {
+    void testIncrementToken() throws Exception {
         String inputText = "alpha/beta/gamma/delta.ext";
         String[] expectedTokens = inputText.split("[/.]");
         PathTokenizer tokenizer = new PathTokenizer();

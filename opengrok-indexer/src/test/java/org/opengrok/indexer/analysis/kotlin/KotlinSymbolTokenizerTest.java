@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link KotlinSymbolTokenizer} class.
  */
-public class KotlinSymbolTokenizerTest {
+class KotlinSymbolTokenizerTest {
 
     /**
      * Test sample.kt v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testKotlinSymbolStream() throws Exception {
+    void testKotlinSymbolStream() throws Exception {
         InputStream ktres = getClass().getClassLoader().getResourceAsStream("analysis/kotlin/sample.kt");
         assertNotNull(ktres, "despite sample.kt as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(

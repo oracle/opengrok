@@ -35,14 +35,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Represents a container for tests of {@link ZipAnalyzerFactory}.
  */
-public class ZipAnalyzerFactoryTest {
+class ZipAnalyzerFactoryTest {
 
     /**
      * Tests a ZIP file.
      * @throws IOException I/O exception
      */
     @Test
-    public void testZipWrtAnalyzerGuru() throws IOException {
+    void testZipWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/archive/zip.bin");
         assertNotNull(res, "zip.bin should be available,");
 

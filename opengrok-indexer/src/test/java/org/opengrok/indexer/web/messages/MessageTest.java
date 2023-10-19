@@ -33,40 +33,40 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
-public class MessageTest {
+class MessageTest {
 
     @Test
-    public void createBadMessageTest() {
+    void createBadMessageTest() {
         assertThrows(IllegalArgumentException.class, () -> new Message(null, null, null, null));
     }
 
     @Test
-    public void createBadMessageTest2() {
+    void createBadMessageTest2() {
         assertThrows(IllegalArgumentException.class, () -> new Message("", null, null, null));
     }
 
     @Test
-    public void createBadMessageTest3() {
+    void createBadMessageTest3() {
         assertThrows(IllegalArgumentException.class, () -> new Message("test", null, null, null));
     }
 
     @Test
-    public void createBadMessageTest4() {
+    void createBadMessageTest4() {
         assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, null));
     }
 
     @Test
-    public void createBadMessageTest5() {
+    void createBadMessageTest5() {
         assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.singleton("test"), null, Duration.ofMinutes(-1)));
     }
 
     @Test
-    public void createBadMessageTest6() {
+    void createBadMessageTest6() {
         assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1)));
     }
 
     @Test
-    public void messageToJSON() throws IOException {
+    void messageToJSON() throws IOException {
         Message m = new Message("test",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,

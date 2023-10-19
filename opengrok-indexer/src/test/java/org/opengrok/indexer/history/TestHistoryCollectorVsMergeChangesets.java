@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * indexer runs.
  * Tested only for Git.
  */
-public class TestHistoryCollectorVsMergeChangesets {
+class TestHistoryCollectorVsMergeChangesets {
     private static TestRepository repository = new TestRepository();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

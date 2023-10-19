@@ -31,7 +31,7 @@ import org.opengrok.indexer.condition.RepositoryInstalled.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EnabledOnRepositoryCondition implements ExecutionCondition {
+class EnabledOnRepositoryCondition implements ExecutionCondition {
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {

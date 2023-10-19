@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class VersionTest {
+class VersionTest {
 
     @Test
-    public void testFromString() {
+    void testFromString() {
         assertEquals(new Version(1, 2, 1), Version.from("1.2.   1    "));
         assertEquals(new Version(3, 2, 6), Version.from("   3.  2.6"));
         assertEquals(new Version(100, 200, 104), Version.from("100.   200.   104"));
@@ -40,17 +40,17 @@ public class VersionTest {
     }
 
     @Test
-    public void testFromEmptyString() {
+    void testFromEmptyString() {
         assertThrows(NumberFormatException.class, () -> Version.from(""));
     }
 
     @Test
-    public void testFromInvalidString() {
+    void testFromInvalidString() {
         assertThrows(NumberFormatException.class, () -> Version.from("1.2.abcd.2"));
     }
 
     @Test
-    public void testLowerComparsion() {
+    void testLowerComparsion() {
         assertTrue(new Version(1).compareTo(new Version(2)) < 0);
         assertTrue(new Version(1).compareTo(new Version(20)) < 0);
         assertTrue(new Version(1, 2).compareTo(new Version(1, 3)) < 0);
@@ -64,7 +64,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testGreaterComparsion() {
+    void testGreaterComparsion() {
         assertTrue(new Version(2).compareTo(new Version(1)) > 0);
         assertTrue(new Version(20).compareTo(new Version(1)) > 0);
         assertTrue(new Version(1, 3).compareTo(new Version(1, 2)) > 0);
@@ -78,7 +78,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testEqualsComparsion() {
+    void testEqualsComparsion() {
         assertEquals(0, new Version(1).compareTo(new Version(1)));
         assertEquals(0, new Version(1, 3).compareTo(new Version(1, 3)));
         assertEquals(0, new Version(1, 2).compareTo(new Version(1, 2)));

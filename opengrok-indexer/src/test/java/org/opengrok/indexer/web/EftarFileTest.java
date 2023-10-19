@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * JUnit test to test the EftarFile-system.
  */
-public class EftarFileTest {
+class EftarFileTest {
 
     private static File eftar;
 

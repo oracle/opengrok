@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link CSharpXref} class.
  */
-public class CSharpXrefTest extends XrefTestBase {
+class CSharpXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new CSharpAnalyzerFactory(),
                 "analysis/csharp/sample.cs",
                 "analysis/csharp/sample_xref.html",
@@ -43,7 +43,7 @@ public class CSharpXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new CSharpAnalyzerFactory(),
                 "analysis/csharp/truncated.cs",
                 "analysis/csharp/truncated_xref.html", null, 1);

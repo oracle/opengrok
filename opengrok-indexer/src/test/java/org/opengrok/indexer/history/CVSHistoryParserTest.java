@@ -73,12 +73,12 @@ class CVSHistoryParserTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new CVSHistoryParser();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
 
         if (repository != null) {

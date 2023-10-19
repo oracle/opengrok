@@ -36,17 +36,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PluginClassLoaderTest {
+class PluginClassLoaderTest {
 
     private final File pluginDirectory;
 
-    public PluginClassLoaderTest() throws URISyntaxException {
+    PluginClassLoaderTest() throws URISyntaxException {
         pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
         assertTrue(pluginDirectory.isDirectory());
     }
 
     @Test
-    public void testProhibitedPackages() {
+    void testProhibitedPackages() {
         PluginClassLoader instance = new PluginClassLoader(null);
 
         assertThrows(SecurityException.class, () -> instance.loadClass("java.lang.plugin.MyPlugin"));
@@ -58,7 +58,7 @@ public class PluginClassLoaderTest {
     }
 
     @Test
-    public void testProhibitedNames() throws ClassNotFoundException {
+    void testProhibitedNames() throws ClassNotFoundException {
         PluginClassLoader instance = new PluginClassLoader(null);
 
         instance.loadClass("org.opengrok.indexer.configuration.Group");
@@ -68,14 +68,14 @@ public class PluginClassLoaderTest {
     }
 
     @Test
-    public void testNonExistingPlugin() {
+    void testNonExistingPlugin() {
         PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
         loadClass(instance, "org.sample.plugin.NoPlugin", true);
     }
 
     @Test
-    public void testFalsePlugin() {
+    void testFalsePlugin() {
         PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
         Class<?> clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
@@ -90,7 +90,7 @@ public class PluginClassLoaderTest {
     }
 
     @Test
-    public void testTruePlugin() {
+    void testTruePlugin() {
         PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
         Class<?> clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");

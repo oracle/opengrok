@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for JFlexTokenizer.
  */
-public class JFlexTokenizerTest {
+class JFlexTokenizerTest {
 
     /**
      * Test that the various sub-classes of JFlexTokenizerTest return the
@@ -61,7 +61,7 @@ public class JFlexTokenizerTest {
      * @throws java.lang.Exception
      */
     @Test
-    public void testOffsetAttribute() throws Exception {
+    void testOffsetAttribute() throws Exception {
         testOffsetAttribute(CSymbolTokenizer.class);
         testOffsetAttribute(CxxSymbolTokenizer.class);
         testOffsetAttribute(HaskellSymbolTokenizer.class);
@@ -131,7 +131,7 @@ public class JFlexTokenizerTest {
      * @throws java.lang.Exception
      */
     @Test
-    public void testShellVariableInBraces() throws Exception {
+    void testShellVariableInBraces() throws Exception {
         // Shell command to tokenize
         String inputText = "echo \"${VARIABLE} $abc xyz\"";
         // "echo" is an ignored token in ShSymbolTokenizer, "xyz" is a string
@@ -148,7 +148,7 @@ public class JFlexTokenizerTest {
      * @throws java.io.IOException
      */
     @Test
-    public void truncatedUuencodedFile() throws IOException {
+    void truncatedUuencodedFile() throws IOException {
         JFlexSymbolMatcher matcher = new UuencodeFullTokenizer(
             new StringReader("begin 644 test\n"));
         JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);

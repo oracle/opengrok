@@ -32,14 +32,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Unit test class for QueryBuilder.
  * @author Lubos Kosco
  */
-public class QueryBuilderTest {
+class QueryBuilderTest {
 
     /**
      * Test of setFreetext method, of class QueryBuilder.
      * @throws ParseException parse exception
      */
     @Test
-    public void testParsePath() throws ParseException {
+    void testParsePath() throws ParseException {
         QueryBuilder instance = new QueryBuilder();
         String expResult = "+this +is +a +test +path";
         QueryBuilder result = instance.setPath("this/is/a/test/path");

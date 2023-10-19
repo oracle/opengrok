@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a container for tests of {@link XrefSourceTransformer}.
  */
-public class XrefSourceTransformerTest {
+class XrefSourceTransformerTest {
 
     private static final String XREF_FRAG_DFLT = "<a class=\"hl\" name=\"1\" " +
             "href=\"#1\">1</a><span class=\"c\"># See " +
@@ -56,7 +56,7 @@ public class XrefSourceTransformerTest {
     StringWriter out;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         StringReader rdr = new StringReader(XREF_FRAG_DFLT);
         // Test the normal path of dummy-first then actual data.
         xform = new XrefSourceTransformer(AbstractAnalyzer.DUMMY_READER);
@@ -67,7 +67,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testDefaultContext1() throws IOException {
+    void testDefaultContext1() throws IOException {
         xform.setContextPath(null);
         while (xform.yylex()) {
         }
@@ -76,7 +76,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testDefaultContext2() throws IOException {
+    void testDefaultContext2() throws IOException {
         xform.setContextPath("source");
         while (xform.yylex()) {
         }
@@ -85,7 +85,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testDefaultContext3() throws IOException {
+    void testDefaultContext3() throws IOException {
         xform.setContextPath("/source");
         while (xform.yylex()) {
         }
@@ -94,7 +94,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testDefaultContext4() throws IOException {
+    void testDefaultContext4() throws IOException {
         xform.setContextPath("/source/");
         while (xform.yylex()) {
         }
@@ -103,7 +103,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testSvcContext() throws IOException {
+    void testSvcContext() throws IOException {
         xform.setContextPath("svc");
         while (xform.yylex()) {
         }
@@ -112,7 +112,7 @@ public class XrefSourceTransformerTest {
     }
 
     @Test
-    public void testRootContext() throws IOException {
+    void testRootContext() throws IOException {
         xform.setContextPath("/");
         while (xform.yylex()) {
         }

@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link ErlangSymbolTokenizer} class.
  */
-public class ErlangSymbolTokenizerTest {
+class ErlangSymbolTokenizerTest {
 
     /**
      * Test sample.erl v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testErlangSymbolStream() throws Exception {
+    void testErlangSymbolStream() throws Exception {
         InputStream erlres = getClass().getClassLoader().getResourceAsStream(
             "analysis/erlang/sample.erl");
         assertNotNull(erlres, "despite sample.erl as resource,");

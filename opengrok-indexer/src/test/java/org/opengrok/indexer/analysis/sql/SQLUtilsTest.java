@@ -30,31 +30,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a test class for {@link SQLUtils}.
  */
-public class SQLUtilsTest {
+class SQLUtilsTest {
 
     @Test
-    public void shouldMatchNonescapedApostrophe() {
+    void shouldMatchNonescapedApostrophe() {
         final String value = "''1-2-3'";
         int i = StringUtils.patindexOf(value, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
         assertEquals(7, i, "unquoted apostrophe");
     }
 
     @Test
-    public void shouldMatchApostropheAfterPairsOfApostrophes() {
+    void shouldMatchApostropheAfterPairsOfApostrophes() {
         final String value = "'''''";
         int i = StringUtils.patindexOf(value, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
         assertEquals(4, i, "unquoted apostrophe after apostrophes");
     }
 
     @Test
-    public void shouldNotMatchApostropheAfterOddApostrophes() {
+    void shouldNotMatchApostropheAfterOddApostrophes() {
         final String value = "''''";
         int i = StringUtils.patindexOf(value, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
         assertEquals(-1, i, "escaped apostrophe pairs");
     }
 
     @Test
-    public void shouldMatchInitialApostrophe() {
+    void shouldMatchInitialApostrophe() {
         final String value = "'";
         int i = StringUtils.patindexOf(value, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
         assertEquals(0, i, "initial apostrophe");

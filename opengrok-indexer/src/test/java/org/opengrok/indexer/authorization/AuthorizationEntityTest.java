@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Krystof Tulinger
  */
-public class AuthorizationEntityTest {
+class AuthorizationEntityTest {
 
     private Map<String, Group> envGroups;
     private Map<String, Project> envProjects;
@@ -65,7 +65,7 @@ public class AuthorizationEntityTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         envGroups = env.getGroups();
         envProjects = env.getProjects();
@@ -74,14 +74,14 @@ public class AuthorizationEntityTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         RuntimeEnvironment.getInstance().setGroups(envGroups);
         RuntimeEnvironment.getInstance().setProjects(envProjects);
     }
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void testForGroupsAndForProjectsDiscovery(Function<Void, AuthorizationEntity> authEntityFactory) {
+    void testForGroupsAndForProjectsDiscovery(Function<Void, AuthorizationEntity> authEntityFactory) {
         Group g1, g2, g3;
         AuthorizationEntity authEntity;
 
@@ -167,7 +167,7 @@ public class AuthorizationEntityTest {
      */
     @ParameterizedTest
     @MethodSource("parameters")
-    public void testForGroupsAndForProjectsDiscoveryInvalidProject(Function<Void, AuthorizationEntity> authEntityFactory) {
+    void testForGroupsAndForProjectsDiscoveryInvalidProject(Function<Void, AuthorizationEntity> authEntityFactory) {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
         authEntity.setForProjects(new TreeSet<>(Arrays.asList("project 1", "project 2", "project 3",
@@ -184,7 +184,7 @@ public class AuthorizationEntityTest {
      */
     @ParameterizedTest
     @MethodSource("parameters")
-    public void testForGroupsAndForProjectsDiscoveryInvalidGroup(Function<Void, AuthorizationEntity> authEntityFactory) {
+    void testForGroupsAndForProjectsDiscoveryInvalidGroup(Function<Void, AuthorizationEntity> authEntityFactory) {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
         authEntity.setForGroups(new TreeSet<>(Arrays.asList("group 1", "group 2")));
@@ -200,7 +200,7 @@ public class AuthorizationEntityTest {
      */
     @ParameterizedTest
     @MethodSource("parameters")
-    public void testForGroupsAndForProjectsDiscoveryInvalidProjectInGroup(Function<Void, AuthorizationEntity> authEntityFactory) {
+    void testForGroupsAndForProjectsDiscoveryInvalidProjectInGroup(Function<Void, AuthorizationEntity> authEntityFactory) {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
         authEntity.setForGroups(new TreeSet<>(Arrays.asList("group 1", "group 2")));

@@ -33,10 +33,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NumLinesLOCAggregatorTest {
+class NumLinesLOCAggregatorTest {
 
     @Test
-    public void shouldEnumerateToRoot() {
+    void shouldEnumerateToRoot() {
         NumLinesLOCAggregator aggtor = new NumLinesLOCAggregator();
         final String PATH = "/a/b/c/f0";
         aggtor.register(new NumLinesLOC(PATH, 2, 1));
@@ -68,7 +68,7 @@ public class NumLinesLOCAggregatorTest {
     }
 
     @Test
-    public void shouldAggregateToRoot() {
+    void shouldAggregateToRoot() {
         NumLinesLOCAggregator aggtor = new NumLinesLOCAggregator();
         aggtor.register(new NumLinesLOC("/a/b/f0", 2, 1));
         aggtor.register(new NumLinesLOC("/a/c/f1", 5, 3));

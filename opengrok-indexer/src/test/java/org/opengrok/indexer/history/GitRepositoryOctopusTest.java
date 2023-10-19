@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * @author austvik
  */
-public class GitRepositoryOctopusTest {
+class GitRepositoryOctopusTest {
 
     private static TestRepository repository = new TestRepository();
 
@@ -157,7 +157,7 @@ public class GitRepositoryOctopusTest {
      */
 
     @Test
-    public void testOctopusHistory() throws Exception {
+    void testOctopusHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "git-octopus");
         GitRepository gitRepo = (GitRepository) RepositoryFactory.getRepository(root);
 

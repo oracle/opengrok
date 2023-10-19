@@ -51,7 +51,7 @@ class SCCSgetTest {
     private File sccsDir;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         sccsDir = File.createTempFile("s.test", "sccs");
         assertTrue(sccsDir.delete());
         assertTrue(sccsDir.mkdirs(), "Failed to set up the test-directory");
@@ -70,7 +70,7 @@ class SCCSgetTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         if (sccsFile != null) {
             sccsFile.delete();
         }

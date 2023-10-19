@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link LuaSymbolTokenizer} class.
  */
-public class LuaSymbolTokenizerTest {
+class LuaSymbolTokenizerTest {
 
     /**
      * Test sample.lua v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testLuaSymbolStream() throws Exception {
+    void testLuaSymbolStream() throws Exception {
         InputStream luares = getClass().getClassLoader().getResourceAsStream(
             "analysis/lua/sample.lua");
         assertNotNull(luares, "despite sample.lua as resource,");

@@ -95,7 +95,7 @@ class FileHistoryCacheTest {
      * Set up the test environment with repositories and a cache instance.
      */
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
 
@@ -114,7 +114,7 @@ class FileHistoryCacheTest {
      * Clean up after the test. Remove the test repositories.
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repositories.destroy();
         repositories = null;
 

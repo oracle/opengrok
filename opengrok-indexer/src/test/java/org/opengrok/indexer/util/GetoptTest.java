@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GetoptTest {
+class GetoptTest {
 
     @Test
-    public void testParseNormal() throws Exception {
+    void testParseNormal() throws Exception {
         String[] argv = new String[] {"-a", "foo", "-bc", "--", "-f"};
         Getopt instance = new Getopt(argv, "a:bcr:f");
 
@@ -53,7 +53,7 @@ public class GetoptTest {
     }
 
     @Test
-    public void reset() throws ParseException {
+    void reset() throws ParseException {
         String[] argv = new String[] {"-a", "foo", "-bc", "argument1"};
         Getopt instance = new Getopt(argv, "a:bc");
 
@@ -85,7 +85,7 @@ public class GetoptTest {
     } /* Test of reset method, of class Getopt. */
 
     @Test
-    public void testParseFailure() throws Exception {
+    void testParseFailure() throws Exception {
         String[] argv = new String[] {"-a"};
         Getopt instance = new Getopt(argv, "a:");
 

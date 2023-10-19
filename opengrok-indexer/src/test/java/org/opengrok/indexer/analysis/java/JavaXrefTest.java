@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link JavaXref} class.
  */
-public class JavaXrefTest extends XrefTestBase {
+class JavaXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new JavaAnalyzerFactory(),
                 "analysis/java/Sample.jav",
                 "analysis/java/sample_xref.html",
@@ -43,7 +43,7 @@ public class JavaXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new JavaAnalyzerFactory(),
                 "analysis/java/truncated.jav",
                 "analysis/java/truncated_xref.html", null, 1);

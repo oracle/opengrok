@@ -39,12 +39,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author austvik
  */
-public class BazaarHistoryParserTest {
+class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
             RuntimeEnvironment.getInstance().setSourceRoot("");
         }
@@ -55,7 +55,7 @@ public class BazaarHistoryParserTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 
@@ -64,7 +64,7 @@ public class BazaarHistoryParserTest {
      * @throws Exception exception
      */
     @Test
-    public void parseEmpty() throws Exception {
+    void parseEmpty() throws Exception {
         History result = instance.parse("");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
@@ -72,7 +72,7 @@ public class BazaarHistoryParserTest {
     }
 
     @Test
-    public void parseLogNoFile() throws Exception {
+    void parseLogNoFile() throws Exception {
         String revId1 = "1234";
         String author1 = "First Last <username@example.com>";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
@@ -143,7 +143,7 @@ public class BazaarHistoryParserTest {
     }
 
     @Test
-    public void parseLogDirectory() throws Exception {
+    void parseLogDirectory() throws Exception {
         String revId1 = "1234";
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";

@@ -65,7 +65,7 @@ import org.xml.sax.InputSource;
 /**
  * Unit tests for JFlexXref.
  */
-public class JFlexXrefTest {
+class JFlexXrefTest {
 
     private static Ctags ctags;
     private static TestRepository repository;

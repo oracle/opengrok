@@ -35,13 +35,13 @@ import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 /**
  * Represents a container for tests of {@link HCLSymbolTokenizer}.
  */
-public class HCLSymbolTokenizerTest {
+class HCLSymbolTokenizerTest {
 
     /**
      * Test sample.hcl v. samplesymbols.txt
      */
     @Test
-    public void testTerraformSymbolStream() throws Exception {
+    void testTerraformSymbolStream() throws Exception {
         testSymbols("analysis/hcl/sample.hcl", "analysis/hcl/samplesymbols.txt");
     }
 

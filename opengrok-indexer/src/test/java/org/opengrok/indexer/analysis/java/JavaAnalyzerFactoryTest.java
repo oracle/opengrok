@@ -54,7 +54,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Tomas Kotal
  */
-public class JavaAnalyzerFactoryTest {
+class JavaAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;

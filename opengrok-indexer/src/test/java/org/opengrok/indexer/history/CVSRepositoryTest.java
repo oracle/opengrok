@@ -57,7 +57,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
  * @author austvik
  */
 @EnabledForRepository(CVS)
-public class CVSRepositoryTest {
+class CVSRepositoryTest {
 
     CVSRepository instance;
 
@@ -83,7 +83,7 @@ public class CVSRepositoryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
 
         if (repository != null) {
@@ -93,7 +93,7 @@ public class CVSRepositoryTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new CVSRepository();
     }
 

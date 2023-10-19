@@ -30,7 +30,6 @@ import java.util.TreeSet;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.authorization.AuthorizationFrameworkReloadTest;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
@@ -47,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-public class JarAnalyzerTest {
+class JarAnalyzerTest {
 
     private static final String TESTPLUGINS_JAR = "testplugins.jar";
 
@@ -66,7 +65,7 @@ public class JarAnalyzerTest {
         repository = new TestRepository();
         repository.createEmpty();
         repository.addAdhocFile(TESTPLUGINS_JAR,
-            AuthorizationFrameworkReloadTest.class.getResourceAsStream("/authorization/plugins/" +
+                JarAnalyzerTest.class.getResourceAsStream("/authorization/plugins/" +
             TESTPLUGINS_JAR), null);
 
         env.setSourceRoot(repository.getSourceRoot());
@@ -98,7 +97,7 @@ public class JarAnalyzerTest {
     }
 
     @Test
-    public void testSearchForJar() {
+    void testSearchForJar() {
         SearchEngine instance = new SearchEngine();
         instance.setFile(TESTPLUGINS_JAR);
         int noHits = instance.search();

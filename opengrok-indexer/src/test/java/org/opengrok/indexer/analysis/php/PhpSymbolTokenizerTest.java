@@ -44,11 +44,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  *
  * @author Gustavo Lopes
  */
-public class PhpSymbolTokenizerTest {
+class PhpSymbolTokenizerTest {
 
     private final AbstractAnalyzer analyzer;
 
-    public PhpSymbolTokenizerTest() {
+    PhpSymbolTokenizerTest() {
         PhpAnalyzerFactory analFact = new PhpAnalyzerFactory();
         this.analyzer = analFact.getAnalyzer();
     }
@@ -71,7 +71,7 @@ public class PhpSymbolTokenizerTest {
     }
 
     @Test
-    public void basicTest() {
+    void basicTest() {
         String s = "<?php foobar eval $eval 0sdf _ds˙d";
         String[] termsFor = getTermsFor(new StringReader(s));
         assertArrayEquals(
@@ -80,7 +80,7 @@ public class PhpSymbolTokenizerTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/php/sample.php");
              InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
             String[] termsFor = getTermsFor(r);

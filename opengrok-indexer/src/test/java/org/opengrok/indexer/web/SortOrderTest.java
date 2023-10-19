@@ -31,13 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author trond
  */
-public class SortOrderTest {
+class SortOrderTest {
 
     /**
      * Test of values method, of class SortOrder.
      */
     @Test
-    public void testValues() {
+    void testValues() {
         System.out.println("values");
         SortOrder[] result = SortOrder.values();
         assertEquals(3, result.length);
@@ -50,7 +50,7 @@ public class SortOrderTest {
      * Test of valueOf method, of class SortOrder.
      */
     @Test
-    public void testValueOf() {
+    void testValueOf() {
         System.out.println("valueOf");
         SortOrder result = SortOrder.valueOf("LASTMODIFIED");
         assertNotNull(result);

@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Vladimir Kotal
  */
-public class RepositoryFactoryTest {
+class RepositoryFactoryTest {
     private static RuntimeEnvironment env;
     private static TestRepository repository = new TestRepository();
     private static Set<String> savedDisabledRepositories;
@@ -74,7 +74,7 @@ public class RepositoryFactoryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         env.setRepoCmds(Collections.emptyMap());
         env.setDisabledRepositories(savedDisabledRepositories);
         env.setProjectsEnabled(savedIsProjectsEnabled);
@@ -82,7 +82,7 @@ public class RepositoryFactoryTest {
 
     @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
-    public void testRepositoryMatchingSourceRoot() throws IllegalAccessException, InvocationTargetException,
+    void testRepositoryMatchingSourceRoot() throws IllegalAccessException, InvocationTargetException,
             ForbiddenSymlinkException, InstantiationException, NoSuchMethodException, IOException {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
@@ -94,7 +94,7 @@ public class RepositoryFactoryTest {
 
     @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
-    public void testNormallyEnabledMercurialRepository() throws IllegalAccessException,
+    void testNormallyEnabledMercurialRepository() throws IllegalAccessException,
             InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
             NoSuchMethodException, IOException {
 
@@ -108,7 +108,7 @@ public class RepositoryFactoryTest {
 
     @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
-    public void testMercurialRepositoryWhenDisabled() throws IllegalAccessException,
+    void testMercurialRepositoryWhenDisabled() throws IllegalAccessException,
             InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
             NoSuchMethodException, IOException {
 
@@ -148,14 +148,14 @@ public class RepositoryFactoryTest {
     }
 
     @Test
-    public void testNotWorkingBitkeeperRepository()
+    void testNotWorkingBitkeeperRepository()
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
         testNotWorkingRepository(repository, "bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 
     @Test
-    public void testRepositoryFactoryEveryImplIsNamedAsRepository() {
+    void testRepositoryFactoryEveryImplIsNamedAsRepository() {
         List<Class<? extends Repository>> repositoryClasses = RepositoryFactory.getRepositoryClasses();
         for (Class<? extends Repository> clazz : repositoryClasses) {
             assertTrue(clazz.getSimpleName().endsWith("Repository"), "should end with \"Repository\"");

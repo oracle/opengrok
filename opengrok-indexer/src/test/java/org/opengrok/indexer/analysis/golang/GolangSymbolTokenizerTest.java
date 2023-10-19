@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link GolangSymbolTokenizer} class.
  */
-public class GolangSymbolTokenizerTest {
+class GolangSymbolTokenizerTest {
 
     /**
      * Test sample.go v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testGolangSymbolStream() throws Exception {
+    void testGolangSymbolStream() throws Exception {
         InputStream gores = getClass().getClassLoader().getResourceAsStream(
             "analysis/golang/sample.go");
         assertNotNull(gores, "despite sample.go as resource,");

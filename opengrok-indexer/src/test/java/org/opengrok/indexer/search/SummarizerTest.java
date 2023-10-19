@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Unit tests for the Summarizer class.
  */
-public class SummarizerTest {
+class SummarizerTest {
     /**
      * If the last token in a text fragment is a token we're searching for,
      * and that token is also present earlier in the fragment, getSummary()
@@ -39,7 +39,7 @@ public class SummarizerTest {
      * @throws Exception exception
      */
     @Test
-    public void bug15858() throws Exception {
+    void bug15858() throws Exception {
         Query query = new QueryBuilder().setFreetext("beta").build();
         Summarizer instance = new Summarizer(query, new CompatibleAnalyser());
         // This call used to result in a StringIndexOutOfBoundsException

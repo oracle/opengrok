@@ -34,13 +34,13 @@ import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 /**
  * Tests the {@link SQLSymbolTokenizer} class.
  */
-public class SQLSymbolTokenizerTest {
+class SQLSymbolTokenizerTest {
 
     /**
      * Test sample.sql v. samplesqlsymbols.txt
      */
     @Test
-    public void testSqlSymbolStream() throws Exception {
+    void testSqlSymbolStream() throws Exception {
         InputStream sqlRes = getClass().getClassLoader().getResourceAsStream("analysis/sql/sample.sql");
         assertNotNull(sqlRes, "sample.sql should be an available resource");
         InputStream symRes = getClass().getClassLoader().getResourceAsStream(

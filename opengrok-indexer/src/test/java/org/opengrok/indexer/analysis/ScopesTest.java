@@ -33,13 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Tomas Kotal
  */
-public class ScopesTest {
+class ScopesTest {
 
     /**
      * Test of getScope method, of class Scopes.
      */
     @Test
-    public void testGetScope() {
+    void testGetScope() {
         Scopes instance = new Scopes();
         Scope globalScope = instance.getScope(0);
 

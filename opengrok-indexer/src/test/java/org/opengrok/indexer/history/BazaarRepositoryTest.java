@@ -39,17 +39,17 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
  * @author austvik
  */
 @EnabledForRepository(BAZAAR)
-public class BazaarRepositoryTest {
+class BazaarRepositoryTest {
 
     BazaarRepository instance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new BazaarRepository();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 
@@ -58,7 +58,7 @@ public class BazaarRepositoryTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void parseAnnotation() throws Exception {
+    void parseAnnotation() throws Exception {
         String revId1 = "1234.876.5";
         String revId2 = "1.234";
         String revId3 = "2";
@@ -95,7 +95,7 @@ public class BazaarRepositoryTest {
      * Test of fileHasAnnotation method.
      */
     @Test
-    public void fileHasAnnotation() {
+    void fileHasAnnotation() {
         boolean result = instance.fileHasAnnotation(null);
         assertTrue(result);
     }
@@ -104,7 +104,7 @@ public class BazaarRepositoryTest {
      * Test of fileHasHistory method.
      */
     @Test
-    public void fileHasHistory() {
+    void fileHasHistory() {
         boolean result = instance.fileHasHistory(null);
         assertTrue(result);
     }

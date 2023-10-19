@@ -60,7 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Trond Norbye
  */
-public class RuntimeEnvironmentTest {
+class RuntimeEnvironmentTest {
 
     private static File originalConfig;
 
@@ -79,7 +79,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Create a default configuration
         Configuration config = new Configuration();
         RuntimeEnvironment.getInstance().setConfiguration(config);

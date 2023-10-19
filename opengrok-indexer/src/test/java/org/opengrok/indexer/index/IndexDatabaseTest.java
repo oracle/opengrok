@@ -112,7 +112,7 @@ class IndexDatabaseTest {
     private RuntimeEnvironment env;
 
     @BeforeEach
-    public void setUpClass() throws Exception {
+    void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         // This needs to be set before HistoryGuru is instantiated for the first time,
@@ -169,7 +169,7 @@ class IndexDatabaseTest {
     }
 
     @AfterEach
-    public void tearDownClass() throws Exception {
+    void tearDownClass() throws Exception {
         repository.destroy();
     }
 

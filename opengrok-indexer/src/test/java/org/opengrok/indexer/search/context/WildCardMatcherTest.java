@@ -29,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Tests for the WildCardMatcher class.
  */
-public class WildCardMatcherTest {
+class WildCardMatcherTest {
 
     /**
      * Test of match method.
      */
     @Test
-    public void testMatch() {
+    void testMatch() {
         WildCardMatcher m = new WildCardMatcher("wild?ard", true); // bug #15644
         assertEquals(LineMatcher.MATCHED, m.match("wildcard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildward"));

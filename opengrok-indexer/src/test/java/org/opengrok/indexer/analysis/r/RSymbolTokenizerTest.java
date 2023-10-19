@@ -35,13 +35,13 @@ import java.util.List;
 /**
  * Represents a container for tests of {@link RSymbolTokenizer}.
  */
-public class RSymbolTokenizerTest {
+class RSymbolTokenizerTest {
 
     /**
      * Test sample.r v. samplesymbols.txt
      */
     @Test
-    public void testPerlSymbolStream() throws Exception {
+    void testPerlSymbolStream() throws Exception {
         InputStream rlangRes = getClass().getClassLoader().getResourceAsStream(
                 "analysis/r/sample.r");
         assertNotNull(rlangRes, "should read sample.r as resource,");

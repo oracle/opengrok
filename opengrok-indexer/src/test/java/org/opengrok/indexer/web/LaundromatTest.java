@@ -30,32 +30,32 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LaundromatTest {
+class LaundromatTest {
 
     private static final String TEST_CONTENT = "\n\r\f\tContent\r\nConclusion\f\t";
     private static final String TEST_CONTENT_LOG_LAUNDRY =
             "<LF><CR><FF><TAB>Content<CR><LF>Conclusion<FF><TAB>";
 
     @Test
-    public void launderInput() {
+    void launderInput() {
         String laundry = Laundromat.launderInput(TEST_CONTENT);
         assertEquals("____Content__Conclusion__", laundry);
     }
 
     @Test
-    public void launderQuery() {
+    void launderQuery() {
         String laundry = Laundromat.launderQuery(TEST_CONTENT);
         assertEquals(" Content Conclusion ", laundry);
     }
 
     @Test
-    public void launderLog() {
+    void launderLog() {
         String laundry = Laundromat.launderLog(TEST_CONTENT);
         assertEquals(TEST_CONTENT_LOG_LAUNDRY, laundry);
     }
 
     @Test
-    public void launderLogMap() {
+    void launderLogMap() {
         HashMap<String, String[]> testMap = new HashMap<>();
         testMap.put("a", null);
         testMap.put("b", new String[]{TEST_CONTENT});

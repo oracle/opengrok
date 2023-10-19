@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a container for tests of {@link StrictLineBreakIterator}.
  */
-public class StrictLineBreakIteratorTest {
+class StrictLineBreakIteratorTest {
 
     @Test
-    public void testStandardLineBreakIteratorWithUnixLFs() {
+    void testStandardLineBreakIteratorWithUnixLFs() {
         final String DOC = "abc\ndef\nghi";
         BreakIterator it = BreakIterator.getLineInstance();
         it.setText(DOC);
@@ -48,7 +48,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testBreakingWithUnixLFs1() {
+    void testBreakingWithUnixLFs1() {
         final String DOC = "abc\ndef\nghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -62,7 +62,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testBreakingWithUnixLFs2() {
+    void testBreakingWithUnixLFs2() {
         final String DOC = "\nabc\ndef\nghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -77,7 +77,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testBreakingWithWindowsLFs() {
+    void testBreakingWithWindowsLFs() {
         final String DOC = "abc\r\ndef\r\nghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -90,7 +90,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testBreakingWithMacLFs() {
+    void testBreakingWithMacLFs() {
         final String DOC = "abc\rdef\rghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -103,7 +103,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testBreakingWithOddLFs() {
+    void testBreakingWithOddLFs() {
         final String DOC = "abc\n\rdef\r\nghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -116,7 +116,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testTraversal() {
+    void testTraversal() {
         final String DOC = "abc\ndef\nghi";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
@@ -139,7 +139,7 @@ public class StrictLineBreakIteratorTest {
     }
 
     @Test
-    public void testForEmptyString() {
+    void testForEmptyString() {
         final String DOC = "";
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);

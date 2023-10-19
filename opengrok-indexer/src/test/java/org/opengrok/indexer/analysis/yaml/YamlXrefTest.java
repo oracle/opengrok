@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link YamlXref} class.
  */
-public class YamlXrefTest extends XrefTestBase {
+class YamlXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(YamlAnalyzerFactory.DEFAULT_INSTANCE,
                 "analysis/yaml/sample.yml",
                 "analysis/yaml/sample_xref.html",

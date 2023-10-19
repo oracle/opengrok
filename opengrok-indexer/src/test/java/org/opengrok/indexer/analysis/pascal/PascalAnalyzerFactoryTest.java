@@ -52,7 +52,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author alexanthony
  */
-public class PascalAnalyzerFactoryTest {
+class PascalAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;

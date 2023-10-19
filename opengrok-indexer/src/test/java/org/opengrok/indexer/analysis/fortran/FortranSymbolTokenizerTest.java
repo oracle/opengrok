@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link FortranSymbolTokenizer} class.
  */
-public class FortranSymbolTokenizerTest {
+class FortranSymbolTokenizerTest {
 
     /**
      * Test sample.f v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testFortranSymbolStream() throws Exception {
+    void testFortranSymbolStream() throws Exception {
         InputStream fres = getClass().getClassLoader().getResourceAsStream(
             "analysis/fortran/sample.f");
         assertNotNull(fres, "despite sample.f as resource,");

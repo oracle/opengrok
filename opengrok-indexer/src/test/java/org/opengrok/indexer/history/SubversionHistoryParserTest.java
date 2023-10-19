@@ -46,12 +46,12 @@ class SubversionHistoryParserTest {
     private SubversionHistoryParser instance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new SubversionHistoryParser();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 

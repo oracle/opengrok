@@ -33,10 +33,10 @@ import org.opengrok.indexer.analysis.XrefTestBase;
 /**
  * Tests the {@link JavaScriptXref} class.
  */
-public class JavaScriptXrefTest extends XrefTestBase {
+class JavaScriptXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/sample.js",
                 "analysis/javascript/sample_xref.html",
@@ -44,21 +44,21 @@ public class JavaScriptXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/truncated.js",
                 "analysis/javascript/truncated_xref.html", null, 1);
     }
 
     @Test
-    public void shouldDetectRegularExpressionWithoutModifiers() throws IOException {
+    void shouldDetectRegularExpressionWithoutModifiers() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/regexp_plain.js",
                 "analysis/javascript/regexp_plain_xref.html", null, 14);
     }
 
     @Test
-    public void shouldDetectRegularExpressionWithModifiers() throws IOException {
+    void shouldDetectRegularExpressionWithModifiers() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/regexp_modifiers.js",
                 "analysis/javascript/regexp_modifiers_xref.html", null, 14);

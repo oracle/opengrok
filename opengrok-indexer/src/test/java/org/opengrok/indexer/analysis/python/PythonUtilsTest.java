@@ -30,24 +30,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a test class for {@link PythonUtils}.
  */
-public class PythonUtilsTest {
+class PythonUtilsTest {
 
     @Test
-    public void shouldMatchLongstringApostrophe() {
+    void shouldMatchLongstringApostrophe() {
         final String value = "1-2-3'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
         assertEquals(5, i, "long-string apostrophe");
     }
 
     @Test
-    public void shouldMatchInitialLongstringApostrophe() {
+    void shouldMatchInitialLongstringApostrophe() {
         final String value = "'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
         assertEquals(0, i, "initial long-string apostrophe");
     }
 
     @Test
-    public void shouldMatchLongstringApostropheAfterEscapedApostrophe() {
+    void shouldMatchLongstringApostropheAfterEscapedApostrophe() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \'1-2-3\''''
         final String value = "\\'1-2-3\\''''";
@@ -56,7 +56,7 @@ public class PythonUtilsTest {
     }
 
     @Test
-    public void shouldMatchLongstringApostropheAfterEvenEscapes() {
+    void shouldMatchLongstringApostropheAfterEvenEscapes() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \\'''
         final String value = "\\\\'''";
@@ -65,7 +65,7 @@ public class PythonUtilsTest {
     }
 
     @Test
-    public void shouldNotMatchLongstringApostropheAfterOddEscapes() {
+    void shouldNotMatchLongstringApostropheAfterOddEscapes() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \\\'''
         final String value = "\\\\\\'''";

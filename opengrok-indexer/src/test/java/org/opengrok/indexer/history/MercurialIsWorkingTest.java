@@ -38,7 +38,7 @@ import static org.opengrok.indexer.history.RepositoryFactoryTest.testNotWorkingR
  * of {@code MercurialRepository#HG_IS_WORKING}. Assuming the test will be run
  * in separate JVM by JUnit.
  */
-public class MercurialIsWorkingTest {
+class MercurialIsWorkingTest {
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
@@ -55,7 +55,7 @@ public class MercurialIsWorkingTest {
     }
 
     @Test
-    public void testNotWorkingMercurialRepository()
+    void testNotWorkingMercurialRepository()
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
         testNotWorkingRepository(repository, "mercurial", MercurialRepository.CMD_PROPERTY_KEY);

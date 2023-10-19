@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link FortranXref} class.
  */
-public class FortranXrefTest extends XrefTestBase {
+class FortranXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new FortranAnalyzerFactory(),
                 "analysis/fortran/sample.f",
                 "analysis/fortran/sample_xref.html",
@@ -43,7 +43,7 @@ public class FortranXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new FortranAnalyzerFactory(),
                 "analysis/fortran/truncated.f",
                 "analysis/fortran/truncated_xref.html", null, 1);

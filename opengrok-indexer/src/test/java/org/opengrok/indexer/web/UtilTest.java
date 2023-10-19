@@ -63,7 +63,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
  */
-public class UtilTest {
+class UtilTest {
 
     private static Locale savedLocale;
 

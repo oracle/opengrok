@@ -37,13 +37,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for the ExpandTabsReader class.
  */
-public class ExpandTabsReaderTest {
+class ExpandTabsReaderTest {
 
     /**
      * Test that tabs are expanded to spaces.
      */
     @Test
-    public void testExpandTabs() throws IOException {
+    void testExpandTabs() throws IOException {
         // Create a couple of lines to see if tabs are expanded as expected.
         String inputLine = "abc\tdef\t\t12345678\t1\t1234567\tabc";
 
@@ -70,7 +70,7 @@ public class ExpandTabsReaderTest {
      * Test that skip() works over tabs.
      */
     @Test
-    public void testSkip() throws IOException {
+    void testSkip() throws IOException {
         Reader r = new ExpandTabsReader(new StringReader("\txyz"), 8);
 
         // Skip four characters. That is, half of the tab after expansion.
@@ -96,7 +96,7 @@ public class ExpandTabsReaderTest {
      * Tests that line offsets are translated as expected.
      */
     @Test
-    public void testTranslate() {
+    void testTranslate() {
         final String INPUT = "abc\tdef\t\t12345678\t1\t1234567\tabc";
 
         int tbsz = 8;

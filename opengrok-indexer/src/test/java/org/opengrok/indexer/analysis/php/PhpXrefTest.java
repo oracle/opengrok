@@ -52,10 +52,10 @@ import static org.opengrok.indexer.util.StreamUtils.copyStream;
  * Tests the {@link PhpXref} class.
  * @author Gustavo Lopes
  */
-public class PhpXrefTest {
+class PhpXrefTest {
 
     @Test
-    public void basicTest() throws IOException {
+    void basicTest() throws IOException {
         String s = "<?php foo bar";
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
@@ -71,7 +71,7 @@ public class PhpXrefTest {
     }
 
     @Test
-    public void basicSingleQuotedStringTest() throws IOException {
+    void basicSingleQuotedStringTest() throws IOException {
         String s = "<?php define(\"FOO\", 'BAR\\'\"'); $foo='bar'; $hola=\"ls\"; $hola=''; $hola=\"\";";
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
@@ -115,7 +115,7 @@ public class PhpXrefTest {
         return xref.getLOC();
     }
 
-    public void main(String[] args) throws IOException {
+    void main(String[] args) throws IOException {
         InputStream is;
         if (args.length == 0) {
             is = PhpXrefTest.class.getClassLoader().getResourceAsStream(
@@ -128,7 +128,7 @@ public class PhpXrefTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/php/sample.php");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

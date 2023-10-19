@@ -52,7 +52,7 @@ import org.opengrok.indexer.util.TestRepository;
  * @author James Service &lt;jas2701@googlemail.com&gt;
  */
 @EnabledForRepository(BITKEEPER)
-public class BitKeeperRepositoryTest {
+class BitKeeperRepositoryTest {
 
     private TestRepository testRepo;
     private BitKeeperRepository bkRepo;
@@ -66,7 +66,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             testRepo = new TestRepository();
             testRepo.create(getClass().getResource("/repositories"));
@@ -81,7 +81,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         if (testRepo != null) {
             testRepo.destroy();
             testRepo = null;
@@ -119,7 +119,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistory() throws Exception {
+    void testGetHistory() throws Exception {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
@@ -139,7 +139,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryInvalid() {
+    void testGetHistoryInvalid() {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");
@@ -167,7 +167,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryGet() {
+    void testGetHistoryGet() {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
@@ -181,7 +181,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryGetInvalid() {
+    void testGetHistoryGetInvalid() {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         assertNull(bkRepo.getHistoryGet(bkRepo.getDirectoryName(), "fakename.cpp", "+"),
@@ -191,7 +191,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testAnnotation() throws Exception {
+    void testAnnotation() throws Exception {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
@@ -207,7 +207,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testAnnotationInvalid() {
+    void testAnnotationInvalid() {
         assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");

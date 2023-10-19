@@ -51,10 +51,10 @@ import static org.opengrok.indexer.util.StreamUtils.copyStream;
  *
  * @author Harry Pan
  */
-public class HaskellXrefTest {
+class HaskellXrefTest {
 
     @Test
-    public void basicTest() throws IOException {
+    void basicTest() throws IOException {
         String s = "putStrLn \"Hello, world!\"";
         Writer w = new StringWriter();
         HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
@@ -88,7 +88,7 @@ public class HaskellXrefTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         // load sample source
         InputStream sampleInputStream = getClass().getClassLoader().getResourceAsStream(
                 "analysis/haskell/sample.hs");
@@ -130,14 +130,14 @@ public class HaskellXrefTest {
     }
 
     @Test
-    public void sampleTest2() throws IOException {
+    void sampleTest2() throws IOException {
         writeAndCompare("analysis/haskell/sample2.hs",
             "analysis/haskell/sample2_xref.html",
             getTagsDefinitions(), 198);
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare("analysis/haskell/truncated.hs",
             "analysis/haskell/truncated_xref.html",
             null, 1);

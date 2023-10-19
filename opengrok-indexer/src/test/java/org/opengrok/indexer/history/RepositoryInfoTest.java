@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  */
 class RepositoryInfoTest {
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RuntimeEnvironment.getInstance().setSourceRoot("/src");
     }
 

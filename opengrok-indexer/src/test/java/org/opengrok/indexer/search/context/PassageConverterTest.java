@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link PassageConverter} etc.
  */
-public class PassageConverterTest {
+class PassageConverterTest {
 
     private static final String DOC = "    Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
             "Mauris vel tortor vel nisl efficitur fermentum nec vel erat.\n" +
@@ -64,7 +64,7 @@ public class PassageConverterTest {
     }
 
     @Test
-    public void testOneWord() {
+    void testOneWord() {
         final String WORD = "gravida";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -96,7 +96,7 @@ public class PassageConverterTest {
     }
 
     @Test
-    public void testOneWordElided() {
+    void testOneWordElided() {
         final String WORD = "dignissim";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -129,7 +129,7 @@ public class PassageConverterTest {
     }
 
     @Test
-    public void testTwoWordsElided() {
+    void testTwoWordsElided() {
         final String WORD1 = "Maecenas";
         int woff1 = DOC.indexOf(WORD1);
         assertTrue(woff1 >= 0, WORD1);
@@ -172,7 +172,7 @@ public class PassageConverterTest {
     }
 
     @Test
-    public void testLineSpanningMatch() {
+    void testLineSpanningMatch() {
         final String PHRASE = "elit.\nMauris";
         int poff = DOC.indexOf(PHRASE);
         assertTrue(poff >= 0, PHRASE);
@@ -216,7 +216,7 @@ public class PassageConverterTest {
     }
 
     @Test
-    public void testLinesSpanningMatch() {
+    void testLinesSpanningMatch() {
         Passage p = new Passage();
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());

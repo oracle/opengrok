@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Jens Elkner
  * @version $Revision$
  */
-public class TroffAnalyzerTest {
+class TroffAnalyzerTest {
 
     private static TroffAnalyzerFactory factory;
     private static TroffAnalyzer analyzer;

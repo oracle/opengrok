@@ -39,7 +39,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.analysis.c.CAnalyzerFactoryTest;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
@@ -53,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Trond Norbye
  */
-public class IgnoredNamesTest {
+class IgnoredNamesTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private static TestRepository repository;
@@ -61,7 +60,7 @@ public class IgnoredNamesTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(CAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
+        repository.create(IgnoredNamesTest.class.getClassLoader().getResource("sources"));
 
         // Populate ignored lists with repository specific entries.
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());

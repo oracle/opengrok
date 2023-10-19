@@ -47,7 +47,7 @@ class OptionParserTest {
     int actionCounter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         actionCounter = 0;
     }
 

@@ -32,19 +32,8 @@ public class DeliberateRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 7870938126523334656L;
 
-    public DeliberateRuntimeException() {
-        super();
-    }
-
     public DeliberateRuntimeException(String message) {
         super(message);
     }
 
-    public DeliberateRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public DeliberateRuntimeException(Throwable cause) {
-        super(cause);
-    }
 }

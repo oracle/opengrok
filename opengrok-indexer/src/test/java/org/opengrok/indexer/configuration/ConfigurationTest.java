@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author Krystof Tulinger
  */
-public class ConfigurationTest {
+class ConfigurationTest {
 
     private static class Handler extends DefaultHandler2 {
 
@@ -85,7 +85,7 @@ public class ConfigurationTest {
      * @throws Exception exception
      */
     @Test
-    public void testTransientKeywordGroups() throws Exception {
+    void testTransientKeywordGroups() throws Exception {
         Group foo = new Group("foo", "foo.*");
         Group bar = new Group("bar", "bar.*");
 
@@ -129,7 +129,7 @@ public class ConfigurationTest {
      * ClassUtil#remarkTransientFields() for suggested solution
      */
     @Test
-    public void serializationOrderTest() throws IOException {
+    void serializationOrderTest() throws IOException {
         Project project = new Project("project");
         Group apache = new Group("Apache", "test.*");
         Group bsd = new Group("BSD", "test.*");

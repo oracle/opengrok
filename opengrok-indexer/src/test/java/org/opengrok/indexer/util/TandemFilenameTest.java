@@ -30,10 +30,10 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class TandemFilenameTest {
+class TandemFilenameTest {
 
     @Test
-    public void shouldThrowIfFilenameIncludesPath() {
+    void shouldThrowIfFilenameIncludesPath() {
         IllegalArgumentException caughtException = null;
         try {
             TandemFilename.join("a/b/c", ".gz");
@@ -44,13 +44,13 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldNotNeedToHashShortNames() {
+    void shouldNotNeedToHashShortNames() {
         String newName = TandemFilename.join("file1", ".gz");
         assertEquals("file1.gz", newName);
     }
 
     @Test
-    public void shouldNotNeedToHash254ASCIIChars() {
+    void shouldNotNeedToHash254ASCIIChars() {
         final String extension = ".gz";
         char[] chars = new char[254 - extension.length()];
         Arrays.fill(chars, 'A');
@@ -63,7 +63,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldHash255ASCIIChars() {
+    void shouldHash255ASCIIChars() {
         final String extension = ".zip";
         char[] chars = new char[255 - extension.length()];
         Arrays.fill(chars, 'B');
@@ -82,7 +82,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldHash255ASCIICharsWithShiftedExtension() {
+    void shouldHash255ASCIICharsWithShiftedExtension() {
         final String ext2 = ".gz";
         final String ext1 = ".cpp";
         char[] chars = new char[255 - ext1.length() - ext2.length()];
@@ -102,7 +102,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldHash255ASCIICharsWithLongOriginalExtension() {
+    void shouldHash255ASCIICharsWithLongOriginalExtension() {
         final String extension = ".gz";
         char[] chars = new char[255 - extension.length()];
         Arrays.fill(chars, 'B');
@@ -122,7 +122,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldNotNeedToHashUnicodeOf254UTF8Bytes() {
+    void shouldNotNeedToHashUnicodeOf254UTF8Bytes() {
         final String extension = ".gz";
         String filename = "Лоремипсумдолорситаметаппетерепатриояуеелояуентиа" +
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +
@@ -138,7 +138,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldHashUnicodeOf255UTF8Bytes() {
+    void shouldHashUnicodeOf255UTF8Bytes() {
         final String extension = ".zip";
         String filename = "Лоремипсумдолорситаметаппетерепатриояуеелояуентиа" +
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +
@@ -157,7 +157,7 @@ public class TandemFilenameTest {
     }
 
     @Test
-    public void shouldHashWithPaddingUnicodeOf256UTF8Bytes() {
+    void shouldHashWithPaddingUnicodeOf256UTF8Bytes() {
         final String extension = ".zip";
         String filename = "Лоремипсумдолорситаметаппетерепатриояуеелояуентиа" +
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +

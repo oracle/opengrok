@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link KotlinXref} class.
  */
-public class KotlinXrefTest extends XrefTestBase {
+class KotlinXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new KotlinAnalyzerFactory(),
                 "analysis/kotlin/sample.kt",
                 "analysis/kotlin/sample_xref.html",
@@ -43,7 +43,7 @@ public class KotlinXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new KotlinAnalyzerFactory(),
                 "analysis/kotlin/truncated.kt",
                 "analysis/kotlin/truncated_xref.html", null, 1);

@@ -35,13 +35,13 @@ import java.util.List;
 /**
  * Represents a container for tests of {@link TerraformSymbolTokenizer}.
  */
-public class TerraformSymbolTokenizerTest {
+class TerraformSymbolTokenizerTest {
 
     /**
      * Test sample.tf v. samplesymbols.txt
      */
     @Test
-    public void testTerraformSymbolStream() throws Exception {
+    void testTerraformSymbolStream() throws Exception {
         testSymbols("analysis/terraform/sample.tf", "analysis/terraform/samplesymbols.txt");
     }
 

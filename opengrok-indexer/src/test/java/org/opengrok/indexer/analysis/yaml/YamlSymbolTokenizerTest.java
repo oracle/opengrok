@@ -42,11 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  * Tests the {@link YamlSymbolTokenizer} class.
  * @author Gino Augustine
  */
-public class YamlSymbolTokenizerTest {
+class YamlSymbolTokenizerTest {
 
     private final AbstractAnalyzer analyzer;
 
-    public YamlSymbolTokenizerTest() {
+    YamlSymbolTokenizerTest() {
         this.analyzer = YamlAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer();
     }
 
@@ -68,7 +68,7 @@ public class YamlSymbolTokenizerTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/yaml/sample.yml");
              InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
             String[] termsFor = getTermsFor(r);

@@ -43,7 +43,7 @@ import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AuthorizationFrameworkTest {
+class AuthorizationFrameworkTest {
 
     private static final Random RANDOM = new Random();
 
@@ -734,7 +734,7 @@ public class AuthorizationFrameworkTest {
 
     @ParameterizedTest
     @MethodSource("params")
-    public void testPluginsGeneric(StackSetup setup) {
+    void testPluginsGeneric(StackSetup setup) {
         AuthorizationFramework framework = new AuthorizationFramework(null, setup.stack);
         framework.loadAllPlugins(setup.stack);
 
@@ -865,13 +865,13 @@ public class AuthorizationFrameworkTest {
         };
     }
 
-    public static class TestCase {
+    static class TestCase {
 
         public boolean expected;
         public HttpServletRequest request;
         public Nameable entity;
 
-        public TestCase(boolean expected, HttpServletRequest request, Nameable entity) {
+        TestCase(boolean expected, HttpServletRequest request, Nameable entity) {
             this.expected = expected;
             this.request = request;
             this.entity = entity;
@@ -883,12 +883,12 @@ public class AuthorizationFrameworkTest {
         }
     }
 
-    public static class StackSetup {
+    static class StackSetup {
 
         public AuthorizationStack stack;
         public List<TestCase> setup;
 
-        public StackSetup(AuthorizationStack stack, TestCase... setups) {
+        StackSetup(AuthorizationStack stack, TestCase... setups) {
             this.stack = stack;
             this.setup = Arrays.asList(setups);
         }
