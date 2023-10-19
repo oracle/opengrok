@@ -56,7 +56,7 @@ class JarAnalyzerTest {
     private static boolean originalProjectsEnabled;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         originalProjectsEnabled = env.isProjectsEnabled();
@@ -86,7 +86,7 @@ class JarAnalyzerTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         if (repository != null) {
             repository.destroy();

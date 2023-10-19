@@ -72,7 +72,7 @@ class HistoryGuruTest {
     private static int savedNestingMaximum;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         env.setAnnotationCacheEnabled(true);
         savedNestingMaximum = env.getNestingMaximum();
@@ -101,7 +101,7 @@ class HistoryGuruTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
     }
 

@@ -55,14 +55,14 @@ class HistoryContextTest {
     private static TestRepository repositories;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResource("/repositories"));
         RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repositories.destroy();
         repositories = null;
     }

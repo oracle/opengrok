@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ClassUtilTest {
 
+    @SuppressWarnings("unused")
     private static class TestObject {
 
         private String strField;
@@ -43,7 +44,7 @@ class ClassUtilTest {
             return strField;
         }
 
-        void setStrField(String strField) {
+        public void setStrField(String strField) {
             this.strField = strField;
         }
 
@@ -51,7 +52,7 @@ class ClassUtilTest {
             return intField;
         }
 
-        void setIntField(int intField) {
+        public void setIntField(int intField) {
             this.intField = intField;
         }
 
@@ -59,7 +60,7 @@ class ClassUtilTest {
             return objField;
         }
 
-        void setObjField(TestObject objField) {
+        public void setObjField(TestObject objField) {
             this.objField = objField;
         }
 

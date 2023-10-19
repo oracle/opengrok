@@ -60,7 +60,7 @@ class IndexDatabaseSymlinksTest {
     private static TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         repository = new TestRepository();
@@ -89,7 +89,7 @@ class IndexDatabaseSymlinksTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         env.setAllowedSymlinks(new HashSet<>());
         env.setCanonicalRoots(new HashSet<>());

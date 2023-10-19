@@ -53,7 +53,7 @@ class TestHistoryCollectorVsMergeChangesets {
     private static final String lastRevision = "4d1b7cfb1e7f3fc7360bd2f213d9e634e6a40cf8";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(TestHistoryCollectorVsMergeChangesets.class.getResourceAsStream(
                 "/history/git-merge.zip"));
@@ -61,7 +61,7 @@ class TestHistoryCollectorVsMergeChangesets {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }

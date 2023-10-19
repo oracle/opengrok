@@ -53,7 +53,7 @@ class PassageScorerTest {
     private static TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/sources"));
 
@@ -70,7 +70,7 @@ class PassageScorerTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
     }
 

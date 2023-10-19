@@ -42,12 +42,12 @@ class MercurialIsWorkingTest {
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository.create(RepositoryFactoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         if (repository != null) {
             repository.destroy();
             repository = null;

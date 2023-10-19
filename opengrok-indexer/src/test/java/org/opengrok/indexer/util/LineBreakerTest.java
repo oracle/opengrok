@@ -38,7 +38,7 @@ class LineBreakerTest {
     private static LineBreaker brkr;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         brkr = new LineBreaker();
     }
 

@@ -58,7 +58,7 @@ class IgnoredNamesTest {
     private static TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(IgnoredNamesTest.class.getClassLoader().getResource("sources"));
 

@@ -48,7 +48,7 @@ class GitRepositoryOctopusTest {
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(GitRepositoryOctopusTest.class.getResourceAsStream(
                 "/history/git-octopus.zip"));
@@ -56,7 +56,7 @@ class GitRepositoryOctopusTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }

@@ -54,12 +54,12 @@ class RCSRepositoryTest {
     private static final String[] REVISIONS = {"1.2", "1.1"};
 
     @BeforeAll
-    public static void setUpClass() throws IOException, URISyntaxException {
+    static void setUpClass() throws IOException, URISyntaxException {
         repository.create(RCSRepositoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }

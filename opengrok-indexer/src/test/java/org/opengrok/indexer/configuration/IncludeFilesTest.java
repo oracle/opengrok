@@ -45,7 +45,7 @@ class IncludeFilesTest {
     static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
+    static void setUpClass() throws IOException {
         includeRoot = Files.createTempDirectory("include_root");
         env.setIncludeRoot(includeRoot.toString());
     }

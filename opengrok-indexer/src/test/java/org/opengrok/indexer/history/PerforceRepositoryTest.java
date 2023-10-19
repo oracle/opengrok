@@ -53,7 +53,7 @@ class PerforceRepositoryTest {
     private static final File root = new File("/var/opengrok/src/p4foo");
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         if (!root.exists()) {
             skip = true;
         } else {

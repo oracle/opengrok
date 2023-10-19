@@ -68,7 +68,7 @@ class UtilTest {
     private static Locale savedLocale;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         // Some methods have different results in different locales.
         // Set locale to en_US for these tests.
         savedLocale = Locale.getDefault();
@@ -76,7 +76,7 @@ class UtilTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         Locale.setDefault(savedLocale);
         savedLocale = null;
     }

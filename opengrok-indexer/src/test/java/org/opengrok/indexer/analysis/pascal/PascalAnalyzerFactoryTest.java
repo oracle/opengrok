@@ -68,7 +68,7 @@ class PascalAnalyzerFactoryTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -83,7 +83,7 @@ class PascalAnalyzerFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

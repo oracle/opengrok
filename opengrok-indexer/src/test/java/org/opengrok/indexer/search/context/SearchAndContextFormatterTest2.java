@@ -79,7 +79,7 @@ class SearchAndContextFormatterTest2 {
     private static boolean originalProjectsEnabled;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         originalProjectsEnabled = env.isProjectsEnabled();
@@ -137,7 +137,7 @@ class SearchAndContextFormatterTest2 {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         env.setAllowedSymlinks(new HashSet<>());
 

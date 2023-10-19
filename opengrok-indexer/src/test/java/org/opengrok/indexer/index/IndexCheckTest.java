@@ -75,7 +75,7 @@ class IndexCheckTest {
     private Configuration configuration;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }

@@ -53,7 +53,7 @@ class SearchEngineTest {
     static File configFile;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
 
@@ -77,7 +77,7 @@ class SearchEngineTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    static void tearDownClass() throws Exception {
         repository.destroy();
         configFile.delete();
     }

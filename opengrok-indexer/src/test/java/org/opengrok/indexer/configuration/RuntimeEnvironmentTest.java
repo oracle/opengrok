@@ -65,14 +65,14 @@ class RuntimeEnvironmentTest {
     private static File originalConfig;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         // preserve the original
         originalConfig = File.createTempFile("config", ".xml");
         RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);
     }
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    static void tearDownClass() throws Exception {
         // restore the configuration
         RuntimeEnvironment.getInstance().readConfiguration(originalConfig);
         originalConfig.delete();

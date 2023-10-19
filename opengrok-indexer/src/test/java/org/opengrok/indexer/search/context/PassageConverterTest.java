@@ -56,7 +56,7 @@ class PassageConverterTest {
     private static SourceSplitter splitter2;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         splitter = new SourceSplitter();
         splitter.reset(DOC);
         splitter2 = new SourceSplitter();

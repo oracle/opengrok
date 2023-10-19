@@ -58,7 +58,7 @@ class RepositoryFactoryTest {
     private static boolean savedIsProjectsEnabled;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         repository.create(RepositoryFactoryTest.class.getResource("/repositories"));
         savedDisabledRepositories = env.getDisabledRepositories();
@@ -66,7 +66,7 @@ class RepositoryFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         if (repository != null) {
             repository.destroy();
             repository = null;

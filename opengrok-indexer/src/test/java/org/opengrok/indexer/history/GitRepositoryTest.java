@@ -94,12 +94,12 @@ class GitRepositoryTest {
     private GitRepository instance;
 
     @BeforeAll
-    public static void setUpClass() throws IOException, URISyntaxException {
+    static void setUpClass() throws IOException, URISyntaxException {
         repository.create(GitRepositoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }

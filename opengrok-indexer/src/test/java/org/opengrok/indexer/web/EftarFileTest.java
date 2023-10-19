@@ -43,7 +43,7 @@ class EftarFileTest {
     private static final String PATH_STRING = "/path";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
 
         eftar = File.createTempFile("paths", ".eftar");
         int len = 100;
@@ -63,7 +63,7 @@ class EftarFileTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         if (eftar != null) {
             eftar.delete();
         }

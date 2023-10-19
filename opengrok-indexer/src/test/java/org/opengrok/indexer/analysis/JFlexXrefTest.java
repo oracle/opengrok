@@ -78,14 +78,14 @@ class JFlexXrefTest {
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
         repository = new TestRepository();
         repository.create(JFlexXrefTest.class.getClassLoader().getResource("sources"));
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
         repository.destroy();
