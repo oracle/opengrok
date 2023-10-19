@@ -42,7 +42,7 @@ import org.opengrok.indexer.web.QueryParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PageConfigRequestedProjectsTest {
+class PageConfigRequestedProjectsTest {
 
     final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -51,7 +51,7 @@ public class PageConfigRequestedProjectsTest {
     private AuthorizationStack oldPluginStack;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         oldProjects = env.getProjects();
         oldGroups = env.getGroups();
         oldPluginStack = env.getPluginStack();
@@ -88,14 +88,14 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         env.setProjects(oldProjects);
         env.setGroups(oldGroups);
         env.setPluginStack(oldPluginStack);
     }
 
     @Test
-    public void testSingleProject() {
+    void testSingleProject() {
         final HttpServletRequest request = createRequest(new String[]{"project-1"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
@@ -103,7 +103,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testMultipleProject() {
+    void testMultipleProject() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-3", "project-6"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
@@ -111,7 +111,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testNonIndexedProject() {
+    void testNonIndexedProject() {
         env.getProjects().get("project-1").setIndexed(false);
         final HttpServletRequest request = createRequest(new String[]{"project-1"}, null);
 
@@ -122,7 +122,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testMultipleWithNonIndexedProject() {
+    void testMultipleWithNonIndexedProject() {
         env.getProjects().get("project-1").setIndexed(false);
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-3", "project-6"}, null);
 
@@ -133,7 +133,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSingleGroup1() {
+    void testSingleGroup1() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -141,7 +141,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSingleGroup2() {
+    void testSingleGroup2() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -149,7 +149,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testMultipleGroup() {
+    void testMultipleGroup() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -159,7 +159,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testMixedGroupAndProjectAddingNewProjects() {
+    void testMixedGroupAndProjectAddingNewProjects() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-6"}, new String[]{"group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -170,7 +170,7 @@ public class PageConfigRequestedProjectsTest {
 
 
     @Test
-    public void testMixedGroupNonExistentGroupAndProjectAddingNewProjects() {
+    void testMixedGroupNonExistentGroupAndProjectAddingNewProjects() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-6"}, new String[]{"no-group", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -180,7 +180,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testMixedGroupAndProjectInclusion() {
+    void testMixedGroupAndProjectInclusion() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, new String[]{"group-1-2-3", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -190,7 +190,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testNonIndexedInGroup() {
+    void testNonIndexedInGroup() {
         env.getProjects().get("project-1").setIndexed(false);
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
 
@@ -204,7 +204,7 @@ public class PageConfigRequestedProjectsTest {
      * Assumes that there is no defaultProjects and no cookie set up.
      */
     @Test
-    public void testNonExistentProject() {
+    void testNonExistentProject() {
         final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
@@ -215,7 +215,7 @@ public class PageConfigRequestedProjectsTest {
      * Assumes that there is no defaultProjects and no cookie set up.
      */
     @Test
-    public void testNonExistentGroup() {
+    void testNonExistentGroup() {
         final HttpServletRequest request = createRequest(null, new String[]{"no-group"});
 
         final PageConfig cfg = PageConfig.get(request);
@@ -223,7 +223,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSelectAllProjects() {
+    void testSelectAllProjects() {
         final HttpServletRequest request = createRequest(null, null);
         Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
@@ -232,7 +232,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSelectAllProjectsOverrideProjectParam() {
+    void testSelectAllProjectsOverrideProjectParam() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, null);
         Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
@@ -241,7 +241,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSelectAllProjectsOverrideGroupParam() {
+    void testSelectAllProjectsOverrideGroupParam() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
         Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
@@ -250,7 +250,7 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
-    public void testSelectAllOverrideNonExistentProject() {
+    void testSelectAllOverrideNonExistentProject() {
         final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
         Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 

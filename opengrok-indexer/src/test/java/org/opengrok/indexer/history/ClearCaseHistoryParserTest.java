@@ -34,17 +34,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author austvik
  */
-public class ClearCaseHistoryParserTest {
+class ClearCaseHistoryParserTest {
 
     private ClearCaseHistoryParser instance;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new ClearCaseHistoryParser();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         instance = null;
     }
 
@@ -53,7 +53,7 @@ public class ClearCaseHistoryParserTest {
      * @throws Exception exception
      */
     @Test
-    public void parseFileHistory() throws Exception {
+    void parseFileHistory() throws Exception {
         String author1 = "First Last (username)";
         String author2 = "First2 Last2 (username2)";
         String output = "create version\n" +
@@ -117,7 +117,7 @@ public class ClearCaseHistoryParserTest {
      * @throws Exception exception
      */
     @Test
-    public void parseDirHistory() throws Exception {
+    void parseDirHistory() throws Exception {
         String author1 = "First Last (username)";
         String author2 = "First2 Last2 (username2)";
         String output = "create directory version\n" +

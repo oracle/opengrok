@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link ScalaSymbolTokenizer} class.
  */
-public class ScalaSymbolTokenizerTest {
+class ScalaSymbolTokenizerTest {
 
     /**
      * Test sample.scala v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testScalaSymbolStream() throws Exception {
+    void testScalaSymbolStream() throws Exception {
         InputStream scalares = getClass().getClassLoader().getResourceAsStream(
             "analysis/scala/sample.scala");
         assertNotNull(scalares, "despite samplescalakt as resource,");

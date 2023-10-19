@@ -64,14 +64,14 @@ class IndexerRepoTest {
     private TestRepository repository;
 
     @BeforeEach
-    public void setUp() throws IOException, URISyntaxException {
+    void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
         repository.create(HistoryGuru.class.getResource("/repositories"));
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repository.destroy();
     }
 

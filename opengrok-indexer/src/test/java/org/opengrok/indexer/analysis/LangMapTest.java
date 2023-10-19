@@ -35,17 +35,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link LangMap}.
  */
-public class LangMapTest {
+class LangMapTest {
 
     @Test
-    public void testEmptyMap() {
+    void testEmptyMap() {
         LangMap map = new LangTreeMap();
         List<String> args = map.getCtagsArgs();
         assertTrue(args.isEmpty(), "args should be empty");
     }
 
     @Test
-    public void testMakefile() {
+    void testMakefile() {
         LangMap map = new LangTreeMap();
         map.add("Makefile", "Sh");
         List<String> args = map.getCtagsArgs();
@@ -54,7 +54,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void test1Prefix2Extension() {
+    void test1Prefix2Extension() {
         LangMap map = new LangTreeMap();
         map.add("Makefile", "Sh");
         map.add(".FOO", "XML");
@@ -68,7 +68,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testNonTrivialCaseFolding() {
+    void testNonTrivialCaseFolding() {
         LangMap map = new LangTreeMap();
         map.add("groß", "Sh");
         List<String> args = map.getCtagsArgs();
@@ -76,7 +76,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testMerge1() {
+    void testMerge1() {
         LangMap map1 = new LangTreeMap();
         map1.add("Makefile", "Sh");
         map1.add(".B", "Basic");
@@ -95,7 +95,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testMerge2() {
+    void testMerge2() {
         LangMap map1 = new LangTreeMap();
         map1.exclude(".B");
 
@@ -113,7 +113,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testExcludeMakefile() {
+    void testExcludeMakefile() {
         LangMap map = new LangTreeMap();
         map.exclude("Makefile");
         List<String> args = map.getCtagsArgs();
@@ -122,7 +122,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testExcludeExtension() {
+    void testExcludeExtension() {
         LangMap map = new LangTreeMap();
         map.exclude(".d");
         List<String> args = map.getCtagsArgs();
@@ -133,7 +133,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testExcludeExtensionThenAdd() {
+    void testExcludeExtensionThenAdd() {
         LangMap map = new LangTreeMap();
         map.exclude(".d");
         map.add(".d", "D");
@@ -142,7 +142,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testAddExtensionThenExclude() {
+    void testAddExtensionThenExclude() {
         LangMap map = new LangTreeMap();
         map.add(".d", "D");
         map.exclude(".d");
@@ -154,14 +154,14 @@ public class LangMapTest {
     }
 
     @Test
-    public void testBadExtensionFileSpec() {
+    void testBadExtensionFileSpec() {
         LangMap map = new LangTreeMap();
 
         assertThrows(IllegalArgumentException.class, () -> map.add(".c.in", "foo"));
     }
 
     @Test
-    public void testImmutabilityOfUnmodifiable1() {
+    void testImmutabilityOfUnmodifiable1() {
         LangMap map = new LangTreeMap();
         LangMap map2 = map.unmodifiable();
 
@@ -169,7 +169,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testImmutabilityOfUnmodifiable2() {
+    void testImmutabilityOfUnmodifiable2() {
         LangMap map = new LangTreeMap();
         LangMap map2 = map.unmodifiable();
 
@@ -177,7 +177,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testImmutabilityOfAdditionsView() {
+    void testImmutabilityOfAdditionsView() {
         LangMap map = new LangTreeMap();
         Map<String, String> additions = map.getAdditions();
 
@@ -185,7 +185,7 @@ public class LangMapTest {
     }
 
     @Test
-    public void testImmutabilityOfExclusionsView() {
+    void testImmutabilityOfExclusionsView() {
         LangMap map = new LangTreeMap();
         Set<String> exclusions = map.getExclusions();
 

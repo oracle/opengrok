@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link VBSymbolTokenizer} class.
  */
-public class VBSymbolTokenizerTest {
+class VBSymbolTokenizerTest {
 
     /**
      * Test sample.cls v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testClojureSymbolStream() throws Exception {
+    void testClojureSymbolStream() throws Exception {
         InputStream clsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/vb/sample.cls");
         assertNotNull(clsres, "despite sample.cls as resource,");

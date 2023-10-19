@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * indexer runs.
  * Tested only for Git.
  */
-public class TestHistoryCollectorVsMergeChangesets {
+class TestHistoryCollectorVsMergeChangesets {
     private static TestRepository repository = new TestRepository();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -53,7 +53,7 @@ public class TestHistoryCollectorVsMergeChangesets {
     private static final String lastRevision = "4d1b7cfb1e7f3fc7360bd2f213d9e634e6a40cf8";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(TestHistoryCollectorVsMergeChangesets.class.getResourceAsStream(
                 "/history/git-merge.zip"));
@@ -61,7 +61,7 @@ public class TestHistoryCollectorVsMergeChangesets {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }

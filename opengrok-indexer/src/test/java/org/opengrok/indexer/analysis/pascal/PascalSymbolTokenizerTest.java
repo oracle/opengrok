@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link PascalSymbolTokenizer} class.
  */
-public class PascalSymbolTokenizerTest {
+class PascalSymbolTokenizerTest {
 
     /**
      * Test sample.pas v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testPascalSymbolStream() throws Exception {
+    void testPascalSymbolStream() throws Exception {
         InputStream pasres = getClass().getClassLoader().getResourceAsStream(
             "analysis/pascal/sample.pas");
         assertNotNull(pasres, "despite sample.pas as resource,");

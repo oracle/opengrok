@@ -35,13 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author austvik
  */
-public class DefinitionsTest {
+class DefinitionsTest {
 
     /**
      * Test of getSymbols method, of class Definitions.
      */
     @Test
-    public void getSymbols() {
+    void getSymbols() {
         Definitions instance = new Definitions();
         Set<String> result = instance.getSymbols();
         assertNotNull(result);
@@ -56,7 +56,7 @@ public class DefinitionsTest {
      * Test of hasSymbol method, of class Definitions.
      */
     @Test
-    public void hasSymbol() {
+    void hasSymbol() {
         Definitions instance = new Definitions();
         instance.addTag(1, "found", "", "", 0, 0);
         assertFalse(instance.hasSymbol("notFound"));
@@ -67,7 +67,7 @@ public class DefinitionsTest {
      * Test of hasDefinitionAt method, of class Definitions.
      */
     @Test
-    public void hasDefinitionAt() {
+    void hasDefinitionAt() {
         Definitions instance = new Definitions();
         String[] type = {""};
         instance.addTag(1, "found", "", "", 0, 0);
@@ -82,7 +82,7 @@ public class DefinitionsTest {
      * Test of occurrences method, of class Definitions.
      */
     @Test
-    public void occurrences() {
+    void occurrences() {
         Definitions instance = new Definitions();
         instance.addTag(1, "one", "", "", 0, 0);
         instance.addTag(1, "two", "", "", 0, 0);
@@ -96,7 +96,7 @@ public class DefinitionsTest {
      * Test of numberOfSymbols method, of class Definitions.
      */
     @Test
-    public void numberOfSymbols() {
+    void numberOfSymbols() {
         Definitions instance = new Definitions();
         assertEquals(0, instance.numberOfSymbols());
         instance.addTag(1, "one", "", "", 0, 0);
@@ -110,7 +110,7 @@ public class DefinitionsTest {
      * Test of getTags method, of class Definitions.
      */
     @Test
-    public void getTags() {
+    void getTags() {
         Definitions instance = new Definitions();
         assertEquals(0, instance.getTags().size());
         instance.addTag(1, "one", "", "", 0, 0);
@@ -125,7 +125,7 @@ public class DefinitionsTest {
      * Test of addTag method, of class Definitions.
      */
     @Test
-    public void addTag() {
+    void addTag() {
         Definitions instance = new Definitions();
         assertEquals(0, instance.getTags().size());
         instance.addTag(1, "one", "", "", 0, 0);
@@ -136,7 +136,7 @@ public class DefinitionsTest {
      * Test of serialize method, of class Definitions.
      */
     @Test
-    public void serialize() throws Exception {
+    void serialize() throws Exception {
         Definitions instance = new Definitions();
         instance.addTag(1, "one", "", "", 0, 0);
         byte[] serial = instance.serialize();

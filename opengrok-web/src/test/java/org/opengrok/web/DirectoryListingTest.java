@@ -209,7 +209,7 @@ class DirectoryListingTest {
      * Set up the test environment with repositories.
      */
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
 
@@ -233,7 +233,7 @@ class DirectoryListingTest {
      * Clean up after the test. Remove the test repositories.
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repositories.destroy();
         repositories = null;
 

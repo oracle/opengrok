@@ -27,16 +27,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SuggesterConfigTest {
+class SuggesterConfigTest {
 
     @Test
-    public void testRebuildParallelismNegative() {
+    void testRebuildParallelismNegative() {
         SuggesterConfig sconfig = new SuggesterConfig();
         assertThrows(IllegalArgumentException.class, () -> sconfig.setRebuildThreadPoolSizeInNcpuPercent(-1));
     }
 
     @Test
-    public void testRebuildParallelismPositive() {
+    void testRebuildParallelismPositive() {
         SuggesterConfig sconfig = new SuggesterConfig();
         sconfig.setRebuildThreadPoolSizeInNcpuPercent(70);
         assertEquals(70, sconfig.getRebuildThreadPoolSizeInNcpuPercent());

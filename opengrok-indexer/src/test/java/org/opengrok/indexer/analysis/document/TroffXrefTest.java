@@ -30,10 +30,10 @@ import java.io.IOException;
 /**
  * Tests the {@link TroffXref} class.
  */
-public class TroffXrefTest extends XrefTestBase {
+class TroffXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new TroffAnalyzerFactory(),
                 "analysis/document/sync.1m",
                 "analysis/document/sync_xref.html", null, 20);

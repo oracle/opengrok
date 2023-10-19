@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link CSymbolTokenizer} class.
  */
-public class CSymbolTokenizerTest {
+class CSymbolTokenizerTest {
 
     /**
      * Test sample.c v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testCSymbolStream() throws Exception {
+    void testCSymbolStream() throws Exception {
         InputStream cres = getClass().getClassLoader().getResourceAsStream("analysis/c/sample.c");
         assertNotNull(cres, "despite sample.c as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(

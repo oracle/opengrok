@@ -40,7 +40,7 @@ class FalsePluginTest {
     private FalsePlugin plugin;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new FalsePlugin();
     }
 

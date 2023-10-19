@@ -45,11 +45,11 @@ import java.util.List;
  *
  * @author Harry Pan
  */
-public class HaskellSymbolTokenizerTest {
+class HaskellSymbolTokenizerTest {
 
     private final AbstractAnalyzer analyzer;
 
-    public HaskellSymbolTokenizerTest() {
+    HaskellSymbolTokenizerTest() {
         this.analyzer = new HaskellAnalyzerFactory().getAnalyzer();
     }
 
@@ -71,7 +71,7 @@ public class HaskellSymbolTokenizerTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/haskell/sample.hs");
              InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
             String[] termsFor = getTermsFor(r);
@@ -90,7 +90,7 @@ public class HaskellSymbolTokenizerTest {
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testHaskellSymbolStream() throws Exception {
+    void testHaskellSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sample2.hs");
         assertNotNull(pyres, "despite sample.py as resource,");

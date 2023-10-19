@@ -32,10 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Vladimir Kotal
  */
-public class StringUtilsTest {
+class StringUtilsTest {
 
     @Test
-    public void testValues() {
+    void testValues() {
         int i;
         long[] values = {
             0, 100, 1000, 1500, 64000, 124531, 3651782, 86400000, 86434349,
@@ -53,7 +53,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testNthIndexOf() {
+    void testNthIndexOf() {
         Object[][] tests = new Object[][]{
             {"", "", -1},
             {"", "", 0},
@@ -111,28 +111,28 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void uriShouldNotCountAnyPushback() {
+    void uriShouldNotCountAnyPushback() {
         String uri = "http://www.example.com";
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals(0, n, uri + " pushback");
     }
 
     @Test
-    public void uriAtSentenceEndShouldCountPushback() {
+    void uriAtSentenceEndShouldCountPushback() {
         String uri = "http://www.example.com.";
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals(1, n, uri + " pushback");
     }
 
     @Test
-    public void uriEmptyShouldNotCountAnyPushback() {
+    void uriEmptyShouldNotCountAnyPushback() {
         String uri = "";
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals(0, n, "empty pushback");
     }
 
     @Test
-    public void shouldMatchNonescapedApostrophe() {
+    void shouldMatchNonescapedApostrophe() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \'1-2-3\''
         final String value = "\\'1-2-3\\''";
@@ -141,7 +141,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void shouldMatchApostropheAfterEvenEscapes() {
+    void shouldMatchApostropheAfterEvenEscapes() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \\'
         final String value = "\\\\'";
@@ -150,7 +150,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void shouldNotMatchApostropheAfterOddEscapes() {
+    void shouldNotMatchApostropheAfterOddEscapes() {
         // Copy-and-paste the following so Netbeans does the escaping:
         // value: \\\'
         final String value = "\\\\\\'";
@@ -159,7 +159,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void shouldMatchInitialApostrophe() {
+    void shouldMatchInitialApostrophe() {
         final String value = "'";
         int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
         assertEquals(0, i, "initial apostrophe");

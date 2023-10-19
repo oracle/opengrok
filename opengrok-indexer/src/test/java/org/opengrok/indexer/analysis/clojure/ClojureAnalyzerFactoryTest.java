@@ -50,7 +50,7 @@ import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanal
 /**
  * @author Farid Zakaria
  */
-public class ClojureAnalyzerFactoryTest {
+class ClojureAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
@@ -66,7 +66,7 @@ public class ClojureAnalyzerFactoryTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -81,7 +81,7 @@ public class ClojureAnalyzerFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

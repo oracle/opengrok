@@ -33,9 +33,9 @@ import org.opengrok.indexer.analysis.WriteXrefArgs;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class XMLAnalyzerTest {
+class XMLAnalyzerTest {
     @Test
-    public void bug2225() throws IOException {
+    void bug2225() throws IOException {
         String xmlText =
                 "<?xml version=\"1.0\" encoding=\"US-ASCII\"?>\n" +
                 "<foo>\n" +
@@ -55,7 +55,7 @@ public class XMLAnalyzerTest {
     }
 
     @Test
-    public void bug806() throws IOException {
+    void bug806() throws IOException {
         String xmlText
                 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<server>\n"
@@ -84,7 +84,7 @@ public class XMLAnalyzerTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void xrefWithSpecialCharsInStringLiterals() throws IOException {
+    void xrefWithSpecialCharsInStringLiterals() throws IOException {
         StringReader input =
                 new StringReader("<foo xyz='<betweensinglequotes>'> </foo>");
         StringWriter output = new StringWriter();

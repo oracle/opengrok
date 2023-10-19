@@ -42,23 +42,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
-public class MessagesContainerTest {
+class MessagesContainerTest {
 
     private MessagesContainer container;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         container = new MessagesContainer();
         container.startExpirationTimer();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         container.stopExpirationTimer();
     }
 
     @Test
-    public void addAndGetTest() {
+    void addAndGetTest() {
         Message m = new Message("test",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,
@@ -70,18 +70,18 @@ public class MessagesContainerTest {
     }
 
     @Test
-    public void addNullTest() {
+    void addNullTest() {
         assertThrows(IllegalArgumentException.class, () -> container.addMessage(null));
     }
 
     @Test
-    public void removeNullTest() {
+    void removeNullTest() {
         // the call should not throw an exception
         container.removeAnyMessage(null);
     }
 
     @Test
-    public void parallelAddTest() throws Exception {
+    void parallelAddTest() throws Exception {
         container.setMessageLimit(5000);
 
         parallelAddMessages();
@@ -120,7 +120,7 @@ public class MessagesContainerTest {
     }
 
     @Test
-    public void parallelAddLimitTest() throws Exception {
+    void parallelAddLimitTest() throws Exception {
         container.setMessageLimit(10);
 
         parallelAddMessages();
@@ -130,7 +130,7 @@ public class MessagesContainerTest {
     }
 
     @Test
-    public void expirationTest() {
+    void expirationTest() {
         Message m = new Message("test",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,
@@ -142,7 +142,7 @@ public class MessagesContainerTest {
     }
 
     @Test
-    public void removeTest() {
+    void removeTest() {
         Message m = new Message("test",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,
@@ -156,7 +156,7 @@ public class MessagesContainerTest {
     }
 
     @Test
-    public void getMessagesNullTest() {
+    void getMessagesNullTest() {
         assertThrows(IllegalArgumentException.class, () -> container.getMessages(null));
     }
 
@@ -164,7 +164,7 @@ public class MessagesContainerTest {
      * tests serialization of MessagesContainer.AcceptedMessage.
      */
     @Test
-    public void testJSON() throws IOException {
+    void testJSON() throws IOException {
         Message m = new Message("testJSON",
                 Collections.singleton("testJSON"),
                 Message.MessageLevel.INFO,

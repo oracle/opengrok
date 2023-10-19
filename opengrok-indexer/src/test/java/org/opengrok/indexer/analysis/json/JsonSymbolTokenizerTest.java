@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link JsonSymbolTokenizer} class.
  */
-public class JsonSymbolTokenizerTest {
+class JsonSymbolTokenizerTest {
 
     /**
      * Test sample.json v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testJsonSymbolStream() throws Exception {
+    void testJsonSymbolStream() throws Exception {
         InputStream jres = getClass().getClassLoader().getResourceAsStream(
             "analysis/json/sample.json");
         assertNotNull(jres, "despite sample.json as resource,");

@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link RepositoriesHelp}.
  */
-public class RepositoriesHelpTest {
+class RepositoriesHelpTest {
     @Test
-    public void shouldCreateReadableUsage() {
+    void shouldCreateReadableUsage() {
         String helpText = RepositoriesHelp.getText();
         assertFalse(helpText.isEmpty(), "help text should not be empty");
         assertTrue(helpText.contains("git (GitRepository)"), "help text should contain 'git (GitRepository)'");

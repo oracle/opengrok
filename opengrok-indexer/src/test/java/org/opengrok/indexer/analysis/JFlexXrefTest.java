@@ -65,7 +65,7 @@ import org.xml.sax.InputSource;
 /**
  * Unit tests for JFlexXref.
  */
-public class JFlexXrefTest {
+class JFlexXrefTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
@@ -78,14 +78,14 @@ public class JFlexXrefTest {
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
         repository = new TestRepository();
         repository.create(JFlexXrefTest.class.getClassLoader().getResource("sources"));
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
         repository.destroy();

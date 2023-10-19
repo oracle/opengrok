@@ -32,10 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a container for tests of {@link SourceSplitter}.
  */
-public class SourceSplitterTest {
+class SourceSplitterTest {
 
     @Test
-    public void shouldSplitEmptyStringIntoOneLine() {
+    void shouldSplitEmptyStringIntoOneLine() {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("");
         assertEquals(1, splitter.count(), "split count");
@@ -47,7 +47,7 @@ public class SourceSplitterTest {
     }
 
     @Test
-    public void shouldSplitEndingLFsIntoOneMoreLine() {
+    void shouldSplitEndingLFsIntoOneMoreLine() {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("abc\ndef\n");
         assertEquals(3, splitter.count(), "split count");
@@ -58,7 +58,7 @@ public class SourceSplitterTest {
     }
 
     @Test
-    public void shouldSplitDocsWithNoLastLF() {
+    void shouldSplitDocsWithNoLastLF() {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("abc\r\ndef");
         assertEquals(2, splitter.count(), "split count");
@@ -74,7 +74,7 @@ public class SourceSplitterTest {
     }
 
     @Test
-    public void shouldHandleDocsOfLongerLength() {
+    void shouldHandleDocsOfLongerLength() {
         //                                  0             0
         //                    0-- -  5-- - -1--- - 5--- - 2-
         final String INPUT = "ab\r\ncde\r\nefgh\r\nijk\r\nlm";
@@ -104,7 +104,7 @@ public class SourceSplitterTest {
     }
 
     @Test
-    public void shouldHandleStreamedDocsOfLongerLength() throws IOException {
+    void shouldHandleStreamedDocsOfLongerLength() throws IOException {
         //                                  0             0
         //                    0-- -  5-- - -1--- - 5--- - 2-
         final String INPUT = "ab\r\ncde\r\nefgh\r\nijk\r\nlm";
@@ -135,7 +135,7 @@ public class SourceSplitterTest {
     }
 
     @Test
-    public void shouldHandleInterspersedLineEndings() throws IOException {
+    void shouldHandleInterspersedLineEndings() throws IOException {
         //                                    0                0
         //                    0- -- -5 - -- - 1 - - - -5 -- - -2--
         //                    0  1  2    3  4 5   6 7  8 9    0

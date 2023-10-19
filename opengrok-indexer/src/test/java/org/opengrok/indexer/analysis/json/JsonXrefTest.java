@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link JsonXref} class.
  */
-public class JsonXrefTest extends XrefTestBase {
+class JsonXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new JsonAnalyzerFactory(),
                 "analysis/json/sample.json",
                 "analysis/json/sample_xref.html",
@@ -43,7 +43,7 @@ public class JsonXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new JsonAnalyzerFactory(),
                 "analysis/json/truncated.json",
                 "analysis/json/truncated_xref.html", null, 1);

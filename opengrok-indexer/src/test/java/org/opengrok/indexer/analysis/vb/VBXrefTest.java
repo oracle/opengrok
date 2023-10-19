@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link VBXref} class.
  */
-public class VBXrefTest extends XrefTestBase {
+class VBXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new VBAnalyzerFactory(),
                 "analysis/vb/sample.cls",
                 "analysis/vb/sample_xref.html",
@@ -43,7 +43,7 @@ public class VBXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new VBAnalyzerFactory(),
                 "analysis/vb/truncated.cls",
                 "analysis/vb/truncated_xref.html", null, 1);

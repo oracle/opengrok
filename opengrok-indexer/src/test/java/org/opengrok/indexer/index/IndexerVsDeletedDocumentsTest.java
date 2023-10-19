@@ -154,7 +154,7 @@ class IndexerVsDeletedDocumentsTest {
         public void fileRemoved(String path) {
         }
 
-        public void reset() {
+        void reset() {
             removedPaths.clear();
         }
     }

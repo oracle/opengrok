@@ -52,14 +52,14 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-public class SuggesterSearcherTest {
+class SuggesterSearcherTest {
 
     private static Directory dir;
 
     private static SuggesterSearcher searcher;
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
+    static void setUpClass() throws IOException {
         dir = new ByteBuffersDirectory();
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
@@ -79,12 +79,12 @@ public class SuggesterSearcherTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws IOException {
+    static void tearDownClass() throws IOException {
         dir.close();
     }
 
     @Test
-    public void suggesterPrefixQueryTest() {
+    void suggesterPrefixQueryTest() {
         List<LookupResultItem> suggestions = searcher.suggest(new TermQuery(new Term("test", "test")), "test",
                 new SuggesterPrefixQuery(new Term("test", "o")), k -> 0);
 
@@ -94,7 +94,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void suggesterWildcardQueryTest() {
+    void suggesterWildcardQueryTest() {
         List<LookupResultItem> suggestions = searcher.suggest(new TermQuery(new Term("test", "test")), "test",
                 new SuggesterWildcardQuery(new Term("test", "?pengrok")), k -> 0);
 
@@ -104,7 +104,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void suggesterRegexpQueryTest() {
+    void suggesterRegexpQueryTest() {
         List<LookupResultItem> suggestions = searcher.suggest(new TermQuery(new Term("test", "test")), "test",
                 new SuggesterRegexpQuery(new Term("test", ".pengrok")), k -> 0);
 
@@ -114,7 +114,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void suggesterFuzzyQueryTest() {
+    void suggesterFuzzyQueryTest() {
         List<LookupResultItem> suggestions = searcher.suggest(new TermQuery(new Term("test", "test")), "test",
                 new SuggesterFuzzyQuery(new Term("test", "opengroc"), 1, 0), k -> 0);
 
@@ -124,7 +124,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void suggesterPhraseQueryTest() {
+    void suggesterPhraseQueryTest() {
         SuggesterPhraseQuery q = new SuggesterPhraseQuery("test", "abc", Arrays.asList("opengrok", "openabc"), 0);
 
         List<LookupResultItem> suggestions = searcher.suggest(q.getPhraseQuery(), "test",
@@ -136,7 +136,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void testRangeQueryUpper() {
+    void testRangeQueryUpper() {
         SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("opengrok"),
                 new BytesRef("t"), true, true, SuggesterRangeQuery.SuggestPosition.UPPER);
 
@@ -148,7 +148,7 @@ public class SuggesterSearcherTest {
     }
 
     @Test
-    public void testRangeQueryLower() {
+    void testRangeQueryLower() {
         SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("o"),
                 new BytesRef("test"), true, true, SuggesterRangeQuery.SuggestPosition.LOWER);
 

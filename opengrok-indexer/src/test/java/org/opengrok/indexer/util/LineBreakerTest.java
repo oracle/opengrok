@@ -33,17 +33,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a container for tests of {@link LineBreaker}.
  */
-public class LineBreakerTest {
+class LineBreakerTest {
 
     private static LineBreaker brkr;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         brkr = new LineBreaker();
     }
 
     @Test
-    public void shouldSplitEmptyStringIntoOneLine() throws IOException {
+    void shouldSplitEmptyStringIntoOneLine() throws IOException {
         StreamSource src = StreamSource.fromString("");
         brkr.reset(src);
         assertEquals(1, brkr.count(), "split count");
@@ -54,7 +54,7 @@ public class LineBreakerTest {
     }
 
     @Test
-    public void shouldSplitEndingLFsIntoOneMoreLine() throws IOException {
+    void shouldSplitEndingLFsIntoOneMoreLine() throws IOException {
         StreamSource src = StreamSource.fromString("abc\ndef\n");
         brkr.reset(src);
         assertEquals(3, brkr.count(), "split count");
@@ -64,7 +64,7 @@ public class LineBreakerTest {
     }
 
     @Test
-    public void shouldSplitDocsWithNoLastLF() throws IOException {
+    void shouldSplitDocsWithNoLastLF() throws IOException {
         StreamSource src = StreamSource.fromString("abc\r\ndef");
         brkr.reset(src);
         assertEquals(2, brkr.count(), "split count");
@@ -74,7 +74,7 @@ public class LineBreakerTest {
     }
 
     @Test
-    public void shouldHandleDocsOfLongerLength() throws IOException {
+    void shouldHandleDocsOfLongerLength() throws IOException {
         //                                  0             0
         //                    0-- -  5-- - -1--- - 5--- - 2-
         final String INPUT = "ab\r\ncde\r\nefgh\r\nijk\r\nlm";
@@ -94,7 +94,7 @@ public class LineBreakerTest {
     }
 
     @Test
-    public void shouldHandleInterspersedLineEndings() throws IOException {
+    void shouldHandleInterspersedLineEndings() throws IOException {
         //                                    0                0
         //                    0- -- -5 - -- - 1 - - - -5 -- - -2--
         //                    0  1  2    3  4 5   6 7  8 9    0

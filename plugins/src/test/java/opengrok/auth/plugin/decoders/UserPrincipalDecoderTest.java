@@ -32,17 +32,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class UserPrincipalDecoderTest {
+class UserPrincipalDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
     UserPrincipalDecoder decoder = new UserPrincipalDecoder();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
     }
 
     @Test
-    public void testHttpBasicDecoding() {
+    void testHttpBasicDecoding() {
         dummyRequest.setHeader("authorization", "Basic Zm9vOmJhcg==");
 
         User result = decoder.fromRequest(dummyRequest);
@@ -54,7 +54,7 @@ public class UserPrincipalDecoderTest {
     }
 
     @Test
-    public void testMissingHeader() {
+    void testMissingHeader() {
         assertNull(decoder.fromRequest(new DummyHttpServletRequestUser()));
     }
 }

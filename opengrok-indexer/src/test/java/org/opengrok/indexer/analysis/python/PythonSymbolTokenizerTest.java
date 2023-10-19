@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link PythonSymbolTokenizer} class.
  */
-public class PythonSymbolTokenizerTest {
+class PythonSymbolTokenizerTest {
 
     /**
      * Test sample.py v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testPythonSymbolStream() throws Exception {
+    void testPythonSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
             "analysis/python/sample.py");
         assertNotNull(pyres, "despite sample.py as resource,");

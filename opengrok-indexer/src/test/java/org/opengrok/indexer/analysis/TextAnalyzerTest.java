@@ -38,7 +38,7 @@ import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TextAnalyzerTest {
+class TextAnalyzerTest {
 
     private String encoding;
     private String contents;
@@ -53,7 +53,7 @@ public class TextAnalyzerTest {
     }
 
     @Test
-    public void resetsStreamOnShortInput() throws IOException {
+    void resetsStreamOnShortInput() throws IOException {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource("hi".getBytes()), null);
 
@@ -61,7 +61,7 @@ public class TextAnalyzerTest {
     }
 
     @Test
-    public void utf8WithBOM() throws IOException {
+    void utf8WithBOM() throws IOException {
         byte[] buffer = new byte[]{(byte) 239, (byte) 187, (byte) 191, 'h', 'e', 'l', 'l', 'o'};
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource(buffer), null);
@@ -71,7 +71,7 @@ public class TextAnalyzerTest {
     }
 
     @Test
-    public void utf16WithBOM() throws IOException {
+    void utf16WithBOM() throws IOException {
         final ByteBuffer utf16str = StandardCharsets.UTF_16.encode("hello");
         byte[] bytes = new byte[utf16str.remaining()];
         utf16str.get(bytes, 0, bytes.length);
@@ -85,7 +85,7 @@ public class TextAnalyzerTest {
     }
 
     @Test
-    public void utf16WithBOMAlternate() throws IOException {
+    void utf16WithBOMAlternate() throws IOException {
         final ByteBuffer utf16str = StandardCharsets.UTF_16.encode("hello");
         byte[] bytes = new byte[utf16str.remaining()];
         utf16str.get(bytes, 0, bytes.length);
@@ -104,9 +104,9 @@ public class TextAnalyzerTest {
         assertEquals("hello", contents);
     }
 
-    public class TestableTextAnalyzer extends TextAnalyzer {
+    class TestableTextAnalyzer extends TextAnalyzer {
 
-        public TestableTextAnalyzer() {
+        TestableTextAnalyzer() {
             // Using PlainAnalyzerFactory.DEFAULT_INSTANCE is OK for this test.
             super(PlainAnalyzerFactory.DEFAULT_INSTANCE);
         }

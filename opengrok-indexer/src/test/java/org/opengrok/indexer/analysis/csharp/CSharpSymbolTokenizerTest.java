@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link CSharpSymbolTokenizer} class.
  */
-public class CSharpSymbolTokenizerTest {
+class CSharpSymbolTokenizerTest {
 
     /**
      * Test sample.cs v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testCSharpSymbolStream() throws Exception {
+    void testCSharpSymbolStream() throws Exception {
         InputStream csres = getClass().getClassLoader().getResourceAsStream(
             "analysis/csharp/sample.cs");
         assertNotNull(csres, "despite sample.cs as resource,");

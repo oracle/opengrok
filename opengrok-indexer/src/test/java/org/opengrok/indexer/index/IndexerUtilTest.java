@@ -27,9 +27,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class IndexerUtilTest {
+class IndexerUtilTest {
     @Test
-    public void testEnableProjectsInvalidUrl() {
+    void testEnableProjectsInvalidUrl() {
         assertThrows(ProcessingException.class, () -> IndexerUtil.enableProjects("http://non-existent.server.com:123"));
     }
 }

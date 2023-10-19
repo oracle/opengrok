@@ -30,17 +30,17 @@ import java.io.IOException;
 /**
  * Tests the {@link PerlXref} class.
  */
-public class PerlXrefTest extends XrefTestBase {
+class PerlXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new PerlAnalyzerFactory(),
                 "analysis/perl/sample.pl",
                 "analysis/perl/samplexrefres.html", null, 258);
     }
 
     @Test
-    public void shouldCloseTruncateStringSpan() throws IOException {
+    void shouldCloseTruncateStringSpan() throws IOException {
         writeAndCompare(new PerlAnalyzerFactory(),
                 "analysis/perl/truncated.pl",
                 "analysis/perl/truncated_xrefres.html", null, 1);

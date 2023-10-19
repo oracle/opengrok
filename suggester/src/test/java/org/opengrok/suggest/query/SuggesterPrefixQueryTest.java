@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterPrefixQueryTest {
+class SuggesterPrefixQueryTest {
 
     @Test
-    public void testLength() {
+    void testLength() {
         SuggesterPrefixQuery q = new SuggesterPrefixQuery(new Term("test", "prefix"));
         assertEquals("prefix".length(), q.length());
     }

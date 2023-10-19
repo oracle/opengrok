@@ -33,10 +33,10 @@ import java.io.IOException;
 /**
  * Represents a container for tests of {@link TerraformXref}.
  */
-public class TerraformXrefTest extends XrefTestBase {
+class TerraformXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new TerraformAnalyzerFactory(),
                 "analysis/terraform/sample.tf",
                 "analysis/terraform/sample_xref.html",
@@ -44,7 +44,7 @@ public class TerraformXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TerraformAnalyzerFactory(),
                 "analysis/terraform/truncated.tf",
                 "analysis/terraform/truncated_xref.html", null, 1);

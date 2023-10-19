@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link PoshXref} class.
  */
-public class PoshXrefTest extends XrefTestBase {
+class PoshXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new PowershellAnalyzerFactory(),
                 "analysis/powershell/sample.psm1",
                 "analysis/powershell/sample_xref.html",
@@ -43,7 +43,7 @@ public class PoshXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PowershellAnalyzerFactory(),
                 "analysis/powershell/truncated.ps1",
             "analysis/powershell/truncated_xref.html", null, 1);

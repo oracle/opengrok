@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link EiffelSymbolTokenizer} class.
  */
-public class EiffelSymbolTokenizerTest {
+class EiffelSymbolTokenizerTest {
 
     /**
      * Test sample.e v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testEiffelSymbolStream() throws Exception {
+    void testEiffelSymbolStream() throws Exception {
         InputStream eres = getClass().getClassLoader().getResourceAsStream(
             "analysis/eiffel/sample.e");
         assertNotNull(eres, "despite sample.e as resource,");

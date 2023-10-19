@@ -64,7 +64,7 @@ class SearchAndContextFormatterTest {
     private static File configFile;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
 
@@ -88,7 +88,7 @@ class SearchAndContextFormatterTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         configFile.delete();
     }

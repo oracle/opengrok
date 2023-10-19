@@ -46,14 +46,14 @@ import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceF
  * Do basic testing of the Perforce support.
  * @author Trond Norbye
  */
-public class PerforceRepositoryTest {
+class PerforceRepositoryTest {
 
     private static boolean skip;
     private static List<File> files;
     private static final File root = new File("/var/opengrok/src/p4foo");
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         if (!root.exists()) {
             skip = true;
         } else {
@@ -106,7 +106,7 @@ public class PerforceRepositoryTest {
      */
     @Test
     @EnabledForRepository(PERFORCE)
-    public void testHistoryAndAnnotations() throws Exception {
+    void testHistoryAndAnnotations() throws Exception {
         if (skip) {
             return;
         }
@@ -135,7 +135,7 @@ public class PerforceRepositoryTest {
     }
 
     @Test
-    public void testProtectFilename() throws Exception {
+    void testProtectFilename() throws Exception {
         List<SimpleImmutableEntry<String, String>> testmap = new ArrayList<>();
         testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
         testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
@@ -154,7 +154,7 @@ public class PerforceRepositoryTest {
     }
 
     @Test
-    public void testUnprotectFilename() throws Exception {
+    void testUnprotectFilename() throws Exception {
         List<SimpleImmutableEntry<String, String>> testmap = new ArrayList<>();
         testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
         testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));

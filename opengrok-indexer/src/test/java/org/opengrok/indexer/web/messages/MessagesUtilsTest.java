@@ -38,18 +38,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class MessagesUtilsTest {
+class MessagesUtilsTest {
     RuntimeEnvironment env;
 
     private MessagesContainer container;
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         container.stopExpirationTimer();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         env = RuntimeEnvironment.getInstance();
 
         container = new MessagesContainer();
@@ -57,7 +57,7 @@ public class MessagesUtilsTest {
     }
 
     @Test
-    public void testGetMessagesForNonExistentProject() {
+    void testGetMessagesForNonExistentProject() {
         String projectName = "nonexistent";
         Project foo = new Project(projectName, "/doesnotexist");
         HashMap<String, Project> projects = new HashMap<>();
@@ -71,7 +71,7 @@ public class MessagesUtilsTest {
     }
 
     @Test
-    public void testGetHighestMessageLevel() {
+    void testGetHighestMessageLevel() {
         // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
         List<Message.MessageLevel> levels = Arrays.asList(Message.MessageLevel.values());
         Collections.reverse(levels);
@@ -95,7 +95,7 @@ public class MessagesUtilsTest {
     }
 
     @Test
-    public void testGetMessageLevel() {
+    void testGetMessageLevel() {
         HashMap<String, Message.MessageLevel> tagLevels = new HashMap<>();
         tagLevels.put("foo", Message.MessageLevel.INFO);
         tagLevels.put("bar", Message.MessageLevel.ERROR);

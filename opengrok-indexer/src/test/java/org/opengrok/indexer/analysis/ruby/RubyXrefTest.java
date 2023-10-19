@@ -37,10 +37,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link RubyXref} class.
  */
-public class RubyXrefTest extends XrefTestBase {
+class RubyXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new RubyAnalyzerFactory(),
                 "analysis/ruby/sample.rb",
                 "analysis/ruby/ruby_xrefres.html",
@@ -48,7 +48,7 @@ public class RubyXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void colonQuoteAfterInterpolation() throws IOException {
+    void colonQuoteAfterInterpolation() throws IOException {
         final String RUBY_COLON_QUOTE =
             "\"from #{logfn}:\"\n";
         JFlexXref xref = new JFlexXref(new RubyXref(new StringReader(

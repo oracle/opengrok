@@ -57,7 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SuggesterProjectDataTest {
+class SuggesterProjectDataTest {
 
     private static final String FIELD = "test";
 
@@ -68,13 +68,13 @@ public class SuggesterProjectDataTest {
     private SuggesterProjectData data;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         dir = new ByteBuffersDirectory();
         tempDir = Files.createTempDirectory("test");
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    void tearDown() throws IOException {
         if (data != null) {
             data.close();
         }
@@ -84,7 +84,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testLookup() throws IOException {
+    void testLookup() throws IOException {
         addText(FIELD, "term1 term2");
 
         init(false);
@@ -117,7 +117,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testMultipleTermsAreFirstByDefault() throws IOException {
+    void testMultipleTermsAreFirstByDefault() throws IOException {
         addText(FIELD, "term1 term2 term1");
 
         init(false);
@@ -128,7 +128,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testMostPopularSearch() throws IOException {
+    void testMostPopularSearch() throws IOException {
         addText(FIELD, "term1 term2 term1");
 
         init(true);
@@ -144,7 +144,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testRebuild() throws IOException {
+    void testRebuild() throws IOException {
         addText(FIELD, "term1 term2 term1");
 
         init(false);
@@ -163,7 +163,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testDifferentPrefixes() throws IOException {
+    void testDifferentPrefixes() throws IOException {
         addText(FIELD, "abc bbc cbc dbc efc gfc");
 
         init(false);
@@ -174,7 +174,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testResultSize() throws IOException {
+    void testResultSize() throws IOException {
         addText(FIELD, "a1 a2 a3 a4 a5 a6 a7");
 
         init(false);
@@ -185,7 +185,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void incrementTest() throws IOException {
+    void incrementTest() throws IOException {
         addText(FIELD, "text");
 
         init(true);
@@ -196,7 +196,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void incrementByValueTest() throws IOException {
+    void incrementByValueTest() throws IOException {
         addText(FIELD, "some text");
 
         init(true);
@@ -207,7 +207,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void incrementByNegativeValueTest() throws IOException {
+    void incrementByNegativeValueTest() throws IOException {
         addText(FIELD, "another text example");
 
         init(true);
@@ -217,7 +217,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void rebuildRemoveOldTermsTest() throws IOException {
+    void rebuildRemoveOldTermsTest() throws IOException {
         addText(FIELD, "term");
 
         init(true);
@@ -236,7 +236,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void initAfterChangingIndexTest() throws IOException {
+    void initAfterChangingIndexTest() throws IOException {
         addText(FIELD, "term");
         init(false);
 
@@ -248,7 +248,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void incrementSearchCountNullTest() throws IOException {
+    void incrementSearchCountNullTest() throws IOException {
         addText(FIELD, "term");
         init(false);
 
@@ -256,7 +256,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void getSearchCountMapNullTest() throws IOException {
+    void getSearchCountMapNullTest() throws IOException {
         addText(FIELD, "term");
         init(true);
 
@@ -264,7 +264,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testRemove() throws IOException {
+    void testRemove() throws IOException {
         Directory dir = new ByteBuffersDirectory();
         Path tempDir = Files.createTempDirectory("test");
 
@@ -283,7 +283,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testUnknownFieldIgnored() throws IOException {
+    void testUnknownFieldIgnored() throws IOException {
         addText(FIELD, "term");
         data = new SuggesterProjectData(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")));
         data.init();
@@ -295,7 +295,7 @@ public class SuggesterProjectDataTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    public void testGetSearchCountMapSorted() throws IOException {
+    void testGetSearchCountMapSorted() throws IOException {
         addText(FIELD, "test1 test2");
         init(true);
 
@@ -311,7 +311,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    public void testRebuildPicksUpNewFields() throws IOException {
+    void testRebuildPicksUpNewFields() throws IOException {
         // create dummy index
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             iw.isOpen(); // dummy operation

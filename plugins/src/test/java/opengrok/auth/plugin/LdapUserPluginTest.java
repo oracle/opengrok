@@ -65,7 +65,7 @@ class LdapUserPluginTest {
     private LdapUserPlugin plugin;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new LdapUserPlugin();
     }
 

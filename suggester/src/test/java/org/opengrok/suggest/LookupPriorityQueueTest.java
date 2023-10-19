@@ -31,10 +31,10 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LookupPriorityQueueTest {
+class LookupPriorityQueueTest {
 
     @Test
-    public void testOverflow() {
+    void testOverflow() {
         LookupPriorityQueue queue = new LookupPriorityQueue(2);
 
         queue.insertWithOverflow(new LookupResultItem("1", "test", 1));
@@ -46,7 +46,7 @@ public class LookupPriorityQueueTest {
     }
 
     @Test
-    public void testCanInsert() {
+    void testCanInsert() {
         LookupPriorityQueue queue = new LookupPriorityQueue(2);
 
         queue.insertWithOverflow(new LookupResultItem("1", "test", 1));

@@ -52,7 +52,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author alexanthony
  */
-public class PascalAnalyzerFactoryTest {
+class PascalAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
@@ -68,7 +68,7 @@ public class PascalAnalyzerFactoryTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -83,7 +83,7 @@ public class PascalAnalyzerFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

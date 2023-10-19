@@ -30,10 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a test class for {@link FortranUtils}.
  */
-public class FortranUtilsTest {
+class FortranUtilsTest {
 
     @Test
-    public void shouldMatchNonescapedApostrophe() {
+    void shouldMatchNonescapedApostrophe() {
         final String value = "''1-2-3'";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
@@ -41,7 +41,7 @@ public class FortranUtilsTest {
     }
 
     @Test
-    public void shouldMatchApostropheAfterPairsOfApostrophes() {
+    void shouldMatchApostropheAfterPairsOfApostrophes() {
         final String value = "'''''";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
@@ -49,7 +49,7 @@ public class FortranUtilsTest {
     }
 
     @Test
-    public void shouldNotMatchApostropheAfterOddApostrophes() {
+    void shouldNotMatchApostropheAfterOddApostrophes() {
         final String value = "''''";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
@@ -57,7 +57,7 @@ public class FortranUtilsTest {
     }
 
     @Test
-    public void shouldMatchInitialApostrophe() {
+    void shouldMatchInitialApostrophe() {
         final String value = "'";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);

@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterFuzzyQueryTest {
+class SuggesterFuzzyQueryTest {
 
     @Test
-    public void testLength() {
+    void testLength() {
         SuggesterFuzzyQuery q = new SuggesterFuzzyQuery(new Term("test", "test"), 2, 0);
         assertEquals("test".length(), q.length());
     }

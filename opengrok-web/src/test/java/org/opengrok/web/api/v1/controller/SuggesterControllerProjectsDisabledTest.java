@@ -53,7 +53,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
+class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -91,7 +91,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
     }
 
     @BeforeEach
-    public void before() {
+    void before() {
         await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
 
         env.setSuggesterConfig(new SuggesterConfig());

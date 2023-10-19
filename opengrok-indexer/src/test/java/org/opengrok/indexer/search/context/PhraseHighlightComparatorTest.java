@@ -29,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Represents a container of tests of {@link PhraseHighlightComparator}.
  */
-public class PhraseHighlightComparatorTest {
+class PhraseHighlightComparatorTest {
 
     private PhraseHighlight o1;
     private PhraseHighlight o2;
 
     @Test
-    public void testEqualBoundedInstances() {
+    void testEqualBoundedInstances() {
         o1 = PhraseHighlight.create(0, 1);
         o2 = PhraseHighlight.create(0, 1);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -43,7 +43,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testEqualUnboundedInstances() {
+    void testEqualUnboundedInstances() {
         o1 = PhraseHighlight.createEntire();
         o2 = PhraseHighlight.createEntire();
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -51,7 +51,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testEqualMixedBoundedInstances1() {
+    void testEqualMixedBoundedInstances1() {
         o1 = PhraseHighlight.createStarter(5);
         o2 = PhraseHighlight.createStarter(5);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -59,7 +59,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testEqualMixedBoundedInstances2() {
+    void testEqualMixedBoundedInstances2() {
         o1 = PhraseHighlight.createEnder(5);
         o2 = PhraseHighlight.createEnder(5);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -67,7 +67,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testDisjointInstances1() {
+    void testDisjointInstances1() {
         o1 = PhraseHighlight.create(0, 10);
         o2 = PhraseHighlight.create(100, 110);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -75,7 +75,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testDisjointInstances2() {
+    void testDisjointInstances2() {
         o1 = PhraseHighlight.create(2, 3);
         o2 = PhraseHighlight.create(0, 2);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -83,7 +83,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testBoundedOverlappingUnequalInstances1() {
+    void testBoundedOverlappingUnequalInstances1() {
         o1 = PhraseHighlight.create(0, 10);
         o2 = PhraseHighlight.create(1, 3);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -91,7 +91,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testBoundedOverlappingUnequalInstances2() {
+    void testBoundedOverlappingUnequalInstances2() {
         o1 = PhraseHighlight.create(0, 5);
         o2 = PhraseHighlight.create(0, 10);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -99,7 +99,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testBoundedOverlappingUnequalInstances3() {
+    void testBoundedOverlappingUnequalInstances3() {
         o1 = PhraseHighlight.create(5, 15);
         o2 = PhraseHighlight.create(0, 10);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -107,7 +107,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testBoundedOverlappingUnequalInstances4() {
+    void testBoundedOverlappingUnequalInstances4() {
         o1 = PhraseHighlight.create(0, 10);
         o2 = PhraseHighlight.create(5, 10);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -115,7 +115,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testMixedBoundedNonOverlappingInstances1() {
+    void testMixedBoundedNonOverlappingInstances1() {
         o1 = PhraseHighlight.createEnder(10);
         o2 = PhraseHighlight.create(15, 30);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -123,7 +123,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testMixedBoundedNonOverlappingInstances2() {
+    void testMixedBoundedNonOverlappingInstances2() {
         o1 = PhraseHighlight.createStarter(15);
         o2 = PhraseHighlight.create(0, 10);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -131,7 +131,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testMixedBoundedOverlappingInstances1() {
+    void testMixedBoundedOverlappingInstances1() {
         o1 = PhraseHighlight.createEnder(20);
         o2 = PhraseHighlight.create(15, 30);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);
@@ -139,7 +139,7 @@ public class PhraseHighlightComparatorTest {
     }
 
     @Test
-    public void testMixedBoundedOverlappingInstances2() {
+    void testMixedBoundedOverlappingInstances2() {
         o1 = PhraseHighlight.createStarter(20);
         o2 = PhraseHighlight.create(15, 30);
         int result = PhraseHighlightComparator.INSTANCE.compare(o1, o2);

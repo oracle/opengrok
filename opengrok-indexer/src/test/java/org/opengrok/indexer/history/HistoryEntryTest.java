@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author austvik
  */
-public class HistoryEntryTest {
+class HistoryEntryTest {
 
     private HistoryEntry instance;
     private final Date historyDate = new Date();
@@ -54,20 +54,20 @@ public class HistoryEntryTest {
     private final String historyMessage = "history entry message";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instance = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
             historyAuthor, historyMessage, true, null);
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
     }
 
     /**
      * Test of getLine method, of class HistoryEntry.
      */
     @Test
-    public void getLine() {
+    void getLine() {
         assertTrue(instance.getLine().contains(historyRevision));
         assertTrue(instance.getLine().contains(historyAuthor));
     }
@@ -76,7 +76,7 @@ public class HistoryEntryTest {
      * Test of dump method, of class HistoryEntry.
      */
     @Test
-    public void dump() {
+    void dump() {
         instance.dump();
         instance.setActive(false);
         instance.addFile("testFile1.txt");
@@ -88,7 +88,7 @@ public class HistoryEntryTest {
      * Test of getAuthor method, of class HistoryEntry.
      */
     @Test
-    public void getAuthor() {
+    void getAuthor() {
         String result = instance.getAuthor();
         assertEquals(historyAuthor, result);
     }
@@ -97,7 +97,7 @@ public class HistoryEntryTest {
      * Test of getDate method, of class HistoryEntry.
      */
     @Test
-    public void getDate() {
+    void getDate() {
         assertEquals(historyDate, instance.getDate());
         instance.setDate(null);
         assertNull(instance.getDate());
@@ -107,7 +107,7 @@ public class HistoryEntryTest {
      * Test of getMessage method, of class HistoryEntry.
      */
     @Test
-    public void getMessage() {
+    void getMessage() {
         assertEquals(historyMessage, instance.getMessage());
     }
 
@@ -115,7 +115,7 @@ public class HistoryEntryTest {
      * Test of getRevision method, of class HistoryEntry.
      */
     @Test
-    public void getRevision() {
+    void getRevision() {
         assertEquals(historyRevision, instance.getRevision());
     }
 
@@ -123,7 +123,7 @@ public class HistoryEntryTest {
      * Test of getDisplayRevision method, of class HistoryEntry.
      */
     @Test
-    public void getDisplayRevision() {
+    void getDisplayRevision() {
         assertEquals(historyDisplayRevision, instance.getDisplayRevision());
     }
 
@@ -131,7 +131,7 @@ public class HistoryEntryTest {
      * Test of setAuthor method, of class HistoryEntry.
      */
     @Test
-    public void setAuthor() {
+    void setAuthor() {
         String newAuthor = "New Author";
         instance.setAuthor(newAuthor);
         assertEquals(newAuthor, instance.getAuthor());
@@ -141,7 +141,7 @@ public class HistoryEntryTest {
      * Test of setDate method, of class HistoryEntry.
      */
     @Test
-    public void setDate() {
+    void setDate() {
         Date date = new Date();
         instance.setDate(date);
         assertEquals(date, instance.getDate());
@@ -151,7 +151,7 @@ public class HistoryEntryTest {
      * Test of isActive method, of class HistoryEntry.
      */
     @Test
-    public void isActive() {
+    void isActive() {
         assertTrue(instance.isActive());
         instance.setActive(false);
         assertFalse(instance.isActive());
@@ -161,7 +161,7 @@ public class HistoryEntryTest {
      * Test of setActive method, of class HistoryEntry.
      */
     @Test
-    public void setActive() {
+    void setActive() {
         instance.setActive(true);
         assertTrue(instance.isActive());
         instance.setActive(false);
@@ -172,7 +172,7 @@ public class HistoryEntryTest {
      * Test of setMessage method, of class HistoryEntry.
      */
     @Test
-    public void setMessage() {
+    void setMessage() {
         String message = "Something";
         instance.setMessage(message);
         assertEquals(message, instance.getMessage());
@@ -182,7 +182,7 @@ public class HistoryEntryTest {
      * Test of setRevision method, of class HistoryEntry.
      */
     @Test
-    public void setRevision() {
+    void setRevision() {
         String revision = "1.2";
         instance.setRevision(revision);
         assertEquals(revision, instance.getRevision());
@@ -192,7 +192,7 @@ public class HistoryEntryTest {
      * Test of setDisplayRevision method, of class HistoryEntry.
      */
     @Test
-    public void setDisplayRevision() {
+    void setDisplayRevision() {
         String displayRevision = "1.2";
         instance.setDisplayRevision(displayRevision);
         assertEquals(displayRevision, instance.getDisplayRevision());
@@ -204,7 +204,7 @@ public class HistoryEntryTest {
      * Test of appendMessage method, of class HistoryEntry.
      */
     @Test
-    public void appendMessage() {
+    void appendMessage() {
         String message = "Something Added";
         instance.appendMessage(message);
         assertTrue(instance.getMessage().contains(message));
@@ -214,7 +214,7 @@ public class HistoryEntryTest {
      * Test of addFile method, of class HistoryEntry.
      */
     @Test
-    public void addFile() {
+    void addFile() {
         String fileName = "test.file";
         HistoryEntry instance = new HistoryEntry();
         assertFalse(new History(Collections.singletonList(instance)).hasFileList());
@@ -227,7 +227,7 @@ public class HistoryEntryTest {
      * Test of getFiles method, of class HistoryEntry.
      */
     @Test
-    public void getFiles() {
+    void getFiles() {
         String fileName = "test.file";
         instance.addFile(fileName);
         assertTrue(instance.getFiles().contains(fileName));
@@ -240,7 +240,7 @@ public class HistoryEntryTest {
      * Test of setFiles method, of class HistoryEntry.
      */
     @Test
-    public void setFiles() {
+    void setFiles() {
         TreeSet<String> files = new TreeSet<>();
         files.add("file1.file");
         files.add("file2.file");
@@ -252,7 +252,7 @@ public class HistoryEntryTest {
      * Test of toString method, of class HistoryEntry.
      */
     @Test
-    public void testToString() {
+    void testToString() {
         assertTrue(instance.toString().contains(historyRevision));
         assertTrue(instance.toString().contains(historyAuthor));
     }
@@ -261,7 +261,7 @@ public class HistoryEntryTest {
      * Test of strip method, of class HistoryEntry.
      */
     @Test
-    public void strip() {
+    void strip() {
         TreeSet<String> files = new TreeSet<>();
         files.add("file1.file");
         files.add("file2.file");
@@ -271,21 +271,21 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testEqualsCopyConstructor() {
+    void testEqualsCopyConstructor() {
         HistoryEntry e = new HistoryEntry(instance);
         assertNotSame(e, instance);
         assertEquals(e, instance);
     }
 
     @Test
-    public void testEqualsEmpty() {
+    void testEqualsEmpty() {
         HistoryEntry e = new HistoryEntry();
         assertNotSame(e, instance);
         assertNotEquals(e, instance);
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true, null);
         assertNotSame(e, instance);
@@ -293,7 +293,7 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testNotEqualsRevision() {
+    void testNotEqualsRevision() {
         HistoryEntry e = new HistoryEntry(historyRevision + "0", historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true, null);
         assertNotSame(e, instance);
@@ -301,7 +301,7 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testNotEqualsDisplayRevision() {
+    void testNotEqualsDisplayRevision() {
         HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision + "0", historyDate,
                 historyAuthor, historyMessage, true, null);
         assertNotSame(e, instance);
@@ -309,7 +309,7 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testEqualsWithFilesInstance() {
+    void testEqualsWithFilesInstance() {
         HistoryEntry e = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
                 historyAuthor, historyMessage, true,
                 Set.of(File.separator + Paths.get("foo", "main.o"),
@@ -319,7 +319,7 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testEqualsWithFilesPositive() {
+    void testEqualsWithFilesPositive() {
         Set<String> files = Set.of(File.separator + Paths.get("foo", "main.o"),
                 File.separator + Paths.get("foo", "testsprog"));
         HistoryEntry e1 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,
@@ -331,7 +331,7 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testEqualsWithFilesNegative() {
+    void testEqualsWithFilesNegative() {
         String file1 = File.separator + Paths.get("foo", "main.o");
         String file2 = File.separator + Paths.get("foo", "testsprog");
         HistoryEntry e1 = new HistoryEntry(historyRevision, historyDisplayRevision, historyDate,

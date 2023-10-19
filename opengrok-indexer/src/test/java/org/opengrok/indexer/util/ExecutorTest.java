@@ -41,10 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Trond Norbye
  */
-public class ExecutorTest {
+class ExecutorTest {
 
     @Test
-    public void testString() {
+    void testString() {
         List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
@@ -56,7 +56,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testReader() throws IOException {
+    void testReader() throws IOException {
         List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
@@ -71,7 +71,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testStream() throws IOException {
+    void testStream() throws IOException {
         List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
@@ -88,14 +88,14 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testEscapeForBourneSingleLine() {
+    void testEscapeForBourneSingleLine() {
         List<String> argv = Arrays.asList("/usr/bin/foo", "--value=\n\r\f\u0011\t\\'");
         String s = Executor.escapeForShell(argv, false, false);
         assertEquals("/usr/bin/foo --value=$'\\n\\r\\f\\v\\t\\\\\\''", s);
     }
 
     @Test
-    public void testEscapeForBourneMultiLine() {
+    void testEscapeForBourneMultiLine() {
         List<String> argv = Arrays.asList("/usr/bin/foo", "--value", "\n\r\f\u0011\t\\'");
         String s = Executor.escapeForShell(argv, true, false);
         assertEquals("/usr/bin/foo \\" + System.lineSeparator() +
@@ -104,14 +104,14 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testEscapeForWindowsSingleLine() {
+    void testEscapeForWindowsSingleLine() {
         List<String> argv = Arrays.asList("C:\\foo", "--value=\n\r\f\u0011\t`\"$a", "/");
         String s = Executor.escapeForShell(argv, false, true);
         assertEquals("C:\\foo --value=\"`n`r`f`v`t```\"`$a\" /", s);
     }
 
     @Test
-    public void testEscapeForWindowsMultiLine() {
+    void testEscapeForWindowsMultiLine() {
         List<String> argv = Arrays.asList("C:\\foo", "--value", "\n\r\f\u0011\t`\"$a", "/");
         String s = Executor.escapeForShell(argv, true, true);
         assertEquals("C:\\foo `" + System.lineSeparator() +

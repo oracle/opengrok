@@ -67,7 +67,7 @@ import org.opengrok.indexer.util.IOUtils;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-public class SearchAndContextFormatterTest2 {
+class SearchAndContextFormatterTest2 {
 
     private static final int TABSIZE = 8;
 
@@ -79,7 +79,7 @@ public class SearchAndContextFormatterTest2 {
     private static boolean originalProjectsEnabled;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         originalProjectsEnabled = env.isProjectsEnabled();
@@ -137,7 +137,7 @@ public class SearchAndContextFormatterTest2 {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         env.setAllowedSymlinks(new HashSet<>());
 
@@ -165,7 +165,7 @@ public class SearchAndContextFormatterTest2 {
     }
 
     @Test
-    public void testSearch() throws IOException, InvalidTokenOffsetsException {
+    void testSearch() throws IOException, InvalidTokenOffsetsException {
         SearchEngine instance = new SearchEngine();
         instance.setFreetext("Hello");
         instance.setFile("renamed2.c");

@@ -33,13 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author ktulinge
  */
-public class TimestampTest {
+class TimestampTest {
 
     /**
      * Test of valid timestamp cookies and their decoded values.
      */
     @Test
-    public void testDecodeTimestamp() {
+    void testDecodeTimestamp() {
         String[] tests = {
             "123456",
             "5761172f",
@@ -63,7 +63,7 @@ public class TimestampTest {
      * Test of invalid timestamp cookies.
      */
     @Test
-    public void testInvalidDecodeTimestamp() {
+    void testInvalidDecodeTimestamp() {
         String[] tests = {
             "sd45gfgf5sd4g5ffd54g",
             "ě5 1g56ew1tč6516re5g1g65d1g65d",
@@ -81,7 +81,7 @@ public class TimestampTest {
      * Test of encoded cookies.
      */
     @Test
-    public void testEncodeTimestamp() {
+    void testEncodeTimestamp() {
         Date[] tests = {
             new Date(Long.parseLong("1193046000")),
             new Date(Long.parseLong("1465980719000")),

@@ -55,7 +55,7 @@ import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockingDetails;
 
-public class RepositoryLookupTest {
+class RepositoryLookupTest {
     // Files to include into Repositories having short paths
     private static final String[] SHORT_PATH_CONTENTS = {"foo/bar.txt", "foo/bla/barf.txt", "special/woops@",
         "special/veryveryverylongfilename_just_for_fun"};
@@ -74,7 +74,7 @@ public class RepositoryLookupTest {
     private RepositoryLookupCached cached;
 
     @BeforeEach
-    public void before() {
+    void before() {
         repositories = new HashMap<>();
         repositoryRoots = new HashSet<>();
         // Spy on two canonicalizers, because we are need to measure number of lookups and compare cached vs uncached
@@ -91,7 +91,7 @@ public class RepositoryLookupTest {
     }
 
     @Test
-    public void testLookups() throws IOException {
+    void testLookups() throws IOException {
         List<TestRepository> testRepositories = Arrays.asList(
             createRepo("src/5/4/3/2/1", Optional.empty(), LONG_PATH_CONTENTS),
             createRepo("src/1/2/3/4/5", Optional.empty(), SHORT_PATH_CONTENTS),
@@ -124,7 +124,7 @@ public class RepositoryLookupTest {
     }
 
     @Test
-    public void testLookupsOnEmpty() {
+    void testLookupsOnEmpty() {
         for (Path p : Arrays.asList(
             rootDir.resolve("some/unknown/path/1/2/3/4"),
             rootDir.resolve("some/unknown/path/otherdir/1/2/3/4"))) {
@@ -136,7 +136,7 @@ public class RepositoryLookupTest {
     }
 
     @Test
-    public void testSizeInvariantsAndBackfill() throws IOException {
+    void testSizeInvariantsAndBackfill() throws IOException {
         TestRepository testRepo = createRepo("src/5/4/3/2/1", Optional.empty(), LONG_PATH_CONTENTS);
         String knownFileSubpath = LONG_PATH_CONTENTS[0];
         List<String> subdirs = Arrays.asList(knownFileSubpath.split("/"));
@@ -174,7 +174,7 @@ public class RepositoryLookupTest {
     }
 
         @Test
-    public void testCachedRemovedAndClear() throws IOException {
+    void testCachedRemovedAndClear() throws IOException {
         List<TestRepository> testRepositories = Arrays.asList(
             createRepo("src/5/4/3/2/1", Optional.empty(), LONG_PATH_CONTENTS),
             createRepo("src/1/2/3/4/5", Optional.empty(), SHORT_PATH_CONTENTS));

@@ -39,13 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Test file-based history cache with for git-octopus.
  * @author Vladimir Kotal
  */
-public class FileHistoryCacheOctopusTest {
+class FileHistoryCacheOctopusTest {
 
     private TestRepository repositories;
     private FileHistoryCache cache;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         RuntimeEnvironment.getInstance().setMergeCommitsEnabled(true);
 
         repositories = new TestRepository();
@@ -56,7 +56,7 @@ public class FileHistoryCacheOctopusTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repositories.destroy();
         repositories = null;
 
@@ -64,7 +64,7 @@ public class FileHistoryCacheOctopusTest {
     }
 
     @Test
-    public void testStoreAndGet() throws Exception {
+    void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "git-octopus");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
         History historyToStore = repo.getHistory(reposRoot);

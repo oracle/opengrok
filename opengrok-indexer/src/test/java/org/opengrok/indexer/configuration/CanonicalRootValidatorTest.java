@@ -31,31 +31,31 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class CanonicalRootValidatorTest {
+class CanonicalRootValidatorTest {
 
     @Test
-    public void testRejectUnseparated() {
+    void testRejectUnseparated() {
         assertEquals(CanonicalRootValidator.validate("test", "test value"),
                 "test value must end with a separator");
     }
 
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    public void testRejectRoot() {
+    void testRejectRoot() {
         assertEquals("test value cannot be the root directory",
                 CanonicalRootValidator.validate("/", "test value"),
                 "should reject root");
     }
 
     @Test
-    public void testRejectWindowsRoot() {
+    void testRejectWindowsRoot() {
         assertEquals("--canonicalRoot cannot be a root directory",
                 CanonicalRootValidator.validate("C:" + File.separator, "--canonicalRoot"),
                 "should reject Windows root");
     }
 
     @Test
-    public void testSlashVar() {
+    void testSlashVar() {
         assertNull(CanonicalRootValidator.validate(File.separator + "var" + File.separator,
                 "--canonicalRoot"), "should allow /var/");
     }

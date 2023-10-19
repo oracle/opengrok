@@ -31,17 +31,17 @@ import java.io.IOException;
 /**
  * Tests the {@code XMLXref} class.
  */
-public class XMLXrefTest extends XrefTestBase {
+class XMLXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new XMLAnalyzerFactory(),
                 "analysis/xml/sample.xml",
                 "analysis/xml/sample_xref.html", null, 229);
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new XMLAnalyzerFactory(),
                 "analysis/xml/truncated.xml",
                 "analysis/xml/truncated_xref.html", null, 1);

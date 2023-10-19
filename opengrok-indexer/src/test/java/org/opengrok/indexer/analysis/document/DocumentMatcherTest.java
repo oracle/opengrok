@@ -36,14 +36,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Represents a container for tests of {@link DocumentMatcher} subclasses.
  */
-public class DocumentMatcherTest {
+class DocumentMatcherTest {
 
     /**
      * Tests a mdoc(5)-style document.
      * @throws IOException I/O exception
      */
     @Test
-    public void testMdocDocument() throws IOException {
+    void testMdocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/sync.1m");
         assertNotNull(res, "despite inclusion locally,");
@@ -67,7 +67,7 @@ public class DocumentMatcherTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testMandocDocument() throws IOException {
+    void testMandocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/catman.1m");
         assertNotNull(res, "despite inclusion locally,");
@@ -94,7 +94,7 @@ public class DocumentMatcherTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testMandocBOMDocument() throws IOException {
+    void testMandocBOMDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/utf16le.1m");
         assertNotNull(res, "despite inclusion locally,");

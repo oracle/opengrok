@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a test container for {@link IndexAnalysisSettingsUpgrader}.
  */
-public class IndexAnalysisSettingsUpgraderTest {
+class IndexAnalysisSettingsUpgraderTest {
 
     private static final String PROJECT_NAME = "foo-1-2-3";
     private static final long ANALYZER_GURU_VERSION = 3;
@@ -55,7 +55,7 @@ public class IndexAnalysisSettingsUpgraderTest {
     }
 
     @Test
-    public void shouldHandleLatest() throws IOException,
+    void shouldHandleLatest() throws IOException,
             ClassNotFoundException {
         IndexAnalysisSettings3 obj = new IndexAnalysisSettings3();
         obj.setAnalyzerGuruVersion(ANALYZER_GURU_VERSION);
@@ -94,7 +94,7 @@ public class IndexAnalysisSettingsUpgraderTest {
     }
 
     @Test
-    public void shouldUpgradeV2() throws IOException, ClassNotFoundException {
+    void shouldUpgradeV2() throws IOException, ClassNotFoundException {
         IndexAnalysisSettings obj = new IndexAnalysisSettings();
         obj.setAnalyzerGuruVersion(ANALYZER_GURU_VERSION);
         Map<String, Long> actAnalyzersVersionNos = AnalyzerGuru.getAnalyzersVersionNos();
@@ -116,7 +116,7 @@ public class IndexAnalysisSettingsUpgraderTest {
     }
 
     @Test
-    public void shouldThrowIfVersionIsMisrepresented() throws IOException, ClassNotFoundException {
+    void shouldThrowIfVersionIsMisrepresented() throws IOException, ClassNotFoundException {
         IndexAnalysisSettings obj = new IndexAnalysisSettings();
         obj.setAnalyzerGuruVersion(ANALYZER_GURU_VERSION);
         obj.setProjectName(PROJECT_NAME);
@@ -129,7 +129,7 @@ public class IndexAnalysisSettingsUpgraderTest {
     }
 
     @Test
-    public void shouldThrowIfTooOldVersion() throws ClassNotFoundException {
+    void shouldThrowIfTooOldVersion() throws ClassNotFoundException {
         boolean passed = false;
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();

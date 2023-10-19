@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link PLSQLXref} class.
  */
-public class PLSQLXrefTest extends XrefTestBase {
+class PLSQLXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new PLSQLAnalyzerFactory(),
                 "analysis/sql/sample.pls",
                 "analysis/sql/samplepls_xref.html",
@@ -43,7 +43,7 @@ public class PLSQLXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PLSQLAnalyzerFactory(),
                 "analysis/sql/truncated.pls",
                 "analysis/sql/truncatedpls_xref.html", null, 1);

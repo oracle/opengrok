@@ -38,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author Krystof Tulinger
  */
-public class RepositoryTest {
+class RepositoryTest {
 
     @Test
-    public void testMultipleDateFormats() throws ParseException {
+    void testMultipleDateFormats() throws ParseException {
         String[][] tests = new String[][]{
             {"2016-01-01 10:00:00", "'abcd'", "yyyy", "yyyy-MM-dd HH:mm:ss"},
             {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "yyyy d MMM yyyy HH:mm:ss Z", "yyyy EE, d MMM yyyy HH:mm:ss Z"},
@@ -62,7 +62,7 @@ public class RepositoryTest {
     }
 
     @Test
-    public void testDateFormats() throws ParseException {
+    void testDateFormats() throws ParseException {
         String[][] tests = new String[][]{
             {"2016-01-01 10:00:00", "yyyy-MM-dd HH:mm:ss"},
             {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "yyyy EE, d MMM yyyy HH:mm:ss Z"},
@@ -89,7 +89,7 @@ public class RepositoryTest {
      * format is specified.
      */
     @Test
-    public void testDateFormatsNoFormat() {
+    void testDateFormatsNoFormat() {
         String[] tests = new String[]{
             "abcd",
             "2016-01-01 10:00:00",
@@ -114,7 +114,7 @@ public class RepositoryTest {
     }
 
     @Test
-    public void testMultipleInvalidDateFormats() {
+    void testMultipleInvalidDateFormats() {
         String[][] tests = new String[][]{
             {"2016-01-01 10:00:00", "'abcd'", "MMM yy:ss ", "EE, d MMM yyyy Hss Z"},
             {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "yyyy d MMM yy:ss Z", "yyyy EE, d MMM ss Z"},

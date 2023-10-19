@@ -59,7 +59,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LdapAttrPluginTest {
+class LdapAttrPluginTest {
 
     private HttpServletRequest dummyRequest;
     private LdapAttrPlugin plugin;
@@ -67,7 +67,7 @@ public class LdapAttrPluginTest {
     private static File whitelistFile;
 
     @BeforeAll
-    public static void beforeClass() throws IOException {
+    static void beforeClass() throws IOException {
         whitelistFile = Files.createTempFile("opengrok-auth-", "-check.tmp").toFile();
         try (Writer w = new OutputStreamWriter(new FileOutputStream(whitelistFile))) {
             w.append("james@bond.com\n");
@@ -77,12 +77,12 @@ public class LdapAttrPluginTest {
     }
 
     @AfterAll
-    public static void afterClass() {
+    static void afterClass() {
         whitelistFile.deleteOnExit();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
 

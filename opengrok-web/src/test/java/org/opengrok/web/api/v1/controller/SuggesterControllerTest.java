@@ -66,7 +66,7 @@ import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class SuggesterControllerTest extends OGKJerseyTest {
+class SuggesterControllerTest extends OGKJerseyTest {
 
     public static class Result {
         public long time;
@@ -130,7 +130,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @BeforeEach
-    public void before() throws InterruptedException {
+    void before() throws InterruptedException {
         SuggesterServiceImpl.getInstance().waitForInit(15, TimeUnit.SECONDS);
 
         env.setSuggesterConfig(new SuggesterConfig());

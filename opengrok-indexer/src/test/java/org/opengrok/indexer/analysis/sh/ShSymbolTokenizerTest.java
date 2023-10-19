@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link ShSymbolTokenizer} class.
  */
-public class ShSymbolTokenizerTest {
+class ShSymbolTokenizerTest {
 
     /**
      * Test sample.sh v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testShSymbolStream() throws Exception {
+    void testShSymbolStream() throws Exception {
         InputStream shres = getClass().getClassLoader().getResourceAsStream(
             "analysis/sh/sample.sh");
         assertNotNull(shres, "despite sample.sh as resource,");

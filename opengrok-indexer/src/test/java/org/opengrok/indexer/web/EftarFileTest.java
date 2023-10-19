@@ -36,14 +36,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * JUnit test to test the EftarFile-system.
  */
-public class EftarFileTest {
+class EftarFileTest {
 
     private static File eftar;
 
     private static final String PATH_STRING = "/path";
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
 
         eftar = File.createTempFile("paths", ".eftar");
         int len = 100;
@@ -63,7 +63,7 @@ public class EftarFileTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         if (eftar != null) {
             eftar.delete();
         }

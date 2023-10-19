@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link AnalyzerGuruHelp}.
  */
-public class AnalyzerGuruHelpTest {
+class AnalyzerGuruHelpTest {
     @Test
-    public void shouldCreateReadableUsage() {
+    void shouldCreateReadableUsage() {
         String usage = AnalyzerGuruHelp.getUsage();
         assertFalse(usage.isEmpty(), "usage is not empty");
         assertTrue(usage.contains("*."), "usage contains \"*.\"");

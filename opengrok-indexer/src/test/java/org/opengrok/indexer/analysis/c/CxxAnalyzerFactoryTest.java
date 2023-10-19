@@ -54,7 +54,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Tomas Kotal
  */
-public class CxxAnalyzerFactoryTest {
+class CxxAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
@@ -70,7 +70,7 @@ public class CxxAnalyzerFactoryTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -85,7 +85,7 @@ public class CxxAnalyzerFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

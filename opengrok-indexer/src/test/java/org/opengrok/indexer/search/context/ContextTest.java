@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ContextTest {
+class ContextTest {
 
     /**
      * The value returned by {@link RuntimeEnvironment#isQuickContextScan()}
@@ -60,13 +60,13 @@ public class ContextTest {
     private boolean savedQuickContextScanFlag;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Save initial value of the quick context scan flag.
         savedQuickContextScanFlag = RuntimeEnvironment.getInstance().isQuickContextScan();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         // Restore the initial value of the quick context scan flag.
         RuntimeEnvironment.getInstance().setQuickContextScan(savedQuickContextScanFlag);
     }
@@ -76,7 +76,7 @@ public class ContextTest {
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testIsEmpty() throws ParseException {
+    void testIsEmpty() throws ParseException {
         String term = "qwerty";
 
         // Definition search should be used
@@ -115,7 +115,7 @@ public class ContextTest {
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testGetContext() throws ParseException {
+    void testGetContext() throws ParseException {
         testGetContext(true, true);   // limited scan, output to list
         testGetContext(false, true);  // unlimited scan, output to list
         testGetContext(true, false);  // limited scan, output to writer
@@ -267,7 +267,7 @@ public class ContextTest {
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testLongLineNearBufferBoundary() throws ParseException {
+    void testLongLineNearBufferBoundary() throws ParseException {
         char[] chars = new char[Context.MAXFILEREAD];
         Arrays.fill(chars, 'a');
         char[] substring = " this is a test ".toCharArray();
@@ -292,7 +292,7 @@ public class ContextTest {
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testAllLinkWithLongLines() throws ParseException {
+    void testAllLinkWithLongLines() throws ParseException {
         // Create input which consists of one single line longer than
         // Context.MAXFILEREAD.
         StringBuilder sb = new StringBuilder();
@@ -319,7 +319,7 @@ public class ContextTest {
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testLongTruncatedLine() throws ParseException {
+    void testLongTruncatedLine() throws ParseException {
         StringBuilder sb = new StringBuilder();
         sb.append("search_for_me");
         while (sb.length() <= 100) {
@@ -348,7 +348,7 @@ public class ContextTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void testMultiLineMatch() throws Exception {
+    void testMultiLineMatch() throws Exception {
         StringReader in = new StringReader("a\nb\nc\n");
         StringWriter out = new StringWriter();
 
@@ -392,7 +392,7 @@ public class ContextTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void bug16848() throws Exception {
+    void bug16848() throws Exception {
         StringReader in = new StringReader("Mixed case: abc AbC dEf\n");
         StringWriter out = new StringWriter();
         QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
@@ -408,7 +408,7 @@ public class ContextTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void bug17582() throws Exception {
+    void bug17582() throws Exception {
         // Freetext search should match regardless of case
         bug17582(new QueryBuilder().setFreetext("Bug17582"),
                 new int[] {2, 3}, new String[] {"type1", "type2"});
@@ -468,7 +468,7 @@ public class ContextTest {
      * @throws ParseException parse exception
      */
     @Test
-    public void regexpSearchContextTest() throws ParseException {
+    void regexpSearchContextTest() throws ParseException {
         //regex match is returned in context
         searchContextTestHelper("one two three", "/t.o|three/", "two");
         //regex match is returned in context

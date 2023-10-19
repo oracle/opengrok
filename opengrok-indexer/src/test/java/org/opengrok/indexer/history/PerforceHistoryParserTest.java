@@ -35,13 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author austvik
  */
-public class PerforceHistoryParserTest {
+class PerforceHistoryParserTest {
 
     /**
      * Test of parseChanges method, of class PerforceHistoryParser.
      */
     @Test
-    public void parseChanges() throws Exception {
+    void parseChanges() throws Exception {
         String output = "Change 1234 on 2008/10/13 11:30:00 by ADMIN@UserWorkspaceName\n" +
                 "\tComment given to changelist within single qoutes, this is change one\n" +
                 "Change 6543 on 2008/10/08 18:25:38 by USER@USER_WS\n" +
@@ -83,7 +83,7 @@ public class PerforceHistoryParserTest {
      * Test of parseFileLog method, of class PerforceHistoryParser.
      */
     @Test
-    public void parseFileLog() throws Exception {
+    void parseFileLog() throws Exception {
         String output = "//Path/To/Folder/In/Workspace/Filename\n" +
                 "\n" +
                 "... #4 change 1234 edit on 2008/08/19 11:30:00 by User@UserWorkspaceName (text)\n" +

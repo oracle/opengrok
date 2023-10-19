@@ -29,10 +29,10 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TandemPathTest {
+class TandemPathTest {
 
     @Test
-    public void shouldNotNeedToHashShortNames() {
+    void shouldNotNeedToHashShortNames() {
         File original = new File("dir", "file1");
         File expected = new File("dir", "file1.gz");
         String newName = TandemPath.join(original.toString(), ".gz");
@@ -40,7 +40,7 @@ public class TandemPathTest {
     }
 
     @Test
-    public void shouldHash255ASCIIChars() {
+    void shouldHash255ASCIIChars() {
         final String extension = ".zip";
         char[] chars = new char[255 - extension.length()];
         Arrays.fill(chars, 'B');
@@ -58,7 +58,7 @@ public class TandemPathTest {
     }
 
     @Test
-    public void shouldNotNeedToHash254ASCIIChars() {
+    void shouldNotNeedToHash254ASCIIChars() {
         final String extension = ".zip";
         char[] chars = new char[254 - extension.length()];
         Arrays.fill(chars, 'B');

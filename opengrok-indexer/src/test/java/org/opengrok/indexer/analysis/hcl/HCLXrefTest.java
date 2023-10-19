@@ -31,17 +31,17 @@ import java.io.IOException;
 /**
  * Represents a container for tests of {@link HCLXref}.
  */
-public class HCLXrefTest extends XrefTestBase {
+class HCLXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new HCLAnalyzerFactory(),
                 "analysis/hcl/sample.hcl",
                 "analysis/hcl/sample_xref.html", null, 25);
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new HCLAnalyzerFactory(),
                 "analysis/hcl/truncated.hcl",
                 "analysis/hcl/truncated_xref.html", null, 1);

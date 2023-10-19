@@ -31,8 +31,9 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ClassUtilTest {
+class ClassUtilTest {
 
+    @SuppressWarnings("unused")
     private static class TestObject {
 
         private String strField;
@@ -86,26 +87,26 @@ public class ClassUtilTest {
     private TestObject testObject;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         testObject = new TestObject();
     }
 
     @Test
-    public void setStrFieldTest() throws IOException {
+    void setStrFieldTest() throws IOException {
         ClassUtil.setFieldValue(testObject, "strField", "value");
 
         assertEquals("value", testObject.strField);
     }
 
     @Test
-    public void setIntFieldTest() throws IOException {
+    void setIntFieldTest() throws IOException {
         ClassUtil.setFieldValue(testObject, "intField", "124");
 
         assertEquals(124, testObject.intField);
     }
 
     @Test
-    public void setObjFieldTest() throws IOException {
+    void setObjFieldTest() throws IOException {
         TestObject t = new TestObject();
         t.strField = "test";
 
@@ -117,21 +118,21 @@ public class ClassUtilTest {
     }
 
     @Test
-    public void getStrFieldTest() throws IOException {
+    void getStrFieldTest() throws IOException {
         testObject.strField = "value2";
 
         assertEquals("value2", ClassUtil.getFieldValue(testObject, "strField"));
     }
 
     @Test
-    public void getIntFieldTest() throws IOException {
+    void getIntFieldTest() throws IOException {
         testObject.intField = 1;
 
         assertEquals(1, ClassUtil.getFieldValue(testObject, "intField"));
     }
 
     @Test
-    public void getObjFieldTest() throws IOException {
+    void getObjFieldTest() throws IOException {
         TestObject t = new TestObject();
         t.strField = "test";
 

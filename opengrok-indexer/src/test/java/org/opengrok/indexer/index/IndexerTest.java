@@ -78,24 +78,24 @@ import org.opengrok.indexer.util.TestRepository;
 /**
  * @author Trond Norbye
  */
-public class IndexerTest {
+class IndexerTest {
 
     TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getClassLoader().getResource("sources"));
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repository.destroy();
     }
 
@@ -212,7 +212,7 @@ public class IndexerTest {
             removedFiles.add(path);
         }
 
-        public void reset() {
+        void reset() {
             this.addedFiles.clear();
             this.removedFiles.clear();
         }
@@ -302,7 +302,7 @@ public class IndexerTest {
             removedFiles.add(path);
         }
 
-        public void reset() {
+        void reset() {
             this.filesToAdd.clear();
             this.removedFiles.clear();
         }

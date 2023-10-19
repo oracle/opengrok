@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link ConfigurationHelp}.
  */
-public class ConfigurationHelpTest {
+class ConfigurationHelpTest {
     @Test
-    public void shouldCreateReadableUsage() {
+    void shouldCreateReadableUsage() {
         String samples = ConfigurationHelp.getSamples();
         assertFalse(samples.isEmpty(), "samples are not empty");
         assertTrue(samples.contains("<?"), "samples contains \"<?\"");

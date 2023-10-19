@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link LispXref} class.
  */
-public class LispXrefTest extends XrefTestBase {
+class LispXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new LispAnalyzerFactory(),
                 "analysis/lisp/sample.lsp",
                 "analysis/lisp/sample_xref.html",
@@ -43,7 +43,7 @@ public class LispXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new LispAnalyzerFactory(),
                 "analysis/lisp/truncated.lsp",
                 "analysis/lisp/truncated_xref.html", null, 1);

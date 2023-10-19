@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link SwiftSymbolTokenizer} class.
  */
-public class SwiftSymbolTokenizerTest {
+class SwiftSymbolTokenizerTest {
 
     /**
      * Test sample.swift v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testSwiftSymbolStream() throws Exception {
+    void testSwiftSymbolStream() throws Exception {
         InputStream swiftres = getClass().getClassLoader().getResourceAsStream(
             "analysis/swift/sample.swift");
         assertNotNull(swiftres, "despite sample.swift as resource,");

@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link VerilogSymbolTokenizer} class.
  */
-public class VerilogSymbolTokenizerTest {
+class VerilogSymbolTokenizerTest {
 
     /**
      * Test sample.v v. samplesymbols.txt
      * @throws Exception thrown on error
      */
     @Test
-    public void testVerilogSymbolStream() throws Exception {
+    void testVerilogSymbolStream() throws Exception {
         InputStream vRes = getClass().getClassLoader().getResourceAsStream(
                 "analysis/verilog/sample.v");
         assertNotNull(vRes, "despite sample.v as resource,");

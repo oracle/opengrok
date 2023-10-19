@@ -64,7 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.controller.DirectoryListingController.getDirectoryEntriesDTO;
 
-public class DirectoryListingControllerTest extends OGKJerseyTest {
+class DirectoryListingControllerTest extends OGKJerseyTest {
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;

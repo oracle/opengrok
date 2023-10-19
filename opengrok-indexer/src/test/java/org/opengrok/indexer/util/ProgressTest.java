@@ -45,7 +45,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-public class ProgressTest {
+class ProgressTest {
     @BeforeAll
     public static void setup() {
         // needed to spawn logger thread in Progress
@@ -81,7 +81,7 @@ public class ProgressTest {
     }
 
     @Test
-    public void testProgress() throws InterruptedException {
+    void testProgress() throws InterruptedException {
         final Logger logger = Mockito.mock(Logger.class);
         final int totalCount = 100; // use int because of Mockito.calls()/times() only accepts int
         Thread loggerThread = null;
@@ -123,7 +123,7 @@ public class ProgressTest {
     }
 
     @Test
-    public void testThreads() throws InterruptedException {
+    void testThreads() throws InterruptedException {
         final Logger logger = Mockito.mock(Logger.class);
         final int totalCount = Runtime.getRuntime().availableProcessors();
         List<Future<?>> futures = new ArrayList<>();

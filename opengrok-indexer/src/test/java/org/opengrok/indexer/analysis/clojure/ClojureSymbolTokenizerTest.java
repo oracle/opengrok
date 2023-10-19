@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link ClojureSymbolTokenizer} class.
  */
-public class ClojureSymbolTokenizerTest {
+class ClojureSymbolTokenizerTest {
 
     /**
      * Test sample.clj v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testClojureSymbolStream() throws Exception {
+    void testClojureSymbolStream() throws Exception {
         InputStream cljres = getClass().getClassLoader().getResourceAsStream(
             "analysis/clojure/sample.clj");
         assertNotNull(cljres, "despite sample.clj as resource,");

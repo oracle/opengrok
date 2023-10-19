@@ -43,13 +43,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Lubos Kosco
  */
-public class CtagsTest {
+class CtagsTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -66,7 +66,7 @@ public class CtagsTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
         repository.destroy();

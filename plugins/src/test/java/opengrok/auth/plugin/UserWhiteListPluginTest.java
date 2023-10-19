@@ -58,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link UserWhiteListPlugin}.
  */
-public class UserWhiteListPluginTest {
+class UserWhiteListPluginTest {
 
     private static final String OK_USER = "user1321";
     private static final String OK_ID = "id2178";
@@ -68,12 +68,12 @@ public class UserWhiteListPluginTest {
 
     private UserWhiteListPlugin plugin;
 
-    public static Collection<String> parameters() {
+    static Collection<String> parameters() {
         return Arrays.asList(UserWhiteListPlugin.ID_FIELD, UserWhiteListPlugin.USERNAME_FIELD);
     }
 
     @BeforeAll
-    public static void beforeClass() throws Exception {
+    static void beforeClass() throws Exception {
         tempWhitelistUser = File.createTempFile("UserWhiteListPluginTestUser", "txt");
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(tempWhitelistUser), StandardCharsets.UTF_8))) {
@@ -92,7 +92,7 @@ public class UserWhiteListPluginTest {
     }
 
     @AfterAll
-    public static void afterClass() {
+    static void afterClass() {
         if (tempWhitelistUser != null) {
             //noinspection ResultOfMethodCallIgnored
             tempWhitelistUser.delete();
@@ -103,7 +103,7 @@ public class UserWhiteListPluginTest {
         }
     }
 
-    public void init(String param) {
+    void init(String param) {
         plugin = new UserWhiteListPlugin();
         validPluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, param);
         if (param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
@@ -115,7 +115,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldThrowOnLoadIfNullArgument(String param) {
+    void shouldThrowOnLoadIfNullArgument(String param) {
         init(param);
         assertThrows(IllegalArgumentException.class, () -> {
             //noinspection ConstantConditions
@@ -125,7 +125,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldThrowOnLoadIfInvalidFieldName(String param) {
+    void shouldThrowOnLoadIfInvalidFieldName(String param) {
         init(param);
         assertThrows(IllegalArgumentException.class, () -> {
             Map<String, Object> map = new HashMap<>();
@@ -137,7 +137,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldThrowOnLoadIfUnreadableFileSpecified(String param) {
+    void shouldThrowOnLoadIfUnreadableFileSpecified(String param) {
         init(param);
         HashMap<String, Object> unreadablePluginParameters = new HashMap<>();
         unreadablePluginParameters.put(UserWhiteListPlugin.FILE_PARAM,
@@ -157,7 +157,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldThrowOnLoadIfNoFileSpecified(String param) {
+    void shouldThrowOnLoadIfNoFileSpecified(String param) {
         init(param);
         IllegalArgumentException caughtException = null;
         try {
@@ -173,7 +173,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldStripWhitespaceFromWhitelists(String param) throws IOException {
+    void shouldStripWhitespaceFromWhitelists(String param) throws IOException {
         plugin = new UserWhiteListPlugin();
         HashMap<String, Object> pluginParameters = new HashMap<>();
         pluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, param);
@@ -202,14 +202,14 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldUnload(String param) {
+    void shouldUnload(String param) {
         init(param);
         plugin.unload();
     }
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldAllowWhitelistedUserForAnyProject(String param) {
+    void shouldAllowWhitelistedUserForAnyProject(String param) {
         init(param);
         plugin.load(validPluginParameters);
 
@@ -233,7 +233,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldNotAllowRandomUserForAnyProject(String param) {
+    void shouldNotAllowRandomUserForAnyProject(String param) {
         init(param);
         plugin.load(validPluginParameters);
 
@@ -251,7 +251,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldAllowWhitelistedUserForAnyGroup(String param) {
+    void shouldAllowWhitelistedUserForAnyGroup(String param) {
         init(param);
         plugin.load(validPluginParameters);
 
@@ -275,7 +275,7 @@ public class UserWhiteListPluginTest {
 
     @ParameterizedTest
     @MethodSource("parameters")
-    public void shouldNotAllowRandomUserForAnyGroup(String param) {
+    void shouldNotAllowRandomUserForAnyGroup(String param) {
         init(param);
         plugin.load(validPluginParameters);
 

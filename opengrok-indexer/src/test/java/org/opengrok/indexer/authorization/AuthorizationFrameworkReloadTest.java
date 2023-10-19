@@ -43,12 +43,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Vladimir Kotal
  */
-public class AuthorizationFrameworkReloadTest {
+class AuthorizationFrameworkReloadTest {
 
     private final File pluginDirectory;
     volatile boolean runThread;
 
-    public AuthorizationFrameworkReloadTest() throws URISyntaxException {
+    AuthorizationFrameworkReloadTest() throws URISyntaxException {
         pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
     }
 
@@ -58,7 +58,7 @@ public class AuthorizationFrameworkReloadTest {
      * the attributes will be unset.
      */
     @Test
-    public void testReloadSimple() {
+    void testReloadSimple() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath());
         framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
@@ -90,7 +90,7 @@ public class AuthorizationFrameworkReloadTest {
      * This might uncover any snags with locking within AuthorizationFramework.
      */
     @Test
-    public void testReloadCycle() {
+    void testReloadCycle() {
         String projectName = "project" + Math.random();
 
         // Create authorization stack for single project.
@@ -149,7 +149,7 @@ public class AuthorizationFrameworkReloadTest {
     }
 
     @Test
-    public void testSetLoadClasses() {
+    void testSetLoadClasses() {
         AuthorizationFramework framework = new AuthorizationFramework();
         assertTrue(framework.isLoadClassesEnabled());
         framework.setLoadClasses(false);
@@ -157,7 +157,7 @@ public class AuthorizationFrameworkReloadTest {
     }
 
     @Test
-    public void testSetLoadJars() {
+    void testSetLoadJars() {
         AuthorizationFramework framework = new AuthorizationFramework();
         assertTrue(framework.isLoadJarsEnabled());
         framework.setLoadJars(false);

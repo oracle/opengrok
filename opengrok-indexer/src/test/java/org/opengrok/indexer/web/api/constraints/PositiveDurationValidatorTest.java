@@ -29,27 +29,27 @@ import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PositiveDurationValidatorTest {
+class PositiveDurationValidatorTest {
 
     private final PositiveDurationValidator validator = new PositiveDurationValidator();
 
     @Test
-    public void testNull() {
+    void testNull() {
         assertFalse(validator.isValid(null, null));
     }
 
     @Test
-    public void testNegative() {
+    void testNegative() {
         assertFalse(validator.isValid(Duration.ofMinutes(-10), null));
     }
 
     @Test
-    public void testZero() {
+    void testZero() {
         assertFalse(validator.isValid(Duration.ofMinutes(0), null));
     }
 
     @Test
-    public void testValid() {
+    void testValid() {
         assertTrue(validator.isValid(Duration.ofMinutes(5), null));
     }
 

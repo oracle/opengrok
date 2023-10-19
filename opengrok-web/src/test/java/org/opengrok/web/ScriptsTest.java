@@ -38,17 +38,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Krystof Tulinger
  */
-public class ScriptsTest {
+class ScriptsTest {
 
     private Scripts scripts;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         scripts = new Scripts();
     }
 
     @Test
-    public void testInstance() {
+    void testInstance() {
         scripts.addScript(new Scripts.FileScript("http://example.com/main1.js", 0));
         scripts.addScript(new Scripts.FileScript("http://example.com/main2.js", 0));
         scripts.addScript(new Scripts.FileScript("http://example.com/main3.js", 0));
@@ -67,7 +67,7 @@ public class ScriptsTest {
     }
 
     @Test
-    public void testSorted() {
+    void testSorted() {
         scripts.addScript(new Scripts.FileScript("http://example.com/main1.js", 3));
         scripts.addScript(new Scripts.FileScript("http://example.com/main2.js", 1));
         scripts.addScript(new Scripts.FileScript("http://example.com/main3.js", 2));
@@ -86,7 +86,7 @@ public class ScriptsTest {
     }
 
     @Test
-    public void testContent() {
+    void testContent() {
         scripts.addScript(new Scripts.FileScript("http://example.com/main1.js", 0));
         scripts.addScript(new Scripts.FileScript("http://example.com/main2.js", 0));
         scripts.addScript(new Scripts.FileScript("http://example.com/main3.js", 0));
@@ -108,7 +108,7 @@ public class ScriptsTest {
     }
 
     @Test
-    public void testLookup() {
+    void testLookup() {
         scripts.addScript("", "utils", Scripts.Type.MINIFIED);
         scripts.addScript("", "jquery", Scripts.Type.MINIFIED);
         scripts.addScript("", "diff", Scripts.Type.MINIFIED);
@@ -140,7 +140,7 @@ public class ScriptsTest {
     }
 
     @Test
-    public void testLookupWithContextPath() {
+    void testLookupWithContextPath() {
         String contextPath = "/source";
         scripts.addScript(contextPath, "utils", Scripts.Type.MINIFIED);
         scripts.addScript(contextPath, "jquery", Scripts.Type.MINIFIED);
@@ -173,13 +173,13 @@ public class ScriptsTest {
     }
 
     @Test
-    public void testAddMinified() {
+    void testAddMinified() {
         scripts.addScript("", "utils", Scripts.Type.MINIFIED);
         assertTrue(scripts.iterator().next().scriptData.endsWith("min.js"));
     }
 
     @Test
-    public void testAddDebug() {
+    void testAddDebug() {
         scripts.addScript("", "utils", Scripts.Type.DEBUG);
         assertFalse(scripts.iterator().next().scriptData.endsWith("min.js"));
     }

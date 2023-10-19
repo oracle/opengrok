@@ -27,17 +27,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SuggesterRangeQueryTest {
+class SuggesterRangeQueryTest {
 
     @Test
-    public void testLengthLower() {
+    void testLengthLower() {
         SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("lowerTerm"), new BytesRef("upper"),
                 true, false, SuggesterRangeQuery.SuggestPosition.LOWER);
         assertEquals("lowerTerm".length(), q.length());
     }
 
     @Test
-    public void testLengthUpper() {
+    void testLengthUpper() {
         SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("l"), new BytesRef("upper"),
                 true, false, SuggesterRangeQuery.SuggestPosition.UPPER);
         assertEquals("upper".length(), q.length());

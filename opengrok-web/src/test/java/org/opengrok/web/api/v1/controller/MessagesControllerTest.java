@@ -64,7 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MessagesControllerTest extends OGKJerseyTest {
+class MessagesControllerTest extends OGKJerseyTest {
 
     private static final GenericType<List<AcceptedMessageModel>> messagesType = new GenericType<>() {
     };
@@ -92,8 +92,8 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     // Allow entity body for DELETE method on the server side.
-    public static class CustomGrizzlyTestContainerFactory implements TestContainerFactory {
-        public CustomGrizzlyTestContainerFactory() {
+    static class CustomGrizzlyTestContainerFactory implements TestContainerFactory {
+        CustomGrizzlyTestContainerFactory() {
         }
 
         public TestContainer create(URI baseUri, DeploymentContext context) {
@@ -149,13 +149,13 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @BeforeEach
-    public void setupMessageListener() throws Exception {
+    void setupMessageListener() throws Exception {
         setMessageContainer(env, new MessagesContainer());
         env.startExpirationTimer();
     }
 
     @AfterEach
-    public void tearDownMessageListener() {
+    void tearDownMessageListener() {
         env.stopExpirationTimer();
     }
 
@@ -166,7 +166,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addMessageTest() {
+    void addMessageTest() {
         addMessage("test message");
 
         assertFalse(env.getMessages().isEmpty());
@@ -177,7 +177,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addMessageWithInvalidLevel() throws JsonProcessingException {
+    void addMessageWithInvalidLevel() throws JsonProcessingException {
         // Construct correct Message object first.
         Message msg = new Message(
                 "message with broken message level",
@@ -217,7 +217,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void removeMessageTest() {
+    void removeMessageTest() {
         env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
@@ -249,7 +249,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addAndRemoveTest() {
+    void addAndRemoveTest() {
         addMessage("test", "test");
         addMessage("test", "test");
 
@@ -261,7 +261,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addAndRemoveWithTextTest() {
+    void addAndRemoveWithTextTest() {
         final String tag = "foo";
         final String text = "text";
 
@@ -279,7 +279,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addAndRemoveDifferentTagsTest() {
+    void addAndRemoveDifferentTagsTest() {
         addMessage("test", "tag1");
         addMessage("test", "tag2");
 
@@ -297,7 +297,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addMessageNegativeDurationTest() throws Exception {
+    void addMessageNegativeDurationTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,
@@ -318,7 +318,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void addEmptyMessageTest() throws Exception {
+    void addEmptyMessageTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
                 Message.MessageLevel.INFO,
@@ -339,7 +339,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void getAllMessagesTest() {
+    void getAllMessagesTest() {
         addMessage("text1", "info");
         addMessage("text2", "main");
 
@@ -351,7 +351,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void getSpecificMessageTest() {
+    void getSpecificMessageTest() {
         addMessage("text", "info");
 
         List<AcceptedMessageModel> messages = target("messages")
@@ -366,7 +366,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void multipleTagsTest() {
+    void multipleTagsTest() {
         addMessage("test", "info", "main");
 
         List<AcceptedMessageModel> allMessages = target("messages")
@@ -377,7 +377,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void multipleMessageAndTagsTest() {
+    void multipleMessageAndTagsTest() {
         addMessage("test1", "tag1", "tag2");
         addMessage("test2", "tag3", "tag4");
 

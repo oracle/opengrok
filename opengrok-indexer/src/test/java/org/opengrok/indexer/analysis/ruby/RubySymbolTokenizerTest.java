@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link RubySymbolTokenizer} class.
  */
-public class RubySymbolTokenizerTest {
+class RubySymbolTokenizerTest {
 
     /**
      * Test sample.rb v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testRubySymbolStream() throws Exception {
+    void testRubySymbolStream() throws Exception {
         InputStream rbres = getClass().getClassLoader().getResourceAsStream(
             "analysis/ruby/sample.rb");
         assertNotNull(rbres, "despite sample.rb as resource,");

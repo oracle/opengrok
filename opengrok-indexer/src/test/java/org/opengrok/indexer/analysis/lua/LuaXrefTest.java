@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link LuaXref} class.
  */
-public class LuaXrefTest extends XrefTestBase {
+class LuaXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new LuaAnalyzerFactory(),
                 "analysis/lua/sample.lua",
                 "analysis/lua/sample_xref.html",
@@ -43,7 +43,7 @@ public class LuaXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new LuaAnalyzerFactory(),
                 "analysis/lua/truncated.lua",
                 "analysis/lua/truncated_xref.html", null, 1);

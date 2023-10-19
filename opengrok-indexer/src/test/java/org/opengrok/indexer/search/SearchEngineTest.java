@@ -47,13 +47,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Trond Norbye
  */
-public class SearchEngineTest {
+class SearchEngineTest {
 
     static TestRepository repository;
     static File configFile;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
 
@@ -77,7 +77,7 @@ public class SearchEngineTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    static void tearDownClass() throws Exception {
         repository.destroy();
         configFile.delete();
     }
@@ -150,7 +150,7 @@ public class SearchEngineTest {
 
     /* see https://github.com/oracle/opengrok/issues/2030
     @Test
-    public void testSearch() {
+    void testSearch() {
         List<Hit> hits = new ArrayList<>();
 
         SearchEngine instance = new SearchEngine();

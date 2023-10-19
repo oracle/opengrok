@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link PythonXref} class.
  */
-public class PythonXrefTest extends XrefTestBase {
+class PythonXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new PythonAnalyzerFactory(),
                 "analysis/python/sample.py",
                 "analysis/python/sample_xref.html",
@@ -43,7 +43,7 @@ public class PythonXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PythonAnalyzerFactory(),
                 "analysis/python/truncated.py",
                 "analysis/python/truncated_xref.html", null, 1);

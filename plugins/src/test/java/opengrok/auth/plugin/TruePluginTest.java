@@ -35,27 +35,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link TruePlugin}.
  */
-public class TruePluginTest {
+class TruePluginTest {
 
     private TruePlugin plugin;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new TruePlugin();
     }
 
     @Test
-    public void shouldNotThrowOnLoadIfNullArgument() {
+    void shouldNotThrowOnLoadIfNullArgument() {
         plugin.load(null);
     }
 
     @Test
-    public void shouldUnload() {
+    void shouldUnload() {
         plugin.unload();
     }
 
     @Test
-    public void shouldAllowRandomUserForAnyProject() {
+    void shouldAllowRandomUserForAnyProject() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
 
@@ -69,7 +69,7 @@ public class TruePluginTest {
     }
 
     @Test
-    public void shouldAllowRandomUserForAnyGroup() {
+    void shouldAllowRandomUserForAnyGroup() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
 

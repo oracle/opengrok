@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link PoshSymbolTokenizer} class.
  */
-public class PoshSymbolTokenizerTest {
+class PoshSymbolTokenizerTest {
 
     /**
      * Test sample.psm1 v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testPowerShellSymbolStream() throws Exception {
+    void testPowerShellSymbolStream() throws Exception {
         InputStream psres = getClass().getClassLoader().getResourceAsStream(
             "analysis/powershell/sample.psm1");
         assertNotNull(psres, "despite sample.psm1 as resource,");

@@ -35,14 +35,14 @@ import java.util.List;
 /**
  * Tests the {@link TclSymbolTokenizer} class.
  */
-public class TclSymbolTokenizerTest {
+class TclSymbolTokenizerTest {
 
     /**
      * Test sample.tcl v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testTclSymbolStream() throws Exception {
+    void testTclSymbolStream() throws Exception {
         InputStream tclres = getClass().getClassLoader().getResourceAsStream(
             "analysis/tcl/sample.tcl");
         assertNotNull(tclres, "despite sample.tcl as resource,");

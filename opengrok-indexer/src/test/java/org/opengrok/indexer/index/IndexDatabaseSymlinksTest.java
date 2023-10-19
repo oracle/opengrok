@@ -54,13 +54,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
 @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
-public class IndexDatabaseSymlinksTest {
+class IndexDatabaseSymlinksTest {
 
     private static RuntimeEnvironment env;
     private static TestRepository repository;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
         repository = new TestRepository();
@@ -82,21 +82,21 @@ public class IndexDatabaseSymlinksTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         repository.purgeData();
         env.setAllowedSymlinks(new HashSet<>());
         env.setCanonicalRoots(new HashSet<>());
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         env.setAllowedSymlinks(new HashSet<>());
         env.setCanonicalRoots(new HashSet<>());
     }
 
     @Test
-    public void testNoAddedSymlinks() throws IOException, IndexerException {
+    void testNoAddedSymlinks() throws IOException, IndexerException {
         File canonicalSourceRoot = new File(repository.getSourceRoot()).getCanonicalFile();
         Path linksSourceDir = Paths.get(canonicalSourceRoot.getPath(), "links");
 
@@ -115,7 +115,7 @@ public class IndexDatabaseSymlinksTest {
     }
 
     @Test
-    public void testSymlinksWithFullCanonicalRoot() throws IOException, IndexerException {
+    void testSymlinksWithFullCanonicalRoot() throws IOException, IndexerException {
         File externalRoot = new File(repository.getExternalRoot());
 
         /*
@@ -156,7 +156,7 @@ public class IndexDatabaseSymlinksTest {
     }
 
     @Test
-    public void testSymlinksWithOneAddedSymlink() throws IOException, IndexerException {
+    void testSymlinksWithOneAddedSymlink() throws IOException, IndexerException {
         File canonicalSourceRoot = new File(repository.getSourceRoot()).getCanonicalFile();
         Path linksSourceDir = Paths.get(canonicalSourceRoot.getPath(), "links");
         Path gitSourceDir = linksSourceDir.resolve("gt");

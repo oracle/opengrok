@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
-import org.opengrok.indexer.index.IndexerTest;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -53,9 +52,9 @@ class SearchHelperTest {
     RuntimeEnvironment env;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getClassLoader().getResource("sources"));
+        repository.create(SearchHelperTest.class.getClassLoader().getResource("sources"));
 
         env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
@@ -64,7 +63,7 @@ class SearchHelperTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repository.destroy();
     }
 

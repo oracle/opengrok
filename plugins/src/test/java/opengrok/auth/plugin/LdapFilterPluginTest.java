@@ -38,7 +38,7 @@ class LdapFilterPluginTest {
     private LdapFilterPlugin plugin;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         plugin = new LdapFilterPlugin();
     }
 

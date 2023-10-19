@@ -35,18 +35,18 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class IndexerMainTest {
+class IndexerMainTest {
     private TestRepository repository;
 
     @BeforeEach
-    public void setUp() throws IOException, URISyntaxException {
+    void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
         repository.create(HistoryGuru.class.getResource("/repositories"));
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         repository.destroy();
     }
 
@@ -72,7 +72,7 @@ public class IndexerMainTest {
      * Test cleanup of renamed thread pool after indexing with -H.
      */
     @Test
-    public void testMainWithH() {
+    void testMainWithH() {
         System.out.println("Generate index by using command line options with -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
@@ -85,7 +85,7 @@ public class IndexerMainTest {
      * Test cleanup of renamed thread pool after indexing without -H.
      */
     @Test
-    public void testMainWithoutH() {
+    void testMainWithoutH() {
         System.out.println("Generate index by using command line options without -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),

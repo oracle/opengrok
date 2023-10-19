@@ -63,12 +63,12 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
  */
-public class UtilTest {
+class UtilTest {
 
     private static Locale savedLocale;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         // Some methods have different results in different locales.
         // Set locale to en_US for these tests.
         savedLocale = Locale.getDefault();
@@ -76,7 +76,7 @@ public class UtilTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         Locale.setDefault(savedLocale);
         savedLocale = null;
     }

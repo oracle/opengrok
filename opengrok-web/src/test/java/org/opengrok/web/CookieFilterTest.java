@@ -232,7 +232,7 @@ class CookieFilterTest {
     }
 
     @Test
-    public void testNoHeaders() throws IOException, ServletException {
+    void testNoHeaders() throws IOException, ServletException {
         CookieFilter filter = new CookieFilter();
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = new DummyHttpServletResponse();
@@ -246,7 +246,7 @@ class CookieFilterTest {
     }
 
     @Test
-    public void doTest() throws IOException, ServletException {
+    void doTest() throws IOException, ServletException {
         CookieFilter filter = new CookieFilter();
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = new DummyHttpServletResponse();

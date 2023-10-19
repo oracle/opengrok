@@ -50,25 +50,25 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 /**
  * Unit tests for the {@code HistoryContext} class.
  */
-public class HistoryContextTest {
+class HistoryContextTest {
 
     private static TestRepository repositories;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResource("/repositories"));
         RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repositories.destroy();
         repositories = null;
     }
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         TermQuery q1 = new TermQuery(new Term("refs", "isEmpty"));
         TermQuery q2 = new TermQuery(new Term("defs", "isEmpty"));
         TermQuery q3 = new TermQuery(new Term("hist", "isEmpty"));
@@ -89,7 +89,7 @@ public class HistoryContextTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testGetContext3Args() throws Exception {
+    void testGetContext3Args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile").toString();
 
@@ -136,7 +136,7 @@ public class HistoryContextTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testGetContext4args() throws Exception {
+    void testGetContext4args() throws Exception {
         String path = "/mercurial/Makefile";
         Path file = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile");
         String parent = file.getParent().toString();
@@ -182,7 +182,7 @@ public class HistoryContextTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testWriteMatch() throws IOException {
+    void testWriteMatch() throws IOException {
         StringBuilder sb = new StringBuilder();
         HistoryContext.writeMatch(sb, "foo", 0, 3, true, "/foo bar/haf+haf",
                 "ctx", "1", "2");

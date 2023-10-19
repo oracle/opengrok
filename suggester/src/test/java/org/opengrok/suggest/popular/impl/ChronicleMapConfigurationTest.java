@@ -31,10 +31,10 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ChronicleMapConfigurationTest {
+class ChronicleMapConfigurationTest {
 
     @Test
-    public void saveLoadTest() throws IOException {
+    void saveLoadTest() throws IOException {
         ChronicleMapConfiguration conf = new ChronicleMapConfiguration(20, 10);
 
         Path dir = Files.createTempDirectory("opengrok");

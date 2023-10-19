@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * Basic tests for the {@link HostUtil} class. Ideally, these should use mocking to properly verify
  * the exceptions and code flow. Also, positive test is missing.
  */
-public class HostUtilTest {
+class HostUtilTest {
     @Test
     void testInvalidURI() {
         assertFalse(HostUtil.isReachable("htt://localhost:8080/source/", 10, null));

@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link PathUtils}.
  */
-public class PathUtilsTest {
+class PathUtilsTest {
 
     private final List<File> tempDirs = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class PathUtilsTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         try {
             tempDirs.forEach((tempDir) -> {
                 try {
@@ -76,14 +76,14 @@ public class PathUtilsTest {
     }
 
     @Test
-    public void shouldHandleSameInputs() throws IOException {
+    void shouldHandleSameInputs() throws IOException {
         final String USR_BIN = Paths.get("/usr/bin").toString();
         String rel = relativeToCanonical(USR_BIN, USR_BIN);
         assertEquals("", rel, USR_BIN + " rel to itself");
     }
 
     @Test
-    public void shouldHandleEffectivelySameInputs() throws IOException {
+    void shouldHandleEffectivelySameInputs() throws IOException {
         String USR_BIN = Paths.get(Paths.get("/usr/bin").toUri()).toString();
         String rel = relativeToCanonical(USR_BIN + File.separator, USR_BIN);
         assertEquals("", rel, USR_BIN + " rel to ~itself");
@@ -91,7 +91,7 @@ public class PathUtilsTest {
 
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    public void shouldHandleLinksOfArbitraryDepthWithValidation()
+    void shouldHandleLinksOfArbitraryDepthWithValidation()
         throws IOException, ForbiddenSymlinkException {
         // Create real directories
         File sourceRoot = createTemporaryDirectory("srcroot");
@@ -148,7 +148,7 @@ public class PathUtilsTest {
 
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    public void shouldHandleLinksToCanonicalChildrenOfAllowedLinks()
+    void shouldHandleLinksToCanonicalChildrenOfAllowedLinks()
             throws IOException, ForbiddenSymlinkException {
         // Create real directories
         File sourceRoot = createTemporaryDirectory("srcroot");
@@ -183,7 +183,7 @@ public class PathUtilsTest {
 
     @Disabled("macOS has /var symlink, and I also made a second link, `myhome'.")
     @Test
-    public void shouldResolvePrivateVarOnMacOS() throws IOException {
+    void shouldResolvePrivateVarOnMacOS() throws IOException {
         final String MY_VAR_FOLDERS =
             "/var/folders/58/546k9lk08xl56t0059bln0_h0000gp/T/tilde/Documents";
         final String EXPECTED_REL = MY_VAR_FOLDERS.substring("/var/".length());
@@ -194,7 +194,7 @@ public class PathUtilsTest {
 
     @Disabled("For ad-hoc testing with \\ in paths.")
     @Test
-    public void mightResolveBackslashesToo() throws IOException {
+    void mightResolveBackslashesToo() throws IOException {
         final String MY_VAR_FOLDERS =
             "\\var\\folders\\58\\546k9lk08xl56t0059bln0_h0000gp\\T";
         final String EXPECTED_REL = MY_VAR_FOLDERS.substring("/var/".length()).

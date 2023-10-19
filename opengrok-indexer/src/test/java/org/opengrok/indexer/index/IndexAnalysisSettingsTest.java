@@ -34,21 +34,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Represents a test class for {@link IndexAnalysisSettings}.
  */
-public class IndexAnalysisSettingsTest {
+class IndexAnalysisSettingsTest {
 
     private static final String PROJECT_NAME = "foo-1-2-3";
     private static final long ANALYZER_GURU_VERSION = 3;
     private static final int TABSIZE = 17;
 
     @Test
-    public void shouldAffirmIndexAnalysisSettingsObjuid() {
+    void shouldAffirmIndexAnalysisSettingsObjuid() {
         String objuid = QueryBuilder.normalizeDirPath("58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
         assertEquals(objuid, IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID,
                 "IndexAnalysisSettingsDao objuid");
     }
 
     @Test
-    public void shouldRoundTripANullObject() throws IOException, ClassNotFoundException {
+    void shouldRoundTripANullObject() throws IOException, ClassNotFoundException {
         IndexAnalysisSettings obj = new IndexAnalysisSettings();
         byte[] bin = obj.serialize();
 
@@ -60,7 +60,7 @@ public class IndexAnalysisSettingsTest {
     }
 
     @Test
-    public void shouldRoundTripADefinedObject() throws IOException,
+    void shouldRoundTripADefinedObject() throws IOException,
             ClassNotFoundException {
         IndexAnalysisSettings obj = new IndexAnalysisSettings();
         obj.setProjectName(PROJECT_NAME);

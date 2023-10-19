@@ -63,7 +63,7 @@ import org.opengrok.indexer.util.TestRepository;
  * @author Trond Norbye
  * @author Vladimir Kotal
  */
-public class HistoryGuruTest {
+class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
     private static final List<File> FILES = new ArrayList<>();
@@ -72,7 +72,7 @@ public class HistoryGuruTest {
     private static int savedNestingMaximum;
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         env.setAnnotationCacheEnabled(true);
         savedNestingMaximum = env.getNestingMaximum();
@@ -101,12 +101,12 @@ public class HistoryGuruTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         env.setNestingMaximum(savedNestingMaximum);
     }
 

@@ -42,11 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  * Tests the {@link JavaSymbolTokenizer} class.
  * @author Lubos Kosco
  */
-public class JavaSymbolTokenizerTest {
+class JavaSymbolTokenizerTest {
 
     private final AbstractAnalyzer analyzer;
 
-    public JavaSymbolTokenizerTest() {
+    JavaSymbolTokenizerTest() {
         this.analyzer = new JavaAnalyzerFactory().getAnalyzer();
     }
 
@@ -68,7 +68,7 @@ public class JavaSymbolTokenizerTest {
     }
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/java/Sample.jav");
              InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
             String[] termsFor = getTermsFor(r);

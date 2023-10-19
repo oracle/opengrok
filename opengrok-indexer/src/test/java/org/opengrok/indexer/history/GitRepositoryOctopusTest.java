@@ -43,12 +43,12 @@ import java.util.stream.Collectors;
 /**
  * @author austvik
  */
-public class GitRepositoryOctopusTest {
+class GitRepositoryOctopusTest {
 
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(GitRepositoryOctopusTest.class.getResourceAsStream(
                 "/history/git-octopus.zip"));
@@ -56,7 +56,7 @@ public class GitRepositoryOctopusTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         repository.destroy();
         repository = null;
     }
@@ -157,7 +157,7 @@ public class GitRepositoryOctopusTest {
      */
 
     @Test
-    public void testOctopusHistory() throws Exception {
+    void testOctopusHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "git-octopus");
         GitRepository gitRepo = (GitRepository) RepositoryFactory.getRepository(root);
 

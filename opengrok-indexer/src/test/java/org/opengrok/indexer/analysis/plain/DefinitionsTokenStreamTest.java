@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link DefinitionsTokenStream}.
  */
-public class DefinitionsTokenStreamTest {
+class DefinitionsTokenStreamTest {
 
     /**
      * Tests sampleplain.cc v. sampletags_cc with no expand-tabs and
@@ -55,7 +55,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsForRawContentUnsupplemented()
+    void testCppDefinitionsForRawContentUnsupplemented()
             throws IOException {
         Map<Integer, SimpleEntry<String, String>> overrides = new TreeMap<>();
         overrides.put(44, new SimpleEntry<>(",", "parent_def"));
@@ -77,7 +77,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsWithRawContent1() throws IOException {
+    void testCppDefinitionsWithRawContent1() throws IOException {
         testDefinitionsVsContent(false,
             "analysis/c/sample.cc",
             "analysis/c/sampletags_cc", 65, true,
@@ -91,7 +91,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsWithRawContent2() throws IOException {
+    void testCppDefinitionsWithRawContent2() throws IOException {
         testDefinitionsVsContent(true,
             "analysis/c/sample.cc",
             "analysis/c/sampletags_cc", 65, true,

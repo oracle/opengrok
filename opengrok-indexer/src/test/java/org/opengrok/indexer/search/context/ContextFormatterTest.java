@@ -36,7 +36,7 @@ import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 /**
  * Represents a container for tests of {@link ContextFormatter}.
  */
-public class ContextFormatterTest {
+class ContextFormatterTest {
 
     private static final String DOC = "    Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
             "Mauris vel tortor vel nisl efficitur fermentum nec vel erat.\n" +
@@ -54,7 +54,7 @@ public class ContextFormatterTest {
             "ghi";
 
     @Test
-    public void testLineMatchFormatted() {
+    void testLineMatchFormatted() {
         final String WORD = "gravida";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -99,7 +99,7 @@ public class ContextFormatterTest {
     }
 
     @Test
-    public void testLinesSpanningMatchFormatted() {
+    void testLinesSpanningMatchFormatted() {
         Passage p = new Passage();
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());
@@ -128,7 +128,7 @@ public class ContextFormatterTest {
     }
 
     @Test
-    public void testDualElidedMatchFormatted() {
+    void testDualElidedMatchFormatted() {
         final String WORD = "dignissim";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -192,7 +192,7 @@ public class ContextFormatterTest {
     }
 
     @Test
-    public void testLeftElidedMatchFormatted() {
+    void testLeftElidedMatchFormatted() {
         final String WORD = "ultricies";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -261,7 +261,7 @@ public class ContextFormatterTest {
     }
 
     @Test
-    public void testRightElidedMatchFormatted() {
+    void testRightElidedMatchFormatted() {
         final String WORD = "Maecenas";
         int woff = DOC.indexOf(WORD);
         assertTrue(woff >= 0, WORD);
@@ -327,7 +327,7 @@ public class ContextFormatterTest {
     }
 
     @Test
-    public void testBoundsProblemFormatted() {
+    void testBoundsProblemFormatted() {
         final String PHRASE = "efficitur vitae";
         int phOff = DOC.indexOf(PHRASE);
         assertTrue(phOff >= 0, PHRASE);

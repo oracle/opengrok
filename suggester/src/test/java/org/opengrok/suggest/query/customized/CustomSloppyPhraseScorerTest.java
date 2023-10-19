@@ -50,9 +50,9 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-public class CustomSloppyPhraseScorerTest {
+class CustomSloppyPhraseScorerTest {
 
-    public static void test(
+    static void test(
             final int slop,
             final int offset,
             final String[] terms,
@@ -107,12 +107,12 @@ public class CustomSloppyPhraseScorerTest {
     }
 
     @Test
-    public void simpleTestAfter() throws IOException {
+    void simpleTestAfter() throws IOException {
         test(2, 2, new String[] {"five", "six"}, new Integer[] {7, 8, 9});
     }
 
     @Test
-    public void simpleTestBefore() throws IOException {
+    void simpleTestBefore() throws IOException {
         test(2, -1, new String[] {"five", "six"}, new Integer[] {2, 3, 4});
     }
 

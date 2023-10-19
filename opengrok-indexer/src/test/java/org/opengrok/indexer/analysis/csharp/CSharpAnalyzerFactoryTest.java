@@ -54,7 +54,7 @@ import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanal
  *
  * @author Tomas Kotal
  */
-public class CSharpAnalyzerFactoryTest {
+class CSharpAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
@@ -70,7 +70,7 @@ public class CSharpAnalyzerFactoryTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         ctags = new Ctags();
 
         repository = new TestRepository();
@@ -85,7 +85,7 @@ public class CSharpAnalyzerFactoryTest {
     }
 
     @AfterAll
-    public static void tearDownClass() {
+    static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link TclXref} class.
  */
-public class TclXrefTest extends XrefTestBase {
+class TclXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new TclAnalyzerFactory(),
                 "analysis/tcl/sample.tcl",
                 "analysis/tcl/sample_xref.html",
@@ -43,7 +43,7 @@ public class TclXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TclAnalyzerFactory(),
                 "analysis/tcl/truncated.tcl",
                 "analysis/tcl/truncated_xref.html", null, 1);

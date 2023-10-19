@@ -75,13 +75,13 @@ class IndexCheckTest {
     private Configuration configuration;
 
     @BeforeAll
-    public static void setUpClass() {
+    static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
     @BeforeEach
-    public void setUp() throws IOException, URISyntaxException {
+    void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResource("/repositories"));
 
@@ -91,7 +91,7 @@ class IndexCheckTest {
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    void tearDown() throws IOException {
         repository.destroy();
     }
 

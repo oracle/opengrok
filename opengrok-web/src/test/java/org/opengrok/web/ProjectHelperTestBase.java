@@ -47,7 +47,7 @@ import org.opengrok.indexer.web.DummyHttpServletRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ProjectHelperTestBase {
+class ProjectHelperTestBase {
 
     protected static Map<String, Group> groups;
     protected static Map<String, Project> projects;
@@ -258,7 +258,7 @@ public class ProjectHelperTestBase {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         assertEquals(4, env.getGroups().size(), "Should contain 4 groups");
         assertEquals(40, env.getProjects().size(), "Should contain 40 project");
         assertEquals(20, env.getRepositories().size(), "Should contain 20 repositories");
@@ -287,7 +287,7 @@ public class ProjectHelperTestBase {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         env.getAuthorizationFramework().removeAll();
     }
 }

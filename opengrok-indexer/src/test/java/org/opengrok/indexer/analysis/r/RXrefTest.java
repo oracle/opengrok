@@ -33,10 +33,10 @@ import java.io.IOException;
 /**
  * Represents a container for tests of {@link RXref}.
  */
-public class RXrefTest extends XrefTestBase {
+class RXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new RAnalyzerFactory(),
                 "analysis/r/sample.r",
                 "analysis/r/sample_xref.html",
@@ -44,7 +44,7 @@ public class RXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new RAnalyzerFactory(),
                 "analysis/r/truncated.r",
                 "analysis/r/truncated_xref.html", null, 1);

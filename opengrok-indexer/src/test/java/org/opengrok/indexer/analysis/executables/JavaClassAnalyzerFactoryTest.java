@@ -36,14 +36,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Represents a container for tests of {@link JavaClassAnalyzerFactory}.
  */
-public class JavaClassAnalyzerFactoryTest {
+class JavaClassAnalyzerFactoryTest {
 
     /**
      * Tests a Java .class file.
      * @throws IOException I/O exception
      */
     @Test
-    public void testJavaClassWrtAnalyzerGuru() throws IOException {
+    void testJavaClassWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/javaclass.bin");
         assertNotNull(res, "despite inclusion locally,");
@@ -59,7 +59,7 @@ public class JavaClassAnalyzerFactoryTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testDylibCafebabeWrtAnalyzerGuru() throws IOException {
+    void testDylibCafebabeWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/fat.dylib");
         assertNotNull(res, "despite inclusion locally,");

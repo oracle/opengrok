@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link CxxXref} class.
  */
-public class CxxXrefTest extends XrefTestBase {
+class CxxXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new CxxAnalyzerFactory(),
                 "analysis/c/sample.cc",
                 "analysis/c/cc_xrefres.html",

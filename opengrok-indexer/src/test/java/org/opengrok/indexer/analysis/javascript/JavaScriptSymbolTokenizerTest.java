@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Tests the {@link JavaScriptSymbolTokenizer} class.
  */
-public class JavaScriptSymbolTokenizerTest {
+class JavaScriptSymbolTokenizerTest {
 
     /**
      * Test sample.js v. samplesymbols.txt
@@ -43,17 +43,17 @@ public class JavaScriptSymbolTokenizerTest {
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testJavaScriptSymbolStream() throws Exception {
+    void testJavaScriptSymbolStream() throws Exception {
         testSymbols("analysis/javascript/sample.js", "analysis/javascript/samplesymbols.txt");
     }
 
     @Test
-    public void testRegexpWithModifiersSymbols() throws Exception {
+    void testRegexpWithModifiersSymbols() throws Exception {
         testSymbols("analysis/javascript/regexp_modifiers.js", "analysis/javascript/regexp_modifiers_symbols.txt");
     }
 
     @Test
-    public void testRegexpSymbols() throws Exception {
+    void testRegexpSymbols() throws Exception {
         testSymbols("analysis/javascript/regexp_plain.js", "analysis/javascript/regexp_plain_symbols.txt");
     }
 
