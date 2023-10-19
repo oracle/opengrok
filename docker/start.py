@@ -55,6 +55,7 @@ from opengrok_tools.utils.opengrok import (
     add_project,
     delete_project,
     get_configuration,
+    get_repos,
     list_projects,
 )
 from opengrok_tools.utils.readconfig import read_config
@@ -265,6 +266,12 @@ def refresh_projects(logger, uri, api_timeout):
                 action = "Adding"
             logger.info(f"{action} project {item}")
             add_project(logger, item, uri, timeout=api_timeout)
+
+            if logger.level == logging.DEBUG:
+                repos = get_repos(logger, item, uri)
+                if repos:
+                    logger.debug("Project {} has these repositories: {}".
+                                 format(item, repos))
 
     # Remove projects that no longer have source.
     for item in webapp_projects:
