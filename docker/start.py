@@ -270,8 +270,9 @@ def refresh_projects(logger, uri, api_timeout):
             if logger.level == logging.DEBUG:
                 repos = get_repos(logger, item, uri)
                 if repos:
-                    logger.debug("Project {} has these repositories: {}".
-                                 format(item, repos))
+                    logger.debug(
+                        "Project {} has these repositories: {}".format(item, repos)
+                    )
 
     # Remove projects that no longer have source.
     for item in webapp_projects:
