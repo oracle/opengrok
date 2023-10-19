@@ -260,9 +260,9 @@ def refresh_projects(logger, uri, api_timeout):
         logger.debug("Got item {}".format(item))
         if os.path.isdir(os.path.join(src_root, item)):
             if item in webapp_projects:
-                action="Refreshing"
+                action = "Refreshing"
             else:
-                action="Adding"
+                action = "Adding"
             logger.info(f"{action} project {item}")
             add_project(logger, item, uri, timeout=api_timeout)
 
