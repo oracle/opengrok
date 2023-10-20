@@ -47,8 +47,7 @@ LABEL maintainer="https://github.com/oracle/opengrok"
 # Add Perforce apt source.
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y gnupg2 && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+    apt-get install --no-install-recommends -y gnupg2
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
@@ -60,8 +59,7 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
     unzip inotify-tools python3 python3-pip \
-    python3-venv python3-setuptools openssh-client libyaml-dev && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+    python3-venv python3-setuptools openssh-client libyaml-dev
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
