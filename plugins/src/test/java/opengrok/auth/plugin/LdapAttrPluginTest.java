@@ -52,6 +52,7 @@ import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -240,6 +241,6 @@ class LdapAttrPluginTest {
         params.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
         params.put(LdapAttrPlugin.ATTR_PARAM, "mail");
         params.put(LdapAttrPlugin.INSTANCE_PARAM, "42");
-        plugin.load(params);
+        assertDoesNotThrow(() -> plugin.load(params));
     }
 }

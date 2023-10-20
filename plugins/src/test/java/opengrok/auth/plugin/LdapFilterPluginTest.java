@@ -138,6 +138,6 @@ class LdapFilterPluginTest {
         Map<String, Object> params = getParamsMap();
         params.put(LdapFilterPlugin.FILTER_PARAM, "foo:toUpperCase");
         params.put(LdapFilterPlugin.INSTANCE, "42");
-        plugin.load(params);
+        assertDoesNotThrow(() -> plugin.load(params));
     }
 }
