@@ -18,12 +18,15 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LdapFilterPluginTest {
@@ -112,5 +116,28 @@ class LdapFilterPluginTest {
         assertThrows(UnsupportedOperationException.class, () ->
                 plugin.loadTransforms("foo:toUpperCase,ugly:nice")
         );
+    }
+
+    private Map<String, Object> getParamsMap() {
+        Map<String, Object> params = new TreeMap<>();
+        params.put(AbstractLdapPlugin.CONFIGURATION_PARAM,
+                Objects.requireNonNull(getClass().getResource("config.xml")).getFile());
+
+        return params;
+    }
+
+    @Test
+    void loadTestNegativeNoFilterParam() {
+        Map<String, Object> params = getParamsMap();
+        assertNull(params.get(LdapFilterPlugin.FILTER_PARAM));
+        assertThrows(NullPointerException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestPositive() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapFilterPlugin.FILTER_PARAM, "foo:toUpperCase");
+        params.put(LdapFilterPlugin.INSTANCE, "42");
+        plugin.load(params);
     }
 }

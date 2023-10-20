@@ -44,7 +44,7 @@ public class UserPlugin implements IAuthorizationPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(UserPlugin.class.getName());
 
-    private static final String DECODER_CLASS_PARAM = "decoder";
+    static final String DECODER_CLASS_PARAM = "decoder";
 
     public static final String REQUEST_ATTR = "opengrok-user-plugin-user";
 
