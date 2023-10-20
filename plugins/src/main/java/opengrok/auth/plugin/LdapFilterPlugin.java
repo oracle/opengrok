@@ -56,7 +56,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     protected static final String FILTER_PARAM = "filter";
     protected static final String TRANSFORMS_PARAM = "transforms";
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-filter-plugin-allowed";
-    private static final String INSTANCE = "instance";
+    static final String INSTANCE = "instance";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
     /**

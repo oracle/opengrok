@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -31,9 +31,14 @@ import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
+import java.util.Map;
+import java.util.TreeMap;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -97,15 +102,36 @@ class UserPluginTest {
         };
     }
 
-    Group createGroup(String name) {
+    private Group createGroup(String name) {
         Group g = new Group();
         g.setName(name);
         return g;
     }
 
-    Project createProject(String name) {
+    private Project createProject(String name) {
         Project g = new Project();
         g.setName(name);
         return g;
+    }
+
+    @Test
+    void loadTestNegativeNoDecoderParam() {
+        Map<String, Object> params = new TreeMap<>();
+        params.put("foo", "bar");
+        assertThrows(NullPointerException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestNegativeInvalidDecoder() {
+        Map<String, Object> params = new TreeMap<>();
+        params.put(UserPlugin.DECODER_CLASS_PARAM, "foo");
+        assertThrows(RuntimeException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestPositive() {
+        Map<String, Object> params = new TreeMap<>();
+        params.put(UserPlugin.DECODER_CLASS_PARAM, "opengrok.auth.plugin.decoders.MellonHeaderDecoder");
+        assertDoesNotThrow(() -> plugin.load(params));
     }
 }
