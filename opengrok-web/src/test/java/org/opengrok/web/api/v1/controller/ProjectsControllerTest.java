@@ -199,7 +199,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // Add the project.
         env.setScanningDepth(3);
 
-        addProject("mercurial");
+        try (Response response = addProject("mercurial")) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         // Check that the project was added properly.
         assertTrue(env.getProjects().containsKey("mercurial"));
@@ -224,7 +226,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // At the same time, it checks that multiple projects can be added
         // with single message.
 
-        addProject("git");
+        try (Response response = addProject("git")) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         assertEquals(2, env.getProjects().size());
         assertEquals(3, env.getRepositories().size());
@@ -370,7 +374,10 @@ class ProjectsControllerTest extends OGKJerseyTest {
     void testDeleteCache(boolean historyCache) throws Exception {
         final String cacheName = historyCache ? "historycache" : "annotationcache";
         final String projectName = "git";
-        addProject(projectName);
+
+        try (Response response = addProject(projectName)) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         Indexer.getInstance().prepareIndexer(
                 env,
@@ -424,7 +431,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         String projectName = "mercurial";
 
         // When a project is added, it should be marked as not indexed.
-        addProject(projectName);
+        try (Response response = addProject(projectName)) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         assertFalse(env.getProjects().get(projectName).isIndexed());
 
@@ -480,11 +489,15 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
     @Test
     void testList() throws Exception {
-        addProject("mercurial");
+        try (Response response = addProject("mercurial")) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
         assertEquals(Response.Status.Family.SUCCESSFUL, markIndexed("mercurial").getStatusInfo().getFamily());
 
         // Add another project.
-        addProject("git");
+        try (Response response = addProject("git")) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         GenericType<List<String>> type = new GenericType<>() {
         };
@@ -531,7 +544,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 "clone", mercurialRoot.getAbsolutePath(),
                 mercurialRoot.getAbsolutePath() + File.separator + "closed");
 
-        addProject("mercurial");
+        try (Response response = addProject("mercurial")) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
 
         // Get repositories of the project.
         List<String> repos = target("projects")
@@ -565,7 +580,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
     @Test
     void testSetIndexed() throws Exception {
         String project = "git";
-        addProject(project);
+        try (Response response = addProject(project)) {
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        }
         assertEquals(1, env.getProjectList().size());
 
         env.getProjects().get(project).setIndexed(false);
@@ -585,7 +602,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         String[] projects = new String[] {"mercurial", "git"};
 
         for (String proj : projects) {
-            addProject(proj);
+            try (Response response = addProject(proj)) {
+                assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+            }
         }
 
         assertEquals(2, env.getProjectList().size());

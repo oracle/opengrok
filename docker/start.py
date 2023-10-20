@@ -55,6 +55,7 @@ from opengrok_tools.utils.opengrok import (
     add_project,
     delete_project,
     get_configuration,
+    get_repos,
     list_projects,
 )
 from opengrok_tools.utils.readconfig import read_config
@@ -255,15 +256,25 @@ def refresh_projects(logger, uri, api_timeout):
     logger.debug("Projects from the web app: {}".format(webapp_projects))
     src_root = OPENGROK_SRC_ROOT
 
-    # Add projects.
+    # Add projects for top-level directories under source root.
     for item in os.listdir(src_root):
         logger.debug("Got item {}".format(item))
         if os.path.isdir(os.path.join(src_root, item)):
-            if item not in webapp_projects:
-                logger.info("Adding project {}".format(item))
-                add_project(logger, item, uri, timeout=api_timeout)
+            if item in webapp_projects:
+                action = "Refreshing"
+            else:
+                action = "Adding"
+            logger.info(f"{action} project {item}")
+            add_project(logger, item, uri, timeout=api_timeout)
 
-    # Remove projects
+            if logger.level == logging.DEBUG:
+                repos = get_repos(logger, item, uri)
+                if repos:
+                    logger.debug(
+                        "Project {} has these repositories: {}".format(item, repos)
+                    )
+
+    # Remove projects that no longer have source.
     for item in webapp_projects:
         if not os.path.isdir(os.path.join(src_root, item)):
             logger.info("Deleting project {}".format(item))
