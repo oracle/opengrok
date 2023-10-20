@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class LuaXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new LuaAnalyzerFactory(),
                 "analysis/lua/sample.lua",
@@ -43,6 +44,7 @@ class LuaXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new LuaAnalyzerFactory(),
                 "analysis/lua/truncated.lua",

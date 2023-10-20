@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class CXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new CAnalyzerFactory(),
                 "analysis/c/sample.c",

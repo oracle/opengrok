@@ -33,6 +33,7 @@ import java.io.IOException;
 class PerlXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new PerlAnalyzerFactory(),
                 "analysis/perl/sample.pl",
@@ -40,6 +41,7 @@ class PerlXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncateStringSpan() throws IOException {
         writeAndCompare(new PerlAnalyzerFactory(),
                 "analysis/perl/truncated.pl",

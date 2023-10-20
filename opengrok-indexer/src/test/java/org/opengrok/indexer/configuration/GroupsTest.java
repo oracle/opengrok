@@ -90,8 +90,8 @@ class GroupsTest {
 
         grp = findGroup(groups, "new fantastic group");
         assertNotNull(grp);
-        assertEquals(grp.getName(), "new fantastic group");
-        assertEquals(grp.getPattern(), "some pattern");
+        assertEquals("new fantastic group", grp.getName());
+        assertEquals("some pattern", grp.getPattern());
     }
 
     @Test
@@ -118,8 +118,8 @@ class GroupsTest {
         grp = findGroup(groups, "new fantastic group");
         assertNotNull(grp);
         assertNotNull(grp.getParent());
-        assertEquals(grp.getName(), "new fantastic group");
-        assertEquals(grp.getPattern(), "some pattern");
+        assertEquals("new fantastic group", grp.getName());
+        assertEquals("some pattern", grp.getPattern());
     }
 
     @Test
@@ -127,8 +127,8 @@ class GroupsTest {
         Map<String, Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "apache");
         assertNotNull(grp);
-        assertEquals(grp.getName(), "apache");
-        assertEquals(grp.getPattern(), "apache-.*");
+        assertEquals("apache", grp.getName());
+        assertEquals("apache-.*", grp.getPattern());
 
         invokeMethod("modifyGroup",
                 new Class<?>[]{Map.class, String.class, String.class, String.class},
@@ -136,8 +136,8 @@ class GroupsTest {
 
         grp = findGroup(groups, "apache");
         assertNotNull(grp);
-        assertEquals(grp.getName(), "apache");
-        assertEquals(grp.getPattern(), "different pattern");
+        assertEquals("apache", grp.getName());
+        assertEquals("different pattern", grp.getPattern());
     }
 
     @Test

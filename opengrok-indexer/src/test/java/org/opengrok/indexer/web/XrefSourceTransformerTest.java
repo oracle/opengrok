@@ -28,6 +28,9 @@ import java.io.StringWriter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,57 +69,29 @@ class XrefSourceTransformerTest {
         xform.setWriter(out);
     }
 
-    @Test
-    void testDefaultContext1() throws IOException {
-        xform.setContextPath(null);
-        while (xform.yylex()) {
-        }
-        String res = out.toString();
-        assertEquals(XREF_FRAG_DFLT, res, "context=null");
-    }
-
-    @Test
-    void testDefaultContext2() throws IOException {
-        xform.setContextPath("source");
-        while (xform.yylex()) {
-        }
-        String res = out.toString();
-        assertEquals(XREF_FRAG_DFLT, res, "context=source");
-    }
-
-    @Test
-    void testDefaultContext3() throws IOException {
-        xform.setContextPath("/source");
-        while (xform.yylex()) {
-        }
-        String res = out.toString();
-        assertEquals(XREF_FRAG_DFLT, res, "context=/source");
-    }
-
-    @Test
-    void testDefaultContext4() throws IOException {
-        xform.setContextPath("/source/");
-        while (xform.yylex()) {
-        }
-        String res = out.toString();
-        assertEquals(XREF_FRAG_DFLT, res, "context=/source/");
+    @ParameterizedTest
+    @ValueSource(strings = {"source", "/source", "/source/"})
+    @NullSource
+    void testDefaultContext(String contextString) throws IOException {
+        var res = getXrefString(contextString);
+        assertEquals(XREF_FRAG_DFLT, res, "context=" + contextString);
     }
 
     @Test
     void testSvcContext() throws IOException {
-        xform.setContextPath("svc");
-        while (xform.yylex()) {
-        }
-        String res = out.toString();
+        var res = getXrefString("svc");
         assertEquals(XREF_FRAG_SVC, res, "context=svc");
     }
 
     @Test
     void testRootContext() throws IOException {
-        xform.setContextPath("/");
+        var res = getXrefString("/");
+        assertEquals(XREF_FRAG_ROOT, res, "context=/");
+    }
+    private String getXrefString(String context) throws IOException {
+        xform.setContextPath(context);
         while (xform.yylex()) {
         }
-        String res = out.toString();
-        assertEquals(XREF_FRAG_ROOT, res, "context=/");
+        return out.toString();
     }
 }

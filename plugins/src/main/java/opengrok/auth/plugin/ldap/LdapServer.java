@@ -65,7 +65,7 @@ public class LdapServer implements Serializable {
     private int interval = 10 * 1000;
 
     private final Hashtable<String, String> env;
-    private LdapContext ctx;
+    private transient LdapContext ctx;
     private long errorTimestamp = 0;
 
     public LdapServer() {
@@ -160,16 +160,13 @@ public class LdapServer implements Serializable {
                 return 636;
             case "ldap":
                 return 389;
+            default: return -1;
         }
-
-        return -1;
     }
 
     private boolean isReachable(InetAddress addr, int port, int timeOutMillis) {
-        try {
-            try (Socket soc = new Socket()) {
-                soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
-            }
+        try (Socket soc = new Socket()) {
+            soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
             return true;
         } catch (IOException e) {
             return false;
@@ -275,7 +272,7 @@ public class LdapServer implements Serializable {
                 LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
                 errorTimestamp = System.currentTimeMillis();
                 close();
-                return ctx = null;
+                ctx = null;
             }
         }
 

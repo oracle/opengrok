@@ -34,6 +34,7 @@ import java.io.IOException;
 class HCLXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new HCLAnalyzerFactory(),
                 "analysis/hcl/sample.hcl",
@@ -41,6 +42,7 @@ class HCLXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new HCLAnalyzerFactory(),
                 "analysis/hcl/truncated.hcl",

@@ -42,6 +42,7 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -88,7 +89,9 @@ class LdapUserPluginTest {
     void loadTestPositive() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, "mail");
-        plugin.load(params);
+        assertDoesNotThrow(() ->
+                plugin.load(params)
+        );
     }
 
     @Test

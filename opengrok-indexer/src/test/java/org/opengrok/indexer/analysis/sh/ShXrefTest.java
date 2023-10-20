@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class ShXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new ShAnalyzerFactory(),
                 "analysis/sh/sample.sh",
@@ -43,6 +44,7 @@ class ShXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new ShAnalyzerFactory(),
                 "analysis/sh/truncated.sh",

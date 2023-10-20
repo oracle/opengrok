@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -152,7 +153,7 @@ class HistoryTest {
         ArrayList<HistoryEntry> serialisableEntryList = new ArrayList<>(entries);
         History history = new History(serialisableEntryList);
         File tempFile = File.createTempFile("tmpHistory1", "", temporaryPath.toFile());
-        FileHistoryCache.writeHistoryTo(history, tempFile);
+        assertDoesNotThrow( () -> FileHistoryCache.writeHistoryTo(history, tempFile));
         // TODO: mock the repository
         // History deserialised = FileHistoryCache.readHistory(tempFile, repository);
         // assertEquals(history, deserialised);

@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class PascalXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new PascalAnalyzerFactory(),
                 "analysis/pascal/sample.pas",
@@ -43,6 +44,7 @@ class PascalXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PascalAnalyzerFactory(),
                 "analysis/pascal/truncated.pas",

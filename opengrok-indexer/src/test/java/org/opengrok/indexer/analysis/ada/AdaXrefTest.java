@@ -33,6 +33,7 @@ import java.io.IOException;
 class AdaXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new AdaAnalyzerFactory(),
                 "analysis/ada/sample.adb",

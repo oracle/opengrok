@@ -40,6 +40,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class RubyXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new RubyAnalyzerFactory(),
                 "analysis/ruby/sample.rb",

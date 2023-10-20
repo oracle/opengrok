@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -166,14 +167,11 @@ public class LdapFacade extends AbstractLdapProvider {
         }
 
         private void addAttrToMap(Map<String, Set<String>> map, Attribute attr) throws NamingException {
-            if (!map.containsKey(attr.getID())) {
-                map.put(attr.getID(), new TreeSet<>());
-            }
+            map.computeIfAbsent(attr.getID(), key -> new TreeSet<>());
 
             final Set<String> valueSet = map.get(attr.getID());
-
-            for (NamingEnumeration<?> values = attr.getAll(); values.hasMore(); ) {
-                valueSet.add((String) values.next());
+            for (NamingEnumeration<?> attrAll = attr.getAll(); attrAll.hasMore(); ) {
+                valueSet.add((String) attrAll.next());
             }
         }
     }
@@ -363,10 +361,8 @@ public class LdapFacade extends AbstractLdapProvider {
             LOGGER.log(Level.SEVERE, "Tried all LDAP servers in a pool but no server works");
             errorTimestamp = System.currentTimeMillis();
             reported = false;
-            WebHook hook;
-            if ((hook = webHooks.getFail()) != null) {
-                hook.post();
-            }
+            Optional.ofNullable(webHooks.getFail())
+                    .ifPresent(WebHook::post);
             throw new LdapException("Tried all LDAP servers in a pool but no server works");
         }
 
@@ -385,10 +381,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 reported = false;
                 if (errorTimestamp > 0) {
                     errorTimestamp = 0;
-                    WebHook hook;
-                    if ((hook = webHooks.getRecover()) != null) {
-                        hook.post();
-                    }
+                    Optional.ofNullable(webHooks.getRecover())
+                            .ifPresent(WebHook::post);
                 }
 
                 return new LdapSearchResult<>(sr.getNameInNamespace(), processResult(sr, mapper));
@@ -422,17 +416,19 @@ public class LdapFacade extends AbstractLdapProvider {
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } finally {
-            if (namingEnum != null) {
-                try {
-                    namingEnum.close();
-                } catch (NamingException e) {
-                    LOGGER.log(Level.WARNING,
-                            "failed to close search result enumeration");
-                }
-            }
+            Optional.ofNullable(namingEnum)
+                    .ifPresent(this::closeNamingEnum);
         }
 
         return null;
+    }
+    private void closeNamingEnum(NamingEnumeration<?> namingEnum) {
+        try {
+            namingEnum.close();
+        } catch (NamingException e) {
+            LOGGER.log(Level.WARNING,
+                    "failed to close search result enumeration");
+        }
     }
 
     private void closeActualServer() {

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,7 +50,7 @@ class WebappListenerTest {
         ServletRequestEvent event = new ServletRequestEvent(servletContext, req);
 
         wl.requestInitialized(event);
-        wl.requestDestroyed(event);
+        assertDoesNotThrow(() -> wl.requestDestroyed(event));
     }
 
     @Test

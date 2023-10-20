@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class LispXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new LispAnalyzerFactory(),
                 "analysis/lisp/sample.lsp",
@@ -43,6 +44,7 @@ class LispXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new LispAnalyzerFactory(),
                 "analysis/lisp/truncated.lsp",

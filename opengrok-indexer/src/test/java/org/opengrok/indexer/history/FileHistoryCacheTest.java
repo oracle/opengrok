@@ -61,7 +61,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
@@ -1038,7 +1037,7 @@ class FileHistoryCacheTest {
                 collect(Collectors.toList());
 
         assertTrue(spyCache.fillLastHistoryEntries(directoryEntries));
-        Mockito.verify(spyCache, never()).getLastHistoryEntry(ArgumentMatchers.eq(subDir));
+        Mockito.verify(spyCache, never()).getLastHistoryEntry(subDir);
 
         assertEquals(directoryEntries.size() - 3,
                 (int) directoryEntries.stream().filter(e -> e.getDate() != null).count());

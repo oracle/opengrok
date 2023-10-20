@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class PLSQLXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new PLSQLAnalyzerFactory(),
                 "analysis/sql/sample.pls",
@@ -43,6 +44,7 @@ class PLSQLXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PLSQLAnalyzerFactory(),
                 "analysis/sql/truncated.pls",

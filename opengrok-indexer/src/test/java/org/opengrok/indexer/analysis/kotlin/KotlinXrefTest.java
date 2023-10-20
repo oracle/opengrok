@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class KotlinXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new KotlinAnalyzerFactory(),
                 "analysis/kotlin/sample.kt",
@@ -43,6 +44,7 @@ class KotlinXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new KotlinAnalyzerFactory(),
                 "analysis/kotlin/truncated.kt",

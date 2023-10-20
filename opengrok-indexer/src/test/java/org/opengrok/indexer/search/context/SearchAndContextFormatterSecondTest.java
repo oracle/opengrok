@@ -67,7 +67,7 @@ import org.opengrok.indexer.util.IOUtils;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-class SearchAndContextFormatterTest2 {
+class SearchAndContextFormatterSecondTest {
 
     private static final int TABSIZE = 8;
 

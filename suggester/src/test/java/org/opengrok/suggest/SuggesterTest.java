@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -104,37 +105,35 @@ class SuggesterTest {
 
     @Test
     void testNullSuggesterDir() {
+        var terminationDuration = Duration.ofMinutes(5);
         assertThrows(IllegalArgumentException.class,
-                () -> new Suggester(null, 10, Duration.ofMinutes(5), false,
+                () -> new Suggester(null, 10, terminationDuration, false,
                         true, null, Integer.MAX_VALUE, 1, registry,
                         false));
     }
 
     @Test
     void testNullDuration() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Path tempFile = Files.createTempFile("opengrok", "test");
-            try {
-                new Suggester(tempFile.toFile(), 10, null, false,
-                        true, null, Integer.MAX_VALUE, 1, registry,
-                        false);
-            } finally {
-                tempFile.toFile().delete();
-            }
-        });
+        assertThrows(IllegalArgumentException.class, () -> createSuggester(null));
     }
 
     @Test
     void testNegativeDuration() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Path tempFile = Files.createTempFile("opengrok", "test");
-            try {
-                new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false,
-                        true, null, Integer.MAX_VALUE, 1, registry, false);
-            } finally {
-                tempFile.toFile().delete();
-            }
-        });
+        assertThrows(IllegalArgumentException.class, () -> createSuggester( -4L));
+    }
+
+    private void createSuggester(Long duration) throws IOException {
+        Path tempFile = Files.createTempFile("opengrok", "test");
+        var objDuration = Optional.ofNullable(duration)
+                                        .map(Duration::ofMinutes)
+                                        .orElse(null);
+        try {
+            new Suggester(tempFile.toFile(), 10, objDuration, false,
+                    true, null, Integer.MAX_VALUE, 1, registry,
+                    false);
+        } finally {
+            tempFile.toFile().delete();
+        }
     }
 
     private SuggesterTestData initSuggester() throws IOException {

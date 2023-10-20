@@ -32,6 +32,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.framework.PluginClassLoader;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -61,10 +62,10 @@ class PluginClassLoaderTest {
     void testProhibitedNames() throws ClassNotFoundException {
         PluginClassLoader instance = new PluginClassLoader(null);
 
-        instance.loadClass("org.opengrok.indexer.configuration.Group");
-        instance.loadClass("org.opengrok.indexer.configuration.Project");
-        instance.loadClass("org.opengrok.indexer.authorization.IAuthorizationPlugin");
-        instance.loadClass("org.opengrok.indexer.configuration.RuntimeEnvironment");
+        assertDoesNotThrow(() -> instance.loadClass("org.opengrok.indexer.configuration.Group"));
+        assertDoesNotThrow(() -> instance.loadClass("org.opengrok.indexer.configuration.Project"));
+        assertDoesNotThrow(() -> instance.loadClass("org.opengrok.indexer.authorization.IAuthorizationPlugin"));
+        assertDoesNotThrow(() -> instance.loadClass("org.opengrok.indexer.configuration.RuntimeEnvironment"));
     }
 
     @Test

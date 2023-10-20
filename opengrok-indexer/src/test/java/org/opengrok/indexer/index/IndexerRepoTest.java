@@ -171,7 +171,7 @@ class IndexerRepoTest {
 
         // Check the repository paths.
         List<RepositoryInfo> repos = env.getRepositories();
-        assertEquals(repos.size(), 1);
+        assertEquals(1, repos.size());
         RepositoryInfo repo = repos.get(0);
         assertEquals(File.separator + SYMLINK, repo.getDirectoryNameRelative());
         String epath = sourceRoot.toString() + File.separator + SYMLINK;

@@ -58,12 +58,12 @@ class ScriptsTest {
         List<Script> listScripts = new ArrayList<>();
         scripts.forEach(listScripts::add);
 
-        assertEquals(listScripts.get(0).getScriptData(), "http://example.com/main1.js");
-        assertEquals(listScripts.get(0).getPriority(), 0);
-        assertEquals(listScripts.get(1).getScriptData(), "http://example.com/main2.js");
-        assertEquals(listScripts.get(1).getPriority(), 0);
-        assertEquals(listScripts.get(2).getScriptData(), "http://example.com/main3.js");
-        assertEquals(listScripts.get(2).getPriority(), 0);
+        assertEquals("http://example.com/main1.js", listScripts.get(0).getScriptData());
+        assertEquals(0, listScripts.get(0).getPriority());
+        assertEquals("http://example.com/main2.js", listScripts.get(1).getScriptData());
+        assertEquals(0, listScripts.get(1).getPriority());
+        assertEquals("http://example.com/main3.js", listScripts.get(2).getScriptData());
+        assertEquals(0, listScripts.get(2).getPriority());
     }
 
     @Test
@@ -77,12 +77,12 @@ class ScriptsTest {
         List<Script> listScripts = new ArrayList<>();
         scripts.forEach(listScripts::add);
 
-        assertEquals(listScripts.get(0).getScriptData(), "http://example.com/main2.js");
-        assertEquals(listScripts.get(0).getPriority(), 1);
-        assertEquals(listScripts.get(1).getScriptData(), "http://example.com/main3.js");
-        assertEquals(listScripts.get(1).getPriority(), 2);
-        assertEquals(listScripts.get(2).getScriptData(), "http://example.com/main1.js");
-        assertEquals(listScripts.get(2).getPriority(), 3);
+        assertEquals("http://example.com/main2.js", listScripts.get(0).getScriptData());
+        assertEquals(1, listScripts.get(0).getPriority());
+        assertEquals("http://example.com/main3.js", listScripts.get(1).getScriptData());
+        assertEquals(2, listScripts.get(1).getPriority());
+        assertEquals("http://example.com/main1.js", listScripts.get(2).getScriptData());
+        assertEquals(3, listScripts.get(2).getPriority());
     }
 
     @Test

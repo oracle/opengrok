@@ -36,6 +36,7 @@ import java.io.IOException;
 class TerraformXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new TerraformAnalyzerFactory(),
                 "analysis/terraform/sample.tf",
@@ -44,6 +45,7 @@ class TerraformXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TerraformAnalyzerFactory(),
                 "analysis/terraform/truncated.tf",

@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -77,11 +78,11 @@ class HistoryEntryTest {
      */
     @Test
     void dump() {
-        instance.dump();
+        assertDoesNotThrow( () -> instance.dump());
         instance.setActive(false);
         instance.addFile("testFile1.txt");
         instance.addFile("testFile2.txt");
-        instance.dump();
+        assertDoesNotThrow( () -> instance.dump());
     }
 
     /**

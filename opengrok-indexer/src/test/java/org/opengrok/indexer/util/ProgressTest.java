@@ -113,7 +113,7 @@ class ProgressTest {
             TimeUnit.MILLISECONDS.sleep(10);
             i++;
         }
-        assertSame(loggerThread.getState(), Thread.State.TERMINATED);
+        assertSame(Thread.State.TERMINATED, loggerThread.getState());
 
         Mockito.verify(logger, times(totalCount)).log(any(), anyString());
         Mockito.verify(logger, atLeast(1)).log(same(Level.INFO), anyString());

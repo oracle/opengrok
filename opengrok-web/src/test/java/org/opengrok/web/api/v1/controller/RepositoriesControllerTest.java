@@ -86,7 +86,8 @@ class RepositoriesControllerTest extends OGKJerseyTest {
 
     @Test
     void testGetRepositoryTypeOfNonExistentRepository() {
-        assertThrows(NotFoundException.class, () -> getRepoType(Paths.get("/totally-nonexistent-repository").toString()));
+        var path = Paths.get("/totally-nonexistent-repository").toString();
+        assertThrows(NotFoundException.class, () -> getRepoType(path));
     }
 
     @Test

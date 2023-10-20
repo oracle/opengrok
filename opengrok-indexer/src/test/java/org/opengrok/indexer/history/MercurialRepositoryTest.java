@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -246,7 +247,7 @@ public class MercurialRepositoryTest {
         while ((len = input.read(buffer)) > 0) {
             str += new String(buffer, 0, len);
         }
-        assertNotSame(str.length(), 0);
+        assertNotSame(0, str.length());
         assertEquals(exp_str, str);
     }
 
@@ -279,11 +280,11 @@ public class MercurialRepositoryTest {
          */
         InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                 "novel.txt", "3");
-        assert (input != null);
+        assertNotNull(input);
         int len = input.read(buffer);
-        assert (len != -1);
+        assertNotEquals(-1, len );
         String str = new String(buffer, 0, len);
-        assert (str.compareTo(exp_str) == 0);
+        assertEquals(0, str.compareTo(exp_str));
     }
 
     /**

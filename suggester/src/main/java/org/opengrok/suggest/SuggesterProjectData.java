@@ -191,10 +191,10 @@ class SuggesterProjectData implements Closeable {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : fields) {
 
-                File WFSTfile = getWFSTFile(field);
-                if (WFSTfile.exists()) {
-                    WFSTCompletionLookup WFST = loadStoredWFST(WFSTfile);
-                    lookups.put(field, WFST);
+                var wfstFile = getWFSTFile(field);
+                if (wfstFile.exists()) {
+                    var wfst = loadStoredWFST(wfstFile);
+                    lookups.put(field, wfst);
                 } else {
                     logger.log(Level.INFO, "Missing WFST file for {0} field in {1}, creating a new one",
                             new Object[] {field, suggesterDir});
@@ -297,7 +297,7 @@ class SuggesterProjectData implements Closeable {
         for (String field : fields) {
             int numEntries = (int) lookups.get(field).getCount();
             if (numEntries == 0) {
-                logger.log(Level.FINE, String.format("Skipping creation of ChronicleMap for field %s " +
+                logger.log(Level.FINE, () -> String.format("Skipping creation of ChronicleMap for field %s " +
                         "in directory '%s' due to zero number of entries", field, suggesterDir));
                 continue;
             }

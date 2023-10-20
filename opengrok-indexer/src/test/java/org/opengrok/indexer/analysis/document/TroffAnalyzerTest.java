@@ -38,6 +38,7 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -99,11 +100,11 @@ class TroffAnalyzerTest {
     void testAnalyze() throws Exception {
         Document doc = new Document();
         StringWriter xrefOut = new StringWriter();
-        analyzer.analyze(doc, new StreamSource() {
+        assertDoesNotThrow(() -> analyzer.analyze(doc, new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
                 return new ByteArrayInputStream(content.getBytes());
             }
-        }, xrefOut);
+        }, xrefOut));
     }
 }

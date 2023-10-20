@@ -34,6 +34,7 @@ import java.io.IOException;
 class XMLXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new XMLAnalyzerFactory(),
                 "analysis/xml/sample.xml",
@@ -41,6 +42,7 @@ class XMLXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new XMLAnalyzerFactory(),
                 "analysis/xml/truncated.xml",

@@ -25,6 +25,7 @@ package opengrok.auth.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -146,9 +147,10 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @throws IOException when any IO error occurs
      */
     protected Configuration getConfiguration(String configurationPath) throws IOException {
-        if ((cfg = LOADED_CONFIGURATIONS.get(configurationPath)) == null) {
-            LOADED_CONFIGURATIONS.put(configurationPath, cfg =
-                    Configuration.read(new File(configurationPath)));
+        cfg = LOADED_CONFIGURATIONS.get(configurationPath);
+        if (Objects.isNull(cfg)) {
+            cfg = Configuration.read(new File(configurationPath));
+            LOADED_CONFIGURATIONS.put(configurationPath, cfg);
         }
         return cfg;
     }

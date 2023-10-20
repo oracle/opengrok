@@ -170,11 +170,16 @@ class GroupsControllerTest extends OGKJerseyTest {
         GenericType<String> type = new GenericType<>() {
         };
 
-        assertThrows(NotFoundException.class, () -> target("groups")
+        assertThrows(NotFoundException.class, () -> getGroupType(groupName, type));
+    }
+
+
+    private <T> T getGroupType(final String groupName, final GenericType<T> type) {
+        return target("groups")
                 .path(groupName + "1")
                 .path("pattern")
                 .request()
-                .get(type));
+                .get(type);
     }
 
     @Test

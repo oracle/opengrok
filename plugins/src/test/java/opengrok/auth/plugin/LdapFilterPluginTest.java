@@ -30,6 +30,7 @@ import opengrok.auth.plugin.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -101,11 +102,15 @@ class LdapFilterPluginTest {
 
     @Test
     void testLoadTransforms() {
-        plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase");
+        assertDoesNotThrow( () ->
+                plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase")
+        );
     }
 
     @Test
     void testLoadTransformsNegative() {
-        assertThrows(UnsupportedOperationException.class, () -> plugin.loadTransforms("foo:toUpperCase,ugly:nice"));
+        assertThrows(UnsupportedOperationException.class, () ->
+                plugin.loadTransforms("foo:toUpperCase,ugly:nice")
+        );
     }
 }

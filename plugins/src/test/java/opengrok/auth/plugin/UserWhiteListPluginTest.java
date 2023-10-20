@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -127,12 +128,11 @@ class UserWhiteListPluginTest {
     @MethodSource("parameters")
     void shouldThrowOnLoadIfInvalidFieldName(String param) {
         init(param);
-        assertThrows(IllegalArgumentException.class, () -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
-            map.put(UserWhiteListPlugin.FIELD_PARAM, "huh");
-            plugin.load(map);
-        }, "plugin.load(null)");
+        Map<String, Object> map = new HashMap<>();
+        map.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
+        map.put(UserWhiteListPlugin.FIELD_PARAM, "huh");
+        assertThrows(IllegalArgumentException.class, () -> plugin.load(map),
+                "plugin.load(null)");
     }
 
     @ParameterizedTest
@@ -189,8 +189,7 @@ class UserWhiteListPluginTest {
 
         // Make sure there as some entries with trailing spaces in the file.
         Stream<String> stream = Files.lines(tmpFile.toPath());
-        assertTrue(stream.filter(s -> s.startsWith(" ") || s.endsWith(" ")).
-                collect(Collectors.toSet()).size() > 0);
+        assertTrue(stream.anyMatch(s -> s.startsWith(" ") || s.endsWith(" ")));
 
         pluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tmpFile.toString());
         plugin.load(pluginParameters);
@@ -204,7 +203,7 @@ class UserWhiteListPluginTest {
     @MethodSource("parameters")
     void shouldUnload(String param) {
         init(param);
-        plugin.unload();
+        assertDoesNotThrow(() -> plugin.unload());
     }
 
     @ParameterizedTest

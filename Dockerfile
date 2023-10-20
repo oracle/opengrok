@@ -1,7 +1,7 @@
 # Copyright (c) 2018, 2021 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
-FROM ubuntu:jammy as build
+FROM ubuntu:jammy AS build
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install --no-install-recommends -y openjdk-17-jdk python3 python3-venv && \

@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class PoshXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new PowershellAnalyzerFactory(),
                 "analysis/powershell/sample.psm1",
@@ -43,6 +44,7 @@ class PoshXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PowershellAnalyzerFactory(),
                 "analysis/powershell/truncated.ps1",
