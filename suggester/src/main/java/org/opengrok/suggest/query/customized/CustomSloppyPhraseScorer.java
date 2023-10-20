@@ -461,12 +461,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
      * Done only once (at first doc) and allows to initialize faster for each doc. */
     private void sortRptGroups(ArrayList<ArrayList<PhrasePositions>> rgs) {
         rptGroups = new PhrasePositions[rgs.size()][];
-        Comparator<PhrasePositions> cmprtr = new Comparator<PhrasePositions>() {
-            @Override
-            public int compare(PhrasePositions pp1, PhrasePositions pp2) {
-                return pp1.offset - pp2.offset;
-            }
-        };
+        Comparator<PhrasePositions> cmprtr = (pp1, pp2) -> pp1.offset - pp2.offset;
         for (int i=0; i<rptGroups.length; i++) {
             PhrasePositions[] rg = rgs.get(i).toArray(new PhrasePositions[0]);
             Arrays.sort(rg, cmprtr);

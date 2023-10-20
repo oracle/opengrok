@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,7 +78,7 @@ class MessagesContainerTest {
     @Test
     void removeNullTest() {
         // the call should not throw an exception
-        container.removeAnyMessage(null);
+        assertDoesNotThrow( () -> container.removeAnyMessage(null));
     }
 
     @Test

@@ -39,7 +39,6 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorable;
 import org.apache.lucene.search.ScoreMode;
-import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.popular.PopularityCounter;
 import org.opengrok.suggest.query.SuggesterRangeQuery;
@@ -196,13 +195,11 @@ class SuggesterSearcher extends IndexSearcher {
                 score = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
             }
 
-            if (score > 0) {
-                if (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(term)) {
-                    score += searchCounts.get(term) * TERM_ALREADY_SEARCHED_MULTIPLIER;
+            if (score > 0 && (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(term))) {
+                score += searchCounts.get(term) * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
-                    if (queue.canInsert(score)) {
-                        queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), project, score));
-                    }
+                if (queue.canInsert(score)) {
+                    queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), project, score));
                 }
             }
 
@@ -244,7 +241,7 @@ class SuggesterSearcher extends IndexSearcher {
                                     try {
                                         // it is mentioned in the documentation that #getChildren should not be called
                                         // in #setScorer but no better way was found
-                                        for (Scorer.ChildScorable childScorer : scorer.getChildren()) {
+                                        for (var childScorer : scorer.getChildren()) {
                                             if (childScorer.child instanceof PhraseScorer) {
                                                 data.scorer = (PhraseScorer) childScorer.child;
                                             }
@@ -276,10 +273,10 @@ class SuggesterSearcher extends IndexSearcher {
                 interrupted = true;
                 return null;
             } else {
-                logger.log(Level.WARNING, "Could not get document ids for " + query, e);
+                logger.log(Level.WARNING, e, () -> "Could not get document ids for " + query);
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Could not get document ids for " + query, e);
+            logger.log(Level.WARNING, e, () -> "Could not get document ids for " + query);
         }
 
         data.documentIds = documentIds;

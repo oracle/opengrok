@@ -50,20 +50,20 @@ class ScopesTest {
         instance.addScope(new Scope(80, 90, "scope5", "ns"));
         instance.addScope(new Scope(91, 100, "scope6", "ns"));
 
-        assertEquals(instance.size(), 6);
-        assertEquals(instance.getScope(1), globalScope);
-        assertEquals(instance.getScope(10).getName(), "scope1");
-        assertEquals(instance.getScope(15).getName(), "scope1");
-        assertEquals(instance.getScope(20).getName(), "scope1");
-        assertEquals(instance.getScope(21), globalScope);
-        assertEquals(instance.getScope(24), globalScope);
-        assertEquals(instance.getScope(39), globalScope);
-        assertEquals(instance.getScope(40).getName(), "scope3");
-        assertEquals(instance.getScope(41), globalScope);
-        assertEquals(instance.getScope(90).getName(), "scope5");
-        assertEquals(instance.getScope(100).getName(), "scope6");
-        assertEquals(instance.getScope(101), globalScope);
-        assertEquals(instance.getScope(500), globalScope);
+        assertEquals(6, instance.size());
+        assertEquals(globalScope, instance.getScope(1));
+        assertEquals("scope1", instance.getScope(10).getName());
+        assertEquals("scope1", instance.getScope(15).getName());
+        assertEquals("scope1", instance.getScope(20).getName());
+        assertEquals(globalScope, instance.getScope(21));
+        assertEquals(globalScope, instance.getScope(24));
+        assertEquals(globalScope, instance.getScope(39));
+        assertEquals("scope3", instance.getScope(40).getName());
+        assertEquals(globalScope, instance.getScope(41));
+        assertEquals("scope5", instance.getScope(90).getName());
+        assertEquals("scope6", instance.getScope(100).getName());
+        assertEquals(globalScope, instance.getScope(101));
+        assertEquals(globalScope, instance.getScope(500));
     }
 
     @Test

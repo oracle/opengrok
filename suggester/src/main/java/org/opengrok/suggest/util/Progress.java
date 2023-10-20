@@ -107,7 +107,7 @@ public class Progress implements AutoCloseable {
         // spawn a logger thread.
         run = true;
         loggerThread = new Thread(this::logLoop,
-                "progress-thread-" + suffix.replaceAll(" ", "_"));
+                "progress-thread-" + suffix.replace(" ", "_"));
         loggerThread.start();
     }
 
@@ -130,20 +130,20 @@ public class Progress implements AutoCloseable {
         Map<Level, Long> lastLoggedChunk = new HashMap<>();
 
         while (true) {
-            long currentCount = this.currentCount.get();
+            long longCurrentCount = this.currentCount.get();
             Level currentLevel = Level.FINEST;
 
             // Do not log if there was no progress.
-            if (cachedCount < currentCount) {
-                currentLevel = getLevel(lastLoggedChunk, currentCount, currentLevel);
-                logIt(lastLoggedChunk, currentCount, currentLevel);
+            if (cachedCount < longCurrentCount) {
+                currentLevel = getLevel(lastLoggedChunk, longCurrentCount, currentLevel);
+                logIt(lastLoggedChunk, longCurrentCount, currentLevel);
             }
 
             if (!run) {
                 return;
             }
 
-            cachedCount = currentCount;
+            cachedCount = longCurrentCount;
 
             // wait for event
             try {
@@ -167,10 +167,10 @@ public class Progress implements AutoCloseable {
             currentLevel = baseLogLevel;
         } else {
             // Set the log level based on the "buckets".
-            for (Level level : levelCountMap.keySet()) {
-                if (lastLoggedChunk.getOrDefault(level, -1L) <
-                        currentCount / levelCountMap.get(level)) {
-                    currentLevel = level;
+            for (var levelCountItem : levelCountMap.entrySet()) {
+                if (lastLoggedChunk.getOrDefault(levelCountItem.getKey(), -1L) <
+                        currentCount / levelCountItem.getValue()) {
+                    currentLevel = levelCountItem.getKey();
                     break;
                 }
             }

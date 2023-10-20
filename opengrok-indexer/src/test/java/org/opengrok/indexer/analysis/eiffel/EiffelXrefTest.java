@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class EiffelXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new EiffelAnalyzerFactory(),
                 "analysis/eiffel/sample.e",
@@ -43,6 +44,7 @@ class EiffelXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new EiffelAnalyzerFactory(),
                 "analysis/eiffel/truncated.e",

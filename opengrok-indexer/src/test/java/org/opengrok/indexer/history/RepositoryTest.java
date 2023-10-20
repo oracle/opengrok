@@ -32,6 +32,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -57,7 +58,7 @@ class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            repository.parse(test[0]);
+            assertDoesNotThrow( () ->repository.parse(test[0]));
         }
     }
 
@@ -80,7 +81,7 @@ class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(new String[]{test[1]});
-            repository.parse(test[0]);
+            assertDoesNotThrow( ()-> repository.parse(test[0]));
         }
     }
 

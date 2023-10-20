@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class CSharpXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new CSharpAnalyzerFactory(),
                 "analysis/csharp/sample.cs",
@@ -43,6 +44,7 @@ class CSharpXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new CSharpAnalyzerFactory(),
                 "analysis/csharp/truncated.cs",

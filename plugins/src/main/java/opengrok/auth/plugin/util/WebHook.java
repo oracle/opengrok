@@ -32,22 +32,22 @@ import java.util.concurrent.Future;
 public class WebHook implements Serializable {
     private static final long serialVersionUID = -1;
 
-    private String URI;
+    private String uri;
     private String content;
 
     public WebHook() {
     }
 
     WebHook(String uri, String content) {
-        this.URI = uri;
+        this.uri = uri;
         this.content = content;
     }
 
     public void setURI(String uri) {
-        this.URI = uri;
+        this.uri = uri;
     }
     public String getURI() {
-        return URI;
+        return uri;
     }
 
     public void setContent(String content) {

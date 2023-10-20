@@ -30,6 +30,7 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
@@ -46,12 +47,16 @@ class FalsePluginTest {
 
     @Test
     void shouldNotThrowOnLoadIfNullArgument() {
-        plugin.load(null);
+        assertDoesNotThrow(() ->
+                plugin.load(null)
+        );
     }
 
     @Test
     void shouldUnload() {
-        plugin.unload();
+        assertDoesNotThrow(() ->
+                plugin.unload()
+        );
     }
 
     @Test

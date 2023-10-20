@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class ErlangXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new ErlangAnalyzerFactory(),
                 "analysis/erlang/sample.erl",
@@ -43,6 +44,7 @@ class ErlangXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new ErlangAnalyzerFactory(),
                 "analysis/erlang/truncated.erl",

@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class GolangXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/sample.go",
@@ -43,6 +44,7 @@ class GolangXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/truncated.go",
@@ -50,6 +52,7 @@ class GolangXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldContainEmail() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/email.go",

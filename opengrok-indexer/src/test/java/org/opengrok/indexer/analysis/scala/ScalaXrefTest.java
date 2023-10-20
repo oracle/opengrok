@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class ScalaXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new ScalaAnalyzerFactory(),
                 "analysis/scala/sample.scala",
@@ -43,6 +44,7 @@ class ScalaXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new ScalaAnalyzerFactory(),
                 "analysis/scala/truncated.scala",

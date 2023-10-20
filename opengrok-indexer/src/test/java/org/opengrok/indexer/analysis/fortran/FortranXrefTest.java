@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class FortranXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new FortranAnalyzerFactory(),
                 "analysis/fortran/sample.f",
@@ -43,6 +44,7 @@ class FortranXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new FortranAnalyzerFactory(),
                 "analysis/fortran/truncated.f",

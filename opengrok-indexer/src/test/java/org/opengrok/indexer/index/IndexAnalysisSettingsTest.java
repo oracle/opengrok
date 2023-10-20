@@ -43,8 +43,8 @@ class IndexAnalysisSettingsTest {
     @Test
     void shouldAffirmIndexAnalysisSettingsObjuid() {
         String objuid = QueryBuilder.normalizeDirPath("58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
-        assertEquals(objuid, IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID,
-                "IndexAnalysisSettingsDao objuid");
+        assertEquals(IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID,
+                objuid, "IndexAnalysisSettingsDao objuid");
     }
 
     @Test

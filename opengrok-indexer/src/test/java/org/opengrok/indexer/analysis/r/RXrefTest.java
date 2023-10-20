@@ -36,6 +36,7 @@ import java.io.IOException;
 class RXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new RAnalyzerFactory(),
                 "analysis/r/sample.r",
@@ -44,6 +45,7 @@ class RXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new RAnalyzerFactory(),
                 "analysis/r/truncated.r",

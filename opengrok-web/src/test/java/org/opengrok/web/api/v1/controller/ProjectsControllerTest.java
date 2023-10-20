@@ -457,7 +457,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // the message is applied.
 
 
-        assertEquals(markIndexed(projectName).getStatusInfo().getFamily(), Response.Status.Family.SUCCESSFUL);
+        assertEquals(Response.Status.Family.SUCCESSFUL, markIndexed(projectName).getStatusInfo().getFamily());
         assertTrue(env.getProjects().get(projectName).isIndexed(), "indexed flag should be set to true");
 
         // Test that the "indexed" message triggers refresh of current version
@@ -481,7 +481,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     @Test
     void testList() throws Exception {
         addProject("mercurial");
-        assertEquals(markIndexed("mercurial").getStatusInfo().getFamily(), Response.Status.Family.SUCCESSFUL);
+        assertEquals(Response.Status.Family.SUCCESSFUL, markIndexed("mercurial").getStatusInfo().getFamily());
 
         // Add another project.
         addProject("git");

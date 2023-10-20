@@ -1,7 +1,7 @@
 # Copyright (c) 2018, 2021 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
-FROM ubuntu:jammy as build
+FROM ubuntu:jammy AS build
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install --no-install-recommends -y openjdk-17-jdk python3 python3-venv && \
@@ -47,7 +47,8 @@ LABEL maintainer="https://github.com/oracle/opengrok"
 # Add Perforce apt source.
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y gnupg2
+    apt-get install --no-install-recommends -y gnupg2 \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
@@ -58,6 +59,7 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
     unzip inotify-tools python3 python3-pip \
     python3-venv python3-setuptools openssh-client libyaml-dev
 

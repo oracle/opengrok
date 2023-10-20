@@ -35,6 +35,7 @@ import java.io.IOException;
 class TypeScriptXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new TypeScriptAnalyzerFactory(),
                 "analysis/typescript/sample.ts",
@@ -43,6 +44,7 @@ class TypeScriptXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TypeScriptAnalyzerFactory(),
                 "analysis/typescript/truncated.ts",

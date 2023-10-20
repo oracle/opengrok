@@ -35,8 +35,8 @@ class CanonicalRootValidatorTest {
 
     @Test
     void testRejectUnseparated() {
-        assertEquals(CanonicalRootValidator.validate("test", "test value"),
-                "test value must end with a separator");
+        assertEquals("test value must end with a separator",
+                CanonicalRootValidator.validate("test", "test value"));
     }
 
     @Test

@@ -36,6 +36,7 @@ import org.opengrok.indexer.analysis.XrefTestBase;
 class JavaScriptXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/sample.js",
@@ -44,6 +45,7 @@ class JavaScriptXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/truncated.js",
@@ -51,6 +53,7 @@ class JavaScriptXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldDetectRegularExpressionWithoutModifiers() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/regexp_plain.js",
@@ -58,6 +61,7 @@ class JavaScriptXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldDetectRegularExpressionWithModifiers() throws IOException {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/regexp_modifiers.js",

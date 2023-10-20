@@ -47,6 +47,7 @@ import org.opengrok.indexer.util.ClassUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.ext.DefaultHandler2;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -109,7 +110,7 @@ class ConfigurationTest {
             saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
             saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
             Handler handler = new Handler();
-            saxParser.parse(new BufferedInputStream(in), handler);
+            assertDoesNotThrow( () -> saxParser.parse(new BufferedInputStream(in), handler));
         }
     }
 

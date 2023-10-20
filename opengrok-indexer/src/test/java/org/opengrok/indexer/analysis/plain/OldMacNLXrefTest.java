@@ -34,6 +34,7 @@ import java.io.IOException;
 class OldMacNLXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCountMultipleLinesForOldMacFile() throws IOException {
         writeAndCompare(PlainAnalyzerFactory.DEFAULT_INSTANCE,
                 "analysis/plain/ErrorList.r.txt",

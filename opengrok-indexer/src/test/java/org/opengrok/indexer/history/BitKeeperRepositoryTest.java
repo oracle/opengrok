@@ -103,7 +103,7 @@ class BitKeeperRepositoryTest {
             assertNotNull(entry.getAuthor(), "File history has missing author.");
             assertNotNull(entry.getDate(), "File history has missing date.");
             assertNotNull(entry.getMessage(), "File history has missing message.");
-            assertEquals(entry.getFiles().size(), 1, "File history has invalid file list.");
+            assertEquals(1, entry.getFiles().size(), "File history has invalid file list.");
         }
 
         // Validate that the renamed files list corresponds

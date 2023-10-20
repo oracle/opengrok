@@ -24,6 +24,11 @@
 package org.opengrok.indexer.analysis;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,28 +55,17 @@ class PendingTokenTest {
         assertTrue(result, "PendingToken instance equivalence false");
     }
 
-    @Test
-    void testNotEquals1() {
+    @ParameterizedTest
+    @MethodSource
+    void testNotEquals(PendingToken instance2) {
         PendingToken instance1 = new PendingToken("", 0, 0);
-        PendingToken instance2 = new PendingToken("", 0, 1); // nonsense but ok
         boolean result = instance1.equals(instance2);
         assertFalse(result, "PendingToken equals() only 2 immutables match");
     }
-
-    @Test
-    void testNotEquals2() {
-        PendingToken instance1 = new PendingToken("", 0, 0);
-        PendingToken instance2 = new PendingToken("", 1, 0); // nonsense but ok
-        boolean result = instance1.equals(instance2);
-        assertFalse(result, "PendingToken equals() only 2 immutables match");
-    }
-
-    @Test
-    void testNotEquals3() {
-        PendingToken instance1 = new PendingToken("", 0, 0);
-        PendingToken instance2 = new PendingToken("a", 0, 0); // nonsense but ok
-        boolean result = instance1.equals(instance2);
-        assertFalse(result, "PendingToken equals() only 2 immutables match");
+    static Stream<PendingToken> testNotEquals() {
+        return Stream.of(new PendingToken("", 0, 1),
+                new PendingToken("", 1, 0),
+                new PendingToken("a", 0, 0));
     }
 
     @Test

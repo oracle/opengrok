@@ -33,6 +33,7 @@ import java.io.IOException;
 class TroffXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new TroffAnalyzerFactory(),
                 "analysis/document/sync.1m",

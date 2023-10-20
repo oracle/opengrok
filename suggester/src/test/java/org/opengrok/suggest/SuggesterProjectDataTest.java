@@ -211,9 +211,9 @@ class SuggesterProjectDataTest {
         addText(FIELD, "another text example");
 
         init(true);
-
+        var termField = new Term(FIELD, "example") ;
         assertThrows(IllegalArgumentException.class,
-                () -> data.incrementSearchCount(new Term(FIELD, "example"), -10));
+                () -> data.incrementSearchCount(termField, -10));
     }
 
     @Test
@@ -260,7 +260,8 @@ class SuggesterProjectDataTest {
         addText(FIELD, "term");
         init(true);
 
-        data.getSearchCounts(null);
+        var counter = data.getSearchCounts(null);
+        assertEquals(0,counter.get(null));
     }
 
     @Test

@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class TclXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new TclAnalyzerFactory(),
                 "analysis/tcl/sample.tcl",
@@ -43,6 +44,7 @@ class TclXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new TclAnalyzerFactory(),
                 "analysis/tcl/truncated.tcl",

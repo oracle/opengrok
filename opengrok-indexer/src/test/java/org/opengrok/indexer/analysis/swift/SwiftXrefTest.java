@@ -35,6 +35,7 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 class SwiftXrefTest extends XrefTestBase {
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
         writeAndCompare(new SwiftAnalyzerFactory(),
                 "analysis/swift/sample.swift",
@@ -43,6 +44,7 @@ class SwiftXrefTest extends XrefTestBase {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new SwiftAnalyzerFactory(),
                 "analysis/swift/truncated.swift",
