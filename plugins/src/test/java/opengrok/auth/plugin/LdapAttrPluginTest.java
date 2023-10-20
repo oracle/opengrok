@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -53,6 +54,8 @@ import org.opengrok.indexer.configuration.Project;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -198,5 +201,45 @@ class LdapAttrPluginTest {
         // See if LdapAttrPlugin set its own session attribute based on the mocked query.
         assertTrue((Boolean) request.getSession().getAttribute(plugin.getSessionAllowedAttrName()));
         assertTrue(ldapUser.getAttribute(attr_to_get).contains(mail_attr_value));
+    }
+
+    private Map<String, Object> getParamsMap() {
+        Map<String, Object> params = new TreeMap<>();
+        params.put(AbstractLdapPlugin.CONFIGURATION_PARAM,
+                Objects.requireNonNull(getClass().getResource("config.xml")).getFile());
+
+        return params;
+    }
+
+    @Test
+    void loadTestNegativeNoAttrParam() {
+        Map<String, Object> params = getParamsMap();
+        assertNull(params.get(LdapAttrPlugin.ATTR_PARAM));
+        assertThrows(NullPointerException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestNegativeNoFileParam() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapAttrPlugin.ATTR_PARAM, "mail");
+        assertNull(params.get(LdapAttrPlugin.FILE_PARAM));
+        assertThrows(NullPointerException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestNegativeInvalidFileParam() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapAttrPlugin.ATTR_PARAM, "mail");
+        params.put(LdapAttrPlugin.FILE_PARAM, "nonexistent");
+        assertThrows(IllegalArgumentException.class, () -> plugin.load(params));
+    }
+
+    @Test
+    void loadTestPositive() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
+        params.put(LdapAttrPlugin.ATTR_PARAM, "mail");
+        params.put(LdapAttrPlugin.INSTANCE_PARAM, "42");
+        plugin.load(params);
     }
 }
