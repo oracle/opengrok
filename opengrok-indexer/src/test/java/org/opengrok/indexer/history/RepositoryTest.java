@@ -58,7 +58,7 @@ class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            assertDoesNotThrow( () ->repository.parse(test[0]));
+            assertDoesNotThrow( () -> repository.parse(test[0]));
         }
     }
 
@@ -81,7 +81,7 @@ class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(new String[]{test[1]});
-            assertDoesNotThrow( ()-> repository.parse(test[0]));
+            assertDoesNotThrow( () -> repository.parse(test[0]));
         }
     }
 

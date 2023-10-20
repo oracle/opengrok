@@ -167,7 +167,7 @@ public class LdapFacade extends AbstractLdapProvider {
         }
 
         private void addAttrToMap(Map<String, Set<String>> map, Attribute attr) throws NamingException {
-            map.computeIfAbsent(attr.getID(),key-> new TreeSet<>());
+            map.computeIfAbsent(attr.getID(), key -> new TreeSet<>());
 
             final Set<String> valueSet = map.get(attr.getID());
             for (NamingEnumeration<?> attrAll = attr.getAll(); attrAll.hasMore(); ) {

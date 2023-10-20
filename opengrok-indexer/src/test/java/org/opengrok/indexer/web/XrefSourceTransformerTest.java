@@ -70,11 +70,11 @@ class XrefSourceTransformerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"source","/source","/source/"})
+    @ValueSource(strings = {"source", "/source", "/source/"})
     @NullSource
     void testDefaultContext(String contextString) throws IOException {
         var res = getXrefString(contextString);
-        assertEquals(XREF_FRAG_DFLT, res, "context="+contextString);
+        assertEquals(XREF_FRAG_DFLT, res, "context=" + contextString);
     }
 
     @Test

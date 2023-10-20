@@ -297,7 +297,7 @@ class SuggesterProjectData implements Closeable {
         for (String field : fields) {
             int numEntries = (int) lookups.get(field).getCount();
             if (numEntries == 0) {
-                logger.log(Level.FINE,() -> String.format("Skipping creation of ChronicleMap for field %s " +
+                logger.log(Level.FINE, () -> String.format("Skipping creation of ChronicleMap for field %s " +
                         "in directory '%s' due to zero number of entries", field, suggesterDir));
                 continue;
             }

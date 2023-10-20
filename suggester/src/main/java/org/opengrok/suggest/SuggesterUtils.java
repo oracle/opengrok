@@ -98,7 +98,7 @@ public class SuggesterUtils {
 
             return (long) (normalizedDocumentFrequency * NORMALIZED_DOCUMENT_FREQUENCY_MULTIPLIER);
         } catch (IOException e) {
-            logger.log(Level.WARNING, e, () ->"Could not compute weight for " + bytesRef);
+            logger.log(Level.WARNING, e, () -> "Could not compute weight for " + bytesRef);
         }
         return DEFAULT_TERM_WEIGHT;
     }
