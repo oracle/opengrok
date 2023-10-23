@@ -101,7 +101,6 @@ def check_command_config(command):
     """
     :param command: dictionary with executable command configuration
     """
-
     if not isinstance(command, dict):
         raise CommandConfigurationException(f"command value not a dictionary: {command}")
 
@@ -138,7 +137,6 @@ def check_command_property(command):
     w.r.t. individual commands.
     :param command: command element
     """
-
     if not isinstance(command, dict):
         raise CommandConfigurationException("command '{}' is not a dictionary".format(command))
 
