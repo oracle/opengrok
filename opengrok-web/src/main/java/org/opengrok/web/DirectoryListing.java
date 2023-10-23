@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,9 +56,6 @@ import org.opengrok.indexer.web.Util;
  * Generates HTML listing of a Directory.
  */
 public class DirectoryListing {
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.
-            ofPattern("dd-MMM-yyyy", Locale.getDefault());
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
     protected static final String TD_END_TAG = "</td>";
 
@@ -230,6 +229,7 @@ public class DirectoryListing {
     public void extraListTo(String contextPath, File dir, Writer out,
                                     String path, @Nullable List<DirectoryEntry> entries) throws IOException {
         // TODO this belongs to a jsp, not here
+        var dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
 
         out.write("<table id=\"dirlist\" class=\"tablesorter tablesorter-default\">\n");
         out.write("<thead>\n");
@@ -258,19 +258,20 @@ public class DirectoryListing {
         if (!path.isEmpty()) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td><td></td>");
-            printDateSize(out, dir.getParentFile(), null, DATE_FORMATTER.toFormat());
+            printDateSize(out, dir.getParentFile(), null, dateFormatter);
             out.write("</tr>\n");
         }
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
-                printDirectoryEntry(contextPath, out, path, entry);
+                printDirectoryEntry(contextPath, out, path, entry,dateFormatter);
             }
         }
         out.write("</tbody>\n</table>");
     }
     private void printDirectoryEntry(String contextPath, Writer out,
-                                       String path, DirectoryEntry entry) throws IOException {
+                                       String path, DirectoryEntry entry,
+                                     Format dateFormatter) throws IOException {
         File child = entry.getFile();
         String filename = child.getName();
 
@@ -310,7 +311,7 @@ public class DirectoryListing {
         }
         out.write(TD_END_TAG);
         Util.writeHAD(out, contextPath, path + filename);
-        printDateSize(out, child, entry.getDate(), DATE_FORMATTER.toFormat());
+        printDateSize(out, child, entry.getDate(), dateFormatter);
         printNumlines(out, entry, isDir);
         printLoc(out, entry, isDir);
         var strPathDescription = Optional.ofNullable(entry.getPathDescription())
