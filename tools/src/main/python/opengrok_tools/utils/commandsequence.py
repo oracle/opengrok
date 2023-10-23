@@ -105,8 +105,6 @@ def check_command_config(command):
     if not isinstance(command, dict):
         raise CommandConfigurationException(f"command value not a dictionary: {command}")
 
-    print(f"XXX {command.keys()}")
-
     for key in command.keys():
         if key not in [ENV_PROPERTY, ARGS_PROPERTY, LIMITS_PROPERTY, ARGS_SUBST_PROPERTY]:
             raise CommandConfigurationException(f"unknown property {key} in command {command}")
