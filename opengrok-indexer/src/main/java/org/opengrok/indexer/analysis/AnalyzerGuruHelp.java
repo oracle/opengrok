@@ -56,38 +56,38 @@ public class AnalyzerGuruHelp {
                 System.lineSeparator() + System.lineSeparator());
         byFactory(AnalyzerGuru.getAnalyzerFactories().stream().
                 collect(Collectors.toMap(f -> f.getClass().getSimpleName(), f -> f))).
-                forEach((factory) -> {
+                forEach(factory ->
             b.append(String.format("%-10s : %s%n",
                     factory.fac.getClass().getSimpleName().replace("AnalyzerFactory", ""),
-                    factory.fac.getName() != null ? factory.fac.getName() : "N/A"));
-        });
+                    factory.fac.getName() != null ? factory.fac.getName() : "N/A"))
+        );
 
         b.append(System.lineSeparator() + "AnalyzerGuru prefixes:" + System.lineSeparator());
-        byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
+        byKey(AnalyzerGuru.getPrefixesMap()).forEach(kv ->
             b.append(String.format("%-10s : %s%n", reportable(kv.key + '*'),
-                reportable(kv.fac)));
-        });
+                reportable(kv.fac)))
+        );
 
         b.append(System.lineSeparator() + "AnalyzerGuru extensions:" + System.lineSeparator());
-        byKey(AnalyzerGuru.getExtensionsMap()).forEach((kv) -> {
+        byKey(AnalyzerGuru.getExtensionsMap()).forEach(kv ->
             b.append(String.format("*.%-7s : %s%n",
                 reportable(kv.key.toLowerCase(Locale.ROOT)),
-                reportable(kv.fac)));
-        });
+                reportable(kv.fac)))
+        );
 
         b.append(System.lineSeparator() + "AnalyzerGuru magic strings:" + System.lineSeparator());
-        byFactory(AnalyzerGuru.getMagicsMap()).forEach((kv) -> {
+        byFactory(AnalyzerGuru.getMagicsMap()).forEach(kv ->
             b.append(String.format("%-23s : %s%n", reportable(kv.key),
-                reportable(kv.fac)));
-        });
+                reportable(kv.fac)))
+        );
 
         b.append(System.lineSeparator() + "AnalyzerGuru magic matchers:" + System.lineSeparator());
-        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
+        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach(m -> {
             if (m.isPreciseMagic()) {
                 b.append(reportable(m));
             }
         });
-        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
+        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach(m -> {
             if (!m.isPreciseMagic()) {
                 b.append(reportable(m));
             }

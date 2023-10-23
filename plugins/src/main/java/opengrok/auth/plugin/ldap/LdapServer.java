@@ -30,7 +30,9 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.CommunicationException;
@@ -64,7 +66,7 @@ public class LdapServer implements Serializable {
     private int readTimeout;
     private int interval = 10 * 1000;
 
-    private final Hashtable<String, String> env;
+    private final Map<String, String> env;
     private transient LdapContext ctx;
     private long errorTimestamp = 0;
 
@@ -84,7 +86,7 @@ public class LdapServer implements Serializable {
         this.password = password;
     }
 
-    public LdapServer(Hashtable<String, String> env) {
+    public LdapServer(Map<String, String> env) {
         this.env = env;
     }
 
@@ -264,7 +266,7 @@ public class LdapServer implements Serializable {
             }
 
             try {
-                ctx = new InitialLdapContext(env, null);
+                ctx = new InitialLdapContext(new Hashtable<>(env), null);
                 ctx.setRequestControls(null);
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this);
                 errorTimestamp = 0;
@@ -348,8 +350,8 @@ public class LdapServer implements Serializable {
         }
     }
 
-    private static Hashtable<String, String> prepareEnv() {
-        Hashtable<String, String> e = new Hashtable<>();
+    private static Map<String, String> prepareEnv() {
+        var e = new HashMap<String, String>();
 
         e.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
         e.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));

@@ -46,6 +46,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -481,7 +482,8 @@ public final class PageConfig {
                     List<String> modifiableListOfFiles = new ArrayList<>(listOfFiles);
                     modifiableListOfFiles.removeIf(t -> getProjectHelper().getAllProjects().stream()
                             .noneMatch(p -> p.getName().equalsIgnoreCase(t)));
-                    return dirFileList = Collections.unmodifiableList(modifiableListOfFiles);
+                    dirFileList = Collections.unmodifiableList(modifiableListOfFiles);
+                    return dirFileList;
                 }
 
                 dirFileList = Collections.unmodifiableList(listOfFiles);
@@ -1535,13 +1537,10 @@ public final class PageConfig {
          * REQUEST_ATTR.
          */
         request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
-        if (project != null) {
-            searchHelper.prepareExec(project);
-        } else {
-            //noinspection Convert2Diamond
-            searchHelper.prepareExec(new TreeSet<String>());
-        }
-
+        Optional.ofNullable(project)
+                .ifPresentOrElse(searchHelper::prepareExec,
+                        () -> searchHelper.prepareExec(new TreeSet<>())
+                );
         return getNullableNumLinesLOCS(project, searchHelper);
     }
 
@@ -1723,17 +1722,17 @@ public final class PageConfig {
      * @return string used for setting page title of search view
      */
     public String getHistoryTitle() {
-        String path = getPath();
-        return Util.htmlize(getShortPath(path) + " - OpenGrok history log for " + path);
+        String strPath = getPath();
+        return Util.htmlize(getShortPath(strPath) + " - OpenGrok history log for " + strPath);
     }
 
     public String getPathTitle() {
-        String path = getPath();
-        String title = getShortPath(path);
+        String strPath = getPath();
+        String title = getShortPath(strPath);
         if (!getRequestedRevision().isEmpty()) {
             title += " (revision " + getRequestedRevision() + ")";
         }
-        title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+        title += " - OpenGrok cross reference for " + (strPath.isEmpty() ? "/" : strPath);
 
         return Util.htmlize(title);
     }
@@ -1773,9 +1772,11 @@ public final class PageConfig {
 
         if (getProject() != null) {
             messages.addAll(getMessages(getProject().getName()));
-            getProject().getGroups().forEach(group -> {
-                messages.addAll(getMessages(group.getName()));
-            });
+            getProject().getGroups()
+                    .stream()
+                    .map(Group::getName)
+                    .map(this::getMessages)
+                    .forEach(messages::addAll);
         }
 
         return messages;
@@ -1849,10 +1850,10 @@ public final class PageConfig {
         if (fragmentIdentifier == null) {
             int matchOffset = getIntParam(QueryParameters.MATCH_OFFSET_PARAM, -1);
             if (matchOffset >= 0) {
-                File resourceFile = getResourceFile();
-                if (resourceFile.isFile()) {
+                File objResourceFile = getResourceFile();
+                if (objResourceFile.isFile()) {
                     LineBreaker breaker = new LineBreaker();
-                    StreamSource streamSource = StreamSource.fromFile(resourceFile);
+                    StreamSource streamSource = StreamSource.fromFile(objResourceFile);
                     try {
                         breaker.reset(streamSource, in -> ExpandTabsReader.wrap(in, getProject()));
                         int matchLine = breaker.findLineIndex(matchOffset);
@@ -1863,7 +1864,7 @@ public final class PageConfig {
                         }
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, String.format("Failed to evaluate match offset for %s",
-                                resourceFile), e);
+                                objResourceFile), e);
                     }
                 }
             }

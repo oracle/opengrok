@@ -52,7 +52,7 @@ import static org.opengrok.web.util.FileUtil.toFile;
 @Path(FileController.PATH)
 public class FileController {
 
-    public static final String PATH = "/file";
+    public static final String PATH = "file";
 
     private StreamingOutput transfer(File file) throws FileNotFoundException {
         if (!file.exists()) {

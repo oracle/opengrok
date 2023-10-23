@@ -28,11 +28,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.Format;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,8 +54,11 @@ import org.opengrok.indexer.web.Util;
  * Generates HTML listing of a Directory.
  */
 public class DirectoryListing {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.
+            ofPattern("dd-MMM-yyyy", Locale.getDefault());
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
+    protected static final String TD_END_TAG = "</td>";
 
     protected static final String BLANK_PLACEHOLDER = "-";
     private final EftarFileReader desc;
@@ -98,7 +103,7 @@ public class DirectoryListing {
         } else {
             out.write(Util.readableSize(file.length()));
         }
-        out.write("</td>");
+        out.write(TD_END_TAG);
     }
 
     /**
@@ -226,17 +231,6 @@ public class DirectoryListing {
                                     String path, @Nullable List<DirectoryEntry> entries) throws IOException {
         // TODO this belongs to a jsp, not here
 
-        boolean entriesWithPathDescriptionsPresent = false;
-        if (entries != null) {
-            for (DirectoryEntry entry : entries) {
-                String pathDescription = entry.getPathDescription();
-                if (pathDescription != null && !pathDescription.isEmpty())  {
-                    entriesWithPathDescriptionsPresent = true;
-                    break;
-                }
-            }
-        }
-
         out.write("<table id=\"dirlist\" class=\"tablesorter tablesorter-default\">\n");
         out.write("<thead>\n");
         out.write("<tr>\n");
@@ -247,76 +241,85 @@ public class DirectoryListing {
         out.write("<th class=\"sort-groksizes\">Size</th>\n");
         out.write("<th>#Lines</th>\n");
         out.write("<th>LOC</th>\n");
-        if (entriesWithPathDescriptionsPresent) {
-            out.write("<th><samp>Description</samp></th>\n");
-        }
+        var strPathDescriptionsHeader = Optional.ofNullable(entries)
+                .stream()
+                .flatMap(List::stream)
+                .map(DirectoryEntry::getPathDescription)
+                .filter(Objects::nonNull)
+                .filter(pathDescription -> !pathDescription.isEmpty())
+                .findAny()
+                .map(pathDescription -> "<th><samp>Description</samp></th>\n")
+                .orElse("");
+        out.write(strPathDescriptionsHeader);
         out.write("</tr>\n</thead>\n<tbody>\n");
 
-        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
 
         // Print the '..' entry even for empty directories.
-        if (path.length() != 0) {
+        if (!path.isEmpty()) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td><td></td>");
-            printDateSize(out, dir.getParentFile(), null, dateFormatter);
+            printDateSize(out, dir.getParentFile(), null, DATE_FORMATTER.toFormat());
             out.write("</tr>\n");
         }
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
-                File child = entry.getFile();
-                String filename = child.getName();
-
-                boolean isDir = child.isDirectory();
-
-                out.write("<tr><td>");
-                out.write("<p class=\"");
-                out.write(isDir ? 'r' : 'p');
-                out.write("\"/>");
-                out.write("</td><td><a href=\"");
-                if (isDir) {
-                    String longpath = getSimplifiedPath(child);
-                    out.write(Util.uriEncodePath(longpath));
-                    out.write("/\"><b>");
-                    int idx;
-                    if ((idx = longpath.lastIndexOf('/')) > 0) {
-                        out.write("<span class=\"simplified-path\">");
-                        out.write(longpath.substring(0, idx + 1));
-                        out.write("</span>");
-                        out.write(longpath.substring(idx + 1));
-                    } else {
-                        out.write(longpath);
-                    }
-                    out.write("</b></a>/");
-                } else {
-                    out.write(Util.uriEncodePath(filename));
-                    out.write("\"");
-                    if (entry.getDescription() != null) {
-                        out.write(" class=\"title-tooltip\"");
-                        out.write(" title=\"");
-                        out.write(Util.encode(entry.getDescription()));
-                        out.write("\"");
-                    }
-                    out.write(">");
-                    out.write(filename);
-                    out.write("</a>");
-                }
-                out.write("</td>");
-                Util.writeHAD(out, contextPath, path + filename);
-                printDateSize(out, child, entry.getDate(), dateFormatter);
-                printNumlines(out, entry, isDir);
-                printLoc(out, entry, isDir);
-                if (entriesWithPathDescriptionsPresent && entry.getPathDescription() != null) {
-                    out.write("<td>");
-                    out.write(entry.getPathDescription());
-                    out.write("</td>");
-                }
-                out.write("</tr>\n");
+                printDirectoryEntry(contextPath, out, path, entry);
             }
         }
         out.write("</tbody>\n</table>");
     }
+    private void printDirectoryEntry(String contextPath, Writer out,
+                                       String path, DirectoryEntry entry) throws IOException {
+        File child = entry.getFile();
+        String filename = child.getName();
 
+        boolean isDir = child.isDirectory();
+
+        out.write("<tr><td>");
+        out.write("<p class=\"");
+        out.write(isDir ? 'r' : 'p');
+        out.write("\"/>");
+        out.write("</td><td><a href=\"");
+        if (isDir) {
+            String longpath = getSimplifiedPath(child);
+            out.write(Util.uriEncodePath(longpath));
+            out.write("/\"><b>");
+            int idx;
+            if ((idx = longpath.lastIndexOf('/')) > 0) {
+                out.write("<span class=\"simplified-path\">");
+                out.write(longpath.substring(0, idx + 1));
+                out.write("</span>");
+                out.write(longpath.substring(idx + 1));
+            } else {
+                out.write(longpath);
+            }
+            out.write("</b></a>/");
+        } else {
+            out.write(Util.uriEncodePath(filename));
+            out.write("\"");
+            if (entry.getDescription() != null) {
+                out.write(" class=\"title-tooltip\"");
+                out.write(" title=\"");
+                out.write(Util.encode(entry.getDescription()));
+                out.write("\"");
+            }
+            out.write(">");
+            out.write(filename);
+            out.write("</a>");
+        }
+        out.write(TD_END_TAG);
+        Util.writeHAD(out, contextPath, path + filename);
+        printDateSize(out, child, entry.getDate(), DATE_FORMATTER.toFormat());
+        printNumlines(out, entry, isDir);
+        printLoc(out, entry, isDir);
+        var strPathDescription = Optional.ofNullable(entry.getPathDescription())
+                .filter(pathDescription -> !pathDescription.isEmpty())
+                .map(pathDescription -> "<td>" + pathDescription + TD_END_TAG)
+                .orElse("");
+        out.write(strPathDescription);
+        out.write("</tr>\n");
+    }
     private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
         Long numlines = null;
@@ -331,7 +334,7 @@ public class DirectoryListing {
 
         out.write("<td class=\"numlines\">");
         out.write(readableNumlines);
-        out.write("</td>");
+        out.write(TD_END_TAG);
     }
 
     private void printLoc(Writer out, DirectoryEntry entry, boolean isDir)
@@ -348,6 +351,6 @@ public class DirectoryListing {
 
         out.write("<td class=\"loc\">");
         out.write(readableLoc);
-        out.write("</td>");
+        out.write(TD_END_TAG);
     }
 }

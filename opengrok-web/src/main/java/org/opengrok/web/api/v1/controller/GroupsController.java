@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Path(GroupsController.GROUPS_PATH)
 public final class GroupsController {
-    public static final String GROUPS_PATH = "/groups";
+    public static final String GROUPS_PATH = "groups";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

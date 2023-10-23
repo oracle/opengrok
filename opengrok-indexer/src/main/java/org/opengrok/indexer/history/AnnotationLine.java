@@ -25,6 +25,7 @@ package org.opengrok.indexer.history;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Class representing one line in the file.
@@ -103,28 +104,14 @@ public class AnnotationLine implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        AnnotationLine other = (AnnotationLine) obj;
-        if (!Objects.equals(isEnabled(), other.isEnabled())) {
-            return false;
-        }
-        if (!Objects.equals(getAuthor(), other.getAuthor())) {
-            return false;
-        }
-        if (!Objects.equals(getRevision(), other.getRevision())) {
-            return false;
-        }
-        if (!Objects.equals(getDisplayRevision(), other.getDisplayRevision())) {
-            return false;
-        }
-
-        return true;
+        return Optional.ofNullable(obj)
+                .filter(other -> getClass() == other.getClass())
+                .map(AnnotationLine.class::cast)
+                .filter(other -> Objects.equals(isEnabled(), other.isEnabled()))
+                .filter(other -> Objects.equals(getAuthor(), other.getAuthor()))
+                .filter(other -> Objects.equals(getRevision(), other.getRevision()))
+                .filter(other -> Objects.equals(getDisplayRevision(), other.getDisplayRevision()))
+                .isPresent();
     }
 
     @Override

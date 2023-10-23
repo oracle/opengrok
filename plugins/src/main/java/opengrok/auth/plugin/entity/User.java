@@ -86,7 +86,7 @@ public class User {
     }
 
     public boolean getTimeouted() {
-        return timeouted;
+        return isTimeouted();
     }
 
     public void setTimeouted(boolean timeouted) {

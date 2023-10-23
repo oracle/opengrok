@@ -29,7 +29,7 @@ import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
 @ApplicationPath(RestApp.API_PATH)
 public class RestApp extends ResourceConfig {
 
-    public static final String API_PATH = "/api/v1";
+    public static final String API_PATH = "api/v1";
 
     public RestApp() {
         register(new SuggesterAppBinder());

@@ -118,7 +118,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
             plugin.load(getCurrentSetup());
             setWorking();
         } catch (Throwable ex) {
-            LOGGER.log(Level.SEVERE, "Plugin \"" + getName() + "\" has failed while loading with exception:", ex);
+            LOGGER.log(Level.SEVERE, ex, () -> "Plugin \"" + getName() + "\" has failed while loading with exception:");
             setFailed();
         }
 
@@ -144,7 +144,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
                 plugin.unload();
                 plugin = null;
             } catch (Throwable ex) {
-                LOGGER.log(Level.SEVERE, "Plugin \"" + getName() + "\" has failed while unloading with exception:", ex);
+                LOGGER.log(Level.SEVERE, ex, () -> "Plugin \"" + getName() + "\" has failed while unloading with exception:");
             }
         }
     }

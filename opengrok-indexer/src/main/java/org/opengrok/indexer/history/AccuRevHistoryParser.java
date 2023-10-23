@@ -76,18 +76,12 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
             history = new History(entries);
 
         } else {
-            try {
-                /*
-                 * Errors will be logged, so not bothering to add to the output.
-                 */
-                Executor executor = repository.getHistoryLogExecutor(file);
-                executor.exec(true, this);
+            /*
+             * Errors will be logged, so not bothering to add to the output.
+             */
+            Executor executor = repository.getHistoryLogExecutor(file);
+            executor.exec(true, this);
 
-            } catch (IOException e) {
-                throw new HistoryException(
-                        "Failed to get history for: \""
-                        + file.getAbsolutePath() + "\"" + e);
-            }
         }
 
         return history;

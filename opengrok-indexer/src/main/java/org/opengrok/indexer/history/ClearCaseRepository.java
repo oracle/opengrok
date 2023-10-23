@@ -129,8 +129,8 @@ public class ClearCaseRepository extends Repository {
             }
             return true;
         } catch (Exception exp) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get history: " + exp.getClass().toString(), exp);
+            LOGGER.log(Level.WARNING, exp, () ->
+                    "Failed to get history: " + exp.getClass());
         }
 
         return false;
@@ -214,8 +214,8 @@ public class ClearCaseRepository extends Repository {
                     }
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,
-                        "Could not get canonical path for \"" + file + "\"", e);
+                LOGGER.log(Level.WARNING, e, () ->
+                        "Could not get canonical path for \"" + file + "\"");
             }
         }
         return false;

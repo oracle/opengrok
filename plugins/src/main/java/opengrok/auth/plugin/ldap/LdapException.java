@@ -26,7 +26,7 @@ package opengrok.auth.plugin.ldap;
  * Unchecked exception to be thrown when LDAP server pool is down.
  */
 public class LdapException extends Exception {
-    public static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -1;
 
     LdapException(String str) {
         super(str);

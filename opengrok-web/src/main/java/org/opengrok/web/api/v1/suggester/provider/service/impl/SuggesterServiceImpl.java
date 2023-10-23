@@ -122,7 +122,7 @@ public class SuggesterServiceImpl implements SuggesterService {
                 try {
                     s.release();
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "Could not release " + s, e);
+                    logger.log(Level.WARNING, e, () -> "Could not release " + s);
                 }
             }
         }
@@ -139,7 +139,7 @@ public class SuggesterServiceImpl implements SuggesterService {
                     superIndexSearchers.add(searcher);
                     return new NamedIndexReader(projectName, searcher.getIndexReader());
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "Could not get index reader for " + projectName, e);
+                    logger.log(Level.WARNING, e, () -> "Could not get index reader for " + projectName);
                 }
                 return null;
             }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -311,7 +311,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         if (rebuildParalleismLevel == 0) {
             rebuildParalleismLevel = 1;
         }
-        logger.log(Level.FINER, "Suggester rebuild parallelism level: " + rebuildParalleismLevel);
+        logger.log(Level.FINER, "Suggester rebuild parallelism level: {}", rebuildParalleismLevel);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),

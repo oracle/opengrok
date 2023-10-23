@@ -50,6 +50,7 @@ public class StatisticsFilter implements Filter {
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
+        //No init config Operation
     }
 
     @Override
@@ -122,5 +123,6 @@ public class StatisticsFilter implements Filter {
 
     @Override
     public void destroy() {
+        //No destroy Operation
     }
 }

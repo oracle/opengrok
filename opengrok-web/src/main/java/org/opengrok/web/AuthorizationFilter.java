@@ -46,6 +46,7 @@ public class AuthorizationFilter implements Filter {
 
     @Override
     public void init(FilterConfig fc) {
+        // Empty since there is No specific init configuration.
     }
 
     /**
@@ -97,6 +98,7 @@ public class AuthorizationFilter implements Filter {
 
     @Override
     public void destroy() {
+        // Empty since there is No specific destroy configuration.
     }
 
 }
