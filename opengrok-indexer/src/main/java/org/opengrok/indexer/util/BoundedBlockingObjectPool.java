@@ -65,7 +65,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
                  * When the queue first empties, switch to a strategy of putting
                  * returned objects last instead of first.
                  */
-                if (!puttingLast && objects.size() < 1) {
+                if (!puttingLast && objects.isEmpty()) {
                     puttingLast = true;
                 }
             } catch (InterruptedException ie) {
@@ -86,7 +86,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
                  * When the queue first empties, switch to a strategy of putting
                  * returned objects last instead of first.
                  */
-                if (!puttingLast && objects.size() < 1) {
+                if (!puttingLast && objects.isEmpty()) {
                     puttingLast = true;
                 }
             } catch (InterruptedException ie) {

@@ -55,7 +55,7 @@ public class ConfigurationController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    public static final String PATH = "/configuration";
+    public static final String PATH = "configuration";
 
     @Inject
     private SuggesterService suggesterService;

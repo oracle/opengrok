@@ -231,7 +231,7 @@ public class ClassUtil {
      */
     public static boolean hasField(Object obj, String fieldName) {
         try {
-            PropertyDescriptor desc = new PropertyDescriptor(fieldName, obj.getClass());
+            new PropertyDescriptor(fieldName, obj.getClass());
         } catch (IntrospectionException e) {
             return false;
         }

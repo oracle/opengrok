@@ -427,7 +427,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (hereSettings != null && hereSettings.size() > 0) {
+        if (hereSettings != null && !hereSettings.isEmpty()) {
             HereDocSettings settings = hereSettings.peek();
             yypush(settings.state);
             disjointSpan(HtmlConsts.STRING_CLASS);
@@ -454,7 +454,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
 
         offer(capture);
 
-        if (hereSettings.size() > 0) {
+        if (!hereSettings.isEmpty()) {
             settings = hereSettings.peek();
             yybegin(settings.state);
             if (didZspan) {

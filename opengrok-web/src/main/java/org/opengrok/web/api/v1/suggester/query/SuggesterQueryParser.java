@@ -276,7 +276,7 @@ class SuggesterQueryParser extends CustomQueryParser {
 
             SuggesterPhraseQuery spq = new SuggesterPhraseQuery(field, identifier, tokens, this.getPhraseSlop());
             this.suggesterQuery = spq.getSuggesterQuery();
-            replaceIdentifier(field, tokens.stream().filter(t -> t.contains(identifier)).findAny().get());
+            replaceIdentifier(field, tokens.stream().filter(t -> t.contains(identifier)).findAny().orElseThrow());
             return spq;
         }
 

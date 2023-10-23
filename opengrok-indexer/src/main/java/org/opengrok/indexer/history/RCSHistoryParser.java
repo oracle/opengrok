@@ -148,8 +148,8 @@ class RCSHistoryParser {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to retrieve CVS file of parent: " + parent + ", name: " + name, e);
+            LOGGER.log(Level.WARNING, e, () ->
+                    "Failed to retrieve CVS file of parent: " + parent + ", name: " + name);
         }
         return null;
     }

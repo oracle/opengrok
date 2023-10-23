@@ -88,7 +88,6 @@ public class BZip2Analyzer extends FileAnalyzer {
         if (path != null
                 && (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))) {
             String newname = path.substring(0, path.lastIndexOf('.'));
-            //System.err.println("BZIPPED OF = " + newname);
             try (InputStream in = bzSrc.getStream()) {
                 fa = AnalyzerGuru.getAnalyzer(in, newname);
             }

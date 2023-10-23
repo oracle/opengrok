@@ -146,7 +146,7 @@ public class StrictLineBreakIterator extends BreakIterator {
 
     @Override
     public int following(int offset) {
-        if (breaks.size() > 0 && breaks.get(breaks.size() - 1) > offset) {
+        if (!breaks.isEmpty() && breaks.get(breaks.size() - 1) > offset) {
             int lo = 0;
             int hi = breaks.size() - 1;
             int mid;

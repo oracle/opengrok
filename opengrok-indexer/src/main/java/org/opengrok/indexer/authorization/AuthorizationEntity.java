@@ -445,8 +445,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
              * Check the existence of the projects and issue a warning if there
              * is no such project.
              */
-            Project p;
-            if ((p = Project.getByName(t)) == null) {
+            if ( Project.getByName(t) == null) {
                 LOGGER.log(Level.WARNING, "Configured project \"{0}\" in forProjects"
                         + " section for name \"{1}\" does not exist",
                         new Object[]{t, getName()});
@@ -611,13 +610,13 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     protected String targetsToString(String prefix) {
         StringBuilder builder = new StringBuilder();
-        if (forGroups().size() > 0) {
+        if (!forGroups().isEmpty()) {
             builder.append(prefix).append("      only for groups:\n");
             for (String x : forGroups()) {
                 builder.append(prefix).append("          ").append(x).append("\n");
             }
         }
-        if (forProjects().size() > 0) {
+        if (!forProjects().isEmpty()) {
             builder.append(prefix).append("      only for projects:\n");
             for (String x : forProjects()) {
                 builder.append(prefix).append("          ").append(x).append("\n");

@@ -51,14 +51,13 @@ public class OSSOHeaderDecoder implements IUserDecoder {
 
     @Override
     public User fromRequest(HttpServletRequest request) {
-        String username, userguid, timeouted, timestamp;
         Date cookieTimestamp = null;
 
         // Avoid classification as a taint bug.
-        username = Laundromat.launderInput(request.getHeader(OSSO_USER_DN_HEADER));
-        timeouted = Laundromat.launderInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
-        timestamp = Laundromat.launderInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
-        userguid = Laundromat.launderInput(request.getHeader(OSSO_USER_GUID_HEADER));
+        var username = Laundromat.launderInput(request.getHeader(OSSO_USER_DN_HEADER));
+        var timeouted = Laundromat.launderInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
+        var timestamp = Laundromat.launderInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
+        var userguid = Laundromat.launderInput(request.getHeader(OSSO_USER_GUID_HEADER));
 
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,

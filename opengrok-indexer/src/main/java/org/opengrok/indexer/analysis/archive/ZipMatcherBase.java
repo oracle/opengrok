@@ -68,8 +68,8 @@ public abstract class ZipMatcherBase implements FileAnalyzerFactory.Matcher {
             in.reset();
 
             int xoff = LOCHDRSIZ + LOCNAM(buf);
-            int xoff_end = Math.min(len, xoff + LOCEXT(buf));
-            while ((xoff < xoff_end) && (len - xoff >= XFHSIZ)) {
+            int xoffEnd = Math.min(len, xoff + LOCEXT(buf));
+            while ((xoff < xoffEnd) && (len - xoff >= XFHSIZ)) {
                 int xfhid = SH(buf, xoff);
                 if (xfhid == strictExtraFieldID()) {
                     return forFactory();

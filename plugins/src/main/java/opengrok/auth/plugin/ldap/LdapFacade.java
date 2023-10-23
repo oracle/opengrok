@@ -346,6 +346,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return results transformed with mapper or {@code null} on failure
      * @throws LdapException LDAP exception
      */
+    @SuppressWarnings("java:S2139")
     private <T> LdapSearchResult<T> lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) throws LdapException {
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {

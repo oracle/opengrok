@@ -109,8 +109,8 @@ public class BazaarRepository extends Repository {
             copyBytes(out::write, process.getInputStream());
             return true;
         } catch (Exception exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get history: " + exp.getClass().toString(), exp);
+            LOGGER.log(Level.SEVERE, exp, () ->
+                    "Failed to get history: " + exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
             if (process != null) {

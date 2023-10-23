@@ -2024,8 +2024,8 @@ public final class RuntimeEnvironment {
                 subreaders[ii++] = searcher.getIndexReader();
                 searcherList.add(searcher);
             } catch (IOException | NullPointerException ex) {
-                LOGGER.log(Level.SEVERE,
-                        "cannot get IndexReader for project " + proj, ex);
+                LOGGER.log(Level.SEVERE, ex, () ->
+                        "cannot get IndexReader for project " + proj);
                 return null;
             }
         }

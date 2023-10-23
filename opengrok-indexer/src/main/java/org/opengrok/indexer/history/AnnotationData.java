@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -235,30 +236,14 @@ public class AnnotationData implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        AnnotationData other = (AnnotationData) obj;
-        if (!Objects.deepEquals(getLines(), other.getLines())) {
-            return false;
-        }
-        if (!Objects.equals(getFilename(), other.getFilename())) {
-            return false;
-        }
-        if (!Objects.equals(getWidestAuthor(), other.getWidestAuthor())) {
-            return false;
-        }
-        if (!Objects.equals(getWidestRevision(), other.getWidestRevision())) {
-            return false;
-        }
-        if (!Objects.equals(getRevision(), other.getRevision())) {
-            return false;
-        }
-
-        return true;
+        return Optional.ofNullable(obj)
+                .filter(other -> getClass() == other.getClass())
+                .map(AnnotationData.class::cast)
+                .filter(other -> Objects.deepEquals(getLines(), other.getLines()))
+                .filter(other -> Objects.equals(getFilename(), other.getFilename()))
+                .filter(other -> Objects.equals(getWidestAuthor(), other.getWidestAuthor()))
+                .filter(other -> Objects.equals(getWidestRevision(), other.getWidestRevision()))
+                .filter(other -> Objects.equals(getRevision(), other.getRevision()))
+                .isPresent();
     }
 }

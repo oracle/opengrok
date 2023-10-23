@@ -436,7 +436,7 @@ public class Context {
                 out.write("<a href=\"" + Util.uriEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
+            LOGGER.log(Level.WARNING, e, () -> "Could not get context for " + path);
         } finally {
             IOUtils.close(in);
 

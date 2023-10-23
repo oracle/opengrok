@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,7 +63,7 @@ import static org.opengrok.web.util.FileUtil.toFile;
 @Path(DirectoryListingController.PATH)
 public class DirectoryListingController {
 
-    public static final String PATH = "/list";
+    public static final String PATH = "list";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListingController.class);
 
@@ -108,37 +109,17 @@ public class DirectoryListingController {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final DirectoryEntryDTO other = (DirectoryEntryDTO) obj;
-
-            if (!Objects.equals(this.path, other.path)) {
-                return false;
-            }
-            if (!Objects.equals(this.date, other.date)) {
-                return false;
-            }
-            if (!Objects.equals(this.numLines, other.numLines)) {
-                return false;
-            }
-            if (!Objects.equals(this.loc, other.loc)) {
-                return false;
-            }
-            if (!Objects.equals(this.description, other.description)) {
-                return false;
-            }
-            if (!Objects.equals(this.pathDescription, other.pathDescription)) {
-                return false;
-            }
-            if (this.isDirectory != other.isDirectory) {
-                return false;
-            }
-
-            return true;
+            return Optional.ofNullable(obj)
+                    .filter(other -> getClass() == other.getClass())
+                    .map(DirectoryEntryDTO.class::cast)
+                    .filter(other -> Objects.equals(this.path, other.path))
+                    .filter(other -> Objects.equals(this.date, other.date))
+                    .filter(other -> Objects.equals(this.numLines, other.numLines))
+                    .filter(other -> Objects.equals(this.loc, other.loc))
+                    .filter(other -> Objects.equals(this.description, other.description))
+                    .filter(other -> Objects.equals(this.pathDescription, other.pathDescription))
+                    .filter(other -> this.isDirectory == other.isDirectory)
+                    .isPresent();
         }
 
         @Override

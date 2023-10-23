@@ -94,7 +94,7 @@ public class AccuRevRepository extends Repository {
     /**
      * This will be /./ on Unix and \.\ on Windows .
      */
-    private static final String depotRoot = String.format("%s.%s", File.separator, File.separator);
+    private static final String DEPOT_ROOT = String.format("%s.%s", File.separator, File.separator);
 
     public AccuRevRepository() {
         type = "AccuRev";
@@ -138,7 +138,7 @@ public class AccuRevRepository extends Repository {
      * @param file file for which history is to be retrieved.
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(File file) throws IOException {
+    Executor getHistoryLogExecutor(File file) {
 
         // Do not use absolute paths because symbolic links will cause havoc.
         String path = getDepotRelativePath( file );
@@ -404,7 +404,7 @@ public class AccuRevRepository extends Repository {
      */
     public String getDepotRelativePath(File file) {
 
-        String path = depotRoot;
+        String path = DEPOT_ROOT;
         try {
             // This should turn any symbolically linked paths into the real thing...
             Path realPath = Paths.get(file.toString()).toRealPath();
@@ -413,7 +413,7 @@ public class AccuRevRepository extends Repository {
             String relativePath = realPath.toString().substring(wsRoot.length());
 
             if (relativePath.length() > 0) {
-                path = Paths.get(depotRoot, relativePath).toString();
+                path = Paths.get(DEPOT_ROOT, relativePath).toString();
             }
 
         } catch (IOException e) {

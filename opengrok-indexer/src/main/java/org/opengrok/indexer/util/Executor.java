@@ -283,7 +283,7 @@ public class Executor {
                             msg.append(new String(stderr));
                     }
             }
-            LOGGER.log(Level.WARNING, msg.toString());
+            LOGGER.log(Level.WARNING, msg::toString);
         }
 
         return ret;

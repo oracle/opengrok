@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.decoders.IUserDecoder;
+import opengrok.auth.plugin.decoders.UserDecoderException;
 import opengrok.auth.plugin.entity.User;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
 import org.opengrok.indexer.configuration.Group;
@@ -80,7 +81,7 @@ public class UserPlugin implements IAuthorizationPlugin {
             decoder = getDecoder(decoderName);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
                 InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException("cannot load decoder " + decoderName, e);
+            throw new UserDecoderException(decoderName, e);
         }
     }
 

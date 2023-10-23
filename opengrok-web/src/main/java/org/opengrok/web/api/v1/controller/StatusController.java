@@ -43,7 +43,7 @@ import static org.opengrok.web.api.v1.controller.StatusController.PATH;
 @Path(PATH)
 public class StatusController {
 
-    public static final String PATH = "/status";
+    public static final String PATH = "status";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusController.class);
 

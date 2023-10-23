@@ -46,9 +46,9 @@ abstract class AdaLexer extends JFlexSymbolMatcher
 
         int off = 0;
         do {
-            int w = 1, ri, ni, i;
-            ri = value.indexOf("\r", off);
-            ni = value.indexOf("\n", off);
+            int w = 1, i;
+            int ri = value.indexOf("\r", off);
+            int ni = value.indexOf("\n", off);
             if (ri == -1 && ni == -1) {
                 String sub = value.substring(off);
                 offer(sub);
@@ -93,5 +93,6 @@ abstract class AdaLexer extends JFlexSymbolMatcher
      * Subclasses must override to get the constant value created by JFlex to
      * represent SCOMMENT.
      */
+    @SuppressWarnings("java:S100")
     abstract int SCOMMENT();
 }

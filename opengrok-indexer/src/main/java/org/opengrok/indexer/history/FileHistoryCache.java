@@ -809,7 +809,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         // Wait for all the futures to complete. This is important as they are modifying the input parameter.
         for (Future<Boolean> future : futures) {
             try {
-                if (!future.get()) {
+                if (Boolean.FALSE.equals(future.get())) {
                     ret = false;
                 }
             } catch (Exception e) {

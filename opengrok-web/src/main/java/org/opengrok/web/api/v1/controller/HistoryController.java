@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 
 import static org.opengrok.web.util.FileUtil.toFile;
@@ -99,32 +100,16 @@ public final class HistoryController {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final HistoryEntryDTO other = (HistoryEntryDTO) obj;
-            if (!Objects.equals(this.revision, other.revision)) {
-                return false;
-            }
-            if (!Objects.equals(this.date, other.date)) {
-                return false;
-            }
-            if (!Objects.equals(this.author, other.author)) {
-                return false;
-            }
-            if (!Objects.equals(this.tags, other.tags)) {
-                return false;
-            }
-            if (!Objects.equals(this.message, other.message)) {
-                return false;
-            }
-            if (!Objects.equals(this.files, other.files)) {
-                return false;
-            }
-            return true;
+            return Optional.ofNullable(obj)
+                    .filter(other -> getClass() == other.getClass())
+                    .map(HistoryEntryDTO.class::cast)
+                    .filter(other -> Objects.equals(this.revision, other.revision))
+                    .filter(other -> Objects.equals(this.date, other.date))
+                    .filter(other -> Objects.equals(this.author, other.author))
+                    .filter(other -> Objects.equals(this.tags, other.tags))
+                    .filter(other -> Objects.equals(this.message, other.message))
+                    .filter(other -> Objects.equals(this.files, other.files))
+                    .isPresent();
         }
 
         @Override
@@ -161,26 +146,14 @@ public final class HistoryController {
         }
 
         public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final HistoryDTO other = (HistoryDTO) obj;
-            if (!Objects.equals(this.entries, other.entries)) {
-                return false;
-            }
-            if (!Objects.equals(this.start, other.start)) {
-                return false;
-            }
-            if (!Objects.equals(this.count, other.count)) {
-                return false;
-            }
-            if (!Objects.equals(this.total, other.total)) {
-                return false;
-            }
-            return true;
+            return Optional.ofNullable(obj)
+                    .filter(other -> getClass() == other.getClass())
+                    .map(HistoryDTO.class::cast)
+                    .filter(other -> Objects.equals(this.entries, other.entries))
+                    .filter(other -> Objects.equals(this.start, other.start))
+                    .filter(other -> Objects.equals(this.count, other.count))
+                    .filter(other -> Objects.equals(this.total, other.total))
+                    .isPresent();
         }
 
         @Override
