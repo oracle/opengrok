@@ -57,6 +57,7 @@ def check_call_config(call):
     """
     :param call: dictionary with API call configuration
     """
+
     if not isinstance(call, dict):
         raise CommandConfigurationException("call value not a dictionary: {}".
                                             format(call))
@@ -100,8 +101,11 @@ def check_command_config(command):
     """
     :param command: dictionary with executable command configuration
     """
+
     if not isinstance(command, dict):
         raise CommandConfigurationException(f"command value not a dictionary: {command}")
+
+    print(f"XXX {command.keys()}")
 
     for key in command.keys():
         if key not in [ENV_PROPERTY, ARGS_PROPERTY, LIMITS_PROPERTY, ARGS_SUBST_PROPERTY]:
@@ -140,19 +144,31 @@ def check_command_property(command):
     if not isinstance(command, dict):
         raise CommandConfigurationException("command '{}' is not a dictionary".format(command))
 
-    command_value = command.get(COMMAND_PROPERTY)
-    call_value = command.get(CALL_PROPERTY)
-    if command_value is None and call_value is None:
-        raise CommandConfigurationException(f"command dictionary has unknown key: {command}")
+    for key in command.keys():
+        if key not in [COMMAND_PROPERTY, CALL_PROPERTY]:
+            raise CommandConfigurationException(f"command dictionary has unknown key: {command}")
 
-    if command_value and not isinstance(command_value, dict):
-        raise CommandConfigurationException("command value not a dictionary: {}".
-                                            format(command_value))
-    if call_value:
-        check_call_config(call_value)
+    # There is difference between dictionary key that is missing and dictionary key that has None value.
+    # The get() function cannot distinguish between these two. Given the latter is sometimes a result
+    # of YAML parsing, use the below code to catch it.
+    try:
+        command_value = command[COMMAND_PROPERTY]
+        if command_value is None:
+            raise CommandConfigurationException("empty command value")
 
-    if command_value:
         check_command_config(command_value)
+        return
+    except KeyError:
+        pass
+
+    try:
+        call_value = command[CALL_PROPERTY]
+        if call_value is None:
+            raise CommandConfigurationException("empty call value")
+
+        check_call_config(call_value)
+    except KeyError:
+        pass
 
 
 class ApiCall:
