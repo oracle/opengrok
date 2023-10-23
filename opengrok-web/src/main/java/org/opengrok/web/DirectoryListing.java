@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -264,7 +262,7 @@ public class DirectoryListing {
 
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
-                printDirectoryEntry(contextPath, out, path, entry,dateFormatter);
+                printDirectoryEntry(contextPath, out, path, entry, dateFormatter);
             }
         }
         out.write("</tbody>\n</table>");
