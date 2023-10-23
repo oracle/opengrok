@@ -57,7 +57,6 @@ def check_call_config(call):
     """
     :param call: dictionary with API call configuration
     """
-
     if not isinstance(call, dict):
         raise CommandConfigurationException("call value not a dictionary: {}".
                                             format(call))
