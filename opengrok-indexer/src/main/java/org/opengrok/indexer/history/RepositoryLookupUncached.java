@@ -51,9 +51,8 @@ public class RepositoryLookupUncached implements RepositoryLookup {
                 try {
                     rel = canonicalizer.resolve(path, path.getFileSystem().getPath(rootKey));
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING,
-                        "Failed to get relative to canonical for " + nextPath,
-                        e);
+                    LOGGER.log(Level.WARNING, e, () ->
+                        "Failed to get relative to canonical for " + nextPath);
                     return null;
                 }
                 Repository repo;

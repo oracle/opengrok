@@ -38,7 +38,6 @@ import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.XrefWork;
 import org.opengrok.indexer.analysis.Xrefer;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
@@ -78,8 +77,6 @@ public class XMLAnalyzer extends TextAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
         doc.add(new OGKTextField(QueryBuilder.FULL, getReader(src.getStream())));
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {

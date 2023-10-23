@@ -1564,9 +1564,8 @@ public final class Configuration {
         List<Group> nonRootGroups = conf.groups.values().stream()
                 .filter(g -> Objects.nonNull(g.getParent()))
                 .collect(Collectors.toList());
-        nonRootGroups.forEach(g -> {
-                    conf.groups.remove(g.getName());
-                }
+        nonRootGroups.forEach(g ->
+                    conf.groups.remove(g.getName())
         );
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)

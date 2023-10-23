@@ -202,10 +202,10 @@ class RazorHistoryParser {
     }
 
     private void parseDebug(String message) {
-        LOGGER.log(Level.FINE, "RazorHistoryParser: " + message );
+        LOGGER.log(Level.FINE, () -> "RazorHistoryParser: " + message );
     }
 
     private void parseProblem(String message) {
-        LOGGER.log(Level.SEVERE, "PROBLEM: RazorHistoryParser - " + message);
+        LOGGER.log(Level.SEVERE, () -> "PROBLEM: RazorHistoryParser - " + message);
     }
 }

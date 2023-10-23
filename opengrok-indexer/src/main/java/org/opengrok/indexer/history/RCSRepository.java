@@ -98,8 +98,8 @@ public class RCSRepository extends Repository {
             }
             return true;
         } catch (IOException ioe) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to retrieve revision " + rev + " of " + basename, ioe);
+            LOGGER.log(Level.SEVERE, ioe, () ->
+                    "Failed to retrieve revision " + rev + " of " + basename);
             return false;
         }
     }
@@ -146,12 +146,12 @@ public class RCSRepository extends Repository {
 
         // If there is at least one entry with the ',v' suffix,
         // consider this a RCS repository.
-        String[] list = rcsDir.list((dir, name) -> {
+        String[] list = rcsDir.list((dir, name) ->
             // Technically we should check whether the entry is a file
             // however this would incur additional I/O. The pattern
             // should be enough.
-            return name.matches(".*,v");
-        });
+            name.matches(".*,v")
+        );
 
         return (list.length > 0);
     }

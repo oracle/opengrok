@@ -168,9 +168,8 @@ public class RepositoryLookupCached implements RepositoryLookup {
                     }
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,
-                    "Failed to get relative to canonical for " + path + " and " + repoRoot,
-                    e);
+                LOGGER.log(Level.WARNING, e, () ->
+                    "Failed to get relative to canonical for " + path + " and " + repoRoot);
             }
         }
         return Optional.empty();

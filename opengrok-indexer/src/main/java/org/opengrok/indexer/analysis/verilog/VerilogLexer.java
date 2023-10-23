@@ -46,11 +46,13 @@ abstract class VerilogLexer extends JFlexSymbolMatcher
      * Subclasses must override to get the constant value created by JFlex to
      * represent COMMENT.
      */
+    @SuppressWarnings("java:S100")
     abstract int COMMENT();
 
     /**
      * Subclasses must override to get the constant value created by JFlex to
      * represent SCOMMENT.
      */
+    @SuppressWarnings("java:S100")
     abstract int SCOMMENT();
 }

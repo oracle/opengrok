@@ -209,13 +209,15 @@ public class DirectoryHistoryReader {
         if (citer == null || !citer.hasNext()) {
             if (aiter == null || !aiter.hasNext()) {
                 if (diter.hasNext()) {
-                    aiter = hash.get(idate = diter.next()).keySet().iterator();
+                    idate = diter.next();
+                    aiter = hash.get(idate).keySet().iterator();
                 } else {
                     return false;
                 }
 
             }
-            citer = hash.get(idate).get(iauthor = aiter.next()).keySet().iterator();
+            iauthor = aiter.next();
+            citer = hash.get(idate).get(iauthor).keySet().iterator();
         }
 
         icomment = citer.next();

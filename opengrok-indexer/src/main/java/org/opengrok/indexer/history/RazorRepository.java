@@ -260,8 +260,8 @@ public class RazorRepository extends Repository {
                 return true;
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "getHistoryGet( "
-                    + parent + ", " + basename + ", " + rev + ")", e);
+            LOGGER.log(Level.SEVERE, e, () -> "getHistoryGet( "
+                    + parent + ", " + basename + ", " + rev + ")");
         }
         return false;
     }

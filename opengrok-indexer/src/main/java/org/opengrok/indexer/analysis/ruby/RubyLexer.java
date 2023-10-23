@@ -350,7 +350,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (dHead.hereSettings != null && dHead.hereSettings.size() > 0) {
+        if (dHead.hereSettings != null && !dHead.hereSettings.isEmpty()) {
             HereDocSettings settings = dHead.hereSettings.peek();
             yypush(settings.state);
             disjointSpan(HtmlConsts.STRING_CLASS);
@@ -378,7 +378,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
 
         offer(capture);
 
-        if (dHead.hereSettings.size() > 0) {
+        if (!dHead.hereSettings.isEmpty()) {
             settings = dHead.hereSettings.peek();
             yybegin(settings.state);
             if (didZspan) {
