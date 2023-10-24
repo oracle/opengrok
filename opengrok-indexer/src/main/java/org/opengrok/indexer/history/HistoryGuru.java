@@ -1022,7 +1022,7 @@ public final class HistoryGuru {
         for (Map.Entry<Repository, Future<Optional<Exception>>> entry : futures.entrySet()) {
             try {
                 results.put(entry.getKey(), entry.getValue().get());
-            } catch (InterruptedException|ExecutionException ex) {
+            } catch (InterruptedException | ExecutionException ex) {
                 results.put(entry.getKey(), Optional.of(ex));
             }
         }
