@@ -33,7 +33,7 @@ from requests.exceptions import HTTPError
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
     CommandSequenceBase, CommandConfigurationException
-from opengrok_tools.utils.patterns import PROJECT_SUBST, CALL_PROPERTY
+from opengrok_tools.utils.patterns import PROJECT_SUBST, CALL_PROPERTY, COMMAND_PROPERTY
 
 
 def test_str():
@@ -72,6 +72,14 @@ def test_invalid_configuration_commands_no_dict2():
                                                     "command"]))
 
     assert str(exc_info.value).find("is not a dictionary") != -1
+
+
+@pytest.mark.parametrize('type', [COMMAND_PROPERTY, CALL_PROPERTY])
+def test_invalid_configuration_commands_none_value(type):
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", [{type: None}]))
+
+    assert str(exc_info.value).find("empty") != -1
 
 
 def test_timeout_propagation():
