@@ -126,6 +126,7 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean bareConfig = false;
     private static boolean awaitProfiler;
+    private static boolean ignoreHistoryCacheFailures = false;
 
     private static boolean help;
     private static String helpUsage;
@@ -399,6 +400,14 @@ public final class Indexer {
             // And now index it all.
             if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
+                if (ignoreHistoryCacheFailures) {
+                    if (historyCacheResults.entrySet().stream().anyMatch(e -> e.getValue().isPresent())) {
+                        LOGGER.log(Level.INFO, "There have been history cache creation failures, " +
+                                "however --ignoreHistoryCacheFailures was used, hence ignoring them: {0}",
+                                historyCacheResults);
+                    }
+                    historyCacheResults = Collections.emptyMap();
+                }
                 getInstance().doIndexerExecution(subFiles, progress, historyCacheResults);
             }
 
@@ -700,6 +709,13 @@ public final class Indexer {
                     "(prefixed with 'd:'). Pattern supports wildcards (example: -i '*.so'",
                     "-i d:'test*'). Option may be repeated.").execute(pattern ->
                     cfg.getIgnoredNames().add((String) pattern));
+
+            parser.on("--ignoreHistoryCacheFailures",
+                    "Ignore history cache creation failures. By default if there is a history cache",
+                    "creation failure for a repository that corresponds to the source being indexed,",
+                    "the indexer will not proceed, because it will result either in indexing slow down",
+                    "or incomplete index. This option overrides the failure. Assumes -H.").execute(v ->
+                    ignoreHistoryCacheFailures = true);
 
             parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
                     "Set OpenGrok/Lucene locking mode of the Lucene database during index",
