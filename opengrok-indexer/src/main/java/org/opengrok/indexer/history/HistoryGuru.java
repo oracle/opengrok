@@ -35,9 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -944,7 +946,7 @@ public final class HistoryGuru {
         }
     }
 
-    private void createHistoryCache(Repository repository, String sinceRevision) {
+    private void createHistoryCache(Repository repository, String sinceRevision) throws CacheException, HistoryException {
         if (!repository.isHistoryEnabled()) {
             LOGGER.log(Level.INFO,
                     "Skipping history cache creation for {0} and its subdirectories", repository);
@@ -955,14 +957,7 @@ public final class HistoryGuru {
             Statistics elapsed = new Statistics();
 
             LOGGER.log(Level.INFO, "Creating history cache for {0}", repository);
-
-            try {
-                repository.createCache(historyCache, sinceRevision);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING,
-                        String.format("An error occurred while creating cache for %s", repository), e);
-            }
-
+            repository.createCache(historyCache, sinceRevision);
             elapsed.report(LOGGER, String.format("Done history cache for %s", repository));
         } else {
             LOGGER.log(Level.WARNING,
@@ -970,11 +965,11 @@ public final class HistoryGuru {
         }
     }
 
-    private void createHistoryCacheReal(Collection<Repository> repositories) {
+    private Map<Repository, Optional<Exception>> createHistoryCacheReal(Collection<Repository> repositories) {
         if (repositories.isEmpty()) {
             LOGGER.log(Level.WARNING, "History cache is enabled however the list of repositories is empty. " +
                     "Either specify the repositories in configuration or let the indexer scan them.");
-            return;
+            return Collections.emptyMap();
         }
 
         Statistics elapsed = new Statistics();
@@ -999,20 +994,23 @@ public final class HistoryGuru {
             }
         }
 
-        LOGGER.log(Level.INFO, "Creating history cache for {0} repositories",
-                repos2process.size());
-        final CountDownLatch latch = new CountDownLatch(repos2process.size());
-        for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
-            executor.submit(() -> {
-                try {
-                    createHistoryCache(entry.getKey(), entry.getValue());
-                } catch (Exception ex) {
-                    // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING, "createHistoryCacheReal() got exception", ex);
-                } finally {
-                    latch.countDown();
-                }
-            });
+        LOGGER.log(Level.INFO, "Creating history cache for {0} repositories", repos2process.size());
+        Map<Repository, Future<Optional<Exception>>> futures = new HashMap<>();
+        try (Progress progress = new Progress(LOGGER, "repository invalidation", repos2process.size())) {
+            for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
+                futures.put(entry.getKey(), executor.submit(() -> {
+                    try {
+                        createHistoryCache(entry.getKey(), entry.getValue());
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        LOGGER.log(Level.WARNING, "createHistoryCacheReal() got exception", ex);
+                        return Optional.of(ex);
+                    } finally {
+                        progress.increment();
+                    }
+                    return Optional.empty();
+                }));
+            }
         }
 
         /*
@@ -1020,11 +1018,13 @@ public final class HistoryGuru {
          * since the next phase of generating index will need the history to
          * be ready as it is recorded in Lucene index.
          */
-        try {
-            latch.await();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
-            return;
+        Map<Repository, Optional<Exception>> results = new HashMap<>();
+        for (Map.Entry<Repository, Future<Optional<Exception>>> entry : futures.entrySet()) {
+            try {
+                results.put(entry.getKey(), entry.getValue().get());
+            } catch (InterruptedException|ExecutionException ex) {
+                results.put(entry.getKey(), Optional.of(ex));
+            }
         }
 
         // The cache has been populated. Now, optimize how it is stored on
@@ -1036,6 +1036,8 @@ public final class HistoryGuru {
         }
         elapsed.report(LOGGER, "Done history cache for all repositories", "indexer.history.cache");
         setHistoryIndexDone();
+
+        return results;
     }
 
     /**
@@ -1044,12 +1046,13 @@ public final class HistoryGuru {
      * internal map, e.g. via {@code setRepositories()} or {@code addRepositories()}.
      *
      * @param repositories list of repository paths
+     * @return map of repository to optional exception
      */
-    public void createHistoryCache(Collection<String> repositories) {
+    public Map<Repository, Optional<Exception>> createHistoryCache(Collection<String> repositories) {
         if (!useHistoryCache()) {
-            return;
+            return null;
         }
-        createHistoryCacheReal(getReposFromString(repositories));
+        return createHistoryCacheReal(getReposFromString(repositories));
     }
 
     /**
@@ -1161,13 +1164,14 @@ public final class HistoryGuru {
 
     /**
      * Create the history cache for all repositories.
+     * @return map of repository to optional exception
      */
-    public void createHistoryCache() {
+    public Map<Repository, Optional<Exception>> createHistoryCache() {
         if (!useHistoryCache()) {
-            return;
+            return Collections.emptyMap();
         }
 
-        createHistoryCacheReal(repositories.values());
+        return createHistoryCacheReal(repositories.values());
     }
 
     /**

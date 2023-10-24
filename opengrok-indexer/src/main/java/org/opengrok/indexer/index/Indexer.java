@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
@@ -371,7 +372,7 @@ public final class Indexer {
                     /*
                      * No search paths were specified. This means searching for the repositories under source root.
                      * To speed the process up, gather the directories directly underneath source root.
-                     * The HistoryGuru#addRepositories(File[], int) will search for the repositories
+                     * The HistoryGuru#addRepositories(File[]) will search for the repositories
                      * in these directories in parallel.
                      */
                     String[] dirs = env.getSourceRootFile().
@@ -385,8 +386,8 @@ public final class Indexer {
                         map(t -> Paths.get(env.getSourceRootPath(), t).toString()).
                         collect(Collectors.toSet());
             }
-            getInstance().prepareIndexer(env, searchPaths, addProjects,
-                    runIndex, subFiles, new ArrayList<>(repositories));
+            Map<Repository, Optional<Exception>> historyCacheResults = getInstance().prepareIndexer(env,
+                    searchPaths, addProjects, runIndex, subFiles, new ArrayList<>(repositories));
 
             // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
             // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
@@ -398,7 +399,7 @@ public final class Indexer {
             // And now index it all.
             if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(subFiles, progress);
+                getInstance().doIndexerExecution(subFiles, progress, historyCacheResults);
             }
 
             if (reduceSegmentCount) {
@@ -1029,15 +1030,16 @@ public final class Indexer {
 
     /**
      * Wrapper for prepareIndexer() that always generates history cache.
+     * @return map of repository to optional exception
      */
     @TestOnly
-    public void prepareIndexer(RuntimeEnvironment env,
-                               boolean searchRepositories,
-                               boolean addProjects,
-                               List<String> subFiles,
-                               List<String> repositories) throws IndexerException, IOException {
+    public Map<Repository, Optional<Exception>> prepareIndexer(RuntimeEnvironment env,
+                                                               boolean searchRepositories,
+                                                               boolean addProjects,
+                                                               List<String> subFiles,
+                                                               List<String> repositories) throws IndexerException, IOException {
 
-        prepareIndexer(env,
+        return prepareIndexer(env,
                 searchRepositories ? Collections.singleton(env.getSourceRootPath()) : Collections.emptySet(),
                 addProjects, true, subFiles, repositories);
     }
@@ -1049,21 +1051,23 @@ public final class Indexer {
      * generated for repositories (at least for those which support getting
      * history per directory).
      * </p>
-     * @param env runtime environment
-     * @param searchPaths list of paths relative to source root in which to search for repositories
-     * @param addProjects if true, add projects
+     *
+     * @param env                runtime environment
+     * @param searchPaths        list of paths relative to source root in which to search for repositories
+     * @param addProjects        if true, add projects
      * @param createHistoryCache create history cache flag
-     * @param subFiles list of directories
-     * @param repositories list of repository paths relative to source root
+     * @param subFiles           list of directories
+     * @param repositories       list of repository paths relative to source root
+     * @return map of repository to exception
      * @throws IndexerException indexer exception
-     * @throws IOException I/O exception
+     * @throws IOException      I/O exception
      */
-    public void prepareIndexer(RuntimeEnvironment env,
-                               Set<String> searchPaths,
-                               boolean addProjects,
-                               boolean createHistoryCache,
-                               List<String> subFiles,
-                               List<String> repositories) throws IndexerException, IOException {
+    public Map<Repository, Optional<Exception>> prepareIndexer(RuntimeEnvironment env,
+                                                               Set<String> searchPaths,
+                                                               boolean addProjects,
+                                                               boolean createHistoryCache,
+                                                               List<String> subFiles,
+                                                               List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
             throw new IndexerException("Could not find working Universal ctags. " +
@@ -1090,16 +1094,20 @@ public final class Indexer {
 
         if (createHistoryCache) {
             // Even if history is disabled globally, it can be enabled for some repositories.
+            Map<Repository, Optional<Exception>> historyCacheResults;
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: {0}",
                         String.join(",", repositories));
-                HistoryGuru.getInstance().createHistoryCache(repositories);
+                historyCacheResults = HistoryGuru.getInstance().createHistoryCache(repositories);
             } else {
                 LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-                HistoryGuru.getInstance().createHistoryCache();
+                historyCacheResults = HistoryGuru.getInstance().createHistoryCache();
             }
             LOGGER.info("Done generating history cache");
+            return historyCacheResults;
         }
+
+        return Collections.emptyMap();
     }
 
     private void addProjects(File[] files, Map<String, Project> projects) {
@@ -1133,6 +1141,10 @@ public final class Indexer {
         }
     }
 
+    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
+        doIndexerExecution(subFiles, progress, Collections.emptyMap());
+    }
+
     /**
      * This is the second phase of the indexer which generates Lucene index
      * by passing source code files through ctags, generating xrefs
@@ -1142,7 +1154,9 @@ public final class Indexer {
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
+    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress,
+                                   Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+
         Statistics elapsed = new Statistics();
         LOGGER.info("Starting indexing");
 
@@ -1150,7 +1164,7 @@ public final class Indexer {
         try (IndexerParallelizer parallelizer = env.getIndexerParallelizer()) {
             final CountDownLatch latch;
             if (subFiles == null || subFiles.isEmpty()) {
-                latch = IndexDatabase.updateAll(progress);
+                latch = IndexDatabase.updateAll(progress, historyCacheResults);
             } else {
                 List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -1159,24 +1173,7 @@ public final class Indexer {
                     if (project == null && env.hasProjects()) {
                         LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
-                        IndexDatabase db;
-                        if (project == null) {
-                            db = new IndexDatabase();
-                        } else {
-                            db = new IndexDatabase(project);
-                        }
-                        int idx = dbs.indexOf(db);
-                        if (idx != -1) {
-                            db = dbs.get(idx);
-                        }
-
-                        if (db.addDirectory(path)) {
-                            if (idx == -1) {
-                                dbs.add(db);
-                            }
-                        } else {
-                            LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
-                        }
+                        addIndexDatabase(path, project, dbs, historyCacheResults);
                     }
                 }
 
@@ -1204,8 +1201,34 @@ public final class Indexer {
                         " for executor to finish", exp);
             }
             elapsed.report(LOGGER, "Done indexing data of all repositories", "indexer.repository.indexing");
-
+        } finally {
             CtagsUtil.deleteTempFiles();
+        }
+    }
+
+    private static void addIndexDatabase(String path, Project project, List<IndexDatabase> dbs,
+                                         Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+        IndexDatabase db;
+        if (project == null) {
+            db = new IndexDatabase();
+        } else {
+            db = new IndexDatabase(project);
+        }
+        int idx = dbs.indexOf(db);
+        if (idx != -1) {
+            db = dbs.get(idx);
+        }
+
+        if (db.addDirectory(path)) {
+            if (idx == -1) {
+                if (project == null) {
+                    IndexDatabase.addIndexDatabase(db, dbs, historyCacheResults);
+                } else {
+                    IndexDatabase.addIndexDatabaseForProject(db, project, dbs, historyCacheResults);
+                }
+            }
+        } else {
+            LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
         }
     }
 
