@@ -614,6 +614,26 @@ public final class HistoryGuru {
             return false;
         }
 
+        if (!repositoryHasHistory(file, repo)) {
+            return false;
+        }
+
+        // This should return true for Annotate view.
+        Configuration.RemoteSCM globalRemoteSupport = env.getRemoteScmSupported();
+        boolean remoteSupported = ((globalRemoteSupport == RemoteSCM.ON)
+                || (globalRemoteSupport == RemoteSCM.UIONLY)
+                || (globalRemoteSupport == RemoteSCM.DIRBASED)
+                || !repo.isRemote());
+
+        if (!remoteSupported) {
+            LOGGER.log(Level.FINEST, "not eligible to display history for ''{0}'' as repository {1} is remote " +
+                    "and the global setting is {2}", new Object[]{file, repo, globalRemoteSupport});
+        }
+
+        return remoteSupported;
+    }
+
+    private static boolean repositoryHasHistory(File file, Repository repo) {
         if (!repo.isWorking()) {
             LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check history presence",
                     new Object[]{repo, file});
@@ -632,19 +652,7 @@ public final class HistoryGuru {
             return false;
         }
 
-        // This should return true for Annotate view.
-        Configuration.RemoteSCM globalRemoteSupport = env.getRemoteScmSupported();
-        boolean remoteSupported = ((globalRemoteSupport == RemoteSCM.ON)
-                || (globalRemoteSupport == RemoteSCM.UIONLY)
-                || (globalRemoteSupport == RemoteSCM.DIRBASED)
-                || !repo.isRemote());
-
-        if (!remoteSupported) {
-            LOGGER.log(Level.FINEST, "not eligible to display history for ''{0}'' as repository {1} is remote " +
-                    "and the global setting is {2}", new Object[]{file, repo, globalRemoteSupport});
-        }
-
-        return remoteSupported;
+        return true;
     }
 
     /**
