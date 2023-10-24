@@ -465,7 +465,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
              RevWalk walk = new RevWalk(repository)) {
 
             if (sinceRevision != null) {
-                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+                ObjectId objId = repository.resolve(sinceRevision);
+                if (objId == null) {
+                    throw new HistoryException("cannot resolve " + sinceRevision);
+                }
+                walk.markUninteresting(walk.lookupCommit(objId));
             }
             ObjectId objId = repository.resolve(Constants.HEAD);
             if (objId == null) {
