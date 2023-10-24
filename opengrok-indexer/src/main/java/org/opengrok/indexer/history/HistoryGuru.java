@@ -1001,9 +1001,9 @@ public final class HistoryGuru {
                 futures.put(entry.getKey(), executor.submit(() -> {
                     try {
                         createHistoryCache(entry.getKey(), entry.getValue());
-                    } catch (Exception ex) {
-                        // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING, "createHistoryCacheReal() got exception", ex);
+                    } catch (Exception ex) {    // We want to catch any exception since we are in thread.
+                        LOGGER.log(Level.WARNING,
+                                String.format("failed to create history cache for %s", entry.getKey()), ex);
                         return Optional.of(ex);
                     } finally {
                         progress.increment();
