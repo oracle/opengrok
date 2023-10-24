@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -49,9 +49,8 @@ include file="/menu.jspf"
     PageConfig cfg = PageConfig.get(request);
     String configError = "";
     if (!cfg.hasHistory()) {
-        configError = "Resource lacks history info. Was remote SCM side up when indexing occurred? "
-            + "Cleanup history cache dir(or just the .gz for the file or db record) and rerun indexer making sure remote side will respond during indexing.";
-   }
+        configError = "Resource lacks history info.";
+    }
 %>
     <h3 class="error">Error: File not found!</h3>
     <p>The requested resource is not available. </p>
