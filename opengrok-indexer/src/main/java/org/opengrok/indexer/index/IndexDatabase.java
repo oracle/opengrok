@@ -255,7 +255,7 @@ public class IndexDatabase {
         Map<Repository, Optional<Exception>> projectReposWithException = historyCacheResults.entrySet().
                 stream().
                 filter(e -> e.getValue().isPresent()).
-                filter(e -> e.getKey().getDirectoryNameRelative().startsWith(project.getName())).
+                filter(e -> project.equals(Project.getProject(e.getKey().getDirectoryNameRelative()))).
                 collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         if (projectReposWithException.isEmpty()) {
