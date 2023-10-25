@@ -22,10 +22,12 @@
  */
 package org.opengrok.indexer.history;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -39,6 +41,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,8 +51,8 @@ public class HistoryCacheResultsTest {
 
     private static RuntimeEnvironment env;
 
-    @BeforeAll
-    static void setUpClass() throws Exception {
+    @BeforeEach
+    void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         env.setHistoryEnabled(true);
 
@@ -58,8 +61,8 @@ public class HistoryCacheResultsTest {
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @AfterAll
-    static void tearDownClass() {
+    @AfterEach
+    void tearDownClass() {
         repository.destroy();
     }
 
@@ -80,26 +83,30 @@ public class HistoryCacheResultsTest {
      * Test that the return value of {@link Indexer#prepareIndexer(RuntimeEnvironment, boolean, boolean, List, List)}
      * contains the repository for which history cache cannot be generated and associated exception.
      */
-    @Test
-    void testCorruptRepository() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testCorruptRepository(boolean isProjectsEnabled) throws Exception {
+        Indexer indexer = Indexer.getInstance();
+        env.setProjectsEnabled(isProjectsEnabled);
+
         Map<Repository, Optional<Exception>> results = Indexer.getInstance().prepareIndexer(
                 env,
                 true, // search for repositories
-                true, // scan and add projects
+                isProjectsEnabled, // scan and add projects
                 null, // subFiles
                 null); // repositories
 
         assertEquals(0, results.values().stream().filter(Optional::isPresent).count());
 
-        File root = new File(repository.getSourceRoot(), "git");
+        final String projectName = "git";
+        File root = new File(repository.getSourceRoot(), projectName);
         assertTrue(root.isDirectory());
-        final String repoName = "git";
-        corruptGitRepo(root, repoName);
+        corruptGitRepo(root, projectName);
 
-        results = Indexer.getInstance().prepareIndexer(
+        results = indexer.prepareIndexer(
                 env,
                 true, // search for repositories
-                true, // scan and add projects
+                isProjectsEnabled, // scan and add projects
                 null, // subFiles
                 null); // repositories
 
@@ -108,10 +115,25 @@ public class HistoryCacheResultsTest {
                 map(Map.Entry::getKey).collect(Collectors.toList());
         assertEquals(1, repos.size());
         Repository repo = repos.get(0);
-        assertTrue(repo.getDirectoryName().contains(repoName));
+        assertEquals(File.separator + projectName, repo.getDirectoryNameRelative());
         Optional<Exception> repoResult = results.get(repo);
         assertTrue(repoResult.isPresent());
         Exception exception = repoResult.get();
         assertTrue(exception instanceof HistoryException);
+
+        indexer.doIndexerExecution(null, null, results);
+        if (isProjectsEnabled) {
+            for (String project : env.getProjectNames()) {
+                Path indexPath = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR, project);
+                if (project.equals(projectName)) {
+                    assertFalse(indexPath.toFile().isDirectory());
+                } else {
+                    assertTrue(indexPath.toFile().isDirectory());
+                }
+            }
+        } else {
+            Path indexPath = Path.of(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
+            assertFalse(indexPath.toFile().isDirectory());
+        }
     }
 }
