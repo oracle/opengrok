@@ -398,7 +398,7 @@ public final class Indexer {
             // prepareIndexer() populated the list of projects so now default projects can be set.
             env.setDefaultProjectsFromNames(defaultProjects);
 
-            // And now index it all.
+            // With the history cache results in hand, head over to the 2nd phase of the indexing.
             if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
                 if (ignoreHistoryCacheFailures) {
