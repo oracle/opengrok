@@ -96,7 +96,7 @@ public class BZip2Analyzer extends FileAnalyzer {
             if (!(fa instanceof BZip2Analyzer)) {
                 this.g = Optional.ofNullable(fa.getGenre())
                         .filter( genre -> genre == Genre.PLAIN || genre == Genre.XREFABLE)
-                        .map(genre ->Genre.XREFABLE)
+                        .map(genre -> Genre.XREFABLE)
                         .orElse(Genre.DATA);
                 fa.analyze(doc, bzSrc, xrefOut);
                 if (doc.get(QueryBuilder.T) != null) {
