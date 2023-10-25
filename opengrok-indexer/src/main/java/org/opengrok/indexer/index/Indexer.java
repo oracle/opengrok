@@ -402,7 +402,7 @@ public final class Indexer {
             if (runIndex) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
                 if (ignoreHistoryCacheFailures) {
-                    if (historyCacheResults.entrySet().stream().anyMatch(e -> e.getValue().isPresent())) {
+                    if (historyCacheResults.values().stream().anyMatch(Optional::isPresent)) {
                         LOGGER.log(Level.INFO, "There have been history cache creation failures, " +
                                 "however --ignoreHistoryCacheFailures was used, hence ignoring them: {0}",
                                 historyCacheResults);
