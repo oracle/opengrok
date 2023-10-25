@@ -92,7 +92,7 @@ class HistoryGuruTest {
         // a bit incomprehensible, it does not make sense to run the rest of tests
         // if the basic functionality does not work.
         env.setRepositories(repository.getSourceRoot());
-        assertTrue(histGuru.getRepositories().size() > 0);
+        assertFalse(histGuru.getRepositories().isEmpty());
         assertEquals(histGuru.getRepositories().size(),
                 env.getRepositories().size());
 
@@ -169,7 +169,7 @@ class HistoryGuruTest {
         History history = instance.getHistory(file);
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
-        assertTrue(history.getHistoryEntries().size() > 0);
+        assertFalse(history.getHistoryEntries().isEmpty());
         String revision = history.getHistoryEntries().get(1).getRevision();
         annotation = instance.annotate(file, revision, false);
         assertNull(annotation);

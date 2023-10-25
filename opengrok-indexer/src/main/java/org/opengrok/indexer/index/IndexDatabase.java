@@ -42,7 +42,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -247,23 +249,57 @@ public class IndexDatabase {
         LIVE_CHECK_FIELDS.add(QueryBuilder.PATH);
     }
 
+    public static void addIndexDatabaseForProject(@Nullable IndexDatabase db, Project project, List<IndexDatabase> dbs,
+                                           Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+
+        Map<Repository, Optional<Exception>> projectReposWithException = historyCacheResults.entrySet().
+                stream().
+                filter(e -> e.getValue().isPresent()).
+                filter(e -> project.equals(Project.getProject(e.getKey().getDirectoryNameRelative()))).
+                collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+        if (projectReposWithException.isEmpty()) {
+            dbs.add(db != null ? db : new IndexDatabase(project));
+        } else {
+            LOGGER.log(Level.SEVERE, "Failed to create history cache for some repositories of project {0}: {1}",
+                    new Object[]{project, projectReposWithException});
+        }
+    }
+
+    public static void addIndexDatabase(@Nullable IndexDatabase db, List<IndexDatabase> dbs,
+                                        Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+
+        Map<Repository, Optional<Exception>> reposWithException = historyCacheResults.entrySet().stream().
+                filter(e -> e.getValue().isPresent()).
+                collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+        if (reposWithException.isEmpty()) {
+            dbs.add(db != null ? db : new IndexDatabase());
+        } else {
+            LOGGER.log(Level.SEVERE, "Failed to create history cache for some repositories: {0}",
+                    reposWithException);
+        }
+    }
+
     /**
      * Update the index database for all the projects.
      *
      * @param listener where to signal the changes to the database
+     * @param historyCacheResults map of repository to optional exception
      * @throws IOException if an error occurs
      */
-    static CountDownLatch updateAll(IndexChangedListener listener) throws IOException {
+    static CountDownLatch updateAll(IndexChangedListener listener,
+                                    Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
             for (Project project : env.getProjectList()) {
-                dbs.add(new IndexDatabase(project));
+                addIndexDatabaseForProject(null, project, dbs, historyCacheResults);
             }
         } else {
-            dbs.add(new IndexDatabase());
+            addIndexDatabase(null, dbs, historyCacheResults);
         }
 
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();

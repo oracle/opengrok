@@ -465,9 +465,17 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
              RevWalk walk = new RevWalk(repository)) {
 
             if (sinceRevision != null) {
-                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+                ObjectId objId = repository.resolve(sinceRevision);
+                if (objId == null) {
+                    throw new HistoryException("cannot resolve " + sinceRevision);
+                }
+                walk.markUninteresting(walk.lookupCommit(objId));
             }
-            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+            ObjectId objId = repository.resolve(Constants.HEAD);
+            if (objId == null) {
+                throw new HistoryException("cannot resolve HEAD");
+            }
+            walk.markStart(walk.parseCommit(objId));
 
             for (RevCommit commit : walk) {
                 // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
