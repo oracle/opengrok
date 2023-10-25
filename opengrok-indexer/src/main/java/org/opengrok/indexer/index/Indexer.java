@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
@@ -1167,11 +1168,11 @@ public final class Indexer {
      * by passing source code files through ctags, generating xrefs
      * and storing data from the source files in the index (along with history, if any).
      *
-     * @param subFiles index just some subdirectories
-     * @param progress object to receive notifications as indexer progress is made
+     * @param subFiles if not {@code null}, index just some subdirectories
+     * @param progress if not {@code null}, an object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress,
+    public void doIndexerExecution(@Nullable List<String> subFiles, @Nullable IndexChangedListener progress,
                                    Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
 
         Statistics elapsed = new Statistics();
