@@ -29,9 +29,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
@@ -74,8 +76,9 @@ import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 public class ProjectsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectsController.class);
+    private static final String NO_REPO_LOG_MSG = "no repositories found for project ''{0}''";
 
-    public static final String PROJECTS_PATH = "/projects";
+    public static final String PROJECTS_PATH = "projects";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -131,19 +134,14 @@ public class ProjectsController {
                 List<RepositoryInfo> allrepos = env.getRepositories();
                 synchronized (allrepos) {
                     // newly added repository
-                    for (RepositoryInfo repo : repos) {
-                        if (!allrepos.contains(repo)) {
-                            allrepos.add(repo);
-                        }
-                    }
+                    repos.stream()
+                            .filter(repo -> !allrepos.contains(repo))
+                            .forEach(allrepos::add);
                     // deleted repository
-                    if (map.containsKey(project)) {
-                        for (RepositoryInfo repo : map.get(project)) {
-                            if (!repos.contains(repo)) {
-                                allrepos.remove(repo);
-                            }
-                        }
-                    }
+                    Optional.ofNullable(map.get(project))
+                            .stream().flatMap(Collection::stream)
+                            .filter(repo -> !repos.contains(repo))
+                            .forEach(allrepos::remove);
                 }
 
                 map.put(project, repos);
@@ -249,7 +247,7 @@ public class ProjectsController {
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
-            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", projectName);
+            LOGGER.log(Level.INFO, NO_REPO_LOG_MSG, projectName);
             return;
         }
 
@@ -274,7 +272,7 @@ public class ProjectsController {
         Project project = getProjectFromName(projectNameParam);
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
-            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", project.getName());
+            LOGGER.log(Level.INFO, NO_REPO_LOG_MSG, project.getName());
             return null;
         }
 
@@ -307,7 +305,7 @@ public class ProjectsController {
         Project project = getProjectFromName(projectNameParam);
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
-            LOGGER.log(Level.INFO, "no repositories found for project ''{0}''", project.getName());
+            LOGGER.log(Level.INFO, NO_REPO_LOG_MSG, project.getName());
             return null;
         }
 

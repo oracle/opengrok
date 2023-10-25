@@ -22,7 +22,7 @@
     'use strict';
 
     // constructor
-    var SearchableOptionList = function ($element, options) {
+    let SearchableOptionList = function ($element, options) {
         this.$originalElement = $element;
         this.options = options;
 
@@ -80,7 +80,7 @@
                 onChange: undefined,
                 onScroll: function () {
 
-                    var selectionContainerYPos = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight(false),
+                    let selectionContainerYPos = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight(false),
                         selectionContainerHeight = this.$selectionContainer.outerHeight(false),
                         selectionContainerBottom = selectionContainerYPos + selectionContainerHeight,
                         displayContainerAboveInput = this.config.displayContainerAboveInput || document.documentElement.clientHeight - this.config.scrollTarget.scrollTop() < selectionContainerBottom,
@@ -104,7 +104,7 @@
                         selectionContainerWidth = selectionContainerWidth * 1.2;
                     } else {
 
-                        var borderRadiusSelector = displayContainerAboveInput ? 'border-bottom-right-radius' : 'border-top-right-radius';
+                        let borderRadiusSelector = displayContainerAboveInput ? 'border-bottom-right-radius' : 'border-top-right-radius';
 
                         // no border radius on top
                         this.$selectionContainer
@@ -154,7 +154,7 @@
             this.valMap = null;
             this.config = $.extend(true, {}, this.defaults, this.options, this.metadata);
 
-            var originalName = this._getNameAttribute(),
+            let originalName = this._getNameAttribute(),
                 sol = this;
 
             if (!originalName) {
@@ -204,7 +204,7 @@
 
         // shows an error label
         _showErrorLabel: function (message) {
-            var $errorMessage = $('<div style="color: red; font-weight: bold;" />').html(message);
+            let $errorMessage = $('<div style="color: red; font-weight: bold;" />').html(message);
             if (!this.$container) {
                 $errorMessage.insertAfter(this.$originalElement);
             } else {
@@ -219,7 +219,7 @@
                     // if clicked inside a sol element close all others
                     // else close all sol containers
 
-                    var $clickedElement = $(event.target),
+                    let $clickedElement = $(event.target),
                         $closestSelectionContainer = $clickedElement.closest('.sol-selection-container'),
                         $closestInnerContainer = $clickedElement.closest('.sol-inner-container'),
                         $clickedWithinThisSolContainer;
@@ -246,7 +246,7 @@
 
         // add sol ui elements
         _initializeUiElements: function () {
-            var self = this;
+            let self = this;
 
             this.internalScrollWrapper = function () {
                 if ($.isFunction(self.config.events.onScroll)) {
@@ -267,7 +267,7 @@
                 return false;
             });
 
-            var $inputContainer = $('<div class="sol-input-container"/>').append(this.$input);
+            let $inputContainer = $('<div class="sol-input-container"/>').append(this.$input);
             this.$innerContainer = $('<div class="sol-inner-container"/>').append($inputContainer).append(this.$caret);
             this.$selection = $('<div class="sol-selection"/>');
             this.$selectionContainer = $('<div class="sol-selection-container"/>')
@@ -282,7 +282,7 @@
                  */
                 .keydown(function (e) {
                     if (e.keyCode == 13) {
-                        var concat = '';
+                        let concat = '';
                         $("#sbox #qtbl input[type='text']").each(function () {
                             concat += $.trim($(this).val());
                         });
@@ -292,7 +292,7 @@
                                 window.location = document.xrefPath + '/' + self.$input.val();
                                 return false;
                             }
-                            var $el = $(".keyboard-selection").first().find(".sol-checkbox")
+                            let $el = $(".keyboard-selection").first().find(".sol-checkbox")
                             // follow the actual project
                             if($el.length && $el.data('sol-item') &&
                                     $el.data('sol-item').label) {
@@ -323,7 +323,7 @@
             /*
              * Modified for OpenGrok in 2016.
              */
-            var $el = this.config.resultsContainer || this.$innerContainer
+            let $el = this.config.resultsContainer || this.$innerContainer
             if (this.config.resultsContainer) {
                 this.$showSelectionContainer.appendTo($el);
             } else {
@@ -340,7 +340,7 @@
             }
 
             // detect inline css classes and styles
-            var cssClassesAsString = this.$originalElement.attr('class'),
+            let cssClassesAsString = this.$originalElement.attr('class'),
                 cssStylesAsString = this.$originalElement.attr('style'),
                 cssClassList = [],
                 stylesList = [];
@@ -349,7 +349,7 @@
                 cssClassList = cssClassesAsString.split(/\s+/);
 
                 // apply css classes to $container
-                for (var i = 0; i < cssClassList.length; i++) {
+                for (let i = 0; i < cssClassList.length; i++) {
                     this.$container.addClass(cssClassList[i]);
                 }
             }
@@ -358,8 +358,8 @@
                 stylesList = cssStylesAsString.split(/\;/);
 
                 // apply css inline styles to $container
-                for (var i = 0; i < stylesList.length; i++) {
-                    var splitted = stylesList[i].split(/\s*\:\s*/g);
+                for (let i = 0; i < stylesList.length; i++) {
+                    let splitted = stylesList[i].split(/\s*\:\s*/g);
 
                     if (splitted.length === 2) {
 
@@ -384,7 +384,7 @@
 
         _getActualCssPropertyValue: function ($element, property) {
 
-            var domElement = $element.get(0),
+            let domElement = $element.get(0),
                 originalDisplayProperty = $element.css('display');
 
             // set invisible to get original width setting instead of translated to px
@@ -404,15 +404,15 @@
 
         _initializeInputEvents: function () {
             // form event
-            var self = this,
+            let self = this,
                 $form = this.$input.parents('form').first();
         
             if ($form && $form.length === 1 && !$form.data(this.WINDOW_EVENTS_KEY)) {
-                var resetFunction = function () {
-                    var $changedItems = [];
+                let resetFunction = function () {
+                    let $changedItems = [];
 
                     $form.find('.sol-option input').each(function (index, item) {
-                        var $item = $(item),
+                        let $item = $(item),
                             initialState = $item.data('sol-item').selected;
 
                         if ($item.prop('checked') !== initialState) {
@@ -454,7 +454,7 @@
                     self.open();
                 })
                 .on('propertychange input', function (e) {
-                    var valueChanged = true;
+                    let valueChanged = true;
                     if (e.type=='propertychange') {
                         valueChanged = e.originalEvent.propertyName.toLowerCase()=='value';
                     }
@@ -472,13 +472,13 @@
             // keyboard navigation
             this.$container
                 .on('keydown', function (e) {
-                    var keyCode = e.keyCode;
+                    let keyCode = e.keyCode;
 
                     // event handling for keyboard navigation
                     // only when there are results to be shown
                     if (!self.$noResultsItem.is(':visible')) {
 
-                        var $currentHighlightedOption,
+                        let $currentHighlightedOption,
                             $nextHighlightedOption,
                             directionValue,
                             preventDefault = false,
@@ -494,7 +494,7 @@
                             $currentHighlightedOption.find("input[type='checkbox']").blur();
                             directionValue = (keyCode === 38) ? -1 : 1;   // negative for up, positive for down
 
-                            var indexOfNextHighlightedOption = $allVisibleOptions.index($currentHighlightedOption) + directionValue;
+                            let indexOfNextHighlightedOption = $allVisibleOptions.index($currentHighlightedOption) + directionValue;
                             if (indexOfNextHighlightedOption < 0) {
                                 indexOfNextHighlightedOption = $allVisibleOptions.length - 1;
                             } else if (indexOfNextHighlightedOption >= $allVisibleOptions.length) {
@@ -509,10 +509,6 @@
                              */
                             $nextHighlightedOption.find("input[type='checkbox']").focus()
                             
-                            /*
-                             * Modified for OpenGrok in 2016.
-                             */
-                            //self.$selection.scrollTop(self.$selection.scrollTop() + $nextHighlightedOption.position().top);
 
                             preventDefault = true;
                         } else if (self.keyboardNavigationMode === true && keyCode === 32) {
@@ -533,7 +529,7 @@
                     }
                 })
                 .on('keyup', function (e) {
-                    var keyCode = e.keyCode;
+                    let keyCode = e.keyCode;
 
                     if (keyCode === 27) {
                         // escape key
@@ -575,7 +571,7 @@
                 return;
             }
 
-            var searchTerm = this.$input.val(),
+            let searchTerm = this.$input.val(),
                 lowerCased = (searchTerm || '').toLowerCase();
 
             // show previously filtered elements again
@@ -598,7 +594,7 @@
                 return;
             }
 
-            var self = this,
+            let self = this,
                     amountOfUnfilteredItems = dataArray.length
 
             // reset keyboard navigation mode when applying new filter
@@ -608,10 +604,10 @@
              * Modified for OpenGrok in 2016.
              * recursion was very slow (however good lookin')
              */
-            for (var itemIndex = 0; itemIndex < dataArray.length; itemIndex++) {
-                var item = dataArray[itemIndex];
+            for (let itemIndex = 0; itemIndex < dataArray.length; itemIndex++) {
+                let item = dataArray[itemIndex];
                 if (item.type === 'option') {
-                    var $element = item.displayElement,
+                    let $element = item.displayElement,
                             elementSearchableTerms = (item.label + ' ' + item.tooltip).trim().toLowerCase();
 
                     if (elementSearchableTerms.indexOf(searchTerm) === -1) {
@@ -619,11 +615,11 @@
                         amountOfUnfilteredItems--;
                     }
                 } else {
-                    var amountOfUnfilteredChildren = item.children.length
-                    for (var childrenIndex = 0; childrenIndex < item.children.length; childrenIndex++) {
-                        var child = item.children[childrenIndex];
+                    let amountOfUnfilteredChildren = item.children.length
+                    for (let childrenIndex = 0; childrenIndex < item.children.length; childrenIndex++) {
+                        let child = item.children[childrenIndex];
                         if (child.type === 'option') {
-                            var $element = child.displayElement,
+                            let $element = child.displayElement,
                                     elementSearchableTerms = (child.label + ' ' + child.tooltip).trim().toLowerCase();
 
                             if (elementSearchableTerms.indexOf(searchTerm) === -1) {
@@ -664,11 +660,11 @@
 
         _detectDataFromOriginalElement: function () {
             if (this.$originalElement.prop('tagName').toLowerCase() === 'select') {
-                var self = this,
+                let self = this,
                     solData = [];
 
                 $.each(this.$originalElement.children(), function (index, item) {
-                    var $item = $(item),
+                    let $item = $(item),
                         itemTagName = $item.prop('tagName').toLowerCase(),
                         solDataItem;
 
@@ -688,7 +684,7 @@
                 });
                 return this._invokeConverterIfNecessary(solData);
             } else if (this.$originalElement.data('sol-data')) {
-                var solDataAttributeValue = this.$originalElement.data('sol-data');
+                let solDataAttributeValue = this.$originalElement.data('sol-data');
                 return this._invokeConverterIfNecessary(solDataAttributeValue);
             } else {
                 this._showErrorLabel('Could not determine data from original element. Must be a select or data must be provided as data-sol-data="" attribute');
@@ -708,7 +704,7 @@
         },
 
         _processSelectOptgroup: function ($optgroup) {
-            var self = this,
+            let self = this,
                 solOptiongroup = $.extend({}, this.SOL_OPTIONGROUP_FORMAT, {
                     label: $optgroup.attr('label'),
                     tooltip: $optgroup.attr('title'),
@@ -718,7 +714,7 @@
                 optgroupChildren = $optgroup.children('option');
 
             $.each(optgroupChildren, function (index, item) {
-                var $child = $(item),
+                let $child = $(item),
                     solOption = self._processSelectOption($child);
 
                 // explicitly disable children when optgroup is disabled
@@ -741,7 +737,7 @@
         },
 
         _loadItemsFromUrl: function (url) {
-            var self = this;
+            let self = this;
             $.ajax(url, {
                 success: function (actualData) {
                     self.items = self._invokeConverterIfNecessary(actualData);
@@ -775,7 +771,7 @@
                 return;
             }
 
-            var self = this,
+            let self = this,
                 nextIndex = 0,
                 dataProcessedFunction = function () {
                     // hide "loading data"
@@ -788,7 +784,7 @@
                 },
                 loopFunction = function () {
 
-                    var currentBatch = 0,
+                    let currentBatch = 0,
                         item;
                     
                     while (currentBatch++ < self.config.asyncBatchSize && nextIndex < solItems.length) {
@@ -815,7 +811,7 @@
         },
 
         _renderOption: function (solOption, $optionalTargetContainer) {
-            var self = this,
+            let self = this,
                 $actualTargetContainer = $optionalTargetContainer || this.$selection,
                 $inputElement,
                 /*
@@ -830,11 +826,11 @@
             /*
              * Modified for OpenGrok in 2016, 2019.
              */
-            var data = $(solOption.element).data('messages');
-            var messagesLevel = $(solOption.element).data('messages-level');
-            var messagesAvailable = data && data.length;
+            let data = $(solOption.element).data('messages');
+            let messagesLevel = $(solOption.element).data('messages-level');
+            let messagesAvailable = data && data.length;
             if (messagesAvailable && messagesLevel) {
-                var cssString = 'pull-right ';
+                let cssString = 'pull-right ';
                 cssString += 'note-' + messagesLevel;
                 cssString += ' important-note important-note-rounded';
 
@@ -876,7 +872,7 @@
                     /*
                      * Modified for OpenGrok in 2016.
                      */
-                    var $closestOption = $(this).closest('.sol-option')
+                    let $closestOption = $(this).closest('.sol-option')
                     self._setKeyBoardNavigationMode(true)
                     self.$selection
                             .find('.sol-option.keyboard-selection')
@@ -901,7 +897,7 @@
              * Modified for OpenGrok in 2016.
              */
             $displayElement = $('<div class="sol-option"/>').dblclick(function (e) {
-                var $el = $(this).find('.sol-checkbox');
+                let $el = $(this).find('.sol-checkbox');
                 if ($el.length && $el.data('sol-item') && $el.data('sol-item').label) {
                     // go first project
                     window.location = document.xrefPath + '/' + $(this).find('.sol-checkbox').data('sol-item').label;
@@ -925,7 +921,7 @@
         },
 
         _renderOptiongroup: function (solOptiongroup) {
-            var self = this,
+            let self = this,
                 $groupCaption = $('<div class="sol-optiongroup-label"/>')
                     .attr('title', solOptiongroup.tooltip)
                     .html(solOptiongroup.label),
@@ -967,7 +963,7 @@
             // multiple values selectable
             if (this.config.showSelectAll === true || ($.isFunction(this.config.showSelectAll) && this.config.showSelectAll.call(this))) {
                 // buttons for (de-)select all
-                var self = this,
+                let self = this,
                     $deselectAllButton = $('<a href="#" class="sol-deselect-all"/>').html(this.config.texts.selectNone).click(function (e) {
                         self.deselectAll();
                         e.preventDefault();
@@ -991,10 +987,10 @@
             // on retrieving the value via jQuery option selectors
             // e.g. $('#myPreviousSelectWhichNowIsSol').val()
             if (this.$originalElement && this.$originalElement.prop('tagName').toLowerCase() === 'select') {
-                var self = this;
+                let self = this;
                 if (this.valMap == null) {
                     this.$originalElement.find('option').each(function (index, item) {
-                        var $currentOriginalOption = $(item);
+                        let $currentOriginalOption = $(item);
                         if ($currentOriginalOption.val() === $changeItem.val()) {
                             $currentOriginalOption.prop('selected', $changeItem.prop('checked'));
                             self.$originalElement.trigger('change');
@@ -1002,7 +998,7 @@
                         }
                     });
                 } else {
-                    var mappedVal = this.valMap.get($changeItem.val());
+                    let mappedVal = this.valMap.get($changeItem.val());
                     if (mappedVal) {
                         mappedVal.prop('selected', $changeItem.prop('checked'));
                         self.$originalElement.trigger('change');
@@ -1033,7 +1029,7 @@
 
         _setXItemsSelected: function() {
             if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
-                var xItemsText = this.config.texts.itemsSelected.replace('{$a}',
+                let xItemsText = this.config.texts.itemsSelected.replace('{$a}',
                     this.numSelected - this.config.maxShow);
                 this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' +
                     xItemsText + '<div>');
@@ -1060,7 +1056,7 @@
         },
 
         _buildSelectionDisplayItem: function ($changedItem) {
-            var solOptionItem = $changedItem.data('sol-item'),
+            let solOptionItem = $changedItem.data('sol-item'),
                 self = this,
                 $existingDisplayItem,
                 $displayItemText;
@@ -1068,7 +1064,7 @@
             /*
              * Modified for OpenGrok in 2016, 2019.
              */
-            var label = solOptionItem.label;
+            let label = solOptionItem.label;
             if ($changedItem.data('messages-available')) {
                 label += ' <span class="';
                 label += 'note-' + $changedItem.data('messages-level');
@@ -1115,10 +1111,10 @@
         },
 
         _removeSelectionDisplayItem: function ($changedItem) {
-            var solOptionItem = $changedItem.data('sol-item'),
+            let solOptionItem = $changedItem.data('sol-item'),
                 $myDisplayItem = solOptionItem.displaySelectionItem;
 
-            var wasExceeding = this.config.maxShow !== 0 && this.numSelected > this.config.maxShow;
+            let wasExceeding = this.config.maxShow !== 0 && this.numSelected > this.config.maxShow;
             this.numSelected = this.numSelected - 1;
             if (this.config.numSelectedItem) {
                 this.config.numSelectedItem.val(this.numSelected);
@@ -1139,11 +1135,11 @@
                  */
 
                 if (wasExceeding && this.valMap == null) {
-                    var self = this;
+                    let self = this;
                     this.$selectionContainer
                         .find('.sol-option input[type="checkbox"]:not([disabled]):checked')
                         .each(function (index, item) {
-                            var $currentOptionItem = $(item);
+                            let $currentOptionItem = $(item);
                             if ($currentOptionItem.data('sol-item').displaySelectionItem == null) {
                                 self._buildSelectionDisplayItem($currentOptionItem);
                                 return false;
@@ -1176,10 +1172,10 @@
 
         _buildValMap: function () {
             if (this.$originalElement && this.$originalElement.prop('tagName').toLowerCase() === 'select') {
-                var self = this;
+                let self = this;
                 this.valMap = new Map();
                 this.$originalElement.find('option').each(function (index, item) {
-                    var $currentOriginalOption = $(item);
+                    let $currentOriginalOption = $(item);
                     self.valMap.set($currentOriginalOption.val(), $currentOriginalOption);
                 });
             }
@@ -1241,7 +1237,7 @@
             if (this.config.multiple) {
                 this._buildValMap();
 
-                var $changedInputs = !optgroup ? this.$selectionContainer
+                let $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
                         .filter(function () {
@@ -1269,9 +1265,9 @@
             if (this.config.multiple) {
                 this._buildValMap();
 
-                var $closedInputs = this.$selectionContainer
+                let $closedInputs = this.$selectionContainer
                     .find('input[type="checkbox"][name=project]:not([disabled], :checked)')
-                var $openedInputs = this.$selectionContainer
+                let $openedInputs = this.$selectionContainer
                     .find('input[type="checkbox"][name=project]').filter('[disabled], :checked')
 
                 $openedInputs.prop('checked', false)
@@ -1296,7 +1292,7 @@
             if (this.config.multiple) {
                 this._buildValMap();
 
-                var $changedInputs = !optgroup ? this.$selectionContainer
+                let $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
                         .filter(function () {
@@ -1321,7 +1317,7 @@
         selectRadio: function(val) {
             this.$selectionContainer.find('input[type="radio"]')
                 .each(function (index, item) {
-                    var $currentOptionItem = $(item);
+                    let $currentOptionItem = $(item);
                     if ($currentOptionItem.val() === val) {
                         if (!$currentOptionItem.is(':checked')) {
                             $currentOptionItem.prop("checked", true).trigger('change', true);
@@ -1341,15 +1337,15 @@
     window.SearchableOptionList = SearchableOptionList;
 
     $.fn.searchableOptionList = function (options) {
-        var result = [];
+        let result = [];
         this.each(function () {
-            var $this = $(this),
+            let $this = $(this),
                 $alreadyInitializedSol = $this.data(SearchableOptionList.prototype.DATA_KEY);
 
             if ($alreadyInitializedSol) {
                 result.push($alreadyInitializedSol);
             } else {
-                var newSol = new SearchableOptionList($this, options);
+                let newSol = new SearchableOptionList($this, options);
                 result.push(newSol);
 
                 setTimeout(function() {

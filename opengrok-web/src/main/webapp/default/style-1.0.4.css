@@ -101,9 +101,6 @@ button:hover, button:active, .btn:hover, .btn:active {
     color: #ffffff;
 }
 
-label {
-}
-
 .pre { /* the diff content */
     white-space: pre-wrap;
     font-family: monospace;
@@ -114,8 +111,6 @@ label {
     font-size: 50%;
     display: block;
 }
-
-#page { }
 
 .error { /* error messages */
     color: #a52a2a;
@@ -271,7 +266,6 @@ label {
 .version_color_10 { background-color: rgb( 255, 153, 38 ) !important; }
 
 /* ############### start of header ############## */
-#whole_header { }
 
 html.xref #whole_header,
 html.history #whole_header,
@@ -285,7 +279,6 @@ html.diff #whole_header {
 }
 
 /* *** banner/deco above navbar *** */
-#header { }
 
 #MastheadLogo {
     width: 171px;
@@ -368,6 +361,8 @@ html.diff #whole_header {
 }
 
 #qtbl {
+    display: inline-block;
+    vertical-align: top;
     float: left;
     width: 35%;
     min-width: 300px;
@@ -736,10 +731,6 @@ span.simplified-path {
     color: #888;
 }
 
-/* file display */
-div[id^='src'] {
-}
-
 div[id^='src'] pre {
     margin: 0;
 }
@@ -1008,8 +999,6 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 /**** DIFF NAVIGATION/JUMPER *****/
 
 /* search result page */
-#results {
-}
 
 #results p, #revisions p { /* pagetitle and slider */
     padding: 0.1em;
@@ -1026,9 +1015,6 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 
 #results .dir td { /* directory link */
     padding-left: 1em;
-}
-
-#results .l {
 }
 
 #results td.q { /* 1st column: H A D */
@@ -1321,9 +1307,6 @@ h6.message-group-caption {
 .clearfix:after {
     content: " ";
     display: table;
-}
-
-.clearfix:after {
     clear: both;
 }
 

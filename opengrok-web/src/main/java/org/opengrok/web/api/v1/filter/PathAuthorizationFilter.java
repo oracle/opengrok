@@ -84,7 +84,6 @@ public class PathAuthorizationFilter implements ContainerRequestFilter {
         if (!isPathAuthorized(path, request)) {
             // TODO: this should probably update statistics for denied requests like in AuthorizationFilter
             context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-            return; // for good measure
         }
     }
 }

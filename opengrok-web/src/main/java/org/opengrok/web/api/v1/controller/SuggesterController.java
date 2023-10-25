@@ -221,7 +221,7 @@ public final class SuggesterController {
                     }
                 }
             } catch (MalformedURLException e) {
-                logger.log(Level.WARNING, "Could not add search counts for " + urlStr, e);
+                logger.log(Level.WARNING, e, () -> "Could not add search counts for " + urlStr);
             }
         }
     }

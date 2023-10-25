@@ -77,8 +77,6 @@ label {
     display: block;
 }
 
-#page { }
-
 .error { /* error messages */
     color: #a52a2a;
 }
@@ -335,9 +333,6 @@ table#dirlist { /* the "Name" column */
 
 
 /* file display */
-#src {
-}
-
 #src pre {
     margin: 0;
     font-size: small;
@@ -422,9 +417,6 @@ a.xsr    { /* subroutine */         color: #00f; font-weight: bold;             
 }
 
 /* search result page */
-#results {
-}
-
 #results p { /* pagetitle and slider */
     padding: 0.1em;
 }

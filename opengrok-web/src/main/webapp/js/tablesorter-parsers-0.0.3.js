@@ -27,7 +27,7 @@ $.tablesorter.addParser({
         return false;
     },
     format: function (s) {
-        const date = s.match(/^(\d{2})\-(\w{3})\-(\d{4})$/);
+        const date = s.match(/^(\d{2})-(\w{3})-(\d{4})$/);
         if (!date) {
             return new Date().getTime();
         }
