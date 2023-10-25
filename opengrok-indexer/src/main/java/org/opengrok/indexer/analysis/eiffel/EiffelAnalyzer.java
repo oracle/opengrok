@@ -32,6 +32,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 /**
  * Represents an analyzer for the Eiffel language.
  */
+@SuppressWarnings("java:S110")
 public class EiffelAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

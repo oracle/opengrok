@@ -36,6 +36,7 @@ import java.io.Reader;
  *
  * @author Gino Augustine
  */
+@SuppressWarnings("java:S110")
 public class YamlAnalyzer extends AbstractSourceCodeAnalyzer {
 
 

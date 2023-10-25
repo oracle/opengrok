@@ -36,6 +36,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  * @author Nikolay Denev
  * based on the Python analyzer by Lubos Kosco
  */
+@SuppressWarnings("java:S110")
 public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

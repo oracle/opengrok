@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Scott Halstead
  */
+@SuppressWarnings("java:S110")
 public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
 
     FortranAnalyzer(FortranAnalyzerFactory factory) {

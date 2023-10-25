@@ -34,6 +34,7 @@ import java.io.Reader;
 /**
  * Represents an analyzer for the TypeScript language.
  */
+@SuppressWarnings("java:S110")
 public class TypeScriptAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

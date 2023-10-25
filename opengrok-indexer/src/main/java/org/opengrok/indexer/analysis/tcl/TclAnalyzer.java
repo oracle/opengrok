@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Hemang Lavana
  */
+@SuppressWarnings("java:S110")
 public class TclAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected TclAnalyzer(AnalyzerFactory factory) {

@@ -33,6 +33,7 @@ import java.io.Reader;
 /**
  * Represents an analyzer for the SystemVerilog language.
  */
+@SuppressWarnings("java:S110")
 public class VerilogAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

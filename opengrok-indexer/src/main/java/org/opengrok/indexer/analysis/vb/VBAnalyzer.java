@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Felix Annan
  */
+@SuppressWarnings("java:S110")
 public class VBAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Christoph Hofmann
  */
+@SuppressWarnings("java:S110")
 public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected CSharpAnalyzer(AnalyzerFactory factory) {

@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Knut Anders Hatlen
  */
+@SuppressWarnings("java:S110")
 public class LispAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected LispAnalyzer(AnalyzerFactory factory) {

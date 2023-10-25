@@ -36,6 +36,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  * <p>
  * http://www.adaic.org/
  */
+@SuppressWarnings("java:S110")
 public class AdaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

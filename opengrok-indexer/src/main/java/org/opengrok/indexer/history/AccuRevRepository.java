@@ -346,7 +346,7 @@ public class AccuRevRepository extends Repository {
                             }
                         }
 
-                        if (relRoot.length() > 0) {
+                        if (!relRoot.isEmpty()) {
                             LOGGER.log(Level.INFO, "Source root relative to workspace root by: {0}", relRoot);
                         }
                     }

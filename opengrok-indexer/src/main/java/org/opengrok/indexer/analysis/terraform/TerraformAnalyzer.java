@@ -35,6 +35,7 @@ import java.io.Reader;
  * Represents an extension of {@link AbstractSourceCodeAnalyzer} for the
  * Terraform configuration language.
  */
+@SuppressWarnings("java:S110")
 public class TerraformAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

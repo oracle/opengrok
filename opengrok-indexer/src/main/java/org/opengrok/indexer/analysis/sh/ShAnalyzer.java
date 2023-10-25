@@ -36,6 +36,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  * Created on September 21, 2005
  * @author Chandan
  */
+@SuppressWarnings("java:S110")
 public class ShAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

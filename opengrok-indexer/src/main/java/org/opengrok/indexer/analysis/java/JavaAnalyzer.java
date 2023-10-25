@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  *
  * @author Martin Englund
  */
+@SuppressWarnings("java:S110")
 public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

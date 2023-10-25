@@ -34,6 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  * Represents an implementation of {@link AbstractSourceCodeAnalyzer} for the
  * Ruby programming language.
  */
+@SuppressWarnings("java:S110")
 public class RubyAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

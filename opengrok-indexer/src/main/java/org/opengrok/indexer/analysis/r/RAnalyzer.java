@@ -35,6 +35,7 @@ import java.io.Reader;
  * Represents an extension of {@link AbstractSourceCodeAnalyzer} for the R
  * language.
  */
+@SuppressWarnings("java:S110")
 public class RAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
