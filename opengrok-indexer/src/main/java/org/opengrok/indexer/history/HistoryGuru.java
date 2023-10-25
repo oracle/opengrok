@@ -1050,7 +1050,7 @@ public final class HistoryGuru {
      */
     public Map<Repository, Optional<Exception>> createHistoryCache(Collection<String> repositories) {
         if (!useHistoryCache()) {
-            return null;
+            return Collections.emptyMap();
         }
         return createHistoryCacheReal(getReposFromString(repositories));
     }
