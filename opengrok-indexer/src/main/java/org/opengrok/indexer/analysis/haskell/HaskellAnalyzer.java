@@ -33,6 +33,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 /**
  * @author Harry Pan
  */
+@SuppressWarnings("java:S110")
 public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

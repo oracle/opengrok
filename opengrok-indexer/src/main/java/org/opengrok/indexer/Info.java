@@ -31,7 +31,6 @@ import java.util.Properties;
  *
  * @author Trond Norbye
  */
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public final class Info {
     private static final Properties properties = new Properties();
 
@@ -50,7 +49,7 @@ public final class Info {
             REVISION = properties.getProperty("changeset", UNKNOWN);
             REVISION_SHORT = properties.getProperty("changeset_short", UNKNOWN);
         } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            throw new VersionInfoLoadException(ioe);
         }
     }
 

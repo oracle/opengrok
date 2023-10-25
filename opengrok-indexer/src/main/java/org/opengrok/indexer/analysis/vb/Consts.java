@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public final class Consts {
 
     public static final Set<String> reservedKeywords;

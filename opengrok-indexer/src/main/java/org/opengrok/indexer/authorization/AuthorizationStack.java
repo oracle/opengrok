@@ -149,7 +149,7 @@ public class AuthorizationStack extends AuthorizationEntity {
             }
         }
 
-        if (getStack().size() > 0 && cnt < getStack().size()) {
+        if (!getStack().isEmpty() && cnt < getStack().size()) {
             setFailed();
         }
 

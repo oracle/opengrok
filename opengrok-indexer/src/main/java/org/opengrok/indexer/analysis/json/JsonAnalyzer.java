@@ -35,6 +35,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  * @author Lubos Kosco
  *
  */
+@SuppressWarnings("java:S110")
 public class JsonAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

@@ -33,6 +33,7 @@ import java.io.Reader;
 /**
  * Represents an analyzer for assembly language.
  */
+@SuppressWarnings("java:S110")
 public class AsmAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**

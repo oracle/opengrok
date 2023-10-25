@@ -46,7 +46,8 @@ abstract class AdaLexer extends JFlexSymbolMatcher
 
         int off = 0;
         do {
-            int w = 1, i;
+            int w = 1;
+            int i;
             int ri = value.indexOf("\r", off);
             int ni = value.indexOf("\n", off);
             if (ri == -1 && ni == -1) {

@@ -27,6 +27,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Optional;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
@@ -81,22 +83,21 @@ public class BZip2Analyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
-        AbstractAnalyzer fa;
 
-        StreamSource bzSrc = wrap(src);
-        String path = doc.get(QueryBuilder.PATH);
-        if (path != null
-                && (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))) {
-            String newname = path.substring(0, path.lastIndexOf('.'));
+        var optionalNewName = Optional.ofNullable(doc.get(QueryBuilder.PATH))
+                .filter(path -> path.toUpperCase().endsWith(".BZ2") || path.endsWith(".bz"))
+                .map(path -> path.substring(0, path.lastIndexOf('.')));
+        if (optionalNewName.isPresent()) {
+            StreamSource bzSrc = wrap(src);
+            AbstractAnalyzer fa;
             try (InputStream in = bzSrc.getStream()) {
-                fa = AnalyzerGuru.getAnalyzer(in, newname);
+                fa = AnalyzerGuru.getAnalyzer(in, optionalNewName.get());
             }
             if (!(fa instanceof BZip2Analyzer)) {
-                if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-                    this.g = Genre.XREFABLE;
-                } else {
-                    this.g = Genre.DATA;
-                }
+                this.g = Optional.ofNullable(fa.getGenre())
+                        .filter( genre -> genre == Genre.PLAIN || genre == Genre.XREFABLE)
+                        .map(genre -> Genre.XREFABLE)
+                        .orElse(Genre.DATA);
                 fa.analyze(doc, bzSrc, xrefOut);
                 if (doc.get(QueryBuilder.T) != null) {
                     doc.removeField(QueryBuilder.T);

@@ -102,7 +102,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         /*
          * Accurev history of an element (directory or file) looks like:
          *
-         * element: /./path/to/element eid: 238865 transaction 1486194; purge;
+         * NOSONAR element: /./path/to/element eid: 238865 transaction 1486194; purge;
          * 2012/02/28 12:46:55 ; user: tluksha version 2541/1 (2539/1)
          *
          * transaction 1476285; purge; 2012/02/03 12:16:25 ; user: shaehn

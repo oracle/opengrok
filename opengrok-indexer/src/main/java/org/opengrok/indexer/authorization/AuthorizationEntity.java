@@ -66,6 +66,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 public abstract class AuthorizationEntity implements Nameable, Serializable, Cloneable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationEntity.class);
+    private static final String BLANK_SPACE = "          ";
 
     /**
      * Predicate specialized for the the plugin decisions. The caller should
@@ -89,7 +90,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Predicate specialized for the the entity skipping decisions. The caller
+     * Predicate specialized for the entity skipping decisions. The caller
      * should implement the <code>shouldSkip</code> method. Returning true if
      * the entity should be skipped for this action and false if the entity
      * should be used.
@@ -129,7 +130,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
 
     protected transient boolean working = true;
 
-    public AuthorizationEntity() {
+    protected AuthorizationEntity() {
     }
 
     /**
@@ -143,7 +144,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      *
      * @param x the entity to be copied
      */
-    public AuthorizationEntity(AuthorizationEntity x) {
+    protected AuthorizationEntity(AuthorizationEntity x) {
         flag = x.flag;
         name = x.name;
         setup = new TreeMap<>(x.setup);
@@ -152,7 +153,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         forProjects = new TreeSet<>(x.forProjects);
     }
 
-    public AuthorizationEntity(AuthControlFlag flag, String name) {
+    protected AuthorizationEntity(AuthControlFlag flag, String name) {
         this.flag = flag;
         this.name = name;
     }
@@ -440,7 +441,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         }
         setForGroups(groups);
 
-        forProjects().removeIf((t) -> {
+        forProjects().removeIf(t -> {
             /**
              * Check the existence of the projects and issue a warning if there
              * is no such project.
@@ -592,7 +593,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
             builder.append(prefix).append("      setup:\n");
             for (Entry<String, Object> entry : currentSetup.entrySet()) {
                 builder.append(prefix)
-                        .append("          ")
+                        .append(BLANK_SPACE)
                         .append(entry.getKey())
                         .append(": ")
                         .append(entry.getValue())
@@ -613,13 +614,13 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         if (!forGroups().isEmpty()) {
             builder.append(prefix).append("      only for groups:\n");
             for (String x : forGroups()) {
-                builder.append(prefix).append("          ").append(x).append("\n");
+                builder.append(prefix).append(BLANK_SPACE).append(x).append("\n");
             }
         }
         if (!forProjects().isEmpty()) {
             builder.append(prefix).append("      only for projects:\n");
             for (String x : forProjects()) {
-                builder.append(prefix).append("          ").append(x).append("\n");
+                builder.append(prefix).append(BLANK_SPACE).append(x).append("\n");
             }
         }
         return builder.toString();
