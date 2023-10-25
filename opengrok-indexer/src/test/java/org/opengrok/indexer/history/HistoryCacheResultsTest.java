@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.history;
 
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -66,13 +68,12 @@ public class HistoryCacheResultsTest {
         repository.destroy();
     }
 
-    private void corruptGitRepo(File root, final String repoName) throws Exception {
-        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+    private void corruptGitRepo(Path repoRoot) throws Exception {
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(repoRoot.toFile());
         assertNotNull(gitrepo);
 
-        Path localPath = Path.of(repository.getSourceRoot(), repoName);
         Path l = Path.of(".git", "refs", "heads", "master");
-        Path objPath = localPath.resolve(l);
+        Path objPath = repoRoot.resolve(l);
         assertTrue(objPath.toFile().exists());
         try (Writer writer = new FileWriter(objPath.toFile())) {
             writer.write("corrupt");
@@ -89,6 +90,24 @@ public class HistoryCacheResultsTest {
         Indexer indexer = Indexer.getInstance();
         env.setProjectsEnabled(isProjectsEnabled);
 
+        // Clone the Git repository into sub-repository in order to test the behavior
+        // of indexing a project with one repository for which history cache was successfully
+        // created and another one which failed.
+        final String projectName = "git";
+        File topLevelGitRepo = new File(repository.getSourceRoot(), projectName);
+        assertTrue(topLevelGitRepo.isDirectory());
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(topLevelGitRepo);
+        assertNotNull(gitrepo);
+        final String cloneName = "gitClone";
+        Path localPath = Path.of(repository.getSourceRoot(), projectName, cloneName);
+        String cloneUrl = topLevelGitRepo.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath.toFile())
+                .call()) {
+            assertDoesNotThrow(() -> gitClone.log().call());
+        }
+
         Map<Repository, Optional<Exception>> results = Indexer.getInstance().prepareIndexer(
                 env,
                 true, // search for repositories
@@ -98,10 +117,7 @@ public class HistoryCacheResultsTest {
 
         assertEquals(0, results.values().stream().filter(Optional::isPresent).count());
 
-        final String projectName = "git";
-        File root = new File(repository.getSourceRoot(), projectName);
-        assertTrue(root.isDirectory());
-        corruptGitRepo(root, projectName);
+        corruptGitRepo(localPath);
 
         results = indexer.prepareIndexer(
                 env,
@@ -115,7 +131,8 @@ public class HistoryCacheResultsTest {
                 map(Map.Entry::getKey).collect(Collectors.toList());
         assertEquals(1, repos.size());
         Repository repo = repos.get(0);
-        assertEquals(File.separator + projectName, repo.getDirectoryNameRelative());
+        assertEquals(File.separator + projectName + File.separator + cloneName,
+                repo.getDirectoryNameRelative());
         Optional<Exception> repoResult = results.get(repo);
         assertTrue(repoResult.isPresent());
         Exception exception = repoResult.get();
