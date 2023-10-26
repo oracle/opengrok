@@ -315,7 +315,7 @@ action=download">download diff</a></span><%
                         }
                 %><span class="a it"><%= ++ln2 %></span><%= file2[cl2] %><%
                         if(full) {
-                %><a name="<%= ln2 %>" /><%
+                %><a id="<%= ln2 %>" /><%
                         }
                 %></td>
             </tr><%
@@ -380,7 +380,7 @@ action=download">download diff</a></span><%
                     }
                 %></td><td><%
                     for (int j = cn2; j  <= cl2; j++) {
-                %><span class="it"><%= ++ln2 %></span><a name="<%= ln2 %>"></a><%=
+                %><span class="it"><%= ++ln2 %></span><a id="<%= ln2 %>"></a><%=
                     file2[j] %><br/><%
                     }
                 %></td>
@@ -416,7 +416,7 @@ action=download">download diff</a></span><%
         %><span class="it"><%= ++ln1 %></span><%= file1[j] %><br/><%
                     }
                     if (full) {
-        %><a name="<%=ln1%>" ></a><%
+        %><a id="<%=ln1%>" ></a><%
                     }
 // NEW
                 } else if (type == DiffType.NEW) {
@@ -448,7 +448,7 @@ action=download">download diff</a></span><%
         %><span class="it"><%= ++ln2 %></span><%= file2[j] %><br/><%
                     }
                     if (full) {
-        %><a name="<%= ln2 %>"></a><%
+        %><a id="<%= ln2 %>"></a><%
                     }
                 }
             } // else

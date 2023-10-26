@@ -1493,8 +1493,8 @@ function init_markdown_converter() {
     let converter = null;
     $('[data-markdown]').each(function () {
         var $that = $(this);
-        $.script.loadScript('webjars/xss/1.0.8/dist/xss.min.js').done(function () {
-            $.script.loadScript('webjars/showdown/1.9.1/dist/showdown.min.js').done(function () {
+        $.script.loadScript('webjars/xss/1.0.10/dist/xss.min.js').done(function () {
+            $.script.loadScript('webjars/showdown/2.1.0/dist/showdown.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
                     var $dataMarkdownDownloadEl = $(this);
                     if (converter === null) {

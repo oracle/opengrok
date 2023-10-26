@@ -362,7 +362,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= Util.htmlize(author) %><%
                 }
                 %></td>
-            <td><a name="<%= dispRev %>"></a><%
+            <td><a id="<%= dispRev %>"></a><%
                 // revision message collapse threshold minimum of 10
                 int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());

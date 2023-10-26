@@ -45,6 +45,7 @@ import org.opengrok.indexer.web.SearchHelper;
 public class StatisticsFilter implements Filter {
 
     static final String REQUESTS_METRIC = "requests";
+    private static final String CATEGORY_TAG = "category";
 
     private final DistributionSummary requests = Metrics.getPrometheusRegistry().summary(REQUESTS_METRIC);
 
@@ -76,7 +77,7 @@ public class StatisticsFilter implements Filter {
         category = getCategory(httpReq, config);
 
         Timer categoryTimer = Timer.builder("requests.latency").
-                tags("category", category, "code", String.valueOf(httpResponse.getStatus())).
+                tags(CATEGORY_TAG, category, "code", String.valueOf(httpResponse.getStatus())).
                 register(Metrics.getPrometheusRegistry());
         categoryTimer.record(duration);
 
@@ -85,12 +86,12 @@ public class StatisticsFilter implements Filter {
         if (helper != null && registry != null) {
             if (helper.getHits() == null || helper.getHits().length == 0) {
                 Timer.builder("search.latency").
-                        tags("category", "ui", "outcome", "empty").
+                        tags(CATEGORY_TAG, "ui", "outcome", "empty").
                         register(registry).
                         record(duration);
             } else {
                 Timer.builder("search.latency").
-                        tags("category", "ui", "outcome", "success").
+                        tags(CATEGORY_TAG, "ui", "outcome", "success").
                         register(registry).
                         record(duration);
             }

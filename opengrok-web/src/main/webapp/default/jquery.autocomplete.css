@@ -8,8 +8,8 @@
 
 .ac_results ul {
 	width: 100%;
-	list-style-position: outside;
 	list-style: none;
+	list-style-position: outside;
 	padding: 0;
 	margin: 0;
 }
