@@ -378,15 +378,14 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         safelyRename(outputFile, cacheFile);
     }
 
-    private void finishStore(Repository repository, String latestRev) {
+    private void finishStore(Repository repository, String latestRev) throws CacheException {
         String histDir = CacheUtil.getRepositoryCacheDataDirname(repository, this);
         if (histDir == null || !(new File(histDir)).isDirectory()) {
             // If the history was not created for some reason (e.g. temporary
             // failure), do not create the CachedRevision file as this would
             // create confusion (once it starts working again).
-            LOGGER.log(Level.WARNING,
-                "Could not store history for repository {0}: ''{1}'' is not a directory",
-                new Object[]{repository, histDir});
+            throw new CacheException(String.format("Could not store history for repository %s: '%s' is not a directory",
+                repository, histDir));
         } else {
             storeLatestCachedRevision(repository, latestRev);
         }
