@@ -29,9 +29,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.jetbrains.annotations.NotNull;
 import org.webjars.WebJarAssetLocator;
 
 /**
@@ -116,8 +118,8 @@ public class Scripts implements Iterable<Scripts.Script> {
         putFromWebJar("jquery", "3.6.4/jquery.min.js", 10);
         putjs("jquery-ui", "js/jquery-ui-1.12.1-custom", 11);
         putFromWebJar("jquery-tablesorter", "2.31.3/dist/js/jquery.tablesorter.min.js", 12);
-        putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.3", 13, true);
-        putjs("searchable-option-list", "js/searchable-option-list-2.0.15", 14, true);
+        putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.4", 13, true);
+        putjs("searchable-option-list", "js/searchable-option-list-2.0.16", 14, true);
         putjs("utils", "js/utils-0.0.46", 15, true);
         putjs("repos", "js/repos-0.0.3", 20, true);
         putjs("diff", "js/diff-0.0.5", 20, true);
@@ -203,7 +205,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @see List#iterator()
      */
     @Override
-    public Iterator<Script> iterator() {
+    public @NotNull Iterator<Script> iterator() {
         return outputScripts.iterator();
     }
 
@@ -216,7 +218,8 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName, Type type) {
-        contextPath = contextPath == null || contextPath.isEmpty() ? "/" : contextPath + "/";
+        contextPath = Optional.ofNullable(contextPath)
+                .orElse("").concat("/");
         if (type == Type.DEBUG && SCRIPTS.containsKey(scriptName + DEBUG_SUFFIX)) {
             addScript(contextPath, scriptName + DEBUG_SUFFIX);
             return true;
