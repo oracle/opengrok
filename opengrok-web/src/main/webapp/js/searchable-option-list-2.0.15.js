@@ -41,6 +41,7 @@
             disabled: false,           // boolean disabled state
             label:    undefined,       // label string
             tooltip:  undefined,       // tooltip string
+            element : undefined,        // item element
             cssClass: ''               // custom css class for container
         },
         SOL_OPTIONGROUP_FORMAT: {
@@ -826,8 +827,8 @@
             /*
              * Modified for OpenGrok in 2016, 2019.
              */
-            let data = $(solOption.element).data('messages');
-            let messagesLevel = $(solOption.element).data('messages-level');
+            let data = solOption.element.data('messages');
+            let messagesLevel = solOption.element.data('messages-level');
             let messagesAvailable = data && data.length;
             if (messagesAvailable && messagesLevel) {
                 let cssString = 'pull-right ';
