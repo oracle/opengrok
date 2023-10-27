@@ -350,7 +350,7 @@
                 stylesList = cssStylesAsString.split(/;/);
 
                 // apply css inline styles to $container
-                for (let styleValue of stylesList; i < stylesList.length; i++) {
+                for (let styleValue of stylesList) {
                     let splitted = styleValue.split(/\s*:\s*/g);
 
                     if (splitted.length === 2) {
