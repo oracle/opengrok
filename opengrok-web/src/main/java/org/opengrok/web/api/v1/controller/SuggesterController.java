@@ -205,7 +205,7 @@ public final class SuggesterController {
                 for (String field : QueryBuilder.getSearchFields()) {
 
                     List<String> fieldQueryText = params.get(field);
-                    if (Objects.nonNull(fieldQueryText) && fieldQueryText.isEmpty()) {
+                    if (Objects.nonNull(fieldQueryText) && !fieldQueryText.isEmpty()) {
                         if (fieldQueryText.size() > 2) {
                             logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
                         } else {
