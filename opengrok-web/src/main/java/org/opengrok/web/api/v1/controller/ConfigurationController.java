@@ -57,8 +57,12 @@ public class ConfigurationController {
 
     public static final String PATH = "configuration";
 
+    private final SuggesterService suggesterService;
+
     @Inject
-    private SuggesterService suggesterService;
+    public ConfigurationController(SuggesterService suggesterService) {
+        this.suggesterService = suggesterService;
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_XML)

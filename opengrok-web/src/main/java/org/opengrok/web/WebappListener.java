@@ -81,7 +81,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
 
         String configPath = context.getInitParameter("CONFIGURATION");
         if (configPath == null) {
-            throw new Error("CONFIGURATION parameter missing in the web.xml file");
+            throw new WebappError("CONFIGURATION parameter missing in the web.xml file");
         } else {
             try {
                 env.readConfiguration(new File(configPath), CommandTimeoutType.WEBAPP_START);
@@ -98,7 +98,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 String version = serverInfo.substring(idx + 1);
                 if (!version.startsWith("10.")) {
                     LOGGER.log(Level.SEVERE, "Unsupported Tomcat version: {0}", version);
-                    throw new Error("Unsupported Tomcat version");
+                    throw new WebappError("Unsupported Tomcat version");
                 }
             }
         }
@@ -156,7 +156,7 @@ public final class WebappListener implements ServletContextListener, ServletRequ
                 }
             } else {
                 // Fail the deployment. The index check would fail only on legitimate version discrepancy.
-                throw new Error("index version check failed", e);
+                throw new WebappError("index version check failed", e);
             }
         }
     }

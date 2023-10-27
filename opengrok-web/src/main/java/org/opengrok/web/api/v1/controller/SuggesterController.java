@@ -68,8 +68,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,8 +91,12 @@ public final class SuggesterController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    private final SuggesterService suggester;
+
     @Inject
-    private SuggesterService suggester;
+    public SuggesterController(SuggesterService suggester) {
+        this.suggester = suggester;
+    }
 
     /**
      * Returns suggestions based on the search criteria specified in {@code data}.
@@ -171,7 +176,7 @@ public final class SuggesterController {
     @PUT
     @Path("/rebuild")
     public void rebuild() {
-        CompletableFuture.runAsync(() -> suggester.rebuild());
+        CompletableFuture.runAsync(suggester::rebuild);
     }
 
     @PUT
@@ -192,33 +197,24 @@ public final class SuggesterController {
     public void addSearchCountsQueries(final List<String> urls) {
         for (String urlStr : urls) {
             try {
-                URL url = new URL(urlStr);
-                Map<String, List<String>> params = Util.getQueryParams(url);
+                var url = new URL(urlStr);
+                var params = Util.getQueryParams(url);
 
-                List<String> projects = params.get("project");
+                var projects = params.get("project");
 
                 for (String field : QueryBuilder.getSearchFields()) {
 
                     List<String> fieldQueryText = params.get(field);
-                    if (fieldQueryText == null || fieldQueryText.isEmpty()) {
-                        continue;
-                    }
-                    if (fieldQueryText.size() > 2) {
-                        logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
-                        continue;
-                    }
-                    String value = fieldQueryText.get(0);
+                    if (Objects.nonNull(fieldQueryText) && fieldQueryText.isEmpty()) {
+                        if (fieldQueryText.size() > 2) {
+                            logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
+                        } else {
+                            getQuery(field, fieldQueryText.get(0))
+                                    .ifPresent(q -> suggester.onSearch(projects, q));
 
-                    Query q = null;
-                    try {
-                        q = getQuery(field, value);
-                    } catch (ParseException e) {
-                        logger.log(Level.FINE, "Bad request", e);
+                        }
                     }
 
-                    if (q != null) {
-                        suggester.onSearch(projects, q);
-                    }
                 }
             } catch (MalformedURLException e) {
                 logger.log(Level.WARNING, e, () -> "Could not add search counts for " + urlStr);
@@ -226,7 +222,7 @@ public final class SuggesterController {
         }
     }
 
-    private Query getQuery(final String field, final String value) throws ParseException {
+    private Optional<Query> getQuery(final String field, final String value) {
         QueryBuilder builder = new QueryBuilder();
 
         switch (field) {
@@ -249,10 +245,14 @@ public final class SuggesterController {
                 builder.setType(value);
                 break;
             default:
-                return null;
+                return Optional.empty();
         }
-
-        return builder.build();
+        try {
+            return Optional.of(builder.build());
+        } catch (ParseException e) {
+            logger.log(Level.FINE, "Bad request", e);
+            return Optional.empty();
+        }
     }
 
     /**

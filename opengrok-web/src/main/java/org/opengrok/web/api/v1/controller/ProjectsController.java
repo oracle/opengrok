@@ -82,8 +82,12 @@ public class ProjectsController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    private final SuggesterService suggester;
+
     @Inject
-    private SuggesterService suggester;
+    public ProjectsController(SuggesterService suggester) {
+        this.suggester = suggester;
+    }
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)

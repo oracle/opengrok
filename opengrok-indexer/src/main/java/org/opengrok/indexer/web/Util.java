@@ -45,6 +45,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -53,7 +54,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -62,7 +63,7 @@ import java.util.zip.GZIPInputStream;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -82,6 +83,10 @@ public final class Util {
     private static final String ANCHOR_CLASS_START = "<a class=\"";
     private static final String ANCHOR_END = "</a>";
     private static final String CLOSE_QUOTED_TAG = "\">";
+    private static final String SPAN_END = "</span>";
+    private static final String QUOTE = "&quot;";
+    private static final String AMP = "&amp;";
+    private static final String SPRING_BUILDER_EXCEPTIONS = "StringBuilder threw IOException";
 
     private static final String RE_Q_ESC_AMP_AMP = "\\?|&amp;|&";
     private static final String RE_Q_E_A_A_COUNT_EQ_VAL = "(" + RE_Q_ESC_AMP_AMP + "|\\b)" +
@@ -118,7 +123,7 @@ public final class Util {
             // StringBuilder. Wrap in an AssertionError so that callers
             // don't have to check for an IOException that should never
             // happen.
-            throw new AssertionError("StringBuilder threw IOException", ioe);
+            throw new AssertionError(SPRING_BUILDER_EXCEPTIONS, ioe);
         }
         return sb.toString();
     }
@@ -139,7 +144,7 @@ public final class Util {
             // StringBuilder. Wrap in an AssertionError so that callers
             // don't have to check for an IOException that should never
             // happen.
-            throw new AssertionError("StringBuilder threw IOException", ioe);
+            throw new AssertionError(SPRING_BUILDER_EXCEPTIONS, ioe);
         }
         return sb.toString();
     }
@@ -152,7 +157,7 @@ public final class Util {
      * @throws IOException I/O exception
      */
     public static void qurlencode(String str, Appendable dest) throws IOException {
-        uriEncode(QueryParser.escape(str), dest);
+        uriEncode(QueryParserBase.escape(str), dest);
     }
 
     /**
@@ -180,7 +185,7 @@ public final class Util {
             // StringBuilder. Wrap in an AssertionError so that callers
             // don't have to check for an IOException that should never
             // happen.
-            throw new AssertionError("StringBuilder threw IOException", ioe);
+            throw new AssertionError(SPRING_BUILDER_EXCEPTIONS, ioe);
         }
         return sb.toString();
     }
@@ -203,7 +208,7 @@ public final class Util {
             // StringBuilder. Wrap in an AssertionError so that callers
             // don't have to check for an IOException that should never
             // happen.
-            throw new AssertionError("StringBuilder threw IOException", ioe);
+            throw new AssertionError(SPRING_BUILDER_EXCEPTIONS, ioe);
         }
         return sb.toString();
     }
@@ -280,10 +285,10 @@ public final class Util {
                 dest.append("&apos;");
                 break;
             case '"':
-                dest.append("&quot;");
+                dest.append(QUOTE);
                 break;
             case '&':
-                dest.append("&amp;");
+                dest.append(AMP);
                 break;
             case '>':
                 dest.append("&gt;");
@@ -489,7 +494,7 @@ public final class Util {
         if (path.charAt(path.length() - 1) != sep) {
             // since is not a general purpose method. So we waive to handle
             // cases like:
-            // || path.endsWith("/..") || path.endsWith("/.")
+            // path.endsWith("/..") or path.endsWith("/.")
             buf.setLength(buf.length() - 1);
         }
         return buf.toString();
@@ -529,15 +534,14 @@ public final class Util {
         if (names == null || names.length == 0) {
             return new String[0];
         }
+
         for (String name : names) {
-            if (name == null || name.length() == 0) {
+            if (name == null || name.isEmpty()) {
                 continue;
             }
             if (canonical) {
                 if (name.equals("..")) {
-                    if (!res.isEmpty()) {
-                        res.removeLast();
-                    }
+                    res.pollLast();
                 } else if (!name.equals(".")) {
                     res.add(name);
                 }
@@ -637,7 +641,7 @@ public final class Util {
             // StringBuilder. Wrap in an AssertionError so that callers
             // don't have to check for an IOException that should never
             // happen.
-            throw new AssertionError("StringBuilder threw IOException", ex);
+            throw new AssertionError(SPRING_BUILDER_EXCEPTIONS, ex);
         }
         return sb.toString();
     }
@@ -742,7 +746,7 @@ public final class Util {
             out.write(uriEncode(annotation.getFilename()));
             out.write("?");
             out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
-            out.write("&amp;");
+            out.write(AMP);
             out.write(QueryParameters.REVISION_PARAM_EQ);
             out.write(uriEncode(r));
             String msg = annotation.getDesc(r);
@@ -765,7 +769,7 @@ public final class Util {
         }
         htmlize(annotation.getRevisionForDisplay(num), buf);
         if (most_recent_revision) {
-            buf.append("</span>"); // recent revision span
+            buf.append(SPAN_END); // recent revision span
         }
         out.write(buf.toString());
         buf.setLength(0);
@@ -778,14 +782,14 @@ public final class Util {
             out.write(ANCHOR_CLASS_START);
             out.write("search\" href=\"" + env.getUrlPrefix());
             out.write(QueryParameters.DEFS_SEARCH_PARAM_EQ);
-            out.write("&amp;");
+            out.write(AMP);
             out.write(QueryParameters.REFS_SEARCH_PARAM_EQ);
-            out.write("&amp;");
+            out.write(AMP);
             out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
             out.write(project);
-            out.write("&amp;");
+            out.write(AMP);
             out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
-            out.write("&quot;");
+            out.write(QUOTE);
             out.write(uriEncode(r));
             out.write("&quot;&amp;");
             out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
@@ -815,7 +819,7 @@ public final class Util {
             buf.setLength(0);
             out.write(ANCHOR_END);
         }
-        out.write("</span>");
+        out.write(SPAN_END);
     }
 
     /**
@@ -911,7 +915,7 @@ public final class Util {
 
         // Write the 'D' (Download) link.
         if (!file.isDirectory()) {
-            out.write("<a href=\"");
+            out.write(ANCHOR_LINK_START);
             out.write(downloadPrefixE);
             out.write(entry);
             out.write("\" title=\"Download\">D</a>");
@@ -960,7 +964,7 @@ public final class Util {
             String value) {
 
         if (value != null) {
-            buf.append("&amp;").append(key).append('=').append(uriEncode(value));
+            buf.append(AMP).append(key).append('=').append(uriEncode(value));
         }
     }
 
@@ -1026,10 +1030,10 @@ public final class Util {
             c = q.charAt(i);
             switch (c) {
                 case '"':
-                    sb.append("&quot;");
+                    sb.append(QUOTE);
                     break;
                 case '&':
-                    sb.append("&amp;");
+                    sb.append(AMP);
                     break;
                 default:
                     sb.append(c);
@@ -1391,11 +1395,11 @@ public final class Util {
             int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
 
             // function taking the page number and appending the desired content into the final buffer
-            Function<Integer, Void> generatePageLink = page -> {
+            IntFunction<Void> generatePageLink = page -> {
                 int myOffset = Math.max(0, (page - 1) * limit);
                 if (myOffset <= offset && offset < myOffset + limit) {
                     // do not generate anchor for current page
-                    buf.append("<span class=\"sel\">").append(page).append("</span>");
+                    buf.append("<span class=\"sel\">").append(page).append(SPAN_END);
                 } else {
                     buf.append("<a class=\"more\" href=\"?");
                     // append request parameters
@@ -1406,12 +1410,12 @@ public final class Util {
                         query = query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, "");
                         if (!query.isEmpty()) {
                             buf.append(query);
-                            buf.append("&amp;");
+                            buf.append(AMP);
                         }
                     }
                     buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
                     if (myOffset != 0) {
-                        buf.append("&amp;").append(QueryParameters.START_PARAM_EQ).
+                        buf.append(AMP).append(QueryParameters.START_PARAM_EQ).
                                 append(myOffset);
                     }
                     buf.append("\">");
@@ -1646,7 +1650,7 @@ public final class Util {
                 if (url.startsWith("/")) {
                     return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
                 }
-                StringBuffer prepUrl = req.getRequestURL();
+                var prepUrl = req.getRequestURL();
                 if (!url.isEmpty()) {
                     prepUrl.append('/').append(url);
                 }
@@ -1676,25 +1680,19 @@ public final class Util {
             return returnValue;
         }
 
-        String[] pairs = url.getQuery().split("&");
-
-        for (String pair : pairs) {
-            if (pair.isEmpty()) {
-                continue;
-            }
-
-            int idx = pair.indexOf('=');
-            if (idx == -1) {
-                returnValue.computeIfAbsent(pair, k -> new LinkedList<>());
-                continue;
-            }
-
-            String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
-            String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
-
-            List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());
-            paramValues.add(value);
-        }
+        Arrays.stream(url.getQuery().split("&"))
+                .filter(pair -> !pair.isEmpty())
+                .forEach(pair -> {
+                    int idx = pair.indexOf('=');
+                    if (idx == -1) {
+                        returnValue.computeIfAbsent(pair, k -> new LinkedList<>());
+                    } else {
+                        var key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
+                        var value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
+                        List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());
+                        paramValues.add(value);
+                    }
+                });
         return returnValue;
     }
 

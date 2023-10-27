@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 /**
  * Manages asynchronous API requests.
  */
+@SuppressWarnings("java:S6548")
 public final class ApiTaskManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiTaskManager.class);

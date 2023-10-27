@@ -316,10 +316,6 @@ html.diff #whole_header {
 }
 
 /* *** full search navbar *** */
-#qtbl {
-    display: inline-block;
-    vertical-align: top;
-}
 
 #qtbl tr {
     background: none; /* remove alternating colors */

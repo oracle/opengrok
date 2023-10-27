@@ -120,7 +120,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     public void setUp() throws Exception {
         super.setUp();
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        repository.create(this.getClass().getResource("/repositories"));
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());

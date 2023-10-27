@@ -59,12 +59,17 @@ public class SearchController {
 
     private static final int MAX_RESULTS = 1000;
 
+    private final SuggesterService suggester;
+
     @Inject
-    private SuggesterService suggester;
+    public SearchController(SuggesterService suggester) {
+        this.suggester = suggester;
+    }
 
     @GET
     @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
+    @SuppressWarnings("java:S107")
     public SearchResult search(
             @Context final HttpServletRequest req,
             @QueryParam(QueryParameters.FULL_SEARCH_PARAM) final String full,

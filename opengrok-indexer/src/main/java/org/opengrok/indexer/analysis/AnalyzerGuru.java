@@ -703,6 +703,7 @@ public class AnalyzerGuru {
      * @param file file object, used for logging only
      * @throws java.io.IOException if an error occurs while creating the output
      */
+    @SuppressWarnings("java:S5443")
     public static void writeDumpedXref(String contextPath,
             AnalyzerFactory factory, Reader in, Writer out,
             @Nullable Definitions defs, Annotation annotation, Project project, File file) throws IOException {

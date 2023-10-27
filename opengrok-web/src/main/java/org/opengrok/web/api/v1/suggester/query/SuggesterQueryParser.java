@@ -44,7 +44,6 @@ import org.opengrok.suggest.query.SuggesterWildcardQuery;
 import org.opengrok.indexer.search.CustomQueryParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,6 +51,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.lucene.search.BoostAttribute.DEFAULT_BOOST;
 
@@ -127,36 +127,26 @@ class SuggesterQueryParser extends CustomQueryParser {
     @Override
     protected Query getBooleanQuery(final List<BooleanClause> clauses) throws ParseException {
 
-        boolean contains = false;
-
-        for (BooleanClause clause : clauses) {
-            for (BooleanClause clause1 : suggesterClauses) {
-                if (clause.getQuery().equals(clause1.getQuery())) {
-                    contains = true;
-                    break;
-                }
-            }
-        }
-
-        if (contains) {
-            List<BooleanClause> reducedList = new ArrayList<>();
-
-            for (BooleanClause clause : clauses) {
-                if (clause.getOccur() != BooleanClause.Occur.SHOULD) {
-                    reducedList.add(clause);
-                } else {
-                    for (BooleanClause clause1 : suggesterClauses) {
-                        if (clause.getQuery().equals(clause1.getQuery())) {
-                            reducedList.add(clause);
-                        }
-                    }
-                }
-            }
-
-            return super.getBooleanQuery(reducedList);
-        } else {
+        var inSuggesterClausesList = clauses.stream()
+                .filter(this::isInSuggesterClauses)
+                .collect(Collectors.toList());
+        if (inSuggesterClausesList.isEmpty()) {
             return super.getBooleanQuery(clauses);
         }
+        var reducedList = clauses.stream()
+                .filter(booleanClause -> BooleanClause.Occur.SHOULD != booleanClause.getOccur())
+                .collect(Collectors.toList());
+        inSuggesterClausesList.stream()
+                .filter(booleanClause -> BooleanClause.Occur.SHOULD == booleanClause.getOccur())
+                .forEach(reducedList::add);
+        return super.getBooleanQuery(reducedList);
+    }
+
+    private boolean isInSuggesterClauses(BooleanClause clause) {
+        return suggesterClauses.stream()
+                .anyMatch(itemClause ->
+                        clause.getQuery().equals(itemClause.getQuery())
+                );
     }
 
     @Override

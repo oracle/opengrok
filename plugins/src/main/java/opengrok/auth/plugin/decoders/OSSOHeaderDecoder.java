@@ -73,8 +73,8 @@ public class OSSOHeaderDecoder implements IUserDecoder {
             return null;
         }
 
-        /**
-         * The timestamp cookie can be corrupted.
+        /*
+          The timestamp cookie can be corrupted.
          */
         try {
             cookieTimestamp = Timestamp.decodeTimeCookie(timestamp);
@@ -84,9 +84,9 @@ public class OSSOHeaderDecoder implements IUserDecoder {
                             timestamp, username), ex);
         }
 
-        /**
-         * Creating new user entity with provided information. The entity can be
-         * checked if the timeout expired via {@link User#isTimeouted()}.
+        /*
+          Creating new user entity with provided information. The entity can be
+          checked if the timeout expired via {@link User#isTimeouted()}.
          */
         User user = new User(username, userguid, cookieTimestamp,
                 "true".equalsIgnoreCase(timeouted));
