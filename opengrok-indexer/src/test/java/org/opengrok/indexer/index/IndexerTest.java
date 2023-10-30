@@ -108,13 +108,12 @@ class IndexerTest {
         Indexer.getInstance().doIndexerExecution(null, null);
 
         // There should be certain number of xref files produced.
-        List<String> result ;
         try (Stream<Path> walk = Files.walk(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR))) {
-            result = walk.filter(Files::isRegularFile).map(Path::toString).
+            var result = walk.filter(Files::isRegularFile).map(Path::toString).
                     filter(string -> string.endsWith(".gz")).collect(Collectors.toList());
+            assertNotNull(result);
+            assertTrue(result.size() > 50);
         }
-        assertNotNull(result);
-        assertTrue(result.size() > 50);
 
         // Some files would have empty xref so the file should not be present.
         assertFalse(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR, "data", "Logo.png", ".gz").
