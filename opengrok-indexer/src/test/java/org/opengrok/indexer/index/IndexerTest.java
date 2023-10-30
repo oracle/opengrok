@@ -36,12 +36,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,10 +108,10 @@ class IndexerTest {
         Indexer.getInstance().doIndexerExecution(null, null);
 
         // There should be certain number of xref files produced.
-        List<String> result = null;
+        List<String> result ;
         try (Stream<Path> walk = Files.walk(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR))) {
-            result = walk.filter(Files::isRegularFile).filter(f -> f.toString().endsWith(".gz")).
-                    map(Path::toString).collect(Collectors.toList());
+            result = walk.filter(Files::isRegularFile).map(Path::toString).
+                    filter(string -> string.endsWith(".gz")).collect(Collectors.toList());
         }
         assertNotNull(result);
         assertTrue(result.size() > 50);
@@ -180,7 +178,7 @@ class IndexerTest {
     }
 
     @Test
-    void testParseOptions() throws ParseException {
+    void testParseOptions() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-P", "-H", "-Q", "off",
                 "-s", repository.getSourceRoot(),
@@ -382,7 +380,7 @@ class IndexerTest {
     }
 
     @Test
-    void testXref() throws IOException {
+    void testXref() {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
@@ -390,15 +388,13 @@ class IndexerTest {
             if (factory == null) {
                 continue;
             }
-            try (FileReader in = new FileReader(f); StringWriter out = new StringWriter()) {
-                try {
-                    assertDoesNotThrow( () ->
-                            AnalyzerGuru.writeXref(factory, in, out, null, null, null, f)
-                    );
+            assertDoesNotThrow( () -> {
+                try (FileReader in = new FileReader(f); StringWriter out = new StringWriter()) {
+                    AnalyzerGuru.writeXref(factory, in, out, null, null, null, f);
                 } catch (UnsupportedOperationException exp) {
                     // ignore
                 }
-            }
+            });
         }
     }
 
