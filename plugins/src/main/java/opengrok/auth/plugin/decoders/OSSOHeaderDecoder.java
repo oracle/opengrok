@@ -38,6 +38,7 @@ import org.opengrok.indexer.web.Laundromat;
  *
  * @author Krystof Tulinger
  */
+@SuppressWarnings("java:S3008")
 public class OSSOHeaderDecoder implements IUserDecoder {
 
     private static final Logger LOGGER = Logger.getLogger(OSSOHeaderDecoder.class.getName());

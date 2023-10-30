@@ -93,7 +93,6 @@ public class GZIPAnalyzer extends FileAnalyzer {
         String path = doc.get(QueryBuilder.PATH);
         if (path != null && path.toLowerCase(Locale.ROOT).endsWith(".gz")) {
             String newname = path.substring(0, path.length() - 3);
-            //System.err.println("GZIPPED OF = " + newname);
             try (InputStream gzis = gzSrc.getStream()) {
                 fa = AnalyzerGuru.getAnalyzer(gzis, newname);
             }

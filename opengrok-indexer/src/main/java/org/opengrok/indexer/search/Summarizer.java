@@ -265,7 +265,7 @@ public class Summarizer {
         //
         double tokenCount = 0;
         Summary s = new Summary();
-        while (tokenCount <= SUM_LENGTH && excerptSet.size() > 0) {
+        while (tokenCount <= SUM_LENGTH && !excerptSet.isEmpty()) {
             Excerpt excerpt = excerptSet.last();
             excerptSet.remove(excerpt);
 

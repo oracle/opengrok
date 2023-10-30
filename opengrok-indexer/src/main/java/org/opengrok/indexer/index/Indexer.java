@@ -739,7 +739,7 @@ public final class Indexer {
             parser.on("-m", "--memory", "=number", Double.class,
                     "Amount of memory (MB) that may be used for buffering added documents and",
                     "deletions before they are flushed to the directory (default " +
-                            Configuration.defaultRamBufferSize + ").",
+                            Configuration.DEFAULT_RAM_BUFFER_SIZE + ").",
                     "Please increase JVM heap accordingly too.").execute(memSize ->
                     cfg.setRamBufferSize((Double) memSize));
 

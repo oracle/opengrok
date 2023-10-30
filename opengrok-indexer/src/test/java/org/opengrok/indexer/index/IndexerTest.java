@@ -392,7 +392,9 @@ class IndexerTest {
             }
             try (FileReader in = new FileReader(f); StringWriter out = new StringWriter()) {
                 try {
-                    AnalyzerGuru.writeXref(factory, in, out, null, null, null, f);
+                    assertDoesNotThrow( () ->
+                            AnalyzerGuru.writeXref(factory, in, out, null, null, null, f)
+                    );
                 } catch (UnsupportedOperationException exp) {
                     // ignore
                 }

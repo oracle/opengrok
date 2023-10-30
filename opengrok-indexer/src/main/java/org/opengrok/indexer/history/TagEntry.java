@@ -58,7 +58,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
      * @param revision revision number
      * @param tags string representing tags
      */
-    public TagEntry(int revision, String tags) {
+    protected TagEntry(int revision, String tags) {
         this.revision = revision;
         this.date = null;
         this.tags = tags;
@@ -72,7 +72,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
      * @param tags string representing tags
      * @throws IllegalArgumentException if {@code date} is null
      */
-    public TagEntry(Date date, String tags) {
+    protected TagEntry(Date date, String tags) {
         if (date == null) {
             throw new IllegalArgumentException("`date' is null");
         }

@@ -124,11 +124,9 @@ public class DocumentMatcher implements Matcher {
         if (!foundLF) {
             return null;
         }
-        if (bomLength > 0) {
-            if (in.skip(bomLength) != bomLength) {
-                in.reset();
-                return null;
-            }
+        if (bomLength > 0 && in.skip(bomLength) != bomLength) {
+            in.reset();
+            return null;
         }
 
         // read line-by-line for a first few lines

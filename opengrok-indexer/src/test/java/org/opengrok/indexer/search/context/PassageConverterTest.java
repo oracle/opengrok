@@ -56,7 +56,7 @@ class PassageConverterTest {
     private static SourceSplitter splitter2;
 
     @BeforeAll
-    static void setUpClass() throws Exception {
+    static void setUpClass()  {
         splitter = new SourceSplitter();
         splitter.reset(DOC);
         splitter2 = new SourceSplitter();
@@ -84,10 +84,7 @@ class PassageConverterTest {
         assertEquals(2, lineno, "lineno");
 
         LineHighlight lhi = linemap.get(lineno);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         PhraseHighlight phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
@@ -193,10 +190,7 @@ class PassageConverterTest {
         assertTrue(linemap.containsKey(1), "linemap[1] exists");
 
         LineHighlight lhi = linemap.get(lineno);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         PhraseHighlight phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
@@ -204,10 +198,7 @@ class PassageConverterTest {
         assertEquals(Integer.MAX_VALUE, phi.getLineEnd(), "getLineEnd()");
 
         lhi = linemap.get(lineno + 1);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
@@ -234,10 +225,7 @@ class PassageConverterTest {
         assertTrue(linemap.containsKey(2), "linemap[2] exists");
 
         LineHighlight lhi = linemap.get(lineno);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         PhraseHighlight phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
@@ -245,10 +233,7 @@ class PassageConverterTest {
         assertEquals(Integer.MAX_VALUE, phi.getLineEnd(), "getLineEnd()");
 
         lhi = linemap.get(lineno + 1);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
@@ -256,15 +241,20 @@ class PassageConverterTest {
         assertEquals(Integer.MAX_VALUE, phi.getLineEnd(), "getLineEnd()");
 
         lhi = linemap.get(lineno + 2);
-        assertNotNull(lhi, "get LineHighlight");
-        assertEquals(0, lhi.getLelide(), "getLelide()");
-        assertEquals(0, lhi.getRelide(), "getRelide()");
-        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+        assertLineHighlight(lhi);
 
         phi = lhi.getMarkup(0);
         assertNotNull(phi, "get PhraseHighlight");
         assertEquals(-1, phi.getLineStart(), "getLineStart()");
         assertEquals(3, phi.getLineEnd(), "getLineEnd()");
+    }
+
+    private void assertLineHighlight(LineHighlight lhi) {
+        assertNotNull(lhi, "get LineHighlight");
+        assertEquals(0, lhi.getLelide(), "getLelide()");
+        assertEquals(0, lhi.getRelide(), "getRelide()");
+        assertEquals(1, lhi.countMarkups(), "countMarkups()");
+
     }
 
     private static PassageConverter getConverter(short contextCount) {

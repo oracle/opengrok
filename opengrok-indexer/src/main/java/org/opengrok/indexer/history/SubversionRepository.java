@@ -261,7 +261,7 @@ public class SubversionRepository extends Repository {
             filepath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
-                    "Failed to get canonical path: {0}", exp.getClass().toString());
+                    "Failed to get canonical path: {0}", exp.getClass());
             return false;
         }
         String filename = filepath.substring(getDirectoryName().length() + 1);

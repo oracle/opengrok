@@ -228,6 +228,30 @@ public class ClearCaseRepository extends Repository {
 
     private static class VobsHolder {
         static String[] vobs = runLsvob();
+        private static String[] runLsvob() {
+            if (testRepo.isWorking()) {
+                Executor exec = new Executor(
+                        new String[]{testRepo.RepoCommand, "lsvob", "-s"});
+                int rc;
+                if ((rc = exec.exec(true)) == 0) {
+                    String output = exec.getOutputString();
+
+                    if (output == null) {
+                        LOGGER.log(Level.SEVERE,
+                                "\"cleartool lsvob -s\" output was null");
+                        return new String[0];
+                    }
+                    String sep = System.getProperty("line.separator");
+                    String[] vobs = output.split(Pattern.quote(sep));
+                    LOGGER.log(Level.CONFIG, "Found VOBs: {0}",
+                            Arrays.asList(vobs));
+                    return vobs;
+                }
+                LOGGER.log(Level.SEVERE,
+                        "\"cleartool lsvob -s\" returned non-zero status: {0}", rc);
+            }
+            return new String[0];
+        }
     }
 
     private static String[] getAllVobs() {
@@ -236,31 +260,6 @@ public class ClearCaseRepository extends Repository {
 
     private static final ClearCaseRepository testRepo
             = new ClearCaseRepository();
-
-    private static String[] runLsvob() {
-        if (testRepo.isWorking()) {
-            Executor exec = new Executor(
-                    new String[]{testRepo.RepoCommand, "lsvob", "-s"});
-            int rc;
-            if ((rc = exec.exec(true)) == 0) {
-                String output = exec.getOutputString();
-
-                if (output == null) {
-                    LOGGER.log(Level.SEVERE,
-                            "\"cleartool lsvob -s\" output was null");
-                    return new String[0];
-                }
-                String sep = System.getProperty("line.separator");
-                String[] vobs = output.split(Pattern.quote(sep));
-                LOGGER.log(Level.CONFIG, "Found VOBs: {0}",
-                        Arrays.asList(vobs));
-                return vobs;
-            }
-            LOGGER.log(Level.SEVERE,
-                    "\"cleartool lsvob -s\" returned non-zero status: {0}", rc);
-        }
-        return new String[0];
-    }
 
     @Override
     boolean hasHistoryForDirectories() {

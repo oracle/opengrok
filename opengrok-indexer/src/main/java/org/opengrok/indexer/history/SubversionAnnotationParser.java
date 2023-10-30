@@ -78,8 +78,7 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
             saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
             saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
         } catch (ParserConfigurationException | SAXException ex) {
-            IOException err = new IOException("Failed to create SAX parser", ex);
-            throw err;
+            throw new IOException("Failed to create SAX parser", ex);
         }
 
         AnnotateHandler handler = new AnnotateHandler(fileName, annotation);
@@ -108,30 +107,20 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
         public void startElement(String uri, String localName, String qname,
                 Attributes attr) {
             sb.setLength(0);
-            if (null != qname) {
-                switch (qname) {
-                    case "entry":
-                        rev = null;
-                        author = null;
-                        break;
-                    case "commit":
-                        rev = attr.getValue("revision");
-                        break;
-                }
+            if ("entry".equals(qname)) {
+                rev = null;
+                author = null;
+            } else if ("commit".equals(qname)) {
+                rev = attr.getValue("revision");
             }
         }
 
         @Override
         public void endElement(String uri, String localName, String qname) {
-            if (null != qname) {
-                switch (qname) {
-                    case "author":
-                        author = sb.toString();
-                        break;
-                    case "entry":
-                        annotation.addLine(rev, author, true);
-                        break;
-                }
+            if ("author".equals(qname)) {
+                author = sb.toString();
+            } else if ("entry".equals(qname)) {
+                annotation.addLine(rev, author, true);
             }
         }
 
