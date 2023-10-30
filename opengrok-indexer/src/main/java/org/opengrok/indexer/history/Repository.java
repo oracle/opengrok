@@ -654,7 +654,8 @@ public abstract class Repository extends RepositoryInfo {
 
         @Override
         public Date parse(String source) throws ParseException {
-            ParseException head = null, tail = null;
+            ParseException head = null;
+            ParseException tail = null;
             for (SimpleDateFormat formatter : formatters) {
                 try {
                     return formatter.parse(source);

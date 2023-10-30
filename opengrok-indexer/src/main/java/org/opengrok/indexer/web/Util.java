@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.IntFunction;
 import java.util.logging.Level;
@@ -257,10 +258,7 @@ public final class Util {
      */
     public static void htmlize(char[] cs, int length, Appendable dest)
             throws IOException {
-        int len = length;
-        if (cs.length < length) {
-            len = cs.length;
-        }
+        int len = Math.min(cs.length, length);
         for (int i = 0; i < len; i++) {
             htmlize(cs[i], dest, false);
         }
@@ -393,11 +391,11 @@ public final class Util {
      */
     public static String breadcrumbPath(String urlPrefix, String path,
             char sep, String urlPostfix, boolean compact) {
-        if (path == null || path.length() == 0) {
-            return path;
-        }
-        return breadcrumbPath(urlPrefix, path, sep, urlPostfix, compact,
-                path.charAt(path.length() - 1) == sep);
+        return Optional.ofNullable(path)
+                .filter(optPath -> !optPath.isEmpty())
+                .map(optPath -> breadcrumbPath(urlPrefix, optPath, sep, urlPostfix, compact,
+                                optPath.charAt(optPath.length() - 1) == sep))
+                .orElse(path);
     }
 
     /**
@@ -574,7 +572,6 @@ public final class Util {
 
     /**
      * Convert the given size into a human readable string.
-     *
      * NOTE: when changing the output of this function make sure to adapt the
      * jQuery tablesorter custom parsers in web/httpheader.jspf
      *
@@ -582,8 +579,8 @@ public final class Util {
      * @return a readable string
      */
     public static String readableSize(long num) {
-        float l = num;
         NumberFormat formatter = (NumberFormat) FORMATTER.clone();
+        float l = num;
         if (l < 1024) {
             return formatter.format(l) + ' '; // for none-dirs append 'B'? ...
         } else if (l < 1048576) {
@@ -628,10 +625,10 @@ public final class Util {
      * @return encoded text for use in &lt;a title=""&gt; tag
      */
     public static String encode(String s) {
-        /**
-         * Make sure that the buffer is long enough to contain the whole string
-         * with the expanded special characters. We use 1.5*length as a
-         * heuristic.
+        /*
+          Make sure that the buffer is long enough to contain the whole string
+          with the expanded special characters. We use 1.5*length as a
+          heuristic.
          */
         StringBuilder sb = new StringBuilder((int) Math.max(10, s.length() * 1.5));
         try {
@@ -1219,8 +1216,8 @@ public final class Util {
         }
 
         /*
-         * For backward compatibility, read the OpenGrok-produced document
-         * using the system default charset.
+          For backward compatibility, read the OpenGrok-produced document
+          using the system default charset.
          */
         try (InputStream iss = new BufferedInputStream(new FileInputStream(file));
             Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) : new InputStreamReader(iss)) {
@@ -1228,9 +1225,9 @@ public final class Util {
                 return true;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, String.format("An error occurred while piping file '%s'", file), e);
+            return false;
         }
 
-        return false;
     }
 
     /**
