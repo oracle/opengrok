@@ -199,6 +199,10 @@ public class HistoryContext {
                     do {
                         he = it.next();
                     } while (!he.isActive() && it.hasNext());
+                    if (!he.isActive()) {
+                        // No sense to continue if the (next) base entry cannot be used.
+                        break;
+                    }
                 } else {
                     he = nhe;  // nhe is the lookahead revision
                 }
@@ -209,6 +213,9 @@ public class HistoryContext {
                     do {
                         nhe = it.next();
                     } while (!nhe.isActive() && it.hasNext());
+                    if (!nhe.isActive()) {
+                        nhe = null;
+                    }
                 } else {
                     // this prefetch mechanism is here because of the diff link generation
                     // we currently generate the diff to previous revision
