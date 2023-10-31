@@ -154,20 +154,18 @@ public class HistoryContext {
             String nrev;
             while ((it.hasNext() || (nhe != null)) && matchedLines < 10) {
                 if (nhe == null) {
-                    he = it.next();
-                    while (!he.isActive() && it.hasNext()) {
+                    do {
                         he = it.next();
-                    }
+                    } while (!he.isActive() && it.hasNext());
                 } else {
                     he = nhe;  //nhe is the lookahead revision
                 }
                 String line = he.getLine();
                 String rev = he.getRevision();
                 if (it.hasNext()) {
-                    nhe = it.next();
-                    while (!nhe.isActive() && it.hasNext()) {
+                    do {
                         nhe = it.next();
-                    }
+                    } while (!nhe.isActive() && it.hasNext());
                 } else {
                     // this prefetch mechanism is here because of the diff link generation
                     // we currently generate the diff to previous revision
