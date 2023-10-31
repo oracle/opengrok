@@ -127,12 +127,12 @@ public class HistoryContext {
      * @param out to write matched context
      * @param path path to the file
      * @param hits list of {@link Hit} instances
-     * @param wcontext web context - beginning of url
+     * @param urlPrefix URL prefix
      * @return whether there was at least one line that matched
      */
     @VisibleForTesting
     boolean getHistoryContext(History history, String path, @Nullable Writer out, @Nullable List<Hit> hits,
-                                      String wcontext) {
+                                      String urlPrefix) {
         if (history == null) {
             throw new IllegalArgumentException("`in' is null");
         }
@@ -193,11 +193,11 @@ public class HistoryContext {
                             } else if (out == null) {
                                 StringBuilder sb = new StringBuilder();
                                 writeMatch(sb, line, (int) start, (int) end,
-                                        true, path, wcontext, nrev, rev);
+                                        true, path, urlPrefix, nrev, rev);
                                 hits.add(new Hit(path, sb.toString(), "", false, false));
                             } else {
                                 writeMatch(out, line, (int) start, (int) end,
-                                        false, path, wcontext, nrev, rev);
+                                        false, path, urlPrefix, nrev, rev);
                             }
                             matchedLines++;
                             break;
@@ -226,24 +226,23 @@ public class HistoryContext {
      * @param end position of the first char after the match
      * @param flatten should multi-line log entries be flattened to a single
      * @param path path to the file
-     * @param wcontext web context (begin of URL)
+     * @param urlPrefix URL prefix
      * @param nrev old revision
      * @param rev current revision
-     * line? If {@code true}, replace newline with space.
      * @throws IOException IO exception
      */
     protected static void writeMatch(Appendable out, String line,
                             int start, int end, boolean flatten, String path,
-                            String wcontext, String nrev, String rev)
+                            String urlPrefix, String nrev, String rev)
             throws IOException {
 
         String prefix = line.substring(0, start);
         String match = line.substring(start, end);
         String suffix = line.substring(end);
 
-        if (wcontext != null && nrev != null && !wcontext.isEmpty()) {
+        if (urlPrefix != null && nrev != null && !urlPrefix.isEmpty()) {
             out.append("<a href=\"");
-            printHTML(out, wcontext + Prefix.DIFF_P +
+            printHTML(out, urlPrefix + Prefix.DIFF_P +
                     Util.uriEncodePath(path) +
                     "?" + QueryParameters.REVISION_2_PARAM_EQ + Util.uriEncodePath(path) + "@" +
                     rev + "&" + QueryParameters.REVISION_1_PARAM_EQ + Util.uriEncodePath(path) +
