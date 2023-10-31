@@ -210,8 +210,8 @@ class HistoryContextTest {
                         "Totoro",
                         "Uaaah\n", true, filePaths),
                 new HistoryEntry("1.2", "1.2", new Date(1485438706000L),
-                        "Totoro",
-                        "Trrrr\n", false, filePaths),
+                        "Catbus",
+                        "Miau\n", false, filePaths),
                 new HistoryEntry("1.1", "1.1", new Date(1485438705000L),
                         "Totoro",
                         "Hmmm\n", true, filePaths)
