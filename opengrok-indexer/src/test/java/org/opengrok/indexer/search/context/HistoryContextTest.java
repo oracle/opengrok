@@ -205,18 +205,17 @@ class HistoryContextTest {
     @Test
     void testGetHistoryContextVsInactiveHistoryEntries() {
         Set<String> filePaths = Set.of(File.separator + Paths.get("teamware", "foo.c"));
-        final List<HistoryEntry> entries = List.of(
+        History history = new History(List.of(
                 new HistoryEntry("1.2", "1.2", new Date(1485438707000L),
-                "Totoro",
-                "Uaaah\n", true, filePaths),
+                        "Totoro",
+                        "Uaaah\n", true, filePaths),
                 new HistoryEntry("1.2", "1.2", new Date(1485438706000L),
                         "Totoro",
                         "Trrrr\n", false, filePaths),
                 new HistoryEntry("1.1", "1.1", new Date(1485438705000L),
                         "Totoro",
                         "Hmmm\n", true, filePaths)
-                );
-        History history = new History(entries);
+        ));
 
         ArrayList<Hit> hits = new ArrayList<>();
         BooleanQuery.Builder query = new BooleanQuery.Builder();
