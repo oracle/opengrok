@@ -225,7 +225,7 @@ class HistoryContextTest {
         HistoryContext historyContext = new HistoryContext(query.build());
         final String path = "/foo/bar";
         final String prefix = "prefix";
-        assertTrue(historyContext.getHistoryContext(history,path, null, hits, prefix));
+        assertTrue(historyContext.getHistoryContext(history, path, null, hits, prefix));
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().
                 startsWith(String.format("<a href=\"%s/diff%s?r2=%s@1.2&amp;r1=%s@1.1\"",
