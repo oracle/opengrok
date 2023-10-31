@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.search.Query;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
@@ -120,23 +122,24 @@ public class HistoryContext {
     }
 
     /**
-     * Writes matching History log entries from 'in' to 'out' or to 'hits'.
-     * @param in the history to fetch entries from
+     * Writes matching history log entries to either 'out' or to 'hits'.
+     * @param history the history to fetch entries from
      * @param out to write matched context
      * @param path path to the file
-     * @param hits list of hits
+     * @param hits list of {@link Hit} instances
      * @param wcontext web context - beginning of url
+     * @return whether there was at least one line that matched
      */
-    private boolean getHistoryContext(
-            History in, String path, Writer out, List<Hit> hits, String wcontext) {
-        if (in == null) {
+    @VisibleForTesting
+    boolean getHistoryContext(History history, String path, @Nullable Writer out, @Nullable List<Hit> hits,
+                                      String wcontext) {
+        if (history == null) {
             throw new IllegalArgumentException("`in' is null");
         }
         if ((out == null) == (hits == null)) {
             // There should be exactly one destination for the output. If
             // none or both are specified, it's a bug.
-            throw new IllegalArgumentException(
-                    "Exactly one of out and hits should be non-null");
+            throw new IllegalArgumentException("Exactly one of out and hits should be non-null");
         }
 
         if (m == null) {
@@ -144,7 +147,7 @@ public class HistoryContext {
         }
 
         int matchedLines = 0;
-        Iterator<HistoryEntry> it = in.getHistoryEntries().iterator();
+        Iterator<HistoryEntry> it = history.getHistoryEntries().iterator();
         try {
             HistoryEntry he;
             HistoryEntry nhe = null;
@@ -152,6 +155,9 @@ public class HistoryContext {
             while ((it.hasNext() || (nhe != null)) && matchedLines < 10) {
                 if (nhe == null) {
                     he = it.next();
+                    while (!he.isActive() && it.hasNext()) {
+                        he = it.next();
+                    }
                 } else {
                     he = nhe;  //nhe is the lookahead revision
                 }
@@ -159,6 +165,9 @@ public class HistoryContext {
                 String rev = he.getRevision();
                 if (it.hasNext()) {
                     nhe = it.next();
+                    while (!nhe.isActive() && it.hasNext()) {
+                        nhe = it.next();
+                    }
                 } else {
                     // this prefetch mechanism is here because of the diff link generation
                     // we currently generate the diff to previous revision
