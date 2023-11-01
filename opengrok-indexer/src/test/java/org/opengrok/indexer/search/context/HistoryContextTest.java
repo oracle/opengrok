@@ -18,16 +18,21 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -37,11 +42,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
@@ -189,5 +197,38 @@ class HistoryContextTest {
         assertEquals("<a href=\"ctx/diff/foo%20bar/haf%2Bhaf?r2=/foo%20bar/haf%2Bhaf@2&amp;" +
                 "r1=/foo%20bar/haf%2Bhaf@1\" title=\"diff to previous version\">diff</a> <b>foo</b>",
                 sb.toString());
+    }
+
+    /**
+     * Test that inactive history entries are skipped when generating history context.
+     */
+    @Test
+    void testGetHistoryContextVsInactiveHistoryEntries() {
+        Set<String> filePaths = Set.of(File.separator + Paths.get("teamware", "foo.c"));
+        History history = new History(List.of(
+                new HistoryEntry("1.2", "1.2", new Date(1485438707000L),
+                        "Totoro",
+                        "Uaaah\n", true, filePaths),
+                new HistoryEntry("1.2", "1.2", new Date(1485438706000L),
+                        "Catbus",
+                        "Miau\n", false, filePaths),
+                new HistoryEntry("1.1", "1.1", new Date(1485438705000L),
+                        "Totoro",
+                        "Hmmm\n", true, filePaths)
+        ));
+
+        ArrayList<Hit> hits = new ArrayList<>();
+        BooleanQuery.Builder query = new BooleanQuery.Builder();
+        HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
+        assertNotNull(lastHistoryEntry);
+        query.add(new TermQuery(new Term("hist", lastHistoryEntry.getMessage().trim())), Occur.MUST);
+        HistoryContext historyContext = new HistoryContext(query.build());
+        final String path = "/foo/bar";
+        final String prefix = "prefix";
+        assertTrue(historyContext.getHistoryContext(history, path, null, hits, prefix));
+        assertEquals(1, hits.size());
+        assertTrue(hits.get(0).getLine().
+                startsWith(String.format("<a href=\"%s/diff%s?r2=%s@1.2&amp;r1=%s@1.1\"",
+                        prefix, path, path, path)));
     }
 }

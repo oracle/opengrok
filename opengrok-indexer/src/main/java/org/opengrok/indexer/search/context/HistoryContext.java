@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.search.Query;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
@@ -119,24 +121,67 @@ public class HistoryContext {
         return getHistoryContext(hist, path, out, null, context);
     }
 
+    private int matchLine(String line, String urlPrefix, String path, @Nullable Writer out, @Nullable List<Hit> hits,
+                   String rev, String nrev) throws IOException {
+
+        int matchedLines = 0;
+        tokens.reInit(line);
+        String token;
+        int matchState;
+        long start = -1;
+        while ((token = tokens.next()) != null) {
+            for (LineMatcher lineMatcher : m) {
+                matchState = lineMatcher.match(token);
+                if (matchState == LineMatcher.MATCHED) {
+                    if (start < 0) {
+                        start = tokens.getMatchStart();
+                    }
+                    long end = tokens.getMatchEnd();
+                    if (start > Integer.MAX_VALUE || end > Integer.MAX_VALUE) {
+                        LOGGER.log(Level.WARNING, "Unexpected out of bounds for {0}", path);
+                    } else if (hits != null) {
+                        StringBuilder sb = new StringBuilder();
+                        writeMatch(sb, line, (int) start, (int) end,
+                                true, path, urlPrefix, nrev, rev);
+                        hits.add(new Hit(path, sb.toString(), "", false, false));
+                    } else {
+                        writeMatch(out, line, (int) start, (int) end,
+                                false, path, urlPrefix, nrev, rev);
+                    }
+                    matchedLines++;
+                    break;
+                } else if (matchState == LineMatcher.WAIT) {
+                    if (start < 0) {
+                        start = tokens.getMatchStart();
+                    }
+                } else {
+                    start = -1;
+                }
+            }
+        }
+
+        return matchedLines;
+    }
+
     /**
-     * Writes matching History log entries from 'in' to 'out' or to 'hits'.
-     * @param in the history to fetch entries from
+     * Writes matching history log entries to either 'out' or to 'hits'.
+     * @param history the history to fetch entries from
      * @param out to write matched context
      * @param path path to the file
-     * @param hits list of hits
-     * @param wcontext web context - beginning of url
+     * @param hits list of {@link Hit} instances
+     * @param urlPrefix URL prefix
+     * @return whether there was at least one line that matched
      */
-    private boolean getHistoryContext(
-            History in, String path, Writer out, List<Hit> hits, String wcontext) {
-        if (in == null) {
+    @VisibleForTesting
+    boolean getHistoryContext(History history, String path, @Nullable Writer out, @Nullable List<Hit> hits,
+                                      String urlPrefix) {
+        if (history == null) {
             throw new IllegalArgumentException("`in' is null");
         }
         if ((out == null) == (hits == null)) {
             // There should be exactly one destination for the output. If
             // none or both are specified, it's a bug.
-            throw new IllegalArgumentException(
-                    "Exactly one of out and hits should be non-null");
+            throw new IllegalArgumentException("Exactly one of out and hits should be non-null");
         }
 
         if (m == null) {
@@ -144,7 +189,7 @@ public class HistoryContext {
         }
 
         int matchedLines = 0;
-        Iterator<HistoryEntry> it = in.getHistoryEntries().iterator();
+        Iterator<HistoryEntry> it = history.getHistoryEntries().stream().filter(HistoryEntry::isActive).iterator();
         try {
             HistoryEntry he;
             HistoryEntry nhe = null;
@@ -153,10 +198,11 @@ public class HistoryContext {
                 if (nhe == null) {
                     he = it.next();
                 } else {
-                    he = nhe;  //nhe is the lookahead revision
+                    he = nhe;  // nhe is the lookahead revision
                 }
                 String line = he.getLine();
                 String rev = he.getRevision();
+
                 if (it.hasNext()) {
                     nhe = it.next();
                 } else {
@@ -169,40 +215,7 @@ public class HistoryContext {
                 } else {
                     nrev = nhe.getRevision();
                 }
-                tokens.reInit(line);
-                String token;
-                int matchState;
-                long start = -1;
-                while ((token = tokens.next()) != null) {
-                    for (LineMatcher lineMatcher : m) {
-                        matchState = lineMatcher.match(token);
-                        if (matchState == LineMatcher.MATCHED) {
-                            if (start < 0) {
-                                start = tokens.getMatchStart();
-                            }
-                            long end = tokens.getMatchEnd();
-                            if (start > Integer.MAX_VALUE || end > Integer.MAX_VALUE) {
-                                LOGGER.log(Level.INFO, "Unexpected out of bounds for {0}", path);
-                            } else if (out == null) {
-                                StringBuilder sb = new StringBuilder();
-                                writeMatch(sb, line, (int) start, (int) end,
-                                        true, path, wcontext, nrev, rev);
-                                hits.add(new Hit(path, sb.toString(), "", false, false));
-                            } else {
-                                writeMatch(out, line, (int) start, (int) end,
-                                        false, path, wcontext, nrev, rev);
-                            }
-                            matchedLines++;
-                            break;
-                        } else if (matchState == LineMatcher.WAIT) {
-                            if (start < 0) {
-                                start = tokens.getMatchStart();
-                            }
-                        } else {
-                            start = -1;
-                        }
-                    }
-                }
+                matchedLines += matchLine(line, urlPrefix, path, out, hits, rev, nrev);
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Could not get history context for " + path, e);
@@ -219,24 +232,23 @@ public class HistoryContext {
      * @param end position of the first char after the match
      * @param flatten should multi-line log entries be flattened to a single
      * @param path path to the file
-     * @param wcontext web context (begin of URL)
+     * @param urlPrefix URL prefix
      * @param nrev old revision
      * @param rev current revision
-     * line? If {@code true}, replace newline with space.
      * @throws IOException IO exception
      */
     protected static void writeMatch(Appendable out, String line,
                             int start, int end, boolean flatten, String path,
-                            String wcontext, String nrev, String rev)
+                            String urlPrefix, String nrev, String rev)
             throws IOException {
 
         String prefix = line.substring(0, start);
         String match = line.substring(start, end);
         String suffix = line.substring(end);
 
-        if (wcontext != null && nrev != null && !wcontext.isEmpty()) {
+        if (urlPrefix != null && nrev != null && !urlPrefix.isEmpty()) {
             out.append("<a href=\"");
-            printHTML(out, wcontext + Prefix.DIFF_P +
+            printHTML(out, urlPrefix + Prefix.DIFF_P +
                     Util.uriEncodePath(path) +
                     "?" + QueryParameters.REVISION_2_PARAM_EQ + Util.uriEncodePath(path) + "@" +
                     rev + "&" + QueryParameters.REVISION_1_PARAM_EQ + Util.uriEncodePath(path) +
