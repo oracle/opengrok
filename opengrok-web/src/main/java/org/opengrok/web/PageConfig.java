@@ -41,13 +41,13 @@ import java.nio.file.Paths;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -131,8 +132,6 @@ public final class PageConfig {
     static final String PROJECT_PARAM_NAME = "project";
     static final String GROUP_PARAM_NAME = "group";
     private static final String DEBUG_PARAM_NAME = "debug";
-
-    // TODO if still used, get it from the app context
 
     private final AuthorizationFramework authFramework;
     private RuntimeEnvironment env;
@@ -256,7 +255,7 @@ public final class PageConfig {
         }
 
         if (data.rev[0] == null || data.rev[1] == null
-                || data.rev[0].length() == 0 || data.rev[1].length() == 0
+                || data.rev[0].isEmpty() || data.rev[1].isEmpty()
                 || data.rev[0].equals(data.rev[1])) {
             data.errorMsg = "Please pick two revisions to compare the changed "
                     + "from the <a href=\"" + context + Prefix.HIST_L
@@ -280,7 +279,6 @@ public final class PageConfig {
         DiffData data = new DiffData(getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR)),
                 Util.htmlize(getResourceFile().getName()));
 
-        String srcRoot = getSourceRootPath();
         String context = req.getContextPath();
         String[] filepath = new String[2];
 
@@ -289,92 +287,105 @@ public final class PageConfig {
         }
 
         data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
-        if (data.genre == null || txtGenres.contains(data.genre)) {
-            InputStream[] in = new InputStream[2];
-            try {
-                // Get input stream for both older and newer file.
-                Future<?>[] future = new Future<?>[2];
-                for (int i = 0; i < 2; i++) {
-                    File f = new File(srcRoot + filepath[i]);
-                    final String revision = data.rev[i];
-                    future[i] = executor.submit(() -> HistoryGuru.getInstance().
-                            getRevision(f.getParent(), f.getName(), revision));
-                }
+        Optional.of(data)
+                .filter(this::isTextGenre)
+                .ifPresent(textData -> generatePlainTextDiffData(textData, filepath));
+       return data;
+    }
 
-                for (int i = 0; i < 2; i++) {
-                    // The Executor used by given repository will enforce the timeout.
-                    in[i] = (InputStream) future[i].get();
-                    if (in[i] == null) {
-                        data.errorMsg = "Unable to get revision "
-                                + Util.htmlize(data.rev[i]) + " for file: "
-                                + Util.htmlize(getPath());
-                        return data;
-                    }
-                }
+    private boolean isTextGenre(DiffData data) {
+        return data.genre == null || txtGenres.contains(data.genre);
+    }
 
-                /*
-                 * If the genre of the older revision cannot be determined,
-                 * (this can happen if the file was empty), try with newer
-                 * version.
-                 */
-                for (int i = 0; i < 2 && data.genre == null; i++) {
-                    try {
-                        data.genre = AnalyzerGuru.getGenre(in[i]);
-                    } catch (IOException e) {
-                        data.errorMsg = "Unable to determine the file type: "
-                                + Util.htmlize(e.getMessage());
-                    }
-                }
-
-                if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
-                    return data;
-                }
-
-                ArrayList<String> lines = new ArrayList<>();
-                Project p = getProject();
-                for (int i = 0; i < 2; i++) {
-                    // All files under source root are read with UTF-8 as a default.
-                    try (BufferedReader br = new BufferedReader(
-                        ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(
-                        in[i], StandardCharsets.UTF_8.name()), p))) {
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            lines.add(line);
-                        }
-                        data.file[i] = lines.toArray(new String[0]);
-                        lines.clear();
-                    }
-                    in[i] = null;
-                }
-            } catch (Exception e) {
-                data.errorMsg = "Error reading revisions: "
-                        + Util.htmlize(e.getMessage());
-            } finally {
-                for (int i = 0; i < 2; i++) {
-                    IOUtils.close(in[i]);
-                }
-            }
-            if (data.errorMsg != null) {
-                return data;
-            }
-            try {
-                data.revision = Diff.diff(data.file[0], data.file[1]);
-            } catch (DifferentiationFailedException e) {
-                data.errorMsg = "Unable to get diffs: " + Util.htmlize(e.getMessage());
-            }
+    private void generatePlainTextDiffData(DiffData data, String[] filepath) {
+        String srcRoot = getSourceRootPath();
+        InputStream[] in = new InputStream[2];
+        try {
+            // Get input stream for both older and newer file.
+            Future<?>[] future = new Future<?>[2];
             for (int i = 0; i < 2; i++) {
-                try {
-                    URI u = new URI(null, null, null,
-                            filepath[i] + "@" + data.rev[i], null);
-                    data.param[i] = u.getRawQuery();
-                } catch (URISyntaxException e) {
-                    LOGGER.log(Level.WARNING, "Failed to create URI: ", e);
+                File f = new File(srcRoot + filepath[i]);
+                final String revision = data.rev[i];
+                future[i] = executor.submit(() -> HistoryGuru.getInstance().
+                        getRevision(f.getParent(), f.getName(), revision));
+            }
+
+            for (int i = 0; i < 2; i++) {
+                // The Executor used by given repository will enforce the timeout.
+                in[i] = (InputStream) future[i].get();
+                if (in[i] == null) {
+                    data.errorMsg = "Unable to get revision "
+                            + Util.htmlize(data.rev[i]) + " for file: "
+                            + Util.htmlize(getPath());
+                    return;
                 }
             }
-            data.full = fullDiff();
-            data.type = getDiffType();
+
+            /*
+             * If the genre of the older revision cannot be determined,
+             * (this can happen if the file was empty), try with newer
+             * version.
+             */
+            populateGenreIfEmpty(data, in);
+
+            if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
+                return;
+            }
+
+            Project p = getProject();
+            for (int i = 0; i < 2; i++) {
+                // All files under source root are read with UTF-8 as a default.
+                try (BufferedReader br = new BufferedReader(
+                        ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(
+                                in[i], StandardCharsets.UTF_8.name()), p))) {
+                    data.file[i] = br.lines().toArray(String[]::new);
+                }
+            }
+        } catch (Exception e) {
+            data.errorMsg = "Error reading revisions: "
+                    + Util.htmlize(e.getMessage());
+        } finally {
+            Arrays.stream(in)
+                    .forEach(IOUtils::close);
         }
-        return data;
+        if (Objects.isNull(data.errorMsg)) {
+            return;
+        }
+        populateRevisionData(data);
+        populateRevisionURLDetails(data, filepath);
+        data.full = fullDiff();
+        data.type = getDiffType();
+    }
+
+    private void populateGenreIfEmpty(DiffData data, InputStream[] inArray) {
+        for (int i = 0; i < 2 && data.genre == null; i++) {
+            try {
+                data.genre = AnalyzerGuru.getGenre(inArray[i]);
+            } catch (IOException e) {
+                data.errorMsg = "Unable to determine the file type: "
+                        + Util.htmlize(e.getMessage());
+            }
+        }
+    }
+    private void populateRevisionData(DiffData data) {
+        try {
+            data.revision = Diff.diff(data.file[0], data.file[1]);
+        } catch (DifferentiationFailedException e) {
+            data.errorMsg = "Unable to get diffs: " + Util.htmlize(e.getMessage());
+        }
+    }
+
+    private void populateRevisionURLDetails(DiffData data, String[] filePath) {
+        IntStream.range(0, 2)
+                .forEach(i -> {
+                    try {
+                        URI u = new URI(null, null, null,
+                                filePath[i] + "@" + data.rev[i], null);
+                        data.param[i] = u.getRawQuery();
+                    } catch (URISyntaxException e) {
+                        LOGGER.log(Level.WARNING, "Failed to create URI: ", e);
+                    }
+                });
     }
 
     /**
@@ -552,7 +563,7 @@ public final class PageConfig {
     public int getIntParam(String name, int defaultValue) {
         int ret = defaultValue;
         String s = req.getParameter(name);
-        if (s != null && s.length() != 0) {
+        if (s != null && !s.isEmpty()) {
             try {
                 int x = Integer.parseInt(s, 10);
                 if (x >= 0) {
@@ -703,7 +714,7 @@ public final class PageConfig {
     public String getRequestedRevision() {
         if (rev == null) {
             String tmp = Laundromat.launderInput(req.getParameter(QueryParameters.REVISION_PARAM));
-            rev = (tmp != null && tmp.length() > 0) ? tmp : "";
+            rev = (tmp != null && !tmp.isEmpty()) ? tmp : "";
         }
         return rev;
     }
@@ -778,7 +789,7 @@ public final class PageConfig {
      */
     public String[] getSearchOnlyIn() {
         if (isDir()) {
-            return getPath().length() == 0
+            return getPath().isEmpty()
                     ? new String[]{"/", "this directory", "disabled=\"\""}
                     : new String[]{getPath(), "this directory", ""};
         }
@@ -845,22 +856,22 @@ public final class PageConfig {
      * @see #OPEN_GROK_PROJECT
      */
     public SortedSet<String> getRequestedProjects() {
-        if (requestedProjects == null) {
-            requestedProjects = getRequestedProjects(
-                    QueryParameters.ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
-        }
+        requestedProjects = Optional.ofNullable(requestedProjects)
+                .orElseGet( () -> getRequestedProjects(
+                        PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT)
+                );
         return requestedProjects;
     }
 
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             return;
         }
         String[] p = COMMA_PATTERN.split(value);
         for (String p1 : p) {
-            if (p1.length() != 0) {
+            if (!p1.isEmpty()) {
                 result.add(p1);
             }
         }
@@ -909,24 +920,20 @@ public final class PageConfig {
      * Same as {@link #getRequestedProjects()}, but with a variable cookieName
      * and parameter name.
      *
-     * @param searchAllParamName the name of the request parameter corresponding to search all projects.
-     * @param projectParamName   the name of the request parameter corresponding to a project name.
-     * @param groupParamName     the name of the request parameter corresponding to a group name
-     * @param cookieName         name of the cookie which possible contains project
-     *                           names used as fallback
+     * @param projectParamName the name of the request parameter corresponding to a project name.
+     * @param groupParamName   the name of the request parameter corresponding to a group name
+     * @param cookieName       name of the cookie which possible contains project
+     *                         names used as fallback
      * @return set of project names. Possibly empty set but never {@code null}.
      */
-    protected SortedSet<String> getRequestedProjects(
-            String searchAllParamName,
+    private SortedSet<String> getRequestedProjects(
             String projectParamName,
             String groupParamName,
             String cookieName
     ) {
 
         TreeSet<String> projectNames = new TreeSet<>();
-        List<Project> projects = getEnv().getProjectList();
-
-        if (Boolean.parseBoolean(req.getParameter(searchAllParamName))) {
+        if (Boolean.parseBoolean(req.getParameter(QueryParameters.ALL_PROJECT_SEARCH))) {
             return getProjectHelper()
                     .getAllProjects()
                     .stream()
@@ -935,68 +942,69 @@ public final class PageConfig {
         }
 
         // Use a project determined directly from the URL
-        if (getProject() != null && getProject().isIndexed()) {
+        boolean isProjectIndexed = Optional.ofNullable(getProject())
+                .map(Project::isIndexed)
+                .orElse(false);
+        if (isProjectIndexed) {
             projectNames.add(getProject().getName());
             return projectNames;
         }
 
-        // Use a project if there is just a single project.
+        List<Project> projects = getEnv().getProjectList();
         if (projects.size() == 1) {
             Project p = projects.get(0);
-            if (p.isIndexed() && authFramework.isAllowed(req, p)) {
+            if (isIndexedAndAllowed(p)) {
                 projectNames.add(p.getName());
             }
             return projectNames;
         }
 
         // Add all projects which match the project parameter name values/
-        List<String> names = getParameterValues(projectParamName);
-        for (String projectName : names) {
-            Project project = Project.getByName(projectName);
-            if (project != null && project.isIndexed() && authFramework.isAllowed(req, project)) {
-                projectNames.add(projectName);
-            }
-        }
-
-        // Add all projects which are part of a group that matches the group parameter name.
-        names = getParameterValues(groupParamName);
-        for (String groupName : names) {
-            Group group = Group.getByName(groupName);
-            if (group != null) {
-                projectNames.addAll(getProjectHelper().getAllGrouped(group)
-                                                      .stream()
-                                                      .filter(Project::isIndexed)
-                                                      .map(Project::getName)
-                                                      .collect(Collectors.toSet()));
-            }
-        }
+        getParameterValues(projectParamName)
+                .stream()
+                .map(Project::getByName)
+                .filter(Objects::nonNull)
+                .filter(this::isIndexedAndAllowed)
+                .map(Project::getName)
+                .forEach(projectNames::add);
+        var groupNames = getParameterValues(groupParamName)
+                .stream()
+                .map(Group::getByName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        groupNames.stream()
+                .map(group -> getProjectHelper().getAllGrouped(group))
+                .flatMap(Collection::stream)
+                .filter(Project::isIndexed)
+                .map(Project::getName)
+                .forEach(projectNames::add);
 
         // Add projects based on cookie.
         if (projectNames.isEmpty() && getIntParam(QueryParameters.NUM_SELECTED_PARAM, -1) != 0) {
-            List<String> cookies = getCookieVals(cookieName);
-            for (String s : cookies) {
-                Project x = Project.getByName(s);
-                if (x != null && x.isIndexed() && authFramework.isAllowed(req, x)) {
-                    projectNames.add(s);
-                }
-            }
+            getCookieVals(cookieName)
+                    .stream()
+                    .map(Project::getByName)
+                    .filter(Objects::nonNull)
+                    .filter(this::isIndexedAndAllowed)
+                    .map(Project::getName)
+                    .forEach(projectNames::add);
         }
 
         // Add default projects.
         if (projectNames.isEmpty()) {
-            Set<Project> defaultProjects = env.getDefaultProjects();
-            if (defaultProjects != null) {
-                for (Project project : defaultProjects) {
-                    if (project.isIndexed() && authFramework.isAllowed(req, project)) {
-                        projectNames.add(project.getName());
-                    }
-                }
-            }
+            Optional.ofNullable(env.getDefaultProjects())
+                    .stream().flatMap(Collection::stream)
+                    .filter(this::isIndexedAndAllowed)
+                    .map(Project::getName)
+                    .forEach(projectNames::add);
         }
 
         return projectNames;
     }
 
+    private boolean isIndexedAndAllowed(Project project) {
+        return project.isIndexed() && this.isAllowed(project);
+    }
     public ProjectHelper getProjectHelper() {
         return ProjectHelper.getInstance(this);
     }

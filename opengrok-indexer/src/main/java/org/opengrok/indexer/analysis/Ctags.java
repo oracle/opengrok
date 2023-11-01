@@ -591,7 +591,6 @@ public class Ctags implements Resettable {
                     throw new InterruptedException("readLine()");
                 }
 
-                //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
                     if (!junitTesting) {
                         LOGGER.warning("ctags: Unexpected end of file!");

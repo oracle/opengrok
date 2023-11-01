@@ -110,15 +110,13 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry = new HistoryEntry();
                 entry.setActive(true);
                 entry.setRevision(attr.getValue("revision"));
-            } else if ("path".equals(qname)) {
-                if (attr.getIndex(COPYFROM_PATH) != -1) {
-                  LOGGER.log(Level.FINER, "rename for {0}", attr.getValue(COPYFROM_PATH));
-                  if ("dir".equals(attr.getValue("kind"))) {
-                    isRenamedDir = true;
-                  } else {
-                    isRenamedFile = true;
-                  }
-                }
+            } else if ("path".equals(qname) && attr.getIndex(COPYFROM_PATH) != -1) {
+              LOGGER.log(Level.FINER, "rename for {0}", attr.getValue(COPYFROM_PATH));
+              if ("dir".equals(attr.getValue("kind"))) {
+                isRenamedDir = true;
+              } else {
+                isRenamedFile = true;
+              }
             }
             sb.setLength(0);
         }

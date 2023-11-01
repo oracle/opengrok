@@ -35,6 +35,8 @@ import java.util.Date;
  */
 public abstract class TagEntry implements Comparable<TagEntry> {
 
+    private static final String DATE_NULL_ASSERT = "date == null";
+
     /**
      * If repo uses linear revision numbering.
      */
@@ -58,7 +60,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
      * @param revision revision number
      * @param tags string representing tags
      */
-    public TagEntry(int revision, String tags) {
+    protected TagEntry(int revision, String tags) {
         this.revision = revision;
         this.date = null;
         this.tags = tags;
@@ -72,7 +74,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
      * @param tags string representing tags
      * @throws IllegalArgumentException if {@code date} is null
      */
-    public TagEntry(Date date, String tags) {
+    protected TagEntry(Date date, String tags) {
         if (date == null) {
             throw new IllegalArgumentException("`date' is null");
         }
@@ -108,7 +110,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         if (this.revision != NOREV) {
             return Integer.compare(this.revision, that.revision);
         }
-        assert this.date != null : "date == null";
+        assert this.date != null : DATE_NULL_ASSERT;
         return this.date.compareTo(that.date);
     }
 
@@ -124,7 +126,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         if (this.revision != NOREV) {
             return this.revision == that.revision;
         }
-        assert this.date != null : "date == null";
+        assert this.date != null : DATE_NULL_ASSERT;
         return this.date.equals(that.date);
     }
 
@@ -133,7 +135,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         if (this.revision != NOREV) {
             return this.revision;
         }
-        assert this.date != null : "date == null";
+        assert this.date != null : DATE_NULL_ASSERT;
         return this.date.hashCode();
     }
 

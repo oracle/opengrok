@@ -110,7 +110,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
             try {
                 currentRevision = Long.parseLong(revision);
             } catch (NumberFormatException ex) {
-                LOGGER.log(Level.WARNING, "Failed to parse revision: '" + revision + "'", ex);
+                LOGGER.log(Level.WARNING, ex, () -> "Failed to parse revision: '" + revision + "'");
             }
             // We're only interested in history entries that change file content
             if (revisionCounter < currentRevision) {
@@ -127,7 +127,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(repository.parse(date));
                 } catch (ParseException ex) {
-                    LOGGER.log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
+                    LOGGER.log(Level.WARNING, ex, () -> "Failed to parse date: '" + date + "'");
                 }
                 entry.setActive(true);
             }

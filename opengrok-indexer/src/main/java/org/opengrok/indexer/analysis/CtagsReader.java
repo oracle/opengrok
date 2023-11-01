@@ -102,9 +102,6 @@ public class CtagsReader {
         //        NAMESPACE("namespace"), //this is not defined in above format docs, but both universal and exuberant ctags use it
         //        PROGRAM("program"), //this is not defined in above format docs, but both universal and exuberant ctags use it
         SIGNATURE("signature");
-//        STRUCT("struct"),
-//        TYPEREF("typeref"),
-//        UNION("union");
 
         //NOTE: if you edit above, always consult below charCmpEndOffset
         private final String name;
@@ -381,7 +378,8 @@ public class CtagsReader {
         String origWhole = whole;
 
         int t = tabSize;
-        int s, e;
+        int s;
+        int e;
 
         int woff = strictIndexOf(whole, str);
         if (woff < 0) {
@@ -440,7 +438,8 @@ public class CtagsReader {
         }
 
         int t = tabSize;
-        int s, e;
+        int s;
+        int e;
 
         // First search arg as-is in the current `whole' -- strict then lax.
         int woff = strictIndexOf(whole, arg);

@@ -498,6 +498,7 @@ class RuntimeEnvironmentTest {
     }
 
     @Test
+    @SuppressWarnings("java:S5961")
     void testAuthorizationStackDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"

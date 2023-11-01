@@ -21,7 +21,6 @@
  * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
-import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -39,7 +38,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.EftarFile;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PathDescription;
-import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.IOException;
 import java.util.Date;
@@ -55,9 +53,6 @@ public class SystemController {
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemController.class);
-
-    @Inject
-    private SuggesterService suggester;
 
     @PUT
     @Path("/includes/reload")

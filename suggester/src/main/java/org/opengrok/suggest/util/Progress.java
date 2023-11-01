@@ -80,21 +80,12 @@ public class Progress implements AutoCloseable {
         // Note: Level.CONFIG is missing as it does not make too much sense for progress reporting semantically.
         final List<Level> standardLevels = Arrays.asList(Level.OFF, Level.SEVERE, Level.WARNING, Level.INFO,
                 Level.FINE, Level.FINER, Level.FINEST, Level.ALL);
-        int i = standardLevels.indexOf(baseLogLevel);
-        for (int num : new int[]{100, 50, 10, 1}) {
-            if (i >= standardLevels.size()) {
-                break;
-            }
+        int[] num = new int[]{100, 50, 10, 1};
+        for (int i = standardLevels.indexOf(baseLogLevel), j = 0;
+             i < standardLevels.size() && j < num.length; i++, j++) {
 
             Level level = standardLevels.get(i);
-            if (level == null) {
-                break;
-            }
-            levelCountMap.put(level, num);
-            if (num == 1) {
-                break;
-            }
-            i++;
+            levelCountMap.put(level, num[j]);
         }
 
         // Assuming the printProgress configuration setting cannot be changed on the fly.

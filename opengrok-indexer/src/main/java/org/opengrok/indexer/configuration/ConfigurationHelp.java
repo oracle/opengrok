@@ -47,6 +47,10 @@ import org.opengrok.indexer.util.StringUtils;
 public class ConfigurationHelp {
 
     private static final String XML_COMMENT_START = "  <!-- ";
+    private static final String USER_DEFINED_KEY = "user-defined-key";
+    private static final String USER_DEFINED_VALUE = "user-specified-value";
+    private static final String NOT_SUPPORTED_MSG = "Not supported yet for ";
+
 
     private ConfigurationHelp() {
     }
@@ -136,7 +140,7 @@ public class ConfigurationHelp {
         } else if (setter.getName().equals("setReviewPattern")) {
             return "Sample Issue \\#(\\d+)";
         } else if (paramType == String.class) {
-            return "user-specified-value";
+            return USER_DEFINED_VALUE;
         } else if (paramType == int.class) {
             return 1 + (int) defaultValue;
         } else if (paramType == long.class) {
@@ -158,9 +162,9 @@ public class ConfigurationHelp {
             return getSampleSetValue(genType);
         } else if (paramType == AuthorizationStack.class) {
             AuthorizationStack astck = new AuthorizationStack(
-                AuthControlFlag.REQUIRED, "user-specified-value");
+                AuthControlFlag.REQUIRED, USER_DEFINED_VALUE);
             astck.add(new AuthorizationPlugin(AuthControlFlag.REQUISITE,
-                "user-specified-value"));
+                USER_DEFINED_VALUE));
             return astck;
         } else if (paramType == Filter.class) {
             Filter flt = new Filter();
@@ -198,7 +202,7 @@ public class ConfigurationHelp {
         Type actType = genParamType.getActualTypeArguments()[0];
 
         if (actType != RepositoryInfo.class) {
-            throw new UnsupportedOperationException("Not supported yet for " + actType);
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MSG + actType);
         }
         return null;
     }
@@ -216,24 +220,24 @@ public class ConfigurationHelp {
         if (actType0 == String.class) {
             if (actType1 == String.class) {
                 Map<String, String> strmap = new TreeMap<>();
-                strmap.put("user-defined-key", "user-defined-value");
+                strmap.put(USER_DEFINED_KEY, "user-defined-value");
                 res = strmap;
             } else if (actType1 == Project.class) {
                 Map<String, Project> strmap = new TreeMap<>();
-                String nm = "user-defined-key";
+                String nm = USER_DEFINED_KEY;
                 strmap.put(nm, getSampleProject(nm));
                 res = strmap;
             } else if (actType1 == Group.class) {
                 Map<String, Group> strmap = new TreeMap<>();
-                String nm = "user-defined-key";
+                String nm = USER_DEFINED_KEY;
                 strmap.put(nm, getSampleGroup(nm));
                 res = strmap;
             } else {
                 throw new UnsupportedOperationException(
-                    "Not supported yet for " + actType0 + " " + actType1);
+                    NOT_SUPPORTED_MSG + actType0 + " " + actType1);
             }
         } else {
-            throw new UnsupportedOperationException("Not supported yet for " +
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MSG +
                 actType0 + " " + actType1);
         }
         return res;
@@ -262,7 +266,7 @@ public class ConfigurationHelp {
             prjset.add(p);
             res = prjset;
         } else {
-            throw new UnsupportedOperationException("Not supported yet for " +
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MSG +
                 actType);
         }
         return res;

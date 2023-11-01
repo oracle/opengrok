@@ -333,7 +333,7 @@ public class RazorRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
-        File f = new File(file, ".razor");
+        File f = new File(file, RAZOR_DIR);
         return f.exists() && f.isDirectory();
     }
 

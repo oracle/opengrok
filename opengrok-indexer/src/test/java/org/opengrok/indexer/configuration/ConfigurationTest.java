@@ -67,7 +67,7 @@ class ConfigurationTest {
         @Override
         public void startElement(String uri, String localName, String qname, Attributes attr) {
             if ("void".equals(qname)) {
-                String prop = null;
+                String prop;
                 if ((prop = attr.getValue("property")) != null) {
                     for (Field f : Group.class.getDeclaredFields()) {
                         if (Modifier.isTransient(f.getModifiers())) {

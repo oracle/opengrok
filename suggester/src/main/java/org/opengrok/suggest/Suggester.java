@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -129,6 +130,7 @@ public final class Suggester implements Closeable {
      * @param registry meter registry
      * @param isPrintProgress whether to report progress for initialization and rebuild
      */
+    @SuppressWarnings("java:S107")
     public Suggester(
             final File suggesterDir,
             final int resultSize,
@@ -523,27 +525,20 @@ public final class Suggester implements Closeable {
             List<Term> terms = SuggesterUtils.intoTerms(query);
 
             if (!projectsEnabled) {
-                for (Term t : terms) {
-                    SuggesterProjectData data = projectData.get(PROJECTS_DISABLED_KEY);
-                    if (data != null) {
-                        data.incrementSearchCount(t);
-                    }
-                }
+                incrementSearchCount(terms, PROJECTS_DISABLED_KEY);
             } else {
-                for (String project : projects) {
-                    for (Term t : terms) {
-                        SuggesterProjectData data = projectData.get(project);
-                        if (data != null) {
-                            data.incrementSearchCount(t);
-                        }
-                    }
-                }
+                projects.forEach(project -> incrementSearchCount(terms, project));
             }
         } catch (Exception e) {
             LOGGER.log(Level.FINE,
                     String.format("Could not update search count map%s",
                             projectsEnabled ? " for projects: " + projects : ""), e);
         }
+    }
+
+    private void incrementSearchCount(List<Term> terms, final String projectDataKey) {
+        Optional.ofNullable(projectData.get(projectDataKey))
+                .ifPresent(data -> terms.forEach(data::incrementSearchCount));
     }
 
     /**

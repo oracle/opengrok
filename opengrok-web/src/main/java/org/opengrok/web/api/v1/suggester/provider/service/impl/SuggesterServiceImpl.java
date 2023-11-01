@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of {@link SuggesterService}.
  */
+@SuppressWarnings("java:S6548")
 public class SuggesterServiceImpl implements SuggesterService {
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);

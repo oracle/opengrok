@@ -187,7 +187,7 @@ public final class Configuration {
     private short contextLimit; // initialized non-zero in ctor
     private short contextSurround;
     private boolean lastEditedDisplayMode;
-    private String CTagsExtraOptionsFile;
+    private String cTagsExtraOptionsFile;
     private int scanningDepth;
     private int nestingMaximum;
     private Set<String> allowedSymlinks;
@@ -220,7 +220,7 @@ public final class Configuration {
 
     private boolean mergeCommitsEnabled;
 
-    public static final double defaultRamBufferSize = 16;
+    public static final double DEFAULT_RAM_BUFFER_SIZE = 16;
 
     /**
      * The directory hierarchy depth to limit the scanning for repositories.
@@ -261,19 +261,19 @@ public final class Configuration {
      * Upper bound for number of threads used for performing multi-project
      * searches. This is total for the whole webapp.
      */
-    private int MaxSearchThreadCount;
+    private int maxSearchThreadCount;
 
     /**
      * Upper bound for number of threads used for getting revision contents.
      * This is total for the whole webapp.
      */
-    private int MaxRevisionThreadCount;
+    private int maxRevisionThreadCount;
 
     /**
      * Upper bound for number of threads used for getting directory entries.
      * This is total for the whole webapp.
      */
-    private int MaxDirectoryListingThreadCount;
+    private int maxDirectoryListingThreadCount;
 
     /**
      * If false, do not display listing or projects/repositories on the index page.
@@ -556,7 +556,6 @@ public final class Configuration {
         setApiTimeout(300); // 5 minutes
         setAuthenticationTokens(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
-        //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCanonicalRoots(new HashSet<>());
@@ -604,19 +603,16 @@ public final class Configuration {
         setProjects(new ConcurrentHashMap<>());
         setQuickContextScan(true);
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
-        setRamBufferSize(defaultRamBufferSize); //MB
+        setRamBufferSize(DEFAULT_RAM_BUFFER_SIZE); //MB
         setRemoteScmSupported(RemoteSCM.OFF);
         setRepositories(new ArrayList<>());
-        //setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setRevisionMessageCollapseThreshold(200);
         setScanningDepth(DEFAULT_SCANNING_DEPTH); // default depth of scanning for repositories
         setScopesEnabled(true);
         setSourceRoot(null);
-        //setTabSize(4);
         setTagsEnabled(false);
         setUseHistoryCacheForDirectoryListing(true);
-        //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string, so we can append it to the URL unconditionally later.
         setUserPageSuffix("");
         setWebappLAF("default");
@@ -1289,11 +1285,11 @@ public final class Configuration {
     }
 
     public String getCTagsExtraOptionsFile() {
-        return CTagsExtraOptionsFile;
+        return cTagsExtraOptionsFile;
     }
 
     public void setCTagsExtraOptionsFile(String filename) {
-        this.CTagsExtraOptionsFile = filename;
+        this.cTagsExtraOptionsFile = filename;
     }
 
     public Set<String> getAllowedSymlinks() {
@@ -1345,27 +1341,27 @@ public final class Configuration {
     }
 
     public int getMaxSearchThreadCount() {
-        return MaxSearchThreadCount;
+        return maxSearchThreadCount;
     }
 
     public void setMaxSearchThreadCount(int count) {
-        this.MaxSearchThreadCount = count;
+        this.maxSearchThreadCount = count;
     }
 
     public int getMaxRevisionThreadCount() {
-        return MaxRevisionThreadCount;
+        return maxRevisionThreadCount;
     }
 
     public void setMaxRevisionThreadCount(int count) {
-        this.MaxRevisionThreadCount = count;
+        this.maxRevisionThreadCount = count;
     }
 
     public int getMaxDirectoryListingThreadCount() {
-        return MaxDirectoryListingThreadCount;
+        return maxDirectoryListingThreadCount;
     }
 
     public void setMaxDirectoryListingThreadCount(int count) {
-        this.MaxDirectoryListingThreadCount = count;
+        this.maxDirectoryListingThreadCount = count;
     }
 
     public boolean isProjectsEnabled() {

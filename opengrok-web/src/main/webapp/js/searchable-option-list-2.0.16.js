@@ -163,13 +163,6 @@
                 return;
             }
 
-            // old IE does not support trim
-            if (typeof String.prototype.trim !== 'function') {
-                String.prototype.trim = function () {
-                    return this.replace(/^\s+|\s+$/g, '');
-                }
-            }
-
             this.config.multiple = this.config.multiple || this.$originalElement.attr('multiple');
 
             if (!this.config.scrollTarget) {
@@ -327,12 +320,10 @@
             let $el = this.config.resultsContainer || this.$innerContainer
             if (this.config.resultsContainer) {
                 this.$showSelectionContainer.appendTo($el);
+            } else if (this.config.showSelectionBelowList) {
+                this.$showSelectionContainer.insertAfter($el);
             } else {
-                if (this.config.showSelectionBelowList) {
-                    this.$showSelectionContainer.insertAfter($el);
-                } else {
-                    this.$showSelectionContainer.insertBefore($el);
-                }
+                this.$showSelectionContainer.insertBefore($el);
             }
             
             // dimensions
@@ -350,17 +341,17 @@
                 cssClassList = cssClassesAsString.split(/\s+/);
 
                 // apply css classes to $container
-                for (let i = 0; i < cssClassList.length; i++) {
-                    this.$container.addClass(cssClassList[i]);
+                for (let cssClassValue of cssClassList) {
+                    this.$container.addClass(cssClassValue);
                 }
             }
 
             if (cssStylesAsString && cssStylesAsString.length > 0) {
-                stylesList = cssStylesAsString.split(/\;/);
+                stylesList = cssStylesAsString.split(/;/);
 
                 // apply css inline styles to $container
-                for (let i = 0; i < stylesList.length; i++) {
-                    let splitted = stylesList[i].split(/\s*\:\s*/g);
+                for (let styleValue of stylesList) {
+                    let splitted = styleValue.split(/\s*:\s*/g);
 
                     if (splitted.length === 2) {
 
@@ -595,8 +586,7 @@
                 return;
             }
 
-            let self = this,
-                    amountOfUnfilteredItems = dataArray.length
+            let amountOfUnfilteredItems = dataArray.length
 
             // reset keyboard navigation mode when applying new filter
             this._setKeyBoardNavigationMode(false);
@@ -605,8 +595,7 @@
              * Modified for OpenGrok in 2016.
              * recursion was very slow (however good lookin')
              */
-            for (let itemIndex = 0; itemIndex < dataArray.length; itemIndex++) {
-                let item = dataArray[itemIndex];
+            for (let item of dataArray) {
                 if (item.type === 'option') {
                     let $element = item.displayElement,
                             elementSearchableTerms = (item.label + ' ' + item.tooltip).trim().toLowerCase();
@@ -617,8 +606,7 @@
                     }
                 } else {
                     let amountOfUnfilteredChildren = item.children.length
-                    for (let childrenIndex = 0; childrenIndex < item.children.length; childrenIndex++) {
-                        let child = item.children[childrenIndex];
+                    for (let child of item.children) {
                         if (child.type === 'option') {
                             let $element = child.displayElement,
                                     elementSearchableTerms = (child.label + ' ' + child.tooltip).trim().toLowerCase();
@@ -829,7 +817,7 @@
              */
             let data = solOption.element.data('messages');
             let messagesLevel = solOption.element.data('messages-level');
-            let messagesAvailable = data && data.length;
+            let messagesAvailable = data?.length;
             if (messagesAvailable && messagesLevel) {
                 let cssString = 'pull-right ';
                 cssString += 'note-' + messagesLevel;

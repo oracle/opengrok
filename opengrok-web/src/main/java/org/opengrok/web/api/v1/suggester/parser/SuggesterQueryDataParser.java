@@ -99,6 +99,7 @@ public class SuggesterQueryDataParser {
                 builder.getIdentifier());
     }
 
+    @SuppressWarnings("java:S2245")
     private static ProcessedQueryData processQuery(final String text, final int caretPosition) {
         if (text == null) {
             throw new IllegalArgumentException("Cannot process null text");

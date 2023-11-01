@@ -29,10 +29,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -393,44 +395,39 @@ public final class ProjectHelper {
      */
     @SuppressWarnings(value = "unchecked")
     public boolean hasFavourite(Group group) {
-        Boolean val;
-        Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP);
-        if (p == null) {
-            p = new TreeMap<>();
-            cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
-        }
-        val = p.get(group.getName());
+        Map<String, Boolean> p = (Map<String, Boolean>) Optional.ofNullable(
+                    cfg.getRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP)
+                )
+                .orElseGet(TreeMap::new);
+        var val = p.get(group.getName());
+
         if (val == null) {
-            Set<Project> favourite = getAllGrouped();
-            favourite.removeIf(t -> {
-                // project is favourite
-                if (!isFavourite(t)) {
-                    return true;
-                }
-                // project is contained in group repositories
-                if (getRepositories(group).contains(t)) {
-                    return false;
-                }
-                // project is contained in group projects
-                if (getProjects(group).contains(t)) {
-                    return false;
-                }
-                // project is contained in subgroup's repositories and projects
-                for (Group g : filterGroups(group.getDescendants())) {
-                    if (getProjects(g).contains(t)) {
-                        return false;
-                    }
-                    if (getRepositories(g).contains(t)) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-            val = !favourite.isEmpty();
+            val = getAllGrouped().stream()
+                    .filter(this::isFavourite)
+                    .anyMatch(project -> isInProjectsReposOrDescendants(group, project));
             p.put(group.getName(), val);
         }
         cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         return val;
+    }
+
+    private boolean isInProjectsReposOrDescendants(Group group, Project project ) {
+        if (isInProjectsOrRepos(group, project)) {
+            return true;
+        }
+        // project is contained in group projects
+        return filterGroups(group.getDescendants())
+                .stream()
+                .anyMatch(descendant -> isInProjectsOrRepos(descendant, project));
+    }
+
+    private boolean isInProjectsOrRepos(Group group, Project project ) {
+        // project is contained in group repositories
+        if (getRepositories(group).contains(project) ) {
+            return true;
+        }
+        // project is contained in group projects
+        return getProjects(group).contains(project);
     }
 
     /**

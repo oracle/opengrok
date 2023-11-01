@@ -82,7 +82,7 @@ public class SubversionRepository extends Repository {
     private static final String XML_OPTION = "--xml";
     private static final String NON_INTERACT_OPTION = "--non-interactive";
 
-    private static final String URLattr = "url";
+    private static final String URL_ATTR = "url";
 
     protected String reposPath;
 
@@ -184,7 +184,7 @@ public class SubversionRepository extends Repository {
 
             Document document = getInfoDocument();
             if (document != null) {
-                String url = getInfoPart(document, URLattr);
+                String url = getInfoPart(document, URL_ATTR);
                 if (url == null) {
                     LOGGER.log(Level.WARNING,
                             "svn info did not contain an URL for [{0}]. Assuming remote repository.",
@@ -261,7 +261,7 @@ public class SubversionRepository extends Repository {
             filepath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
-                    "Failed to get canonical path: {0}", exp.getClass().toString());
+                    "Failed to get canonical path: {0}", exp.getClass());
             return false;
         }
         String filename = filepath.substring(getDirectoryName().length() + 1);
@@ -350,9 +350,9 @@ public class SubversionRepository extends Repository {
 
       int status = executor.exec(true, directoryLogStreamHandler);
       if (status != 0) {
-        LOGGER.warning("Failed to get history for: \"" + directory + "\" Exit code: " + status);
+        LOGGER.warning(() -> "Failed to get history for: \"" + directory + "\" Exit code: " + status);
       }
-      LOGGER.info("log from directory / revision [" + directory + "] [" + revision + "]\n" + files);
+      LOGGER.info( () -> "log from directory / revision [" + directory + "] [" + revision + "]\n" + files);
 
       return files;
     }
@@ -478,7 +478,7 @@ public class SubversionRepository extends Repository {
         Document document = getInfoDocument();
 
         if (document != null) {
-            part = getInfoPart(document, URLattr);
+            part = getInfoPart(document, URL_ATTR);
         }
 
         return part;
@@ -490,7 +490,7 @@ public class SubversionRepository extends Repository {
         Document document = getInfoDocument();
 
         if (document != null) {
-            String url = getInfoPart(document, URLattr);
+            String url = getInfoPart(document, URL_ATTR);
             int idx;
             final String branchesStr = "branches/";
             if (url != null && (idx = url.indexOf(branchesStr)) > 0) {

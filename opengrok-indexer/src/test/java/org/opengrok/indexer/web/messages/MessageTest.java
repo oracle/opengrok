@@ -23,11 +23,15 @@
 package org.opengrok.indexer.web.messages;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,34 +39,14 @@ import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 class MessageTest {
 
-    @Test
-    void createBadMessageTest() {
-        assertThrows(IllegalArgumentException.class, () -> new Message(null, null, null, null));
-    }
-
-    @Test
-    void createBadMessageTest2() {
-        assertThrows(IllegalArgumentException.class, () -> new Message("", null, null, null));
-    }
-
-    @Test
-    void createBadMessageTest3() {
-        assertThrows(IllegalArgumentException.class, () -> new Message("test", null, null, null));
-    }
-
-    @Test
-    void createBadMessageTest4() {
-        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, null));
-    }
-
-    @Test
-    void createBadMessageTest5() {
-        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.singleton("test"), null, Duration.ofMinutes(-1)));
-    }
-
-    @Test
-    void createBadMessageTest6() {
-        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1)));
+    @ParameterizedTest
+    @MethodSource("messageParams")
+    void createBadMessageTest(
+            final String text,
+            final Set<String> tags,
+            final Message.MessageLevel messageLevel,
+            final Duration duration) {
+        assertThrows(IllegalArgumentException.class, () -> new Message(text, tags, messageLevel, duration));
     }
 
     @Test
@@ -73,5 +57,18 @@ class MessageTest {
                 Duration.ofMinutes(1));
         String jsonString = m.toJSON();
         assertEquals(Set.of("messageLevel", "duration", "text", "tags"), getTopLevelJSONFields(jsonString));
+    }
+
+
+    private static Stream<Arguments> messageParams() {
+        return Stream.of(
+                Arguments.of(null, null, null, null),
+                Arguments.of("", null, null, null),
+                Arguments.of("test", null, null, null),
+                Arguments.of("test", Collections.emptySet(), null, null),
+                Arguments.of("test", Collections.singleton("test"), null, Duration.ofMinutes(-1)),
+                Arguments.of("test", Collections.emptySet(), null, Duration.ofMinutes(1))
+        );
+
     }
 }

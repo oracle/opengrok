@@ -56,6 +56,7 @@ import org.opengrok.indexer.analysis.sql.SQLXref;
 import org.opengrok.indexer.analysis.tcl.TclXref;
 import org.opengrok.indexer.analysis.uue.UuencodeXref;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
@@ -374,7 +375,7 @@ class JFlexXrefTest {
             JFlexXref xref = new JFlexXref(new SQLXref(in));
             xref.setDefs(ctags.doCtags(filename));
             // The next call used to fail with an ArrayIndexOutOfBoundsException.
-            xref.write(new StringWriter());
+            assertDoesNotThrow(() -> xref.write(new StringWriter()));
         }
     }
 
@@ -458,12 +459,14 @@ class JFlexXrefTest {
         // JFlex files are usually analyzed with CAnalyzer.
         JFlexXref xref = new JFlexXref(new CXref(in));
         StringWriter out = new StringWriter();
-        xref.write(out);
+        assertDoesNotThrow(() -> xref.write(out));
         // Verify that the xref is well-formed XML. Used to throw
         // SAXParseException: The element type "span" must be terminated
         // by the matching end-tag "</span>".
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+        assertDoesNotThrow(() ->
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")))
+        );
     }
 
     /**
@@ -479,10 +482,12 @@ class JFlexXrefTest {
             StringReader in = new StringReader(str);
             JFlexXref xref = new JFlexXref(new CXref(in));
             StringWriter out = new StringWriter();
-            xref.write(out);
+            assertDoesNotThrow(() -> xref.write(out));
             // Used to throw SAXParseException.
-            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+            assertDoesNotThrow(() ->
+                    DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")))
+            );
         }
     }
 
@@ -501,11 +506,15 @@ class JFlexXrefTest {
         };
         Document doc = new Document();
         StringWriter out = new StringWriter();
-        JavaClassAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer().analyze(
-            doc, src, out);
+        assertDoesNotThrow(() ->
+                JavaClassAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer().analyze(
+            doc, src, out)
+        );
         // Used to throw SAXParseException.
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+        assertDoesNotThrow(() ->
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")))
+        );
     }
 
     /**
@@ -516,9 +525,11 @@ class JFlexXrefTest {
         JFlexXref xref = new JFlexXref(new FortranXref(
             new StringReader("<?php?>")));
         StringWriter out = new StringWriter();
-        xref.write(out);
+        assertDoesNotThrow(() -> xref.write(out));
         // Used to throw SAXParseException.
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-            new InputSource(new StringReader("<doc>" + out + "</doc>")));
+        assertDoesNotThrow(() ->
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+            new InputSource(new StringReader("<doc>" + out + "</doc>")))
+        );
     }
 }
