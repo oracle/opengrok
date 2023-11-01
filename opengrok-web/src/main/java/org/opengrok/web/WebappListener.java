@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,15 +80,12 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
 
-        String configPath = context.getInitParameter("CONFIGURATION");
-        if (configPath == null) {
-            throw new WebappError("CONFIGURATION parameter missing in the web.xml file");
-        } else {
-            try {
-                env.readConfiguration(new File(configPath), CommandTimeoutType.WEBAPP_START);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Configuration error. Failed to read config file: ", ex);
-            }
+        String configPath = Optional.ofNullable(context.getInitParameter("CONFIGURATION"))
+                .orElseThrow(() -> new WebappError("CONFIGURATION parameter missing in the web.xml file"));
+        try {
+            env.readConfiguration(new File(configPath), CommandTimeoutType.WEBAPP_START);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Configuration error. Failed to read config file: ", ex);
         }
 
         String serverInfo = context.getServerInfo();

@@ -76,7 +76,7 @@ class ApiTaskManagerTest {
         String location = response.getHeaderString(HttpHeaders.LOCATION);
         assertNotNull(location);
         String uuidString = apiTask.getUuid().toString();
-        assertTrue(location.contains(uuidString));
+        assertTrue(location.endsWith("/status/" + uuidString));
         assertSame(apiTask, apiTaskManager.getApiTask(uuidString));
         apiTaskManager.deleteApiTask(uuidString);
         assertNull(apiTaskManager.getApiTask(uuidString));

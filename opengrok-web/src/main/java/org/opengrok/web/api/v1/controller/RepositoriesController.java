@@ -37,7 +37,7 @@ import org.opengrok.web.util.DTOUtil;
 
 import java.io.IOException;
 
-@Path("/repositories")
+@Path("repositories")
 public class RepositoriesController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

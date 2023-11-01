@@ -29,6 +29,7 @@ import org.opengrok.web.api.v1.controller.StatusController;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -100,12 +101,12 @@ public final class ApiTaskManager {
         apiTask.setFuture(queues.get(queueName).submit(apiTask.getCallable()));
         apiTasks.put(apiTask.getUuid(), apiTask);
 
-        StringBuilder uriStringBuilder = new StringBuilder();
         // This is useful for testing where there is no context path.
-        if (contextPath != null) {
-            uriStringBuilder.append(contextPath);
-            uriStringBuilder.append("/api/v1");
-        }
+        var uriStringBuilder = Optional.ofNullable(contextPath)
+                .map(StringBuilder::new)
+                .map(stringBuilder -> stringBuilder.append("/api/v1"))
+                .orElseGet(StringBuilder::new);
+        uriStringBuilder.append("/");
         uriStringBuilder.append(StatusController.PATH);
         uriStringBuilder.append("/");
         uriStringBuilder.append(apiTask.getUuid());

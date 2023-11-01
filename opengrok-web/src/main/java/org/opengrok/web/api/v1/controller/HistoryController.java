@@ -55,13 +55,12 @@ import java.util.SortedSet;
 import static org.opengrok.web.util.FileUtil.toFile;
 
 // No need to have PATH configurable.
-@SuppressWarnings("java:S1075")
 @Path(HistoryController.PATH)
 public final class HistoryController {
 
     private static final int MAX_RESULTS = 1000;
 
-    public static final String PATH = "/history";
+    public static final String PATH = "history";
 
     static class HistoryEntryDTO implements JSONable {
         @JsonProperty
