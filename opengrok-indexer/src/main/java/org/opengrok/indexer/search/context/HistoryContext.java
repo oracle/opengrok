@@ -189,20 +189,14 @@ public class HistoryContext {
         }
 
         int matchedLines = 0;
-        Iterator<HistoryEntry> it = history.getHistoryEntries().iterator();
+        Iterator<HistoryEntry> it = history.getHistoryEntries().stream().filter(HistoryEntry::isActive).iterator();
         try {
             HistoryEntry he;
             HistoryEntry nhe = null;
             String nrev;
             while ((it.hasNext() || (nhe != null)) && matchedLines < 10) {
                 if (nhe == null) {
-                    do {
-                        he = it.next();
-                    } while (!he.isActive() && it.hasNext());
-                    if (!he.isActive()) {
-                        // No sense to continue if the (next) base entry cannot be used.
-                        break;
-                    }
+                    he = it.next();
                 } else {
                     he = nhe;  // nhe is the lookahead revision
                 }
@@ -210,12 +204,7 @@ public class HistoryContext {
                 String rev = he.getRevision();
 
                 if (it.hasNext()) {
-                    do {
-                        nhe = it.next();
-                    } while (!nhe.isActive() && it.hasNext());
-                    if (!nhe.isActive()) {
-                        nhe = null;
-                    }
+                    nhe = it.next();
                 } else {
                     // this prefetch mechanism is here because of the diff link generation
                     // we currently generate the diff to previous revision
