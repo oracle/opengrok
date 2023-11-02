@@ -18,12 +18,11 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    'jsonschema==2.6.0',
+    'jsonschema',
     'pyyaml',
     'requests>=2.20.0',
     'resource',
     'filelock',
-    'setuptools>=36.7.2',
 ]
 
 [tool.setuptools]
