@@ -267,7 +267,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>-m</argument>
                                 <argument>pip</argument>
                                 <argument>install</argument>
-                                <argument>${outputDirectory}/opengrok-tools-${version}.tar.gz</argument>
+                                <argument>${outputDirectory}/opengrok-tools-${project.version}.tar.gz</argument>
                             </arguments>
                             <skip>${skipPythonTests}</skip>
                         </configuration>
