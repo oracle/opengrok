@@ -1,0 +1,54 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >=61.2"]
+
+[project]
+name = "opengrok-tools"
+description = "Tools for managing OpenGrok instance"
+readme = "README.txt"
+dynamic = ["version"]
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: CDDL",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    'jsonschema==2.6.0',
+    'pyyaml',
+    'requests>=2.20.0',
+    'resource',
+    'filelock',
+    'setuptools>=36.7.2',
+]
+
+[tool.setuptools]
+packages = ["opengrok_tools", "opengrok_tools.utils", "opengrok_tools.scm"]
+
+[tool.setuptools.package-dir]
+"opengrok_tools" = "src/main/python/opengrok_tools"
+"opengrok_tools.scm" = "src/main/python/opengrok_tools/scm"
+"opengrok_tools.utils" = "src/main/python/opengrok_tools/utils"
+
+[project.scripts]
+opengrok-config-merge = "opengrok_tools.config_merge:main"
+opengrok-deploy = "opengrok_tools.deploy:main"
+opengrok-groups = "opengrok_tools.groups:main"
+opengrok = "opengrok_tools.indexer:main"
+opengrok-indexer = "opengrok_tools.indexer:main"
+opengrok-java = "opengrok_tools.java:main"
+opengrok-mirror = "opengrok_tools.mirror:main"
+opengrok-projadm = "opengrok_tools.projadm:main"
+opengrok-reindex-project = "opengrok_tools.reindex_project:main"
+opengrok-sync = "opengrok_tools.sync:main"
+
+[project.urls]
+"Homepage" = "https://github.com/oracle/opengrok"
+"Bug tracker" = "https://github.com/oracle/opengrok/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "opengrok_tools.version.__version__" }

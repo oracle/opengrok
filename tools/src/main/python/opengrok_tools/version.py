@@ -5,7 +5,7 @@
 
 def get_version(version):
     """
-    Detect the mvn build versus the local python setup.py install run.
+    Detect the mvn build versus the local python install run.
     :param version: the new version string to be applied
     :return: the mvn version, or local version number
     """

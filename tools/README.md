@@ -3,13 +3,12 @@
 
 Set of scripts to facilitate project synchronization and mirroring
 
-The scripts require Python 3 and they rely on a binary/symlink `python3` to be
+The scripts require Python 3, and they rely on a binary/symlink `python3` to be
 present that points to the latest Python 3.x version present on the system.
 
-Currently it is assumed that Python 3.6 and greater is used.
+Currently, it is assumed that Python 3.9 and greater is used.
 
-See https://github.com/oracle/opengrok/wiki/Repository-synchronization
-for more details.
+See https://github.com/oracle/opengrok/wiki/Repository-synchronization for more details.
 
 # Content
 
@@ -44,7 +43,7 @@ python3 -m venv env
 When you start developing, install the package in a development mode.
 
 ```bash
-python setup.py develop
+python -m pip install -e .
 ```
 
 This installs the package however keeping the links directly to your source,
@@ -61,7 +60,7 @@ opengrok-sync
 It is necessary to set the python path as the python interpreter is not able to find the packages
 in our provided structure on its own.
 
-Also you call the opengrok tools scripts by the entry points then (`opengrok-groups`, ...).
+Also, you call the opengrok tools scripts by the entry points then (`opengrok-groups`, ...).
 Calling directly the python script `groups.py` would lead to error related to relative imports.
 
 Note that on macOS, you will need to install libgit2 library for the tests
@@ -72,7 +71,7 @@ to pass.
 Test installing your package into the local environment
 
 ```bash
-python setup.py install
+python -m pip install .
 # now you can try console scripts
 opengrok-groups
 opengrok-sync
@@ -81,9 +80,11 @@ opengrok-sync
 or make a distribution tarball.
 
 ```bash
-python setup.py sdist
+python -m build
 ls -l dist/
 ```
+
+Note that when run outside of Maven, this will use the 0.0.1 version for the package. 
 
 ### Installation on the target system
 
@@ -124,7 +125,6 @@ python3 -m pip uninstall opengrok_tools
 ## Testing
 
 ```bash
-python setup.py install test
 ./mvnw test
 ```
 
@@ -136,4 +136,3 @@ deactivate
 # optionally
 # rm -r env
 ```
-

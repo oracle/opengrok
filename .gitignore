@@ -59,4 +59,4 @@ pmd.bat
 */bin/
 .classpath
 .checkstyle
-
+.tox
