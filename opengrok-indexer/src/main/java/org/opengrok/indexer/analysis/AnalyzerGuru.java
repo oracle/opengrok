@@ -1020,6 +1020,7 @@ public class AnalyzerGuru {
                         throw new WrapperIOException(e);
                     }
                 })
+                .filter(Objects::nonNull)
                 .findFirst();
 
         optionalFactory.ifPresent(factory -> {
@@ -1119,7 +1120,7 @@ public class AnalyzerGuru {
         in.mark(MARK_READ_LIMIT);
 
         String encoding = IOUtils.findBOMEncoding(sig);
-        if (encoding == null) {
+        if (Objects.isNull(encoding)) {
             // SRCROOT is read with UTF-8 as a default.
             encoding = StandardCharsets.UTF_8.name();
         } else {
@@ -1132,6 +1133,7 @@ public class AnalyzerGuru {
 
         int nRead = 0;
         boolean ignoreWhiteSpace = true;
+        boolean breakOnNewLine = false;
         int r;
 
         StringBuilder opening = new StringBuilder();
@@ -1139,7 +1141,7 @@ public class AnalyzerGuru {
 
         while ((r = readr.read()) != -1) {
             char c = (char) r;
-            if (++nRead > OPENING_MAX_CHARS || c == '\n') {
+            if (isNewLineOrMaxReadLimit(c, ++nRead, breakOnNewLine)) {
                 break;
             }
             boolean isWhitespace = Character.isWhitespace(c);
@@ -1153,6 +1155,7 @@ public class AnalyzerGuru {
                 // If the opening starts with "#!", then track so that any
                 // trailing whitespace after the hashbang is ignored.
                 ignoreWhiteSpace = opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!';
+                breakOnNewLine = true;
 
             }
 
@@ -1160,6 +1163,10 @@ public class AnalyzerGuru {
 
         in.reset();
         return opening.toString();
+    }
+
+    private static boolean isNewLineOrMaxReadLimit(char c, int readcount, boolean breakOnNewLine) {
+        return readcount > OPENING_MAX_CHARS || (breakOnNewLine && c == '\n');
     }
 
     private static void addCustomizationKey(String k) {
