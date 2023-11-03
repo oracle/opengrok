@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    'jsonschema',
+    'jsonschema==2.6.0',    # to avoid Rust
     'pyyaml',
     'requests>=2.20.0',
     'resource',
