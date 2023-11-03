@@ -311,27 +311,25 @@ class SuggesterProjectData implements Closeable {
 
             File f = getChronicleMapFile(field);
 
-            try (var chronicleMapAdapter = createChronicleMapAdapter(field, conf, f)) {
-                if (Objects.isNull(chronicleMapAdapter)) {
-                    return;
-                }
-                if (getCommitVersion() != getDataVersion()) {
-                    removeOldTerms(chronicleMapAdapter, lookups.get(field));
-
-                    if (conf.getEntries() < lookups.get(field).getCount()) {
-                        int newEntriesCount = (int) lookups.get(field).getCount();
-                        double newKeyAvgLength = getAverageLength(field);
-
-                        conf.setEntries(newEntriesCount);
-                        conf.setAverageKeySize(newKeyAvgLength);
-                        conf.save(suggesterDir, field);
-
-                        chronicleMapAdapter.resize(newEntriesCount, newKeyAvgLength);
-                    }
-                }
-                searchCountMaps.put(field, chronicleMapAdapter);
+            var chronicleMapAdapter = createChronicleMapAdapter(field, conf, f);
+            if (Objects.isNull(chronicleMapAdapter)) {
+                return;
             }
+            if (getCommitVersion() != getDataVersion()) {
+                removeOldTerms(chronicleMapAdapter, lookups.get(field));
 
+                if (conf.getEntries() < lookups.get(field).getCount()) {
+                    int newEntriesCount = (int) lookups.get(field).getCount();
+                    double newKeyAvgLength = getAverageLength(field);
+
+                    conf.setEntries(newEntriesCount);
+                    conf.setAverageKeySize(newKeyAvgLength);
+                    conf.save(suggesterDir, field);
+
+                    chronicleMapAdapter.resize(newEntriesCount, newKeyAvgLength);
+                }
+            }
+            searchCountMaps.put(field, chronicleMapAdapter);
 
         }
     }
