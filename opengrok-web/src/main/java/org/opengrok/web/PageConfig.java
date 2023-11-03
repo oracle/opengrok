@@ -349,12 +349,11 @@ public final class PageConfig {
                     .forEach(IOUtils::close);
         }
         if (Objects.isNull(data.errorMsg)) {
-            return;
+            populateRevisionData(data);
+            populateRevisionURLDetails(data, filepath);
+            data.full = fullDiff();
+            data.type = getDiffType();
         }
-        populateRevisionData(data);
-        populateRevisionURLDetails(data, filepath);
-        data.full = fullDiff();
-        data.type = getDiffType();
     }
 
     private void populateGenreIfEmpty(DiffData data, InputStream[] inArray) {
