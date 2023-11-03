@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -26,7 +26,6 @@ from shutil import which
 from logging import log
 import logging
 import sys
-from distutils import util
 from .exitvals import (
     FAILURE_EXITVAL,
 )
@@ -97,6 +96,22 @@ def get_int(logger, name, value):
         return None
 
 
+def strtobool(value):
+    """
+    Convert string to 0 or 1
+    :param value: string
+    :return: 0 or 1
+    """
+
+    if value.lower() in ["y", "yes", "t", "true", "on", "1"]:
+        return 1
+
+    if value.lower() in ["n", "no", "f", "false", "off", "0"]:
+        return 0
+
+    raise ValueError("invalid value")
+
+
 def get_bool(logger, name, value):
     """
     If the supplied value is bool or its representation, return the bool value.
@@ -109,7 +124,7 @@ def get_bool(logger, name, value):
         return value
 
     try:
-        return bool(util.strtobool(value))
+        return bool(strtobool(value))
     except ValueError:
         logger.error("'{}' is not a number: {}".format(name, value))
         return None
