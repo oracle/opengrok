@@ -27,7 +27,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
@@ -35,6 +34,7 @@ import org.opengrok.indexer.web.QueryParameters;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -50,7 +50,7 @@ class DiffTest {
     @BeforeAll
     static void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        repository.create(DiffTest.class.getResource("/repositories"));
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -98,6 +98,12 @@ class DiffTest {
         assertNotNull(diffData);
         assertNotNull(diffData.getErrorMsg());
         assertTrue(diffData.getErrorMsg().startsWith("Unable to get revision"));
+        assertAll(
+                () -> assertNull(diffData.getRevision()),
+                () -> assertNull(diffData.getParam(0)),
+                () -> assertNull(diffData.getParam(1)),
+                () -> assertNull(diffData.getType())
+        );
     }
 
     @Test
@@ -119,7 +125,12 @@ class DiffTest {
         assertAll(() -> assertEquals(rev1, diffData.getRev(0)),
                 () -> assertEquals(rev2, diffData.getRev(1)),
                 () -> assertTrue(diffData.getFile(0).length > 0),
-                () -> assertTrue(diffData.getFile(1).length > 0)
+                () -> assertTrue(diffData.getFile(1).length > 0),
+                () -> assertNotNull(diffData.getRevision()),
+                () -> assertEquals("/git/main.c@bb74b7e", diffData.getParam(0)),
+                () -> assertEquals("/git/main.c@aa35c25", diffData.getParam(1)),
+                () -> assertEquals(DiffType.SIDEBYSIDE, diffData.getType()),
+                () -> assertFalse(diffData.isFull())
         );
     }
 }

@@ -49,7 +49,6 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
-import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.LatestRevisionUtil;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
@@ -77,7 +76,7 @@ class PageConfigTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        repository.create(PageConfigTest.class.getResource("/repositories"));
         RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
     }
 
