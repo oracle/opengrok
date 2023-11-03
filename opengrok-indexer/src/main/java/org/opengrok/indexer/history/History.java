@@ -111,7 +111,7 @@ public class History implements Serializable {
      * @param entries The entries to add to the list
      */
     public void setHistoryEntries(List<HistoryEntry> entries) {
-        this.entries = entries;
+        this.setEntries(entries);
     }
 
     /**

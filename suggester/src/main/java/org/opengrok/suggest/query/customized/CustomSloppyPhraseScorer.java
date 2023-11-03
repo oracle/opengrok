@@ -157,8 +157,8 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         }
 
         // custom begins
-        for (PhrasePositions phrasePositions : this.pq) {
-            allPositions.set(phrasePositions.position + phrasePositions.offset);
+        for (PhrasePositions localPhrasePositions : this.pq) {
+            allPositions.set(localPhrasePositions.position + localPhrasePositions.offset);
         }
         // custom ends
 
@@ -473,7 +473,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     }
 
     /** Detect repetition groups. Done once - for first doc */
-    private ArrayList<ArrayList<PhrasePositions>> gatherRptGroups(LinkedHashMap<Term,Integer> rptTerms) throws IOException {
+    private ArrayList<ArrayList<PhrasePositions>> gatherRptGroups(LinkedHashMap<Term,Integer> rptTerms) {
         PhrasePositions[] rpp = repeatingPPs(rptTerms);
         ArrayList<ArrayList<PhrasePositions>> res = new ArrayList<>();
         if (!hasMultiTermRpts) {
@@ -604,7 +604,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     }
 
     /** map each term to the single group that contains it */
-    private HashMap<Term,Integer> termGroups(LinkedHashMap<Term,Integer> tord, ArrayList<FixedBitSet> bb) throws IOException {
+    private HashMap<Term,Integer> termGroups(LinkedHashMap<Term,Integer> tord, ArrayList<FixedBitSet> bb) {
         HashMap<Term,Integer> tg = new HashMap<>();
         Term[] t = tord.keySet().toArray(new Term[0]);
         for (int i=0; i<bb.size(); i++) { // i is the group no.

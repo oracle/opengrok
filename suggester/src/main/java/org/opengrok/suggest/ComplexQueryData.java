@@ -18,34 +18,20 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
  */
-package org.opengrok.indexer.util;
+package org.opengrok.suggest;
 
-import java.io.IOException;
-import java.io.Writer;
+import org.opengrok.suggest.query.PhraseScorer;
+import org.opengrok.suggest.query.data.IntsHolder;
 
 /**
- * Implementation of Writer that doesn't produce any ouput. Serves as a dummy
- * class where Writer is needed but the output is not relevant.
- *
- * @author tkotal
+ * Stores Suggester Query result Data.
+ * @author Gino Augustine
  */
-public class NullWriter extends Writer  {
+class ComplexQueryData {
+    IntsHolder documentIds;
 
-    @Override
-    public void write(char[] chars, int i, int i1) throws IOException {
-        // No Operation
-    }
-
-    @Override
-    public void flush() throws IOException {
-        // No Operation
-    }
-
-    @Override
-    public void close() throws IOException {
-        // No Operation
-    }
-
+    PhraseScorer scorer;
 }

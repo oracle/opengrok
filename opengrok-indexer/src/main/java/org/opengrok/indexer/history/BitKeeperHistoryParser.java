@@ -101,14 +101,10 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
         final BufferedReader in = new BufferedReader(new InputStreamReader(input));
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             if (line.startsWith("D ")) {
-                if (entry != null) {
-                    entries.add(entry);
-                    entry = null;
-                }
-
-                final String[] fields = line.substring(2).split("\t");
-                final HistoryEntry newEntry = new HistoryEntry();
+                entry = null;
                 try {
+                    final String[] fields = line.substring(2).split("\t");
+                    final HistoryEntry newEntry = new HistoryEntry();
                     if (fields[0].equals("ChangeSet")) {
                         continue;
                     }
@@ -117,14 +113,13 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
                     newEntry.setDate(dateFormat.parse(fields[2]));
                     newEntry.setAuthor(fields[3]);
                     newEntry.setActive(true);
+                    entry = newEntry;
+                    entries.add(entry);
+                    if (fields.length == 5) {
+                        renamedFiles.add(fields[4]);
+                    }
                 } catch (final Exception e) {
                     LOGGER.log(Level.SEVERE, "Error: malformed BitKeeper log output {0}", line);
-                    continue;
-                }
-
-                entry = newEntry;
-                if (fields.length == 5) {
-                    renamedFiles.add(fields[4]);
                 }
             } else if (line.startsWith("C ") && (entry != null)) {
                 final String messageLine = line.substring(2);
@@ -132,8 +127,5 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
             }
         }
 
-        if (entry != null) {
-            entries.add(entry);
-        }
     }
 }

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +55,7 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
     /**
      * Store tag entries created by {@link #processStream(InputStream)}.
      */
-    private final TreeSet<TagEntry> entries = new TreeSet<>();
+    private final NavigableSet<TagEntry> entries = new TreeSet<>();
 
     /**
      * Constructor to construct the thing to be constructed.
@@ -70,7 +71,7 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
      *
      * @return entries a set of tag entries
      */
-    public TreeSet<TagEntry> getEntries() {
+    public NavigableSet<TagEntry> getEntries() {
         return entries;
     }
 

@@ -33,10 +33,13 @@ import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * {@link BytesRef} data serializer for {@link net.openhft.chronicle.map.ChronicleMap}.
  * Modified from <a href="https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc">...</a>
  */
+@SuppressWarnings("java:S6548")
 public class BytesRefSizedReader implements SizedReader<BytesRef>, Marshallable, ReadResolvable<BytesRefSizedReader> {
 
     public static final BytesRefSizedReader INSTANCE = new BytesRefSizedReader();
@@ -53,9 +56,11 @@ public class BytesRefSizedReader implements SizedReader<BytesRef>, Marshallable,
                     size + " given. Memory corruption?");
         }
         int arrayLength = (int) size;
-        if (using == null) {
-            using = new BytesRef(new byte[arrayLength]);
-        } else if (using.bytes.length < arrayLength) {
+        using = Optional.ofNullable(using)
+                .orElseGet( () ->
+                        new BytesRef(new byte[arrayLength])
+                );
+        if (using.bytes.length < arrayLength) {
             using.bytes = new byte[arrayLength];
         }
         in.read(using.bytes, 0, arrayLength);

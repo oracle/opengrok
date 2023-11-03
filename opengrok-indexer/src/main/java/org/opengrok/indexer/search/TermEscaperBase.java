@@ -63,10 +63,10 @@ abstract class TermEscaperBase {
      * that the argument to {@link #setOut(StringBuilder)} contains the entire
      * transformation.
      */
+    @SuppressWarnings("java:S3626")
     void consume() {
         try {
             while (yylex()) {
-                //noinspection UnnecessaryContinue
                 continue;
             }
         } catch (IOException ex) {

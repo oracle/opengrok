@@ -79,7 +79,7 @@ class NumLinesLOCAccessor {
         countsAggregator.iterator().forEachRemaining(counts::add);
         if (counts.size() >= BULK_READ_THRESHOLD) {
             storeBulk(writer, reader, counts, isAggregatingDeltas);
-        } else if (counts.size() > 0) {
+        } else if (!counts.isEmpty()) {
             storeIterative(writer, reader, counts, isAggregatingDeltas);
         }
     }

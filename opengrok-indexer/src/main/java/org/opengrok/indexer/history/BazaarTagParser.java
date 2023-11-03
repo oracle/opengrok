@@ -29,7 +29,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.NavigableSet;
 import java.util.TreeSet;
+
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -41,14 +43,14 @@ public class BazaarTagParser implements Executor.StreamHandler {
     /**
      * Store tag entries created by processStream.
      */
-    private final TreeSet<TagEntry> entries = new TreeSet<>();
+    private final NavigableSet<TagEntry> entries = new TreeSet<>();
 
     /**
      * Returns the set of entries that has been created.
      *
      * @return entries a set of tag entries
      */
-    public TreeSet<TagEntry> getEntries() {
+    public NavigableSet<TagEntry> getEntries() {
         return entries;
     }
 
@@ -63,10 +65,7 @@ public class BazaarTagParser implements Executor.StreamHandler {
                 }
                 // Grrr, how to parse tags with spaces inside?
                 // This solution will loose multiple spaces;-/
-                String tag = parts[0];
-                for (int i = 1; i < parts.length - 1; ++i) {
-                    tag += " " + parts[i];
-                }
+                var tag = String.join(" ", parts);
                 TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
                 // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
                 TagEntry higher = entries.ceiling(tagEntry);

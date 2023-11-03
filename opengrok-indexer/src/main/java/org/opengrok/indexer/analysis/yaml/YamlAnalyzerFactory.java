@@ -35,11 +35,8 @@ public class YamlAnalyzerFactory extends FileAnalyzerFactory {
         "YML"
     };
 
-    public static final YamlAnalyzerFactory DEFAULT_INSTANCE =
-            new YamlAnalyzerFactory();
 
-
-    private YamlAnalyzerFactory() {
+    public YamlAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain",
                 AbstractAnalyzer.Genre.PLAIN, NAME);
     }

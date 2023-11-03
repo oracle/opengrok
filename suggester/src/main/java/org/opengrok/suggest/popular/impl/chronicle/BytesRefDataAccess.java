@@ -33,10 +33,13 @@ import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * {@link BytesRef} data serializer for {@link net.openhft.chronicle.map.ChronicleMap}.
  * Modified from <a href="https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc">...</a>
  */
+@SuppressWarnings({"java:S2065", "java:S2160"})
 public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAccess<BytesRef> {
 
     /** Cache field. */
@@ -75,9 +78,11 @@ public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAc
 
     @Override
     public BytesRef getUsing(@Nullable BytesRef using) {
-        if (using == null) {
-            using = new BytesRef(new byte[array.length]);
-        } else if (using.bytes.length < array.length) {
+        using = Optional.ofNullable(using)
+                .orElseGet( () ->
+                        new BytesRef(new byte[array.length])
+                );
+        if (using.bytes.length < array.length) {
             using.bytes = new byte[array.length];
         }
         System.arraycopy(array, 0, using.bytes, 0, array.length);

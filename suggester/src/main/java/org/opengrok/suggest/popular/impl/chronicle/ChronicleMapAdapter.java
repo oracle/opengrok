@@ -121,6 +121,7 @@ public class ChronicleMapAdapter implements PopularityMap {
 
         Path tempFile = Files.createTempFile("opengrok", "chronicle");
 
+
         try {
             map.getAll(tempFile.toFile());
 

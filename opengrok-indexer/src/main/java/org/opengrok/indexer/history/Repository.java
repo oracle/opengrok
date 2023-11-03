@@ -40,7 +40,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.TreeSet;
+import java.util.NavigableSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +86,7 @@ public abstract class Repository extends RepositoryInfo {
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
      */
-    protected TreeSet<TagEntry> tagList = null;
+    protected NavigableSet<TagEntry> tagList = null;
 
     abstract boolean fileHasHistory(File file);
 
@@ -283,7 +283,7 @@ public abstract class Repository extends RepositoryInfo {
         return false;
     }
 
-    TreeSet<TagEntry> getTagList() {
+    NavigableSet<TagEntry> getTagList() {
         return this.tagList;
     }
 

@@ -32,6 +32,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.opengrok.indexer.util.Getopt;
 
 /**
@@ -40,6 +44,7 @@ import org.opengrok.indexer.util.Getopt;
  *
  * @author Vladimir Kotal
  */
+@SuppressWarnings("java:S106")
 public class ConfigMerge {
 
     private static final String NAME = "ConfigMerge";
@@ -58,13 +63,12 @@ public class ConfigMerge {
 
         // Basic strategy: take all non-static/transient fields that have a setter
         // from cfgBase that are not of default value and set them to cfgNew.
-        for (Field field : cfgBase.getClass().getDeclaredFields()) {
+        var fields = Arrays.stream(cfgBase.getClass().getDeclaredFields())
+                .filter(ConfigMerge::isCopyable)
+                .collect(Collectors.toList());
+
+        for (Field field : fields) {
             String fieldName = field.getName();
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers) ||
-                Modifier.isFinal(modifiers)) {
-                continue;
-            }
             PropertyDescriptor desc;
             try {
                 desc = new PropertyDescriptor(fieldName, Configuration.class);
@@ -84,8 +88,7 @@ public class ConfigMerge {
 
             try {
                 Object obj = getter.invoke(cfgBase);
-                if ((obj == null && getter.invoke(cfgDefault) == null) ||
-                    obj.equals(getter.invoke(cfgDefault))) {
+                if (Objects.equals(obj, getter.invoke(cfgDefault))) {
                         continue;
                 }
             } catch (Exception ex) {
@@ -98,6 +101,13 @@ public class ConfigMerge {
                 throw new Exception("failed to invoke setter for '" + fieldName + "'");
             }
         }
+    }
+
+    private static boolean isCopyable(Field field) {
+
+        int modifiers = field.getModifiers();
+        return !Modifier.isStatic(modifiers) && !Modifier.isTransient(modifiers) &&
+                !Modifier.isFinal(modifiers);
     }
 
     public static void main(String[] argv) {

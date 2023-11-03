@@ -29,6 +29,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -278,7 +279,9 @@ public class Context {
         }
         boolean anything = false;
         TreeMap<Integer, String[]> matchingTags = null;
-        String urlPrefixE = (urlPrefix == null) ? "" : Util.uriEncodePath(urlPrefix);
+        String urlPrefixE = Optional.ofNullable(urlPrefix)
+                .map(Util::uriEncodePath)
+                .orElse("");
         String pathE = Util.uriEncodePath(path);
         if (tags != null) {
             matchingTags = new TreeMap<>();
@@ -350,7 +353,7 @@ public class Context {
             } catch (Exception e) {
                 if (hits != null) {
                     // @todo verify why we ignore all exceptions?
-                    LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
+                    LOGGER.log(Level.WARNING, e, () -> "Could not get context for " + path);
                 }
             }
         }
@@ -406,19 +409,17 @@ public class Context {
             tokens.setFilename(path);
         }
 
-        int limit_max_lines = env.getContextLimit();
+        int limitMaxLines = env.getContextLimit();
         try {
             String token;
             int matchState;
             int matchedLines = 0;
             while ((token = tokens.yylex()) != null && (!lim ||
-                    matchedLines < limit_max_lines)) {
+                    matchedLines < limitMaxLines)) {
                 for (LineMatcher lineMatcher : m) {
                     matchState = lineMatcher.match(token);
                     if (matchState == LineMatcher.MATCHED) {
-                        if (!isDefSearch) {
-                            tokens.printContext();
-                        } else if (tokens.tags.containsKey(tokens.markedLine)) {
+                        if (!isDefSearch || tokens.tags.containsKey(tokens.markedLine)) {
                             tokens.printContext();
                         }
                         matchedLines++;
@@ -432,7 +433,7 @@ public class Context {
             }
             anything = matchedLines > 0;
             tokens.dumpRest();
-            if (lim && (truncated || matchedLines == limit_max_lines) && out != null) {
+            if (lim && (truncated || matchedLines == limitMaxLines) && out != null) {
                 out.write("<a href=\"" + Util.uriEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
             }
         } catch (IOException e) {

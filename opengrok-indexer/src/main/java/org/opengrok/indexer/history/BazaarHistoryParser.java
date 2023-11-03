@@ -35,6 +35,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -110,79 +111,81 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                 continue;
             }
 
-            switch (state) {
-                case 0:
-                    // First, go on until revno is found.
-                    if (s.startsWith("revno:")) {
-                        String[] rev = s.substring("revno:".length()).trim().split(" ");
-                        entry.setRevision(rev[0]);
-                        ++state;
-                    }
-                    break;
-                case 1:
-                    // Then, look for committer.
-                    if (s.startsWith("committer:")) {
-                        entry.setAuthor(s.substring("committer:".length()).trim());
-                        ++state;
-                    }
-                    break;
-                case 2:
-                    // And then, look for timestamp.
-                    if (s.startsWith("timestamp:")) {
-                        try {
-                            Date date = repository.parse(s.substring("timestamp:".length()).trim());
-                            entry.setDate(date);
-                        } catch (ParseException e) {
-                            //
-                            // Overriding processStream() thus need to comply with the
-                            // set of exceptions it can throw.
-                            //
-                            throw new IOException("Failed to parse history timestamp:" + s, e);
+            if (Objects.nonNull(entry)) {
+                switch (state) {
+                    case 0:
+                        // First, go on until revno is found.
+                        if (s.startsWith("revno:")) {
+                            String[] rev = s.substring("revno:".length()).trim().split(" ");
+                            entry.setRevision(rev[0]);
+                            ++state;
                         }
-                        ++state;
-                    }
-                    break;
-                case 3:
-                    // Expect the commit message to follow immediately after
-                    // the timestamp, and that everything up to the list of
-                    // modified, added and removed files is part of the commit
-                    // message.
-                    if (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:")) {
-                        ++state;
-                    } else if (s.startsWith("  ")) {
-                        // Commit messages returned by bzr log -v are prefixed
-                        // with two blanks.
-                        entry.appendMessage(s.substring(2));
-                    }
-                    break;
-                case 4:
-                    // Finally, store the list of modified, added and removed
-                    // files. (Except the labels.)
-                    if (!(s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
-                        // The list of files is prefixed with blanks.
-                        s = s.trim();
+                        break;
+                    case 1:
+                        // Then, look for committer.
+                        if (s.startsWith("committer:")) {
+                            entry.setAuthor(s.substring("committer:".length()).trim());
+                            ++state;
+                        }
+                        break;
+                    case 2:
+                        // And then, look for timestamp.
+                        if (s.startsWith("timestamp:")) {
+                            try {
+                                Date date = repository.parse(s.substring("timestamp:".length()).trim());
+                                entry.setDate(date);
+                            } catch (ParseException e) {
+                                //
+                                // Overriding processStream() thus need to comply with the
+                                // set of exceptions it can throw.
+                                //
+                                throw new IOException("Failed to parse history timestamp:" + s, e);
+                            }
+                            ++state;
+                        }
+                        break;
+                    case 3:
+                        // Expect the commit message to follow immediately after
+                        // the timestamp, and that everything up to the list of
+                        // modified, added and removed files is part of the commit
+                        // message.
+                        if (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:")) {
+                            ++state;
+                        } else if (s.startsWith("  ")) {
+                            // Commit messages returned by bzr log -v are prefixed
+                            // with two blanks.
+                            entry.appendMessage(s.substring(2));
+                        }
+                        break;
+                    case 4:
+                        // Finally, store the list of modified, added and removed
+                        // files. (Except the labels.)
+                        if (!(s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
+                            // The list of files is prefixed with blanks.
+                            s = s.trim();
 
-                        int idx = s.indexOf(" => ");
-                        if (idx != -1) {
-                            s = s.substring(idx + 4);
-                        }
+                            int idx = s.indexOf(" => ");
+                            if (idx != -1) {
+                                s = s.substring(idx + 4);
+                            }
 
-                        File f = new File(myDir, s);
-                        try {
-                            String name = env.getPathRelativeToSourceRoot(f);
-                            entry.addFile(name.intern());
-                        } catch (ForbiddenSymlinkException e) {
-                            LOGGER.log(Level.FINER, e.getMessage());
-                            // ignored
-                        } catch (InvalidPathException e) {
-                            LOGGER.log(Level.WARNING, e.getMessage());
+                            File f = new File(myDir, s);
+                            try {
+                                String name = env.getPathRelativeToSourceRoot(f);
+                                entry.addFile(name.intern());
+                            } catch (ForbiddenSymlinkException e) {
+                                LOGGER.log(Level.FINER, e.getMessage());
+                                // ignored
+                            } catch (InvalidPathException e) {
+                                LOGGER.log(Level.WARNING, e.getMessage());
+                            }
                         }
-                    }
-                    break;
-                default:
-                    LOGGER.log(Level.WARNING, "Unknown parser state: {0}", state);
-                    break;
+                        break;
+                    default:
+                        LOGGER.log(Level.WARNING, "Unknown parser state: {0}", state);
+                        break;
                 }
+            }
         }
 
         if (entry != null && state > 2) {

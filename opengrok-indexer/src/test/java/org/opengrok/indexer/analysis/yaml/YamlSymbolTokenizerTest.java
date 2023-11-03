@@ -47,7 +47,7 @@ class YamlSymbolTokenizerTest {
     private final AbstractAnalyzer analyzer;
 
     YamlSymbolTokenizerTest() {
-        this.analyzer = YamlAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer();
+        this.analyzer = new YamlAnalyzerFactory().getAnalyzer();
     }
 
     private String[] getTermsFor(Reader r) {

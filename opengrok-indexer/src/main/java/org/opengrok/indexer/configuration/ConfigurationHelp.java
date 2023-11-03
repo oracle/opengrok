@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import org.opengrok.indexer.authorization.AuthControlFlag;
@@ -195,13 +197,13 @@ public class ConfigurationHelp {
     }
 
     private static Object getSampleListValue(Type genType) {
-        if (!(genType instanceof ParameterizedType)) {
-            return null;
-        }
-        ParameterizedType genParamType = (ParameterizedType) genType;
-        Type actType = genParamType.getActualTypeArguments()[0];
+        var actType = Optional.ofNullable(genType)
+                .filter(ParameterizedType.class::isInstance)
+                .map(ParameterizedType.class::cast)
+                .map(genParamType -> genParamType.getActualTypeArguments()[0])
+                .orElse(null);
 
-        if (actType != RepositoryInfo.class) {
+        if (Objects.nonNull(actType) && actType != RepositoryInfo.class) {
             throw new UnsupportedOperationException(NOT_SUPPORTED_MSG + actType);
         }
         return null;
