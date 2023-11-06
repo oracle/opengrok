@@ -276,8 +276,11 @@ public class Definitions implements Serializable {
                 key -> new LineTagMap());
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = lineMap.symTags.computeIfAbsent(symbol,
-                k -> new HashSet<>());
+        Set<Tag> ltags = lineMap.symTags.get(symbol);
+        if (ltags == null) {
+            ltags = new HashSet<>();
+            lineMap.symTags.put(symbol, ltags);
+        }
         ltags.add(newTag);
     }
 
