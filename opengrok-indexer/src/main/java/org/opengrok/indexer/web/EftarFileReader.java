@@ -191,7 +191,7 @@ public class EftarFileReader implements Closeable {
         int tagLength = 0;
         while (toks.hasMoreTokens()) {
             String tok = toks.nextToken();
-            if (tok == null || tok.length() == 0) {
+            if (tok == null || tok.isEmpty()) {
                 continue;
             }
             next = n.get(EftarFile.myHash(tok));

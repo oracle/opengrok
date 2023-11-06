@@ -553,7 +553,7 @@ public class AnalyzerGuru {
      */
     public static AbstractAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
         AnalyzerFactory factory = find(in, file);
-        if (factory == null) {
+        if (Objects.isNull(factory)) {
             AbstractAnalyzer defaultAnalyzer = getAnalyzer();
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "''{0}'': fallback {1}",

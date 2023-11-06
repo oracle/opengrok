@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -782,29 +783,26 @@ public class SearchHelper {
             throws IOException, ForbiddenSymlinkException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String sourceRoot = env.getSourceRootPath();
-        if (sourceRoot == null) {
-            throw new IllegalStateException("sourceRoot is not defined");
-        }
-        File absolute = new File(sourceRoot + relativePath);
+        String nonEmptySourceRoot = Optional.ofNullable(env.getSourceRootPath())
+                .orElseThrow(() -> new IllegalStateException("sourceRoot is not defined"));
+
+        File absolute = new File(nonEmptySourceRoot + relativePath);
 
         ensureSettingsHelper();
         settingsHelper.getSettings(project);
         Map<String, IndexedSymlink> indexedSymlinks = settingsHelper.getSymlinks(project);
-        if (indexedSymlinks != null) {
-            String canonical = absolute.getCanonicalFile().getPath();
-            for (IndexedSymlink entry : indexedSymlinks.values()) {
-                if (canonical.equals(entry.getCanonical())) {
-                    if (absolute.getPath().equals(entry.getAbsolute())) {
-                        return relativePath;
-                    }
-                    Path newAbsolute = Paths.get(entry.getAbsolute());
-                    return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
-                } else if (canonical.startsWith(entry.getCanonicalSeparated())) {
-                    Path newAbsolute = Paths.get(entry.getAbsolute(),
-                            canonical.substring(entry.getCanonicalSeparated().length()));
-                    return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
+        String canonical = absolute.getCanonicalFile().getPath();
+        for (IndexedSymlink entry : indexedSymlinks.values()) {
+            if (canonical.equals(entry.getCanonical())) {
+                if (absolute.getPath().equals(entry.getAbsolute())) {
+                    return relativePath;
                 }
+                Path newAbsolute = Paths.get(entry.getAbsolute());
+                return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
+            } else if (canonical.startsWith(entry.getCanonicalSeparated())) {
+                Path newAbsolute = Paths.get(entry.getAbsolute(),
+                        canonical.substring(entry.getCanonicalSeparated().length()));
+                return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
             }
         }
 

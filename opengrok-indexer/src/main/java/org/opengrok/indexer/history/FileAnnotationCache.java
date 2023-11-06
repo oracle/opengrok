@@ -201,6 +201,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
         mapper.writeValue(outfile, annotationData);
     }
 
+    @SuppressWarnings("java:S1764")
     public void store(File file, Annotation annotation) throws CacheException {
         if (annotation.getRevision() == null || annotation.getRevision().isEmpty()) {
             throw new CacheException(String.format("annotation for ''%s'' does not contain revision", file));

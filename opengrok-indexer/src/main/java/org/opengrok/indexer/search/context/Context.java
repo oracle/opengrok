@@ -301,7 +301,7 @@ public class Context {
                             /* desc[0] is matched symbol
                              * desc[1] is line number
                              * desc[2] is type
-                             * desc[3] is matching line;
+                             * desc[3] is matching line
                              * desc[4] is scope
                              */
                             String[] desc = {

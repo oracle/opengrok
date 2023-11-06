@@ -122,7 +122,7 @@ public class SourceSplitter {
              * Should not get here, as String and StringReader operations cannot
              * throw IOException.
              */
-            throw new RuntimeException(ex);
+            throw new WrapperIOException(ex);
         }
     }
 

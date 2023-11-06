@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -71,10 +72,9 @@ public class SettingsHelper {
         getSettings(projectName);
         String projectKey = projectName != null ? projectName : "";
         Map<String, IndexedSymlink> indexSymlinks = mappedIndexedSymlinks.get(projectKey);
-        if (indexSymlinks != null) {
-            return Collections.unmodifiableMap(indexSymlinks);
-        }
-        return null;
+        return Optional.ofNullable(indexSymlinks)
+                .map(Collections::unmodifiableMap)
+                .orElseGet(Collections::emptyMap );
     }
 
     /**

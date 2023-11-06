@@ -35,12 +35,14 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -172,11 +174,9 @@ public class Executor {
         }
 
         File cwd = processBuilder.directory();
-        if (cwd == null) {
-            dir_str = System.getProperty("user.dir");
-        } else {
-            dir_str = cwd.toString();
-        }
+        dir_str = Optional.ofNullable(cwd)
+                .map(File::toString)
+                .orElseGet(() -> System.getProperty("user.dir"));
 
         String envStr = "";
         if (LOGGER.isLoggable(Level.FINER)) {
@@ -209,7 +209,6 @@ public class Executor {
             });
             thread.start();
 
-            int timeout = this.timeout;
             /*
              * Setup timer so if the process get stuck we can terminate it and
              * make progress instead of hanging the whole operation.
@@ -268,7 +267,7 @@ public class Executor {
         }
 
         if (ret != 0 && reportExceptions) {
-            int MAX_MSG_SZ = 512; /* limit to avoid flooding the logs */
+            int maxMsgSize = 512; /* limit to avoid flooding the logs */
             StringBuilder msg = new StringBuilder("Non-zero exit status ")
                     .append(ret).append(" from command [")
                     .append(cmd_str)
@@ -277,8 +276,8 @@ public class Executor {
                     append("'");
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");
-                    if (stderr.length > MAX_MSG_SZ) {
-                            msg.append(new String(stderr, 0, MAX_MSG_SZ)).append("...");
+                    if (stderr.length > maxMsgSize) {
+                            msg.append(new String(stderr, 0, maxMsgSize)).append("...");
                     } else {
                             msg.append(new String(stderr));
                     }
@@ -412,23 +411,15 @@ public class Executor {
      * @return a defined instance
      */
     public static String escapeForShell(List<String> argv, boolean multiline, boolean isWindows) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < argv.size(); ++i) {
-            if (multiline && i > 0) {
-                result.append("\t");
-            }
-            String arg = argv.get(i);
-            result.append(isWindows ? maybeEscapeForPowerShell(arg) : maybeEscapeForSh(arg));
-            if (i + 1 < argv.size()) {
-                if (!multiline) {
-                    result.append(" ");
-                } else {
-                    result.append(isWindows ? " `" : " \\");
-                    result.append(System.lineSeparator());
-                }
-            }
-        }
-        return result.toString();
+        return argv.stream()
+                .map(arg -> isWindows ? maybeEscapeForPowerShell(arg) : maybeEscapeForSh(arg))
+                .collect(Collectors.joining(multiline ? multiLineDelimiter(isWindows) : " "));
+    }
+
+    private static String multiLineDelimiter(boolean isWindows) {
+        return (isWindows ? " `" : " \\") +
+                System.lineSeparator() +
+                "\t";
     }
 
     private static String maybeEscapeForSh(String value) {

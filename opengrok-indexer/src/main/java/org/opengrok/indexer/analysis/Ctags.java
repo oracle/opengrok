@@ -574,6 +574,7 @@ public class Ctags implements Resettable {
 
             @Override
             public void destroy() {
+                //Empty Method
             }
         };
 
