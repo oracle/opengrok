@@ -173,7 +173,7 @@ def test_project_subst():
     cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
     cmds.run()
 
-    assert cmds.outputs['/bin/echo test-subst'] == ['test-subst\n']
+    assert cmds.outputs['/bin/echo test-subst'] == ['test-subst']
 
 
 @pytest.mark.skipif(not os.path.exists('/bin/echo'),
@@ -184,7 +184,7 @@ def test_args_subst():
     cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
     cmds.run()
 
-    assert cmds.outputs['/bin/echo foo'] == ['foo\n']
+    assert cmds.outputs['/bin/echo foo'] == ['foo']
 
 
 @pytest.mark.skipif(not os.path.exists('/bin/echo'),
@@ -197,7 +197,7 @@ def test_args_subst_env():
     cmds.run()
     os.environ.pop("FOO")
 
-    assert cmds.outputs['/bin/echo bar'] == ['bar\n']
+    assert cmds.outputs['/bin/echo bar'] == ['bar']
 
 
 def test_cleanup_exception():
