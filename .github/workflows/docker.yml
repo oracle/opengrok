@@ -13,8 +13,8 @@ jobs:
         python-version: '3.10'
     - name: Install dependencies
       run: python3 -m pip install -r docker/requirements.txt
-    - name: Install opengrok-tools
-      run: python3 setup.py install
+    - name: Install opengrok-tools so that pylint can perform the checks
+      run: python3 -m pip install .
       working-directory: tools
     - name: Install checkers
       run: python3 -m pip install pylint flake8 black isort

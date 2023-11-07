@@ -43,6 +43,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
         <python.environment>${project.build.directory}/env/bin</python.environment>
         <project.python.package.version>${project.version}</project.python.package.version>
         <python.checkstyle.line-length>119</python.checkstyle.line-length>
+        <outputDirectory>${project.build.directory}/dist</outputDirectory>
     </properties>
 
     <profiles>
@@ -152,8 +153,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                     <includes>
                                         <include>MANIFEST.in</include>
                                         <include>README-dist.txt</include>
-                                        <include>setup.py</include>
-                                        <include>setup.cfg</include>
+                                        <include>pyproject.toml</include>
+                                        <include>LICENSE</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -166,7 +167,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <outputDirectory>${outputDirectory}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}</directory>
@@ -180,9 +181,27 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>rename-file</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>rename</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.build.directory}/README-dist.txt</sourceFile>
+                            <destinationFile>${project.build.directory}/README.txt</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>Generate python env</id>
@@ -201,7 +220,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <!-- needed for 'pip install pylint' to work -->
+                        <!-- needed for the subsequent steps to work -->
                         <id>Upgrade pip and install/upgrade other packages</id>
                         <configuration>
                             <executable>${python.environment}/python</executable>
@@ -215,6 +234,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>setuptools</argument>
                                 <argument>certifi</argument>
                                 <argument>wheel</argument>
+                                <argument>build</argument>
+                                <argument>tox</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
@@ -224,29 +245,29 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                     </execution>
                     <execution>
                         <id>Generate python package</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>build</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
-                        <configuration>
-                            <executable>${python.environment}/python</executable>
-                            <workingDirectory>${project.build.directory}</workingDirectory>
-                            <arguments>
-                                <argument>setup.py</argument>
-                                <argument>sdist</argument>
-                                <argument>--formats</argument>
-                                <argument>gztar</argument>
-                            </arguments>
-                        </configuration>
-                        <phase>package</phase>
                     </execution>
                     <execution>
-                        <id>Install python package for tests/pylint</id>
+                        <id>Install the built python package for tests/pylint</id>
                         <configuration>
                             <executable>${python.environment}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
-                                <argument>setup.py</argument>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
                                 <argument>install</argument>
+                                <argument>${outputDirectory}/opengrok-tools-${project.version}.tar.gz</argument>
                             </arguments>
                             <skip>${skipPythonTests}</skip>
                         </configuration>
@@ -285,7 +306,6 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>${python.checkstyle.line-length}</argument>
                                 <argument>-E</argument>
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
-                                <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
                             <skip>${skipPythonTests}</skip>
                         </configuration>
@@ -307,7 +327,6 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>-v</argument>
                                 <argument>${project.build.sourceDirectory}</argument>
                                 <argument>${project.build.testSourceDirectory}</argument>
-                                <argument>setup.py</argument>
                             </arguments>
                         </configuration>
                         <phase>verify</phase>
@@ -318,15 +337,11 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Test python package</id>
                         <configuration>
-                            <executable>${python.environment}/python</executable>
+                            <executable>${python.environment}/tox</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <environmentVariables>
                                 <PATH>${python.environment}:${env.PATH}</PATH>
                             </environmentVariables>
-                            <arguments>
-                                <argument>setup.py</argument>
-                                <argument>test</argument>
-                            </arguments>
                             <skip>${skipPythonTests}</skip>
                         </configuration>
                         <phase>test</phase>
