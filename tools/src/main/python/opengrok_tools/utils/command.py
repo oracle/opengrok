@@ -428,7 +428,7 @@ class Command:
     def getoutputstr(self):
         if self.state == Command.FINISHED:
             s = os.linesep.join(self.out)
-            if len(self.out) > 0:
+            if self.out:
                 s += os.linesep
             return s
         else:
