@@ -110,7 +110,7 @@ public class HostUtil {
         try {
             int port = HostUtil.urlToPort(webappURI);
             if (port <= 0) {
-                LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
+                LOGGER.log(Level.SEVERE, () -> "invalid port number for " + webappURI);
                 return false;
             }
 

@@ -40,6 +40,7 @@ import org.opengrok.indexer.util.ClassUtil;
  * @author Krystof Tulinger
  * @version $Revision$
  */
+@SuppressWarnings("java:S2065")
 public class Group implements Comparable<Group>, Nameable {
 
     static {
@@ -273,15 +274,7 @@ public class Group implements Comparable<Group>, Nameable {
         }
         final Group other = (Group) obj;
 
-        int numNull = (name == null ? 1 : 0) + (other.name == null ? 1 : 0);
-        switch (numNull) {
-            case 0:
-                return name.equals(other.name);
-            case 1:
-                return false;
-            default:
-                return true;
-        }
+        return Objects.equals(name, other.name);
     }
 
     /**

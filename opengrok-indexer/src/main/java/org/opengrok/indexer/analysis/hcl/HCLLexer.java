@@ -49,7 +49,7 @@ public abstract class HCLLexer extends JFlexSymbolMatcher
 
     private Stack<HCLLexerData> data;
 
-    public HCLLexer() {
+    protected HCLLexer() {
         dataHead = new HCLLexerData();
     }
 
@@ -113,7 +113,7 @@ public abstract class HCLLexer extends JFlexSymbolMatcher
      * @return true if a Here state was pushed
      */
     public boolean maybeHereStart() throws IOException {
-        if (dataHead.hereSettings != null && dataHead.hereSettings.size() > 0) {
+        if (dataHead.hereSettings != null && !dataHead.hereSettings.isEmpty()) {
             HereDocSettings settings = dataHead.hereSettings.peek();
             yypush(settings.state);
             disjointSpan(HtmlConsts.STRING_CLASS);
@@ -141,7 +141,7 @@ public abstract class HCLLexer extends JFlexSymbolMatcher
 
         offer(capture);
 
-        if (dataHead.hereSettings.size() > 0) {
+        if (!dataHead.hereSettings.isEmpty()) {
             settings = dataHead.hereSettings.peek();
             yybegin(settings.state);
             if (didZspan) {

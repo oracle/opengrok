@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedSet;
@@ -832,11 +833,9 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     @Nullable
     String determineParent(CommandTimeoutType cmdType) throws IOException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            if (repository.getConfig() != null) {
-                return repository.getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
-            } else {
-                return null;
-            }
+            return Optional.ofNullable(repository.getConfig())
+                    .map(config -> config.getString("remote", Constants.DEFAULT_REMOTE_NAME, "url"))
+                    .orElse(null);
         }
     }
 

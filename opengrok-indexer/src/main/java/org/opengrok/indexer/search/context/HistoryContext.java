@@ -218,7 +218,7 @@ public class HistoryContext {
                 matchedLines += matchLine(line, urlPrefix, path, out, hits, rev, nrev);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Could not get history context for " + path, e);
+            LOGGER.log(Level.WARNING, e, () -> "Could not get history context for " + path);
         }
         return matchedLines > 0;
     }
