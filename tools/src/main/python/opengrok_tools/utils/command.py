@@ -72,8 +72,8 @@ class Command:
         self.doprint = doprint
         self.err = None
         self.returncode = None
-        self.max_line_length = max_line_length
-        self.max_lines = max_lines
+        self.max_line_length = int(max_line_length)
+        self.max_lines = int(max_lines)
 
         self.logger = logger or logging.getLogger(__name__)
 
@@ -170,6 +170,8 @@ class Command:
                 self.event = event
                 self.logger = logger
                 self.doprint = doprint
+                # Convert the maximums to integers to avoid exceptions when using them as indexes
+                # in case they are passed as floats.
                 self.max_line_length = int(max_line_length)
                 self.max_lines = int(max_lines)
 
