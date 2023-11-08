@@ -723,7 +723,7 @@ public class AnalyzerGuru {
      * Get the genre of a file.
      *
      * @param file The file to inspect
-     * @return The genre suitable to decide how to display the file (or {@code null} if not found)
+     * @return The genre suitable to decide how to display the file or {@code null} if not found
      */
     @Nullable
     public static AbstractAnalyzer.Genre getGenre(String file) {
@@ -734,9 +734,10 @@ public class AnalyzerGuru {
      * Get the genre of a bulk of data.
      *
      * @param in A stream containing the data
-     * @return The genre suitable to decide how to display the file
+     * @return The genre suitable to decide how to display the file or {@code null} if not found
      * @throws java.io.IOException If an error occurs while getting the content
      */
+    @Nullable
     public static AbstractAnalyzer.Genre getGenre(InputStream in) throws IOException {
         return getGenre(find(in));
     }
@@ -744,7 +745,7 @@ public class AnalyzerGuru {
     /**
      * Get the genre for a named class (this is most likely an analyzer).
      *
-     * @param factory the analyzer factory to get the genre for
+     * @param factory the analyzer factory to get the genre for or {@code null} if not found
      * @return The genre of this class (or {@code null} if not found)
      */
     @Nullable
