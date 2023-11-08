@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -37,18 +37,18 @@ import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.web.Util;
 
 /**
- * handles parsing the output of the {@code hg annotate} command
- * into an annotation object.
+ * Handles parsing the output of the {@code hg annotate} command
+ * into an {@link Annotation} object.
  */
 class MercurialAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MercurialAnnotationParser.class);
 
     private Annotation annotation = null;
-    HashMap<String, HistoryEntry> revs;
-    File file;
+    private final HashMap<String, HistoryEntry> revs;
+    private final File file;
 
     /**
-     * Pattern used to extract author/revision from {@code hg annotate}.
+     * Pattern used to extract author/revision from the {@code hg annotate} command.
      */
     private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^\\s*(\\d+):");
 
