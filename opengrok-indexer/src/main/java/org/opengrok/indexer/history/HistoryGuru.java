@@ -684,7 +684,7 @@ public final class HistoryGuru {
      * Check if we can annotate the specified file.
      *
      * @param file the file to check
-     * @return <code>true</code> if the file is under version control and the
+     * @return whether the file is under version control, can be annotated and the
      * version control system supports annotation
      */
     public boolean hasAnnotation(File file) {
