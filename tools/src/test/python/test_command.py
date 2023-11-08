@@ -215,7 +215,7 @@ def test_long_output(shorten):
         assert len(cmd.getoutput()) == num_lines
         if shorten:
             # Add 3 for the '...' suffix.
-            assert len([len(x) for x in cmd.getoutput() if len(x) > line_length + 3]) == 0
+            assert all(len(x) <= line_length + 3 for x in cmd.getoutput())
         else:
             assert len("\n".join(cmd.getoutput()) + "\n") == num_bytes
 
