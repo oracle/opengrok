@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -61,7 +61,7 @@ class GitRepository(Repository):
         status, out = self._run_command([self.command, 'log',
                                          '--pretty=tformat:%H', '..origin/' + branch])
         if status == 0:
-            if len(out.rstrip()) == 0:
+            if len(out) == 0:
                 return False
         else:
             raise RepositoryException("failed to check for incoming changes in {}: {}".
