@@ -199,6 +199,7 @@ class Command:
                     # Shorten the list to be one less than the maximum because a line is going to be added.
                     if len(self.out) >= self.max_lines:
                         self.out = self.out[-self.max_lines + 1:]
+                        self.out[0] = "... <truncated>"
 
                     self.out.append(line)
 
