@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -750,10 +751,7 @@ public class AnalyzerGuru {
      */
     @Nullable
     public static AbstractAnalyzer.Genre getGenre(AnalyzerFactory factory) {
-        if (factory != null) {
-            return factory.getGenre();
-        }
-        return null;
+        return Optional.ofNullable(factory).map(AnalyzerFactory::getGenre).orElse(null);
     }
 
     /**
