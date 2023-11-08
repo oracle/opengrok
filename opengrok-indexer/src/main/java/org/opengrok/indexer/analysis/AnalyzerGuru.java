@@ -723,8 +723,9 @@ public class AnalyzerGuru {
      * Get the genre of a file.
      *
      * @param file The file to inspect
-     * @return The genre suitable to decide how to display the file
+     * @return The genre suitable to decide how to display the file (or {@code null} if not found)
      */
+    @Nullable
     public static AbstractAnalyzer.Genre getGenre(String file) {
         return getGenre(find(file));
     }
@@ -744,8 +745,9 @@ public class AnalyzerGuru {
      * Get the genre for a named class (this is most likely an analyzer).
      *
      * @param factory the analyzer factory to get the genre for
-     * @return The genre of this class (null if not found)
+     * @return The genre of this class (or {@code null} if not found)
      */
+    @Nullable
     public static AbstractAnalyzer.Genre getGenre(AnalyzerFactory factory) {
         if (factory != null) {
             return factory.getGenre();

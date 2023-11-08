@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
@@ -258,11 +260,12 @@ public final class HistoryGuru {
 
     /**
      * Annotate given file using repository method. Makes sure that the resulting annotation has the revision set.
-     * @param file file object to generate the annotaiton for
+     * @param file file object to generate the annotation for
      * @param rev revision to get the annotation for or {@code null} for latest revision of given file
-     * @return annotation object
+     * @return annotation object or {@code null}
      * @throws IOException on error when getting the annotation
      */
+    @Nullable
     private Annotation getAnnotationFromRepository(File file, @Nullable String rev) throws IOException {
         if (!env.getPathAccepter().accept(file)) {
             LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for annotation", file);
@@ -688,6 +691,16 @@ public final class HistoryGuru {
         if (file.isDirectory()) {
             LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'') to check annotation presence",
                     file);
+            return false;
+        }
+
+        AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
+        if (genre == null) {
+            LOGGER.log(Level.INFO, "will not produce annotation for ''{0}'' with unknown genre", file);
+            return false;
+        }
+        if (genre.equals(AbstractAnalyzer.Genre.DATA) || genre.equals(AbstractAnalyzer.Genre.IMAGE)) {
+            LOGGER.log(Level.INFO, "no sense to produce annotation for binary file ''{0}''", file);
             return false;
         }
 
