@@ -360,6 +360,9 @@ public final class PageConfig {
         for (int i = 0; i < 2 && data.genre == null; i++) {
             try {
                 data.genre = AnalyzerGuru.getGenre(inArray[i]);
+                if (data.genre == null) {
+                    data.errorMsg = "Unable to determine the file type";
+                }
             } catch (IOException e) {
                 data.errorMsg = "Unable to determine the file type: "
                         + Util.htmlize(e.getMessage());

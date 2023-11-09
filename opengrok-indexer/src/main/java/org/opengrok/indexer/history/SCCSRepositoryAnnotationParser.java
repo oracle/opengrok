@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -42,11 +42,13 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SCCSRepositoryAnnotationParser.class);
 
     /**
-     * Store annotation created by processStream.
+     * Store annotation created by {@link #processStream(InputStream)}.
      */
     private final Annotation annotation;
 
     private final Map<String, String> authors;
+
+    private final File file;
 
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
@@ -54,6 +56,7 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^([\\d.]+)\\s+");
 
     SCCSRepositoryAnnotationParser(File file, Map<String, String> authors) {
+        this.file = file;
         this.annotation = new Annotation(file.getName());
         this.authors = authors;
     }
@@ -69,8 +72,7 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
 
     @Override
     public void processStream(InputStream input) throws IOException {
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(input))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             String line;
             int lineno = 0;
             while ((line = in.readLine()) != null) {
@@ -86,8 +88,8 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
                     annotation.addLine(rev, author, true);
                 } else {
                     LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotations in line {0}: [{1}]",
-                            new Object[]{lineno, line});
+                            "Error: did not find annotations in line {0} for ''{2}'': [{1}]",
+                            new Object[]{lineno, line, file});
                 }
             }
         }
