@@ -22,9 +22,10 @@
  */
 package org.opengrok.indexer.web;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Represents a container for sanitizing methods for avoiding classifications as
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 public class Laundromat {
 
     private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f]";
-    private static final String ESG_N_R_T_F__1_n = ESC_N_R_T_F + "+";
+    private static final String ESG_N_R_T_F_1_N = ESC_N_R_T_F + "+";
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
@@ -52,7 +53,7 @@ public class Laundromat {
      * replaced with one space.
      */
     public static String launderQuery(String value) {
-        return replaceAll(value, ESG_N_R_T_F__1_n, " ");
+        return replaceAll(value, ESG_N_R_T_F_1_N, " ");
     }
 
     /**
@@ -65,10 +66,10 @@ public class Laundromat {
         if (value == null) {
             return null;
         }
-        return value.replaceAll("\\n", "<LF>").
-                replaceAll("\\r", "<CR>").
-                replaceAll("\\t", "<TAB>").
-                replaceAll("\\f", "<FF>");
+        return value.replace("\n", "<LF>").
+                replace("\r", "<CR>").
+                replace("\t", "<TAB>").
+                replace("\f", "<FF>");
     }
 
     /**
@@ -78,25 +79,24 @@ public class Laundromat {
      * collisions, the colliding keys' values are combined.
      */
     public static Map<String, String[]> launderLog(Map<String, String[]> map) {
-        if (map == null) {
-            return null;
-        }
-
         HashMap<String, String[]> safes = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : map.entrySet().stream().sorted(
-                Map.Entry.comparingByKey()).collect(Collectors.toList())) {
-            String key = launderLog(entry.getKey());
-            String[] safeValues = safes.get(key);
-            String[] fullySafe = mergeLogArrays(entry.getValue(), safeValues);
-            safes.put(key, fullySafe);
-        }
+
+        Optional.ofNullable(map)
+                .stream()
+                .map(Map::entrySet)
+                .flatMap(Collection::stream)
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry ->
+                        safes.compute(
+                                launderLog(entry.getKey()),
+                                (k, v) -> mergeLogArrays(entry.getValue(), v)
+                        )
+                );
         return safes;
+
     }
 
     private static String[] mergeLogArrays(String[] values, String[] safeValues) {
-        if (values == null && safeValues == null) {
-            return null;
-        }
 
         int n = (values != null ? values.length : 0) +
                 (safeValues != null ? safeValues.length : 0);

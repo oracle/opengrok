@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -135,14 +136,12 @@ public class PathUtils {
             }
 
             // optional symbolic-link check
-            if (allowedSymlinks != null) {
-                if (Files.isSymbolicLink(iterPath) &&
-                    !isWhitelisted(iterCanon.toString(), canonicalRoots) &&
-                    !isAllowedSymlink(iterCanon, allowedSymlinks)) {
-                    String format = String.format("%1$s is prohibited symlink", iterPath);
-                    LOGGER.finest(format);
-                    throw new ForbiddenSymlinkException(format);
-                }
+            if (Objects.nonNull(allowedSymlinks) && Files.isSymbolicLink(iterPath) &&
+                !isWhitelisted(iterCanon.toString(), canonicalRoots) &&
+                !isAllowedSymlink(iterCanon, allowedSymlinks)) {
+                String format = String.format("%1$s is prohibited symlink", iterPath);
+                LOGGER.finest(format);
+                throw new ForbiddenSymlinkException(format);
             }
 
             String rel = null;
@@ -153,7 +152,7 @@ public class PathUtils {
             }
             if (rel != null) {
                 if (tail != null) {
-                    while (tail.size() > 0) {
+                    while (!tail.isEmpty()) {
                         rel = Paths.get(rel, tail.pop()).toString();
                     }
                 }

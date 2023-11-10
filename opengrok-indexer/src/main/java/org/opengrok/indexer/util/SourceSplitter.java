@@ -36,6 +36,8 @@ import org.opengrok.indexer.analysis.StreamSource;
  */
 public class SourceSplitter {
 
+    private static final String RESET_FAILED_MSG = "reset() did not succeed";
+
     private int length;
     private String[] lines;
     private int[] lineOffsets;
@@ -52,7 +54,7 @@ public class SourceSplitter {
      */
     public int count() {
         if (lines == null) {
-            throw new IllegalStateException("reset() did not succeed");
+            throw new IllegalStateException(RESET_FAILED_MSG);
         }
         return lines.length;
     }
@@ -66,7 +68,7 @@ public class SourceSplitter {
      */
     public String getLine(int index) {
         if (lines == null) {
-            throw new IllegalStateException("reset() did not succeed");
+            throw new IllegalStateException(RESET_FAILED_MSG);
         }
         if (index < 0 || index >= lines.length) {
             throw new IllegalArgumentException("index is out of bounds");
@@ -84,7 +86,7 @@ public class SourceSplitter {
      */
     public int getOffset(int index) {
         if (lineOffsets == null) {
-            throw new IllegalStateException("reset() did not succeed");
+            throw new IllegalStateException(RESET_FAILED_MSG);
         }
         if (index < 0 || index >= lineOffsets.length) {
             throw new IllegalArgumentException("index is out of bounds");
@@ -101,7 +103,7 @@ public class SourceSplitter {
      */
     public int findLineIndex(int offset) {
         if (lineOffsets == null) {
-            throw new IllegalStateException("reset() did not succeed");
+            throw new IllegalStateException(RESET_FAILED_MSG);
         }
         return SplitterUtil.findLineIndex(length, lineOffsets, offset);
     }

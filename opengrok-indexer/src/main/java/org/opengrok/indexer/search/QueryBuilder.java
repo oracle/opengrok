@@ -220,9 +220,10 @@ public class QueryBuilder {
      * @param path a defined value
      * @return a defined, transformed value
      */
+    @SuppressWarnings("java:S4790")
     public static String normalizeDirPath(String path) {
         String norm2;
-        if (path.length() > 0) {
+        if (!path.isEmpty()) {
             String norm1 = path.replace(File.separatorChar, '/');
             norm2 = norm1.endsWith("/") ? norm1 : norm1 + "/";
         } else {

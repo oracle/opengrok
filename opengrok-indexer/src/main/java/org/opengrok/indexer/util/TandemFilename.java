@@ -152,6 +152,7 @@ public class TandemFilename {
         return filename.substring(0, newLength) + asciiExtension;
     }
 
+    @SuppressWarnings("java:S112")
     private static String sha256base64(String value) {
 
         MessageDigest hasher;

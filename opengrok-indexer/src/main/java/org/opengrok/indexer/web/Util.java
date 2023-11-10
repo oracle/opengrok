@@ -329,9 +329,7 @@ public final class Util {
             case '<':
                 return true;
             case '\n':
-                if (!pre) {
-                    return true;
-                }
+                return !pre;
             default:
                 return (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
         }
@@ -1641,6 +1639,7 @@ public final class Util {
      * @param req the request containing the information about the server
      * @return the converted URL or the input parameter if there was an error
      */
+    @SuppressWarnings("java:S1149")
     public static String completeUrl(String url, HttpServletRequest req) {
         try {
             if (!isHttpUri(url)) {

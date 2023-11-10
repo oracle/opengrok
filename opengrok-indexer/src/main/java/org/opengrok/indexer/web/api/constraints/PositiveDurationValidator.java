@@ -34,7 +34,7 @@ public class PositiveDurationValidator implements ConstraintValidator<PositiveDu
 
     @Override
     public void initialize(final PositiveDuration positiveDuration) {
-
+        //Empty Method
     }
 
     @Override

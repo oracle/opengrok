@@ -75,12 +75,12 @@ class LaundromatTest {
         Map<String, String[]> laundry = Laundromat.launderLog(testMap);
 
         Map<String, String[]> expected = new HashMap<>();
-        expected.put("a", null);
+        expected.put("a", new String[0]);
         expected.put("b", new String[]{TEST_CONTENT_LOG_LAUNDRY});
         expected.put(TEST_CONTENT_LOG_LAUNDRY, new String[]{"c", "d"});
         expected.put("e<CR>f", new String[]{"g", "h", "c", "d"});
         expected.put("<FF>i<LF>", new String[]{"k", "j"});
-        expected.put("l<TAB><CR>", null);
+        expected.put("l<TAB><CR>", new String[0]);
 
         assertEquals(hashedValues(expected), hashedValues(laundry), "maps″ should be equal");
     }

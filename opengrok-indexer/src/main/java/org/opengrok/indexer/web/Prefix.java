@@ -65,7 +65,7 @@ public enum Prefix {
     RAW_P("/raw"),
     /** Full-blown search from main page or top bar (link prefix). */
     SEARCH_P("/search"),
-    /** Search from cross reference, can lead to direct match (which opens
+    /** Search from cross-reference, can lead to direct match (which opens
      * directly) or to a matches Summary page. */
     SEARCH_R("/s"),
     /** opensearch description page. */
@@ -85,9 +85,9 @@ public enum Prefix {
     /** JavaScript in Web JARs. */
     WEBJARS("/webjars");
 
-    private final String prefix;
-    Prefix(String prefix) {
-        this.prefix = prefix;
+    private final String strPrefix;
+    Prefix(String strPrefix) {
+        this.strPrefix = strPrefix;
     }
 
     /**
@@ -96,7 +96,7 @@ public enum Prefix {
      */
     @Override
     public String toString() {
-        return prefix;
+        return strPrefix;
     }
 
     // should be sufficient for now

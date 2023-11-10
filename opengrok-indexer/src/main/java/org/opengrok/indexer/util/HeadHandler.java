@@ -43,7 +43,7 @@ public class HeadHandler implements Executor.StreamHandler {
     private final List<String> lines = new ArrayList<>();
     private final Charset charset;
 
-    private static final int bufferedReaderSize = 200;
+    private static final int BUFFERED_READER_SIZE = 200;
 
     /**
      * Charset of the underlying reader is set to UTF-8.
@@ -80,14 +80,14 @@ public class HeadHandler implements Executor.StreamHandler {
 
     // for testing
     static int getBufferedReaderSize() {
-        return bufferedReaderSize;
+        return BUFFERED_READER_SIZE;
     }
 
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedInputStream bufStream = new BufferedInputStream(input);
         BufferedReader reader = new BufferedReader(new InputStreamReader(bufStream, this.charset),
-                bufferedReaderSize)) {
+                BUFFERED_READER_SIZE)) {
             int lineNum = 0;
             while (lineNum < maxLines) {
                 String line = reader.readLine();

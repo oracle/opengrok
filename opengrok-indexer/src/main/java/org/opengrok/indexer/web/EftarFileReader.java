@@ -28,9 +28,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
@@ -183,17 +186,16 @@ public class EftarFileReader implements Closeable {
      * @throws IOException I/O
      */
     public String get(String path) throws IOException {
-        StringTokenizer toks = new StringTokenizer(path, "/");
         f.seek(0);
         FNode n = new FNode();
         FNode next;
         long tagOffset = 0;
         int tagLength = 0;
-        while (toks.hasMoreTokens()) {
-            String tok = toks.nextToken();
-            if (tok == null || tok.isEmpty()) {
-                continue;
-            }
+        var tokens = Arrays.stream(path.split("/"))
+                .filter(Objects::nonNull)
+                .filter(tok -> !tok.isEmpty())
+                .collect(Collectors.toList());
+        for (var tok : tokens) {
             next = n.get(EftarFile.myHash(tok));
             if (next == null) {
                 break;

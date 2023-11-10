@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class Getopt {
     private static class Option {
-        char option;
+        char optOption;
         String argument;
     }
 
@@ -80,7 +80,7 @@ public class Getopt {
                     }
 
                     Option option = new Option();
-                    option.option = chars[jj];
+                    option.optOption = chars[jj];
                     options.add(option);
                     // does this option take an argument?
                     if ((idx + 1) < opts.length() && (opts.charAt(idx + 1) == ':')) {
@@ -117,7 +117,7 @@ public class Getopt {
 
         ++current;
         if (current < options.size()) {
-            ret = options.get(current).option;
+            ret = options.get(current).optOption;
         }
 
         return ret;
