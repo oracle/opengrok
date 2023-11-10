@@ -96,13 +96,15 @@ def test_execute_nonexistent():
     assert cmd.getstate() == Command.ERRORED
 
 
+# Uses /bin/ls, therefore Unix only.
 @posix_only
 def test_getoutput():
     cmd = Command(['/bin/ls', '/etc/passwd'])
     cmd.execute()
-    assert cmd.getoutput() == ['/etc/passwd\n']
+    assert cmd.getoutput() == ['/etc/passwd']
 
 
+# Uses /bin/ls, therefore Unix only.
 @posix_only
 def test_work_dir():
     os.chdir("/")
@@ -118,7 +120,7 @@ def test_work_dir():
 def test_env(env_binary):
     cmd = Command([env_binary], env_vars={'FOO': 'BAR', 'A': 'B'})
     cmd.execute()
-    assert "FOO=BAR\n" in cmd.getoutput()
+    assert "FOO=BAR" in cmd.getoutput()
 
 
 @system_binary('true')
@@ -181,16 +183,17 @@ def test_stderr():
 
 # This test needs the "/bin/cat" command, therefore it is Unix only.
 @posix_only
-def test_long_output():
+@pytest.mark.parametrize('shorten', [True, False])
+def test_long_output(shorten):
     """
-    Test that output thread in the Command class captures all of the output.
+    Test that output thread in the Command class captures all the output.
     (and also it does not hang the command by filling up the pipe)
 
-    By default stderr is redirected to stdout.
+    By default, stderr is redirected to stdout.
     """
-    # in bytes, should be enough to fill a pipe
     num_lines = 5000
     line_length = 1000
+    # should be enough to fill a pipe
     num_bytes = num_lines * (line_length + 1)
     with tempfile.NamedTemporaryFile() as file:
         for _ in range(num_lines):
@@ -199,13 +202,22 @@ def test_long_output():
         file.flush()
         assert os.path.getsize(file.name) == num_bytes
 
-        cmd = Command(["/bin/cat", file.name])
+        if shorten:
+            num_lines //= 2
+            line_length //= 2
+        cmd = Command(["/bin/cat", file.name],
+                      max_lines=num_lines, max_line_length=line_length)
         cmd.execute()
 
         assert cmd.getstate() == Command.FINISHED
         assert cmd.getretcode() == 0
         assert cmd.geterroutput() is None
-        assert len("".join(cmd.getoutput())) == num_bytes
+        assert len(cmd.getoutput()) == num_lines
+        if shorten:
+            # Add 3 for the '...' suffix.
+            assert all(len(x) <= line_length + 3 for x in cmd.getoutput())
+        else:
+            assert len("\n".join(cmd.getoutput()) + "\n") == num_bytes
 
 
 @posix_only

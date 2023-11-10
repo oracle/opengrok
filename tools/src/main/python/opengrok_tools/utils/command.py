@@ -51,7 +51,8 @@ class Command:
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False, work_dir=None, env_vars=None, timeout=None,
-                 redirect_stderr=True, resource_limits=None, doprint=False):
+                 redirect_stderr=True, resource_limits=None, doprint=False,
+                 max_line_length=250, max_lines=10000):
 
         if doprint is None:
             doprint = False
@@ -71,6 +72,8 @@ class Command:
         self.doprint = doprint
         self.err = None
         self.returncode = None
+        self.max_line_length = int(max_line_length)
+        self.max_lines = int(max_lines)
 
         self.logger = logger or logging.getLogger(__name__)
 
@@ -159,7 +162,7 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self, event, logger, doprint=False):
+            def __init__(self, event, logger, doprint=False, max_line_length=250, max_lines=10000):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd, encoding='utf8')
@@ -167,6 +170,10 @@ class Command:
                 self.event = event
                 self.logger = logger
                 self.doprint = doprint
+                # Convert the maximums to integers to avoid exceptions when using them as indexes
+                # in case they are passed as floats.
+                self.max_line_length = int(max_line_length)
+                self.max_lines = int(max_lines)
 
                 # Start the thread now.
                 self.start()
@@ -185,17 +192,31 @@ class Command:
                         self.event.set()
                         return
 
+                    line = line.rstrip()    # This will remove not only newline but also whitespace.
+
+                    # Assuming that self.max_line_length is bigger than 3.
+                    if len(line) > self.max_line_length:
+                        line = line[:self.max_line_length] + "..."
+
+                    # Shorten the list to be one less than the maximum because a line is going to be added.
+                    if len(self.out) >= self.max_lines:
+                        self.out = self.out[-self.max_lines + 1:]
+                        self.out[0] = "... <truncated>"
+
                     self.out.append(line)
 
                     if self.doprint:
                         # Even if logging below fails, the thread has to keep
                         # running to avoid hangups of the executed command.
                         try:
-                            self.logger.info(line.rstrip())
+                            self.logger.info(line)
                         except Exception as print_exc:
                             self.logger.error(print_exc)
 
             def getoutput(self):
+                """
+                :return: list of lines with trailing whitespace (including newlines) stripped
+                """
                 return self.out
 
             def fileno(self):
@@ -226,10 +247,11 @@ class Command:
         timeout_thread = None
         output_event = threading.Event()
         output_thread = OutputThread(output_event, self.logger,
-                                     doprint=self.doprint)
+                                     doprint=self.doprint,
+                                     max_lines=self.max_lines,
+                                     max_line_length=self.max_line_length)
 
-        # If stderr redirection is off, setup a thread that will capture
-        # stderr data.
+        # If stderr redirection is off, set up a thread that will capture stderr data.
         stderr_thread = None
         stderr_event = None
         if self.redirect_stderr:
@@ -237,7 +259,9 @@ class Command:
         else:
             stderr_event = threading.Event()
             stderr_thread = OutputThread(stderr_event, self.logger,
-                                         doprint=self.doprint)
+                                         doprint=self.doprint,
+                                         max_lines=self.max_lines,
+                                         max_line_length=self.max_line_length)
             stderr_dest = stderr_thread
 
         start_time = None
@@ -403,11 +427,18 @@ class Command:
 
     def getoutputstr(self):
         if self.state == Command.FINISHED:
-            return "".join(self.out).strip()
+            s = os.linesep.join(self.out)
+            if self.out:
+                s += os.linesep
+            return s
         else:
             return None
 
     def getoutput(self):
+        """
+        :return: list of lines (with trailing whitespace and newlines stripped)
+        or None if the command has not finished yet
+        """
         if self.state == Command.FINISHED:
             return self.out
         else:
@@ -418,7 +449,10 @@ class Command:
 
     def geterroutputstr(self):
         if self.err:
-            return "".join(self.err).strip()
+            s = os.linesep.join(self.err)
+            if len(self.err) > 0:
+                s += os.linesep
+            return s
         else:
             return ""
 
