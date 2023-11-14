@@ -152,15 +152,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     /**
      * Expand {@code LdapUser} / {@code User} object attribute values into the filter.
-     *
-     * @see opengrok.auth.plugin.util.FilterUtil
-     *
      * Use \% for printing the '%' character.
      *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
      * @param user user from the request
      * @return the filter with replacements
+     * @see opengrok.auth.plugin.util.FilterUtil
      */
     String expandFilter(String filter, LdapUser ldapUser, User user) {
 

@@ -33,10 +33,16 @@ import org.opengrok.indexer.history.SCCSRepository;
 import org.opengrok.indexer.history.SubversionRepository;
 import org.opengrok.indexer.util.LazilyInstantiate;
 
+/**
+ * Type of Repositories installed to be used in Junit test cases.
+ */
 public class RepositoryInstalled {
 
     private static final String FORCE_ALL_PROPERTY = "junit-force-all";
 
+    /**
+     * Type of Repositories supported to be used in Junit test cases.
+     */
     public enum Type {
         BITKEEPER(new BitKeeperRepository()),
         MERCURIAL(new MercurialRepository()),

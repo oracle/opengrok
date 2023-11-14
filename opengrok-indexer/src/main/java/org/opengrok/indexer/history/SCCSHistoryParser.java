@@ -109,8 +109,8 @@ final class SCCSHistoryParser {
     /**
      * Read a single line of delta record into the {@link #sccsRecord} member.
      *
-     * @throws java.io.IOException on I/O error
      * @return boolean indicating whether there is another record.
+     * @throws java.io.IOException on I/O error
      */
     private boolean next() throws java.io.IOException {
         sep = true;

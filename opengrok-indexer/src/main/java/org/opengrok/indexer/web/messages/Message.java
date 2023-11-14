@@ -52,6 +52,9 @@ public class Message implements Comparable<Message>, JSONable {
     @NotEmpty(message = "tags cannot be empty")
     private Set<String> tags = Collections.singleton(MESSAGES_MAIN_PAGE_TAG);
 
+    /**
+     * Opengrok Message Level.
+     */
     public enum MessageLevel {
         /**
          * Known values: {@code SUCCESS}, {@code INFO}, {@code WARNING}, {@code ERROR}.

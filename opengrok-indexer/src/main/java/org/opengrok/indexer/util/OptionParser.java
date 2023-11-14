@@ -39,30 +39,31 @@ import java.util.regex.Pattern;
 
 /**
  * OptionParser is a class for command-line option analysis.
- *
+ * <p>
  * Now that Java 8 has the crucial Lambda and Consumer interfaces, we can
  * implement a more powerful program option parsing mechanism, ala ruby
  * OptionParser style.
- *
+ * <p>
  * Features
+ * <p>
  *   o  An option can have multiple short names (-x) and multiple long
  *      names (--xyz). Thus, an option that displays a programs usage
  *      may be available as -h, -?, --help, --usage, and --about.
- *
+ * <p>
  *   o  An option may be specified as having no argument, an optional
  *      argument, or a required argument. Arguments may be validated
  *      against a regular expression pattern or a list of valid values.
- *
+ * <p>
  *   o  The argument specification and the code to handle it are
  *      written in the same place. The argument description may consist
  *      of one or more lines to be used when displaying usage summary.
- *
+ * <p>
  *   o  The option summary is produced without maintaining strings
  *      in a separate setting.
- *
+ * <p>
  *   o  Users are allowed to enter initial substrings for long option
  *      names as long as there is no ambiguity.
- *
+ * <p>
  *   o  Supports the ability to coerce command line arguments into objects.
  *      This class readily supports Boolean (yes/no,true/false,on/off),
  *      Float, Double, Integer, and String[] (strings separated by comma)

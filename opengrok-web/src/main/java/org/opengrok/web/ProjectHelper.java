@@ -291,16 +291,16 @@ public final class ProjectHelper {
     }
 
     /**
-     * @see #getProjects()
      * @return filtered ungrouped projects
+     * @see #getProjects()
      */
     public Set<Project> getUngroupedProjects() {
         return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, ungroupedProjects);
     }
 
     /**
-     * @see #getRepositories()
      * @return filtered ungrouped projects
+     * @see #getRepositories()
      */
     public Set<Project> getUngroupedRepositories() {
         return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, ungroupedRepositories);

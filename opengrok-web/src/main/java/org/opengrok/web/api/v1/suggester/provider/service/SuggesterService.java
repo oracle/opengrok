@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Suggester Service contract definition.
+ */
 public interface SuggesterService {
 
     /**

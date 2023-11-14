@@ -180,9 +180,9 @@ public final class IndexAnalysisSettings implements Serializable {
         long vlong = in.readLong();
         analyzerGuruVersion = hasValue ? vlong : null;
 
-        /**
-         * De-serialization circumvents normal construction, so the following
-         * field could be null.
+        /*
+          De-serialization circumvents normal construction, so the following
+          field could be null.
          */
         if (analyzersVersions == null) {
             analyzersVersions = new HashMap<>();

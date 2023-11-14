@@ -28,6 +28,9 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.util.logging.Level;
 
+/**
+ * Converts Object to JSON.
+ */
 public interface JSONable {
 
     String EMPTY = "";

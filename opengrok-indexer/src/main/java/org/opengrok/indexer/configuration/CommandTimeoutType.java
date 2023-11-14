@@ -22,6 +22,11 @@
  */
 package org.opengrok.indexer.configuration;
 
+/**
+ * Command Time Out Type.
+ * Different time out config valid are present for each
+ * command type.
+ */
 public enum CommandTimeoutType {
     INTERACTIVE,
     INDEXER,

@@ -310,11 +310,11 @@ public class QueryBuilder {
      */
     public List<String> getContextFields() {
         List<String> fields = new ArrayList<>(queries.size());
-        /**
-         * setFreetext() allows query fragments that specify a field name with
-         * a colon (e.g., "defs:ensure_cache" in the "Full Search" box), so the
-         * context fields (i.e., the result of this method) are not just the
-         * keys of `queries' but need a full parsing to be determined.
+        /*
+          setFreetext() allows query fragments that specify a field name with
+          a colon (e.g., "defs:ensure_cache" in the "Full Search" box), so the
+          context fields (i.e., the result of this method) are not just the
+          keys of `queries' but need a full parsing to be determined.
          */
         Query query;
         try {

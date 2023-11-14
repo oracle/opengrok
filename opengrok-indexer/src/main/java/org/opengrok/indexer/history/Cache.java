@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Cache interface for common cache related operations.
+ */
 public interface Cache {
 
     Logger LOGGER = LoggerFactory.getLogger(Cache.class);

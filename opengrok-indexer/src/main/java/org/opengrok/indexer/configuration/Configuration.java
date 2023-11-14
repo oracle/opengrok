@@ -642,19 +642,18 @@ public final class Configuration {
     /**
      * @return int the current message limit
      * @see org.opengrok.indexer.web.messages.MessagesContainer
-     *
-     * @return int the current message limit
      */
     public int getMessageLimit() {
         return messageLimit;
     }
 
     /**
-     * @see org.opengrok.indexer.web.messages.MessagesContainer
      *
      * @param messageLimit the limit
      * @throws IllegalArgumentException when the limit is negative
+     * @see org.opengrok.indexer.web.messages.MessagesContainer
      */
+
     public void setMessageLimit(int messageLimit) throws IllegalArgumentException {
         if (messageLimit < 0) {
             throw new IllegalArgumentException(
@@ -940,12 +939,10 @@ public final class Configuration {
 
     /**
      * Sets data root.
-     *
      * This method also sets the pluginDirectory if it is not already set.
      *
-     * @see #setPluginDirectory(java.lang.String)
-     *
      * @param dataRoot data root path
+     * @see #setPluginDirectory(java.lang.String)
      */
     public void setDataRoot(String dataRoot) {
         if (dataRoot != null && getPluginDirectory() == null) {

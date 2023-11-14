@@ -79,8 +79,9 @@ public class PhraseHighlight {
 
     /**
      * Determines if the specified {@code other} overlaps with this instance.
-     * @return {@code true} if the instances overlap
+     *
      * @param other object to compare to
+     * @return {@code true} if the instances overlap
      */
     public boolean overlaps(PhraseHighlight other) {
         return (lineStart >= other.lineStart && lineStart <= other.lineEnd) ||

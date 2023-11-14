@@ -50,13 +50,13 @@ class ProjectHelperExtendedTest extends ProjectHelperTestBase {
         List<RepositoryInfo> rps = env.getRepositories();
         Map<Project, List<RepositoryInfo>> map = getRepositoriesMap();
 
-        /**
-         * Extend the original groups with some subgroups - structure should be
-         * now like this.
-         *
-         *      allowed_group_2                 group_1
-         *     /               \               /       \
-         * group_0       allowed_group_3  group_0    allowed_group_3
+        /*
+          Extend the original groups with some subgroups - structure should be
+          now like this.
+
+               allowed_group_2                 group_1
+              /               \               /       \
+          group_0       allowed_group_3  group_0    allowed_group_3
          */
         Group.getByName("allowed_group_2").addGroup(Group.getByName("group_0"));
         Group.getByName("allowed_group_2").addGroup(Group.getByName("allowed_group_3"));

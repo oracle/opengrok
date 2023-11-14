@@ -27,10 +27,10 @@ import java.util.Date;
 /**
  * Implementation of timestamp decoding.
  *
+ * @author Krystof Tulinger
  * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
  * chapter 9.5
  *
- * @author Krystof Tulinger
  */
 public class Timestamp {
 

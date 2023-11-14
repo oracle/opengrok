@@ -142,6 +142,9 @@ public class SuggesterRangeQuery extends TermRangeQuery implements SuggesterQuer
         return Objects.hash(super.hashCode(), suggestPosition);
     }
 
+    /**
+     * SuggestPosition type values.
+     */
     public enum SuggestPosition {
         LOWER, UPPER
     }
