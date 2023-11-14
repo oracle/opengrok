@@ -464,12 +464,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.21.2</version>
                 <reportSets>
                     <reportSet>
                         <reports>
-                            <report>pmd</report>
-                            <report>cpd</report>
+                            <report>aggregate-pmd</report>
+                            <report>aggregate-cpd</report>
                         </reports>
                     </reportSet>
                 </reportSets>
@@ -478,7 +478,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                         <ruleset>dev/pmd_ruleset.xml</ruleset>
                     </rulesets>
                     <targetJdk>${java.version}</targetJdk>
-                    <aggregate>true</aggregate>
                 </configuration>
             </plugin>
             <plugin>
