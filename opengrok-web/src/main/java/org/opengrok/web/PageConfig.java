@@ -1103,8 +1103,8 @@ public final class PageConfig {
      * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
      * No check is made, whether the obtained path is really an accessible resource on disk.
      *
-     * @see HttpServletRequest#getPathInfo()
      * @return a possible empty String (denotes the source root directory) but not {@code null}.
+     * @see HttpServletRequest#getPathInfo()
      */
     public String getPath() {
         if (path == null) {

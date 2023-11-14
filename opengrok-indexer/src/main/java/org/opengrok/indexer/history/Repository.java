@@ -293,8 +293,8 @@ public abstract class Repository extends RepositoryInfo {
      * tags to changesets which actually exist in the history of given file.
      * Must be implemented repository-specific.
      *
-     * @see #getTagList
      * @param hist History object we want to assign tags to.
+     * @see #getTagList
      */
     void assignTagsInHistory(History hist) {
         if (hist == null) {

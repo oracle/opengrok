@@ -271,10 +271,10 @@ public class ContextFormatter extends PassageFormatter {
                 finishLine(bld, lhi.getLineno(), marks);
                 // Regardless of true EOL, write a <br/>.
                 bld.append(HtmlConsts.BR);
-                /**
-                 * Appending a LF here would hurt the more.jsp view, while
-                 * search.jsp (where getContext() does it) is indifferent -- so
-                 * skip it.
+                /*
+                  Appending a LF here would hurt the more.jsp view, while
+                  search.jsp (where getContext() does it) is indifferent -- so
+                  skip it.
                  */
                 res.put(lhi.getLineno(), bld.toString());
                 bld.setLength(0);

@@ -79,8 +79,8 @@ public class Statistics {
      * @param logLevel log level
      * @param msg message string
      * @param meterName name of the meter
-     * @see Metrics#getRegistry()
      * @return whether logging was performed
+     * @see Metrics#getRegistry()
      */
     public boolean report(Logger logger, Level logLevel, String msg, String meterName) {
         return report(logger, logLevel, msg, meterName, new String[]{});
@@ -94,8 +94,8 @@ public class Statistics {
      * @param msg message string
      * @param meterName name of the meter
      * @param tags array of tags for the meter
-     * @see Metrics#getRegistry()
      * @return whether logging was performed
+     * @see Metrics#getRegistry()
      */
     public boolean report(Logger logger, Level logLevel, String msg, String meterName, String[] tags) {
         Duration duration = Duration.between(startTime, Instant.now());

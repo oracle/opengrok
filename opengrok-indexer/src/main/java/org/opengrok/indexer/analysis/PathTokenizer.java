@@ -92,13 +92,13 @@ public class PathTokenizer extends Tokenizer {
             if (i >= buf.length) {
                 buf = Arrays.copyOf(buf, buf.length * 2);
             }
-            /**
-             * "In general, String.toLowerCase(Locale) should be used to map
-             * characters to lowercase. String case mapping methods have several
-             * benefits over Character case mapping methods. String case mapping
-             * methods can perform locale-sensitive mappings, context-sensitive
-             * mappings, and 1:M character mappings, whereas the Character case
-             * mapping methods cannot." See below.
+            /*
+              "In general, String.toLowerCase(Locale) should be used to map
+              characters to lowercase. String case mapping methods have several
+              benefits over Character case mapping methods. String case mapping
+              methods can perform locale-sensitive mappings, context-sensitive
+              mappings, and 1:M character mappings, whereas the Character case
+              mapping methods cannot." See below.
              */
             buf[i++] = (char) c;
             c = input.read();

@@ -477,10 +477,10 @@ public class SearchEngine {
                                 getDefinition() != null, ret, scopes);
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
-                            /**
-                             * For backward compatibility, read the
-                             * OpenGrok-produced document using the system
-                             * default charset.
+                            /*
+                              For backward compatibility, read the
+                              OpenGrok-produced document using the system
+                              default charset.
                              */
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
                                     ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(

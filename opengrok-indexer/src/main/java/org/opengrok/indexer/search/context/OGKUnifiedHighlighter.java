@@ -71,9 +71,10 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * {@link UnifiedHighlighter#UnifiedHighlighter(UnifiedHighlighter.Builder)}
      * for the specified {@code indexSearcher} and {@code indexAnalyzer}, and
      * stores the {@code env} for later use.
+     *
      * @param env a required instance
-     * @throws IllegalArgumentException if any argument is null
      * @param uhBuilder a required instance
+     * @throws IllegalArgumentException if any argument is null
      */
     public OGKUnifiedHighlighter(RuntimeEnvironment env,
                                  UnifiedHighlighter.Builder uhBuilder) {
@@ -122,11 +123,11 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      */
     public String highlightFieldsUnion(String[] fields, Query query,
             int docId, int lineLimit) throws IOException {
-        /**
-         * Setting fileTypeName has to happen before getFieldHighlighter() is
-         * called by highlightFieldsAsObjects() so that the result of
-         * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
-         * influenced by fileTypeName.
+        /*
+          Setting fileTypeName has to happen before getFieldHighlighter() is
+          called by highlightFieldsAsObjects() so that the result of
+          getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
+          influenced by fileTypeName.
          */
         Document doc = searcher.storedFields().document(docId);
         fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
@@ -152,9 +153,9 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     protected String highlightFieldsUnionWork(String[] fields, Query query,
             int docId, int lineLimit) throws IOException {
         int[] maxPassagesCopy = new int[fields.length];
-        /**
-         * N.b. linelimit + 1 so that the ContextFormatter has an indication
-         * when to display the "more..." link.
+        /*
+          N.b. linelimit + 1 so that the ContextFormatter has an indication
+          when to display the "more..." link.
          */
         Arrays.fill(maxPassagesCopy, lineLimit + 1);
 
@@ -163,9 +164,9 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             query, new int[]{docId}, maxPassagesCopy);
         for (Object[] flinesz : mappedRes.values()) {
             for (Object obj : flinesz) {
-                /**
-                 * Empirical testing showed that the passage could be null if
-                 * the original source text is not available to the highlighter.
+                /*
+                  Empirical testing showed that the passage could be null if
+                  the original source text is not available to the highlighter.
                  */
                 if (obj != null) {
                     if (!(obj instanceof FormattedLines)) {
@@ -248,20 +249,20 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         OffsetSource res = super.getOptimizedOffsetSource(components);
         String field = components.getField();
         if (res == OffsetSource.ANALYSIS) {
-            /**
-             *     Testing showed that UnifiedHighlighter falls back to
-             * ANALYSIS in the presence of multi-term queries (MTQs) such as
-             * prefixes and wildcards even for fields that are analyzed with
-             * POSTINGS -- i.e. with DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS.
-             * This is despite UnifiedHighlighter seeming to indicate that
-             * postings should be sufficient in the comment for
-             * shouldHandleMultiTermQuery(String): "MTQ highlighting can be
-             * expensive, particularly when using offsets in postings."
-             *     DEFS are stored with term vectors to avoid this problem,
-             * since re-analysis would not at all accord with ctags Definitions.
-             *     For FULL and REFS, highlightFieldsUnion() arranges that
-             * getIndexAnalyzer() can return a TYPE-specific analyzer for use by
-             * getOffsetStrategy() -- if re-ANALYSIS is required.
+            /*
+                  Testing showed that UnifiedHighlighter falls back to
+              ANALYSIS in the presence of multi-term queries (MTQs) such as
+              prefixes and wildcards even for fields that are analyzed with
+              POSTINGS -- i.e. with DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS.
+              This is despite UnifiedHighlighter seeming to indicate that
+              postings should be sufficient in the comment for
+              shouldHandleMultiTermQuery(String): "MTQ highlighting can be
+              expensive, particularly when using offsets in postings."
+                  DEFS are stored with term vectors to avoid this problem,
+              since re-analysis would not at all accord with ctags Definitions.
+                  For FULL and REFS, highlightFieldsUnion() arranges that
+              getIndexAnalyzer() can return a TYPE-specific analyzer for use by
+              getOffsetStrategy() -- if re-ANALYSIS is required.
              */
             switch (field) {
                 case QueryBuilder.FULL:

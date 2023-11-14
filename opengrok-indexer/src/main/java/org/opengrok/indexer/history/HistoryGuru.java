@@ -783,7 +783,6 @@ public final class HistoryGuru {
 
     /**
      * Recursively search for repositories with a depth limit, add those found to the internally used map.
-     * @see #putRepository(Repository)
      *
      * @param files list of directories to check if they contain a repository
      * @param allowedNesting number of levels of nested repos to allow
@@ -791,6 +790,7 @@ public final class HistoryGuru {
      * @param isNested a value indicating if a parent {@link Repository} was already found above the {@code files}
      * @param progress {@link org.opengrok.indexer.util.Progress} instance
      * @return collection of added repositories
+     * @see #putRepository(Repository)
      */
     private Collection<RepositoryInfo> addRepositories(File[] files, int allowedNesting, int depth, boolean isNested,
                                                        Progress progress) {

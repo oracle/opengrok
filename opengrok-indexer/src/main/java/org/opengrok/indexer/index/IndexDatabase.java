@@ -1905,8 +1905,8 @@ public class IndexDatabase {
      * Get all files in some of the index databases.
      *
      * @param subFiles Subdirectories of various projects or null or an empty list to get everything
-     * @throws IOException if an error occurs
      * @return set of files in the index databases specified by the subFiles parameter
+     * @throws IOException if an error occurs
      */
     public static Set<String> getAllFiles(List<String> subFiles) throws IOException {
         Set<String> files = new HashSet<>();
@@ -1940,8 +1940,8 @@ public class IndexDatabase {
     /**
      * Get all files in this index database.
      *
-     * @throws IOException If an IO error occurs while reading from the database
      * @return set of files in this index database
+     * @throws IOException If an IO error occurs while reading from the database
      */
     public Set<String> getFiles() throws IOException {
         IndexReader ireader = null;

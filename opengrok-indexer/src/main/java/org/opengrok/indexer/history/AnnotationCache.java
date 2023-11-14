@@ -26,6 +26,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
+/**
+ * Annotation Cache Related Operations.
+ */
 public interface AnnotationCache extends Cache {
     /**
      * Retrieve annotation from cache.

@@ -171,12 +171,12 @@ public class AuthorizationPlugin extends AuthorizationStack {
     public boolean isAllowed(Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
-        /**
-         * We don't check the skippingPredicate here as this instance is
-         * <b>always</b> a part of some stack (may be the default stack) and the
-         * stack checks the skipping predicate before invoking this method.
-         *
-         * @see AuthorizationStack#processStack
+        /*
+          We don't check the skippingPredicate here as this instance is
+          <b>always</b> a part of some stack (may be the default stack) and the
+          stack checks the skipping predicate before invoking this method.
+
+          @see AuthorizationStack#processStack
          */
 
         if (isFailed()) {
@@ -205,14 +205,14 @@ public class AuthorizationPlugin extends AuthorizationStack {
             unload();
         }
         try {
-            /**
-             * The exception should not happen here as we already have an
-             * instance of IAuthorizationPlugin. But it is required by the
-             * compiler.
-             *
-             * NOTE: If we were to add a throws clause here we would interrupt
-             * the whole stack walk through and prevent the other authorization
-             * entities to work properly.
+            /*
+              The exception should not happen here as we already have an
+              instance of IAuthorizationPlugin. But it is required by the
+              compiler.
+
+              NOTE: If we were to add a throws clause here we would interrupt
+              the whole stack walk through and prevent the other authorization
+              entities to work properly.
              */
             this.plugin = plugin.getClass().getDeclaredConstructor().newInstance();
             return true;

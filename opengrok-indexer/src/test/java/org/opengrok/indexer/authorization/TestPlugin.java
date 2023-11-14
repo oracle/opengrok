@@ -28,6 +28,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
+/**
+ * Fake IAuthorizationPlugin implementation.
+ * isAllowed method returns unsupported operation in this implementation.
+ */
 public class TestPlugin implements IAuthorizationPlugin {
 
     @Override

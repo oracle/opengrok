@@ -39,7 +39,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 /**
  * A History Parser for Razor.
  *
- * @author Peter Bray <Peter.Darren.Bray@gmail.com>
+ * @author Peter Bray &lt;Peter.Darren.Bray@gmail.com&gt;
  */
 class RazorHistoryParser {
 

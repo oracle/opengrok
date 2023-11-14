@@ -106,9 +106,9 @@ class ContextFormatterTest {
         p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2), 1);
         assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
-        /**
-         * We're using the entire document, but see how it behaves with
-         * contextCount==1
+        /*
+          We're using the entire document, but see how it behaves with
+          contextCount==1
          */
         ContextArgs args = new ContextArgs((short) 1, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);

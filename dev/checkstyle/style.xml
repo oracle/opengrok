@@ -25,7 +25,14 @@
     </module>
 
     <module name="TreeWalker">
+        <module name="InvalidJavadocPosition"/>
         <module name="JavadocStyle"/>
+        <module name="AtclauseOrder"/>
+        <module name="MissingJavadocType">
+            <property name="tokens"
+                      value="INTERFACE_DEF, ENUM_DEF,
+                      RECORD_DEF, ANNOTATION_DEF"/>
+        </module>
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>

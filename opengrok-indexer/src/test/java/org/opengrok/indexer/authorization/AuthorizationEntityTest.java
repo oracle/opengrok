@@ -98,20 +98,20 @@ class AuthorizationEntityTest {
         env.getProjects().put("project 8", new Project("project 8"));
         env.getProjects().put("project 9", new Project("project 9"));
 
-        /**
-         * Structure<br>
-         * <pre>
-         * G1 + P1
-         *    + P2
-         *    + P3
-         *    + G2
-         *       + P4
-         *       + P5
-         *       + P6
-         *       + P7
-         * G3 + P8
-         *    + P9
-         * </pre>
+        /*
+          Structure<br>
+          <pre>
+          G1 + P1
+             + P2
+             + P3
+             + G2
+                + P4
+                + P5
+                + P6
+                + P7
+          G3 + P8
+             + P9
+          </pre>
          */
         g1 = new Group();
         g1.setName("group 1");

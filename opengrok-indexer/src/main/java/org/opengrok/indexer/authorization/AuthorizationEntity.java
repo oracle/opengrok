@@ -420,13 +420,13 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         Set<String> groups = new TreeSet<>();
 
         for (String x : forGroups()) {
-            /**
-             * Full group discovery takes place here. All projects/repositories
-             * in the group are added into "forProjects" and all subgroups
-             * (including projects/repositories) and parent groups (excluding
-             * the projects/repositories) are added into "forGroups".
-             *
-             * If the group does not exist then a warning is issued.
+            /*
+              Full group discovery takes place here. All projects/repositories
+              in the group are added into "forProjects" and all subgroups
+              (including projects/repositories) and parent groups (excluding
+              the projects/repositories) are added into "forGroups".
+
+              If the group does not exist then a warning is issued.
              */
             Group g;
             if ((g = Group.getByName(x)) != null) {
@@ -442,9 +442,9 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         setForGroups(groups);
 
         forProjects().removeIf(t -> {
-            /**
-             * Check the existence of the projects and issue a warning if there
-             * is no such project.
+            /*
+              Check the existence of the projects and issue a warning if there
+              is no such project.
              */
             if ( Project.getByName(t) == null) {
                 LOGGER.log(Level.WARNING, "Configured project \"{0}\" in forProjects"
@@ -474,8 +474,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
 
     /**
      * Check if this plugin has failed during loading or is missing.
-     *
-     * This method has the same effect as !{@link isWorking()}.
+     * This method has the same effect as !{@link #isWorking()}.
      *
      * @return true if failed, true otherwise
      * @see #isWorking()

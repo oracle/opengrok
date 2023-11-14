@@ -23,12 +23,16 @@
 package org.opengrok.web.api.v1.suggester.provider.filter;
 
 import jakarta.ws.rs.NameBinding;
+import jakarta.ws.rs.core.Response;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotated Api's checks if suggester is enabled and if not then returns {@link Response.Status#NOT_FOUND}.
+ */
 @NameBinding
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

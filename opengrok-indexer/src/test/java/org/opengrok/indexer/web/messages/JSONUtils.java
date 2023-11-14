@@ -32,6 +32,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * Util class for Json string manipulations.
+ */
 public final class JSONUtils {
     private JSONUtils() {
         // private to ensure static
