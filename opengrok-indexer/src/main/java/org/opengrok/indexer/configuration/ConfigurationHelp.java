@@ -36,6 +36,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.AuthorizationStack;
@@ -196,7 +198,7 @@ public class ConfigurationHelp {
         }
     }
 
-    private static Object getSampleListValue(Type genType) {
+    private static Object getSampleListValue(@Nullable Type genType) {
         var actType = Optional.ofNullable(genType)
                 .filter(ParameterizedType.class::isInstance)
                 .map(ParameterizedType.class::cast)

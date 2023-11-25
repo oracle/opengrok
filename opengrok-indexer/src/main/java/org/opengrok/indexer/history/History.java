@@ -24,7 +24,6 @@
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -66,7 +65,6 @@ public class History implements Serializable {
         this(new ArrayList<>());
     }
 
-    @VisibleForTesting
     public History(List<HistoryEntry> entries) {
         this(entries, Collections.emptyList());
     }

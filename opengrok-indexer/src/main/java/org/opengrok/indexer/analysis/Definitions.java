@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.analysis;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.WhitelistObjectInputFilter;
 
 import java.io.ByteArrayInputStream;
@@ -185,13 +186,14 @@ public class Definitions implements Serializable {
      * Get a list of all tags on given line.
      *
      * @param line line number
-     * @return list of tags
+     * @return list of tags or null
      */
-    public List<Tag> getTags(int line) {
+    public @Nullable List<Tag> getTags(int line) {
         return Optional.ofNullable(lineMaps.get(line))
                 .map( lineMap -> lineMap.symTags.values().stream()
                         .flatMap(Collection::stream)
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toList())
+                )
                 .orElse(null);
     }
 
