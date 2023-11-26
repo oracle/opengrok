@@ -58,10 +58,9 @@ queries.
 
 ## CommonQueryParserConfiguration.setLowerCaseExpandedTerms removed (LUCENE-7355)
 
-This option has been removed as expanded terms are now normalized through
+Expanded terms are now normalized through
 Analyzer#normalize.
         */
-     //   setLowercaseExpandedTerms(false);
 
     }
 

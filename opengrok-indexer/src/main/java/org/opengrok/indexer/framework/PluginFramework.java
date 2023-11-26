@@ -45,7 +45,7 @@ import org.opengrok.indexer.util.IOUtils;
  *
  * @author Krystof Tulinger
  */
-public abstract class PluginFramework<PluginType> {
+public abstract class PluginFramework<P> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginFramework.class);
 
@@ -54,7 +54,7 @@ public abstract class PluginFramework<PluginType> {
     /**
      * Class of the plugin type, necessary for instantiating and searching.
      */
-    private final Class<PluginType> classType;
+    private final Class<P> classType;
 
     /**
      * Plugin directory.
@@ -78,7 +78,7 @@ public abstract class PluginFramework<PluginType> {
      * @param classType the class of the plugin type
      * @param path      the plugin directory path
      */
-    protected PluginFramework(Class<PluginType> classType, String path) {
+    protected PluginFramework(Class<P> classType, String path) {
         this.classType = classType;
         setPluginDirectory(path);
     }
@@ -168,7 +168,8 @@ public abstract class PluginFramework<PluginType> {
      * or null if there is no such class
      * @see #loadClass(String)
      */
-    public PluginType handleLoadClass(String classname) {
+    @SuppressWarnings("java:S1181")
+    public P handleLoadClass(String classname) {
         try {
             return loadClass(classname);
         } catch (ClassNotFoundException ex) {
@@ -205,7 +206,7 @@ public abstract class PluginFramework<PluginType> {
      * @throws InvocationTargetException if the underlying constructor of the class throws an exception
      */
     @SuppressWarnings({"unchecked"})
-    private PluginType loadClass(String classname) throws ClassNotFoundException,
+    private P loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
             IllegalAccessException,
@@ -219,7 +220,7 @@ public abstract class PluginFramework<PluginType> {
             if (intf1.getCanonicalName().equals(classType.getCanonicalName())
                     && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
-                return (PluginType) c.getDeclaredConstructor().newInstance();
+                return (P) c.getDeclaredConstructor().newInstance();
             }
         }
         LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);
@@ -255,7 +256,7 @@ public abstract class PluginFramework<PluginType> {
      * @see #loadClass(String)
      */
     private void loadClassFiles(List<File> fileList) {
-        PluginType plugin;
+        P plugin;
 
         for (File file : fileList) {
             String classname = getClassName(file);
@@ -281,7 +282,7 @@ public abstract class PluginFramework<PluginType> {
      * @see #loadClass(String)
      */
     private void loadJarFiles(List<File> fileList) {
-        PluginType pf;
+        P pf;
 
         for (File file : fileList) {
             try (JarFile jar = new JarFile(file)) {
@@ -348,7 +349,7 @@ public abstract class PluginFramework<PluginType> {
      *
      * @param plugin the loaded plugin
      */
-    protected abstract void classLoaded(PluginType plugin);
+    protected abstract void classLoaded(P plugin);
 
 
     /**

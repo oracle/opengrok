@@ -304,22 +304,21 @@ public class ConfigurationHelp {
                 return null;
             }
         }
-
-        // Return a text override for some objects.
-        switch (gname) {
-            case "getSuggesterConfig":
-                return "as below but with Boolean opposites, non-zeroes decremented by 1, null " +
-                        "for allowed-projects, and also including \"full\" in allowed-fields";
-            case "getPluginStack":
-                return "an empty stack";
-            case "getIncludedNames":
-                return "an empty filter";
-            case "getIgnoredNames":
-                return "OpenGrok's standard set of ignored files and directories";
-        }
-
         try {
-            return getter.invoke(cinst);
+            // Return a text override for some objects.
+            switch (gname) {
+                case "getSuggesterConfig":
+                    return "as below but with Boolean opposites, non-zeroes decremented by 1, null " +
+                            "for allowed-projects, and also including \"full\" in allowed-fields";
+                case "getPluginStack":
+                    return "an empty stack";
+                case "getIncludedNames":
+                    return "an empty filter";
+                case "getIgnoredNames":
+                    return "OpenGrok's standard set of ignored files and directories";
+                default:
+                    return getter.invoke(cinst);
+            }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             return null;
         }

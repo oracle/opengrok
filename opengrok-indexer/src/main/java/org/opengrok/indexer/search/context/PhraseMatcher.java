@@ -38,12 +38,10 @@ class PhraseMatcher extends LineMatcher {
     @Override
     public int match(String token) {
         if (equal(token, phraseTerms[cur])) {
-            //System.out.println(" PhraseMatcher matched " + token);
             if (cur < phraseTerms.length - 1) {
                 cur++;
                 return WAIT; //matching.
             }
-            //System.out.println(" PhraseMatcher match complete with " + token);
             cur = 0;
             return MATCHED; //matched!
         } else if (cur > 0) {
