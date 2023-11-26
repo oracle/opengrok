@@ -187,7 +187,7 @@ public class Filter implements Serializable {
         int pos = 0;
         String[] components = pattern.split("[*?]");
         for (String str : components) {
-            if (str.length() > 0) {
+            if (!str.isEmpty()) {
                 // Quote the characters up to next wildcard or end of string.
                 regex.append(Pattern.quote(str));
                 pos += str.length();
