@@ -195,7 +195,7 @@ public class AnalyzerGuru {
      */
     private static final Comparator<String> descStrlenComparator = (s1, s2) -> {
         // DESC: s2 length <=> s1 length
-        int cmp = Integer.compare(s2.length(), s1.length());
+        var cmp = Integer.compare(s2.length(), s1.length());
         if (cmp != 0) {
             return cmp;
         }
@@ -988,14 +988,11 @@ public class AnalyzerGuru {
         int len = in.read(content);
         in.reset();
 
-        if (len < MAGIC_BYTES_NUM) {
-            /*
-             * Need at least 4 bytes to perform magic string matching.
-             */
-            if (len < 4) {
-                return null;
-            }
-            content = Arrays.copyOf(content, len);
+        /*
+         * Need at least 4 bytes to perform magic string matching.
+         */
+        if (len < 4) {
+            return null;
         }
         var finalContent = Arrays.copyOf(content, len);
         try {
@@ -1119,54 +1116,66 @@ public class AnalyzerGuru {
 
         in.mark(MARK_READ_LIMIT);
 
-        String encoding = IOUtils.findBOMEncoding(sig);
-        if (Objects.isNull(encoding)) {
-            // SRCROOT is read with UTF-8 as a default.
-            encoding = StandardCharsets.UTF_8.name();
-        } else {
-            int skipForBOM = IOUtils.skipForBOM(sig);
-            if (in.skip(skipForBOM) < skipForBOM) {
-                in.reset();
-                return "";
-            }
-        }
-
-        int nRead = 0;
-        boolean ignoreWhiteSpace = true;
-        boolean breakOnNewLine = false;
-        int r;
-
-        StringBuilder opening = new StringBuilder();
-        BufferedReader readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
-
-        while ((r = readr.read()) != -1) {
-            char c = (char) r;
-            if (isNewLineOrMaxReadLimit(c, ++nRead, breakOnNewLine)) {
-                break;
-            }
-            boolean isWhitespace = Character.isWhitespace(c);
-            if (isWhitespace) {
-                if (!ignoreWhiteSpace) {
-                    opening.append(' ');
-                    ignoreWhiteSpace = true;
-                }
-            } else {
-                opening.append(c);
-                // If the opening starts with "#!", then track so that any
-                // trailing whitespace after the hashbang is ignored.
-                ignoreWhiteSpace = opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!';
-                breakOnNewLine = true;
-
-            }
-
-        }
-
+        var startingString = findAndSkipBomEncoding(in, sig)
+                     .map(encoding -> readOpeningFromBomSkippedStream(in, encoding))
+                     .orElse("");
         in.reset();
+        return startingString;
+    }
+
+    private static String readOpeningFromBomSkippedStream(InputStream in, String encoding) {
+        var opening = new StringBuilder();
+        try {
+            var readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+            var ignoreWhiteSpace = true;
+            var breakOnNewLine = false;
+            for (int nRead = 0, r = readr.read(); r != -1 && nRead <= OPENING_MAX_CHARS;
+                 r = readr.read(), nRead++) {
+
+                var c = (char) r;
+                if (breakOnNewLine && c == '\n') {
+                    break;
+                }
+                if (Character.isWhitespace(c)) {
+                    if (!ignoreWhiteSpace) {
+                        opening.append(' ');
+                        ignoreWhiteSpace = true;
+                    }
+                } else {
+                    opening.append(c);
+                    // If the opening starts with "#!", then track so that any
+                    // trailing whitespace after the hashbang is ignored.
+                    ignoreWhiteSpace = opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!';
+                    breakOnNewLine = true;
+
+                }
+            }
+        } catch (IOException e) {
+            throw new WrapperIOException(e);
+        }
+
         return opening.toString();
     }
 
-    private static boolean isNewLineOrMaxReadLimit(char c, int readcount, boolean breakOnNewLine) {
-        return readcount > OPENING_MAX_CHARS || (breakOnNewLine && c == '\n');
+    /**
+     * Identify the BOM encoding or default to utf 8, skips the encoding bytes .
+     *  Empty optional is returned if all bom bytes are not skipped
+     * @param in The input stream containing the data
+     * @param sig The initial sequence of bytes in the input stream
+     * @return optional of encoding
+     * @throws IOException in case of any read error
+     */
+    private static Optional<String> findAndSkipBomEncoding(InputStream in, byte[] sig) throws IOException {
+        var encoding = IOUtils.findBOMEncoding(sig);
+        if (Objects.isNull(encoding)) {
+            // SRCROOT is read with UTF-8 as a default.
+            encoding = StandardCharsets.UTF_8.name();
+        }
+        var skipForBOM = IOUtils.skipForBOM(sig);
+        if (skipForBOM != 0 && in.skip(skipForBOM) < skipForBOM) {
+            return Optional.empty();
+        }
+        return Optional.of(encoding);
     }
 
     private static void addCustomizationKey(String k) {
