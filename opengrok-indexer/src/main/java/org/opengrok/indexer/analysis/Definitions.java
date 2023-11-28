@@ -190,7 +190,7 @@ public class Definitions implements Serializable {
      */
     public @Nullable List<Tag> getTags(int line) {
         return Optional.ofNullable(lineMaps.get(line))
-                .map( lineMap -> lineMap.symTags.values().stream()
+                .map(lineMap -> lineMap.symTags.values().stream()
                         .flatMap(Collection::stream)
                         .collect(Collectors.toList())
                 )
