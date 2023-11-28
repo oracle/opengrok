@@ -139,9 +139,9 @@ public class PathUtils {
             if (Objects.nonNull(allowedSymlinks) && Files.isSymbolicLink(iterPath) &&
                 !isWhitelisted(iterCanon.toString(), canonicalRoots) &&
                 !isAllowedSymlink(iterCanon, allowedSymlinks)) {
-                String format = String.format("%1$s is prohibited symlink", iterPath);
-                LOGGER.finest(format);
-                throw new ForbiddenSymlinkException(format);
+                    String format = String.format("%1$s is prohibited symlink", iterPath);
+                    LOGGER.finest(format);
+                    throw new ForbiddenSymlinkException(format);
             }
 
             String rel = null;
