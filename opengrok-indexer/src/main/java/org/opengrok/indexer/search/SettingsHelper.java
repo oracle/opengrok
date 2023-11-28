@@ -74,7 +74,7 @@ public class SettingsHelper {
         Map<String, IndexedSymlink> indexSymlinks = mappedIndexedSymlinks.get(projectKey);
         return Optional.ofNullable(indexSymlinks)
                 .map(Collections::unmodifiableMap)
-                .orElseGet(Collections::emptyMap );
+                .orElseGet(Collections::emptyMap);
     }
 
     /**
