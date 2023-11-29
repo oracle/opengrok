@@ -86,16 +86,6 @@ public class User {
     }
 
     /**
-     * Get custom user property.
-     *
-     * @param key the key
-     * @return value associated with the key
-     */
-    public Object getAttribute(String key) {
-        return attrs.get(key);
-    }
-
-    /**
      * Set custom user property.
      *
      * @param key the key
