@@ -100,10 +100,10 @@ class OSSODecoderTest {
     }
 
     /**
-     * Test of getUserDn method, of class User.
+     * Test {@link User#getUsername()}.
      */
     @Test
-    void testGetUserDn() {
+    void testGetUsername() {
         String[] tests = {
                 "123456",
                 "sd45gfgf5sd4g5ffd54g",
@@ -119,7 +119,7 @@ class OSSODecoderTest {
     }
 
     /**
-     * Test of getCookieTimestamp method, of class User.
+     * Test {@link User#getCookieTimestamp()}.
      */
     @Test
     void testGetCookieTimestamp() {
@@ -135,7 +135,7 @@ class OSSODecoderTest {
     }
 
     /**
-     * Test of getCookieTimestamp method, of class User.
+     * Negative test {@link User#getCookieTimestamp()}.
      */
     @Test
     void testInvalidGetCookieTimestamp() {
