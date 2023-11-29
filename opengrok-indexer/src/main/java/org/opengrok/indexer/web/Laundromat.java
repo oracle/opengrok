@@ -22,10 +22,12 @@
  */
 package org.opengrok.indexer.web;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a container for sanitizing methods for avoiding classifications as
@@ -79,46 +81,36 @@ public class Laundromat {
      * collisions, the colliding keys' values are combined.
      */
     public static Map<String, String[]> launderLog(Map<String, String[]> map) {
-        HashMap<String, String[]> safes = new HashMap<>();
 
-        Optional.ofNullable(map)
+        return Optional.ofNullable(map)
                 .stream()
                 .map(Map::entrySet)
                 .flatMap(Collection::stream)
                 .sorted(Map.Entry.comparingByKey())
-                .forEach(entry ->
-                        safes.compute(
-                                launderLog(entry.getKey()),
-                                (k, v) -> mergeLogArrays(entry.getValue(), v)
-                        )
-                );
-        return safes;
-
+                .collect(Collectors.toMap(
+                        entry -> launderLog(entry.getKey()),
+                        entry -> launderLogArray(entry.getValue()),
+                        Laundromat::mergeLogArrays
+                ));
     }
 
-    private static String[] mergeLogArrays(String[] values, String[] safeValues) {
+    private static String[] launderLogArray(String[] values){
+        return Optional.ofNullable(values)
+                .stream().flatMap(Arrays::stream)
+                .map(Laundromat::launderLog)
+                .toArray(String[]::new);
+    }
 
-        int n = (values != null ? values.length : 0) +
-                (safeValues != null ? safeValues.length : 0);
-        String[] result = new String[n];
+    private static String[] mergeLogArrays(String[] safeValues1, String[] safeValues2) {
+        return Stream.concat(Arrays.stream(safeValues1), Arrays.stream(safeValues2))
+                .toArray(String[]::new);
 
-        int i = 0;
-        if (values != null) {
-            for (; i < values.length; ++i) {
-                result[i] = launderLog(values[i]);
-            }
-        }
-        if (safeValues != null) {
-            System.arraycopy(safeValues, 0, result, i, safeValues.length);
-        }
-        return result;
     }
 
     private static String replaceAll(String value, String regex, String replacement) {
-        if (value == null) {
-            return null;
-        }
-        return value.replaceAll(regex, replacement);
+        return Optional.ofNullable(value)
+                .map(val -> val.replaceAll(regex, replacement))
+                .orElse(null);
     }
 
     /* private to enforce static */
