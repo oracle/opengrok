@@ -94,7 +94,7 @@ public class Laundromat {
                 ));
     }
 
-    private static String[] launderLogArray(String[] values){
+    private static String[] launderLogArray(String[] values) {
         return Optional.ofNullable(values)
                 .stream().flatMap(Arrays::stream)
                 .map(Laundromat::launderLog)
