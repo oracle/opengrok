@@ -61,6 +61,7 @@ class OSSODecoderTest {
     /**
      * Test of fromRequest method, of class User.
      */
+    @Test
     void testAll() {
         dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, "5761172f");
         dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, "false");
