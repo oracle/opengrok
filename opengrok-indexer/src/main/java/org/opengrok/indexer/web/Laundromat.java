@@ -101,8 +101,8 @@ public class Laundromat {
                 .toArray(String[]::new);
     }
 
-    private static String[] mergeLogArrays(String[] safeValues1, String[] safeValues2) {
-        return Stream.concat(Arrays.stream(safeValues1), Arrays.stream(safeValues2))
+    private static String[] mergeLogArrays(String[] existingSafeEntries, String[] newSafeEntries) {
+        return Stream.concat(Arrays.stream(newSafeEntries), Arrays.stream(existingSafeEntries))
                 .toArray(String[]::new);
 
     }
