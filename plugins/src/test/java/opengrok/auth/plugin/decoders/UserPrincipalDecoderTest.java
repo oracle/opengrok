@@ -18,19 +18,24 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.security.Principal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UserPrincipalDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
@@ -51,6 +56,16 @@ class UserPrincipalDecoderTest {
         assertEquals("foo", result.getUsername());
         assertNull(result.getId());
         assertFalse(result.isTimeouted());
+    }
+
+    @Test
+    void testNullUsername() {
+        HttpServletRequest mockRequest = mock(DummyHttpServletRequestUser.class);
+        Principal princ = () -> null;
+        assertNull(princ.getName());
+        when(mockRequest.getUserPrincipal()).thenReturn(princ);
+        User result = decoder.fromRequest(mockRequest);
+        assertNull(result);
     }
 
     @Test
