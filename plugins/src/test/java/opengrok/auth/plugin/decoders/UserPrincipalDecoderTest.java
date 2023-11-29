@@ -27,8 +27,13 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -58,12 +63,15 @@ class UserPrincipalDecoderTest {
         assertFalse(result.isTimeouted());
     }
 
-    @Test
-    void testNullUsername() {
+    private static Collection<Principal> invalidPrincipals() {
+         return Arrays.asList(() -> null, () -> "");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidPrincipals")
+    void testInvalidUsername(Principal principal) {
         HttpServletRequest mockRequest = mock(DummyHttpServletRequestUser.class);
-        Principal princ = () -> null;
-        assertNull(princ.getName());
-        when(mockRequest.getUserPrincipal()).thenReturn(princ);
+        when(mockRequest.getUserPrincipal()).thenReturn(principal);
         User result = decoder.fromRequest(mockRequest);
         assertNull(result);
     }
