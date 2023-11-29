@@ -82,7 +82,7 @@ final class SCCSHistoryParser {
             return null;
         }
 
-        in = new BufferedReader(new FileReader(getSCCSFile(file)));
+        in = new BufferedReader(new FileReader(f));
         pass = sep = false;
         passRecord = true;
         active = true;
