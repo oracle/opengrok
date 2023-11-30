@@ -221,13 +221,6 @@ input.submit { /* start search button */
     background-color: #e5e5e5;
 }
 
-
-/* *** history page *** */
-table#revisions {
-    /* width: 100%; */ /* table with the history info for a file */
-    /* border-collapse: collapse; */ /* looks better with a small divider */
-}
-
 #revisions a.h    { /* modified file list content */
     font-size: small;
     margin-left: 2em;

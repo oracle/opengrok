@@ -118,7 +118,6 @@ button:hover, button:active, .btn:hover, .btn:active {
 
 .active {
     font-weight: bold;
-    /* color: #c20097; */
 }
 
 /*
@@ -407,7 +406,6 @@ html.diff #whole_header {
     list-style: none outside none;
     margin: 0;
     padding: 0;
-    /* white-space: nowrap; */ /* hmm, sometimes good, sometimes not ;-) */
 }
 
 #bar li { /* menu items */
@@ -500,10 +498,6 @@ html.history #content{
 
 
 /* *** history page *** */
-table#revisions {
-    /* width: 100%; */ /* table with the history info for a file */
-    /* border-collapse: collapse; */ /* looks better with a small divider */
-}
 
 #revisions a.h    { /* modified file list content */
     font-size: small;
@@ -749,7 +743,6 @@ div[id^='src'] pre {
 }
 
 .blame .search {
-    /* font-size: small; */
         padding-left: .5ex;
     background-color: #dddddd;
         margin-right: .5ex;
@@ -972,13 +965,6 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 .diff_navigation .summary,
 .diff_navigation .progress {
     text-align: center;
-}
-
-.diff_navigation a {
-    /*border: 1px solid #bbbbff;
-    border-radius: 0.75ex;
-    -moz-border-radius: 0.75ex;
-    background-color: #a3b8cb;*/
 }
 
 .diff_navigation .prev {
