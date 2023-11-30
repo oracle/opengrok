@@ -40,11 +40,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CtagsUtil {
 
@@ -180,11 +182,10 @@ public class CtagsUtil {
             // hard-coded TMPDIR in Universal Ctags on Unix.
             dirs.add("/tmp");
         }
-
+        dirs = dirs.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
         for (String directoryName : dirs) {
-            if (directoryName == null) {
-                continue;
-            }
 
             File directory = new File(directoryName);
             if (!directory.isDirectory()) {

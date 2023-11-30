@@ -44,7 +44,9 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
     private static class PostingsAndPosition {
         private final PostingsEnum postings;
         private final int offset;
-        private int freq, upTo, pos;
+        private int freq;
+        private int upTo;
+        private int pos;
 
         PostingsAndPosition(PostingsEnum postings, int offset) {
             this.postings = postings;
@@ -156,12 +158,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
 
     private int phraseFreq() throws IOException {
         // reset state
-        final PostingsAndPosition[] postings = this.postings;
-        for (PostingsAndPosition posting : postings) {
-            posting.freq = posting.postings.freq();
-            posting.pos = posting.postings.nextPosition();
-            posting.upTo = 1;
-        }
+        resetPostings();
 
         int freq = 0;
         final PostingsAndPosition lead = postings[0];
@@ -191,9 +188,8 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
 
             freq += 1;
             // custom begins – found a match
-            if (positions == null) {
-                positions = new BitIntsHolder();
-            }
+            positions = Optional.ofNullable(positions)
+                    .orElseGet(BitIntsHolder::new);
             positions.set(phrasePos + offset);
             // custom ends
 
@@ -205,12 +201,23 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
         }
 
         // custom begin – if some positions were found then store them
-        if (positions != null) {
-            documentToPositionsMap.put(docID(), positions);
-        }
+        Optional.ofNullable(positions)
+                .ifPresent(this::putPositionInDocumentMap);
         // custom ends
 
         return freq;
+    }
+
+    private void putPositionInDocumentMap(IntsHolder positions) {
+        documentToPositionsMap.put(docID(), positions);
+    }
+
+    private void resetPostings() throws IOException {
+        for (PostingsAndPosition posting : postings) {
+            posting.freq = posting.postings.freq();
+            posting.pos = posting.postings.nextPosition();
+            posting.upTo = 1;
+        }
     }
 
     // custom begins – special interface implementation
@@ -220,5 +227,4 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
         return documentToPositionsMap.get(docId);
     }
     // custom ends
-
 }

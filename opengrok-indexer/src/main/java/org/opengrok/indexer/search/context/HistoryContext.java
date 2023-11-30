@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -175,9 +176,8 @@ public class HistoryContext {
     @VisibleForTesting
     boolean getHistoryContext(History history, String path, @Nullable Writer out, @Nullable List<Hit> hits,
                                       String urlPrefix) {
-        if (history == null) {
-            throw new IllegalArgumentException("`in' is null");
-        }
+        history = Optional.ofNullable(history)
+                .orElseThrow(() -> new IllegalArgumentException("`in' is null"));
         if ((out == null) == (hits == null)) {
             // There should be exactly one destination for the output. If
             // none or both are specified, it's a bug.
@@ -218,7 +218,7 @@ public class HistoryContext {
                 matchedLines += matchLine(line, urlPrefix, path, out, hits, rev, nrev);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Could not get history context for " + path, e);
+            LOGGER.log(Level.WARNING, e, () -> "Could not get history context for " + path);
         }
         return matchedLines > 0;
     }

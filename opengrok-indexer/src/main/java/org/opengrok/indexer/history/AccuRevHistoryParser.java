@@ -145,11 +145,11 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                     throw new IOException("Could not parse date: " + line, pe);
                 }
 
-            } else if (line.startsWith("  #")) {  // found comment
+            } else if (line.startsWith("  #") && (entry != null)) {  // found comment
 
                 entry.appendMessage(line.substring(3));
 
-            } else if (line.startsWith("  v")) {  // found version
+            } else if (line.startsWith("  v") && (entry != null)) {  // found version
 
                 String[] data = line.split("\\s+");
                 entry.setRevision(data[2]);

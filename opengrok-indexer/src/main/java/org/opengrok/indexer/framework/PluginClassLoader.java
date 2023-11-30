@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -76,6 +77,7 @@ public class PluginClassLoader extends ClassLoader {
         this.directory = directory;
     }
 
+    @SuppressWarnings("java:S1181")
     private Class<?> loadClassFromJar(String classname) throws ClassNotFoundException {
         File[] jars = directory.listFiles((dir, name) -> name.endsWith(".jar"));
 
@@ -111,6 +113,7 @@ public class PluginClassLoader extends ClassLoader {
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
     }
 
+    @SuppressWarnings("java:S1181")
     private Class<?> loadClassFromFile(String classname) throws ClassNotFoundException {
         try {
             String filename = classname.replace('.', File.separatorChar) + CLASS_SUFFIX;
@@ -141,8 +144,8 @@ public class PluginClassLoader extends ClassLoader {
 
     private boolean checkWhiteList(String name) {
         for (String pattern : CLASS_WHITELIST) {
-            pattern = pattern.replaceAll("\\.", "\\\\.");
-            pattern = pattern.replaceAll("\\*", ".*");
+            pattern = pattern.replace(".", "\\.");
+            pattern = pattern.replace("*", ".*");
             if (name.matches(pattern)) {
                 return true;
             }
@@ -217,66 +220,60 @@ public class PluginClassLoader extends ClassLoader {
      */
     @Override
     public Class<?> loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
-        Class<?> c = cache.get(name);
 
-        if (c != null) {
+        var loadedClass = Optional.<Class<?>>ofNullable(cache.get(name))
+                .or(() -> findAlreadyLoadedClass(name))
+                .or(() -> findClassUsingParentClassLoader(name))
+                .or(() -> findClassFromFile(name))
+                .or(() -> findClassFromJar(name));
+        loadedClass.ifPresent(clazz -> {
+            cache.put(name, clazz);
             if (resolveIt) {
-                resolveClass(c);
+                resolveClass(clazz);
             }
-            return c;
-        }
-
+        });
+        return loadedClass
+                .orElseThrow(() ->
+                    new ClassNotFoundException("Class \"" + name + "\" was not found")
+                );
+    }
+    private Optional<Class<?>> findAlreadyLoadedClass( String name) {
         checkClassname(name);
+        return Optional.ofNullable(findLoadedClass(name));
+    }
 
-        // find already loaded class
-        if ((c = findLoadedClass(name)) != null) {
-            cache.put(name, c);
-            if (resolveIt) {
-                resolveClass(c);
-            }
-            return c;
-        }
-
-        // try if parent classloader can load this class
+    private Optional<Class<?>> findClassUsingParentClassLoader( String name) {
+        Class<?> clazz = null;
         if (this.getParent() != null) {
             try {
-                if ((c = this.getParent().loadClass(name)) != null) {
-                    cache.put(name, c);
-                    if (resolveIt) {
-                        resolveClass(c);
-                    }
-                    return c;
-                }
+                clazz = this.getParent().loadClass(name);
             } catch (ClassNotFoundException ignored) {
+                //ignore Class Not Found Exception
             }
         }
-
-        try {
-            checkPackage(name);
-            // load it from file
-            if ((c = loadClassFromFile(name)) != null) {
-                cache.put(name, c);
-                if (resolveIt) {
-                    resolveClass(c);
-                }
-                return c;
-            }
-        } catch (ClassNotFoundException ignored) {
-        }
-
-        try {
-            checkPackage(name);
-            // load it from jar
-            if ((c = loadClassFromJar(name)) != null) {
-                cache.put(name, c);
-                if (resolveIt) {
-                    resolveClass(c);
-                }
-                return c;
-            }
-        } catch (ClassNotFoundException ignored) {
-        }
-
-        throw new ClassNotFoundException("Class \"" + name + "\" was not found");
+        return Optional.ofNullable(clazz);
     }
+
+    private Optional<Class<?>> findClassFromFile( String name) {
+        Class<?> clazz = null;
+        try {
+            checkPackage(name);
+            clazz = loadClassFromFile(name);
+        } catch (ClassNotFoundException ignored) {
+            //ignore Class Not Found Exception
+        }
+        return Optional.ofNullable(clazz);
+    }
+
+    private Optional<Class<?>> findClassFromJar( String name) {
+        Class<?> clazz = null;
+        try {
+            checkPackage(name);
+            clazz = loadClassFromJar(name);
+        } catch (ClassNotFoundException ignored) {
+            //ignore Class Not Found Exception
+        }
+        return Optional.ofNullable(clazz);
+    }
+
 }

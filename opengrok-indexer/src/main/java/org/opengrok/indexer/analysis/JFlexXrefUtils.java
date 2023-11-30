@@ -26,11 +26,12 @@ package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -55,6 +56,7 @@ public class JFlexXrefUtils {
      * Matches an HTML 5 ID or Name.
      */
     private static final Pattern HTML5_ID_NAME = Pattern.compile("(?U)^\\S+$");
+    private static final String A_HREF_START = "<a href=\"";
 
     /**
      * Appends the {@code url} to the specified {@code out} {@link Writer}.
@@ -89,7 +91,7 @@ public class JFlexXrefUtils {
         }
 
         url = result.getUri();
-        out.write("<a href=\"");
+        out.write(A_HREF_START);
         Util.htmlize(url, out);
         out.write("\">");
         Util.htmlize(url, out);
@@ -166,16 +168,13 @@ public class JFlexXrefUtils {
         Scope existingScope, JFlexStackingLexer lexer, Definitions defs) {
         if (scopesEnabled && existingScope == null) {
             int line = lexer.getLineNumber();
-            if (defs != null) {
-                List<Tag> tags = defs.getTags(line);
-                if (tags != null) {
-                    for (Tag tag : tags) {
-                        if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                            return new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
-                        }
-                    }
-                }
-            }
+            return Optional.ofNullable(defs)
+                    .map(objDefs -> objDefs.getTags(line))
+                    .stream().flatMap(Collection::stream)
+                    .filter(tag -> tag.type.startsWith("function") || tag.type.startsWith("method"))
+                    .findFirst()
+                    .map(tag -> new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature))
+                    .orElse(null);
         }
         return null;
     }
@@ -234,11 +233,11 @@ public class JFlexXrefUtils {
         if (defs != null && defs.hasDefinitionAt(symbol, line, strs)) {
             // This is the definition of the symbol.
             String type = strs[0];
-            String style_class = "d";
+            String styleClass = "d";
 
             XrefStyle style = XrefStyle.getStyle(type);
             if (style != null) {
-                style_class = style.ssClass;
+                styleClass = style.ssClass;
             }
 
             // 1) Create an anchor for direct links. (Perhaps we should only
@@ -255,20 +254,20 @@ public class JFlexXrefUtils {
             //    explained by @tulinkry.
             if (HTML5_ID_NAME.matcher(symbol).matches()) {
                 out.append("<a class=\"");
-                out.append(style_class);
+                out.append(styleClass);
                 out.append("\" name=\"");
                 Util.htmlize(symbol, out);
                 out.append("\"/>");
             }
 
             // 2) Create a link that searches for all references to this symbol.
-            out.append("<a href=\"");
+            out.append(A_HREF_START);
             out.append(urlPrefix);
             out.append(QueryParameters.REFS_SEARCH_PARAM_EQ);
             Util.qurlencode(symbol, out);
             appendProject(out, project);
             out.append("\" class=\"");
-            out.append(style_class);
+            out.append(styleClass);
             out.append(" intelliWindow-symbol\"");
             out.append(" data-definition-place=\"def\"");
             out.append(">");
@@ -281,7 +280,7 @@ public class JFlexXrefUtils {
             // that is defined more than once in this file. In either case, we
             // can't generate a direct link to the definition, so generate a
             // link to search for all definitions of that symbol instead.
-            out.append("<a href=\"");
+            out.append(A_HREF_START);
             out.append(urlPrefix);
             out.append(QueryParameters.DEFS_SEARCH_PARAM_EQ);
             Util.qurlencode(symbol, out);
@@ -307,11 +306,11 @@ public class JFlexXrefUtils {
     public static void writeSameFileLinkSymbol(Writer out, String symbol)
             throws IOException {
         // This is a reference to a symbol defined exactly once in this file.
-        String style_class = "d";
+        String styleClass = "d";
 
         // Generate a direct link to the symbol definition.
         out.append("<a class=\"");
-        out.append(style_class);
+        out.append(styleClass);
         out.append(" intelliWindow-symbol\" href=\"#");
         Util.uriEncode(symbol, out);
         out.append("\"");

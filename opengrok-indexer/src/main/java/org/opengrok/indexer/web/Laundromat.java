@@ -22,9 +22,15 @@
  */
 package org.opengrok.indexer.web;
 
-import java.util.HashMap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a container for sanitizing methods for avoiding classifications as
@@ -33,7 +39,7 @@ import java.util.stream.Collectors;
 public class Laundromat {
 
     private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f]";
-    private static final String ESG_N_R_T_F__1_n = ESC_N_R_T_F + "+";
+    private static final String ESG_N_R_T_F_1_N = ESC_N_R_T_F + "+";
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
@@ -52,7 +58,7 @@ public class Laundromat {
      * replaced with one space.
      */
     public static String launderQuery(String value) {
-        return replaceAll(value, ESG_N_R_T_F__1_n, " ");
+        return replaceAll(value, ESG_N_R_T_F_1_N, " ");
     }
 
     /**
@@ -65,60 +71,55 @@ public class Laundromat {
         if (value == null) {
             return null;
         }
-        return value.replaceAll("\\n", "<LF>").
-                replaceAll("\\r", "<CR>").
-                replaceAll("\\t", "<TAB>").
-                replaceAll("\\f", "<FF>");
+        return value.replace("\n", "<LF>").
+                replace("\r", "<CR>").
+                replace("\t", "<TAB>").
+                replace("\f", "<FF>");
     }
 
     /**
      * Sanitize {@code map} where it will be used in a log message only.
-     * @return {@code null} if null or else {@code map} with keys and values
+     * @return  {@code map} with keys and values
      * sanitized with {@link #launderLog(String)}. If the sanitizing causes key
      * collisions, the colliding keys' values are combined.
      */
-    public static Map<String, String[]> launderLog(Map<String, String[]> map) {
-        if (map == null) {
-            return null;
-        }
+    @NotNull
+    public static Map<String, String[]> launderLog(@Nullable Map<String, String[]> map) {
 
-        HashMap<String, String[]> safes = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : map.entrySet().stream().sorted(
-                Map.Entry.comparingByKey()).collect(Collectors.toList())) {
-            String key = launderLog(entry.getKey());
-            String[] safeValues = safes.get(key);
-            String[] fullySafe = mergeLogArrays(entry.getValue(), safeValues);
-            safes.put(key, fullySafe);
-        }
-        return safes;
+        return Optional.ofNullable(map)
+                .stream()
+                .map(Map::entrySet)
+                .flatMap(Collection::stream)
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(
+                        entry -> launderLog(entry.getKey()),
+                        entry -> launderLogArray(entry.getValue()),
+                        Laundromat::mergeLogArrays
+                ));
     }
 
-    private static String[] mergeLogArrays(String[] values, String[] safeValues) {
-        if (values == null && safeValues == null) {
-            return null;
-        }
-
-        int n = (values != null ? values.length : 0) +
-                (safeValues != null ? safeValues.length : 0);
-        String[] result = new String[n];
-
-        int i = 0;
-        if (values != null) {
-            for (; i < values.length; ++i) {
-                result[i] = launderLog(values[i]);
-            }
-        }
-        if (safeValues != null) {
-            System.arraycopy(safeValues, 0, result, i, safeValues.length);
-        }
-        return result;
+    @NotNull
+    private static String[] launderLogArray(@Nullable String[] values) {
+        return Optional.ofNullable(values)
+                .stream().flatMap(Arrays::stream)
+                .map(Laundromat::launderLog)
+                .toArray(String[]::new);
     }
 
-    private static String replaceAll(String value, String regex, String replacement) {
-        if (value == null) {
-            return null;
-        }
-        return value.replaceAll(regex, replacement);
+    @NotNull
+    private static String[] mergeLogArrays(@NotNull String[] existingSafeEntries,
+                                           @NotNull String[] newSafeEntries) {
+        return Stream.concat(Arrays.stream(newSafeEntries), Arrays.stream(existingSafeEntries))
+                .toArray(String[]::new);
+
+    }
+
+    @Nullable
+    private static String replaceAll(@Nullable String value, @NotNull String regex,
+                                               @NotNull String replacement) {
+        return Optional.ofNullable(value)
+                .map(val -> val.replaceAll(regex, replacement))
+                .orElse(null);
     }
 
     /* private to enforce static */

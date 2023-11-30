@@ -61,15 +61,12 @@ public class NumLinesLOCAggregator {
             synchronized (syncRoot) {
                 do {
                     String dirPath = Util.fixPathIfWindows(directory.getPath());
-                    DeltaData extantDelta = registeredDeltas.get(dirPath);
-                    if (extantDelta == null) {
-                        extantDelta = new DeltaData();
-                        registeredDeltas.put(dirPath, extantDelta);
-                    }
+                    var extantDelta = registeredDeltas.computeIfAbsent(dirPath,
+                            key -> new DeltaData());
                     extantDelta.numLines += counts.getNumLines();
                     extantDelta.loc += counts.getLOC();
                 } while ((directory = directory.getParentFile()) != null &&
-                        directory.getPath().length() > 0);
+                        !directory.getPath().isEmpty());
             }
         }
     }

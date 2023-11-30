@@ -31,20 +31,15 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Scorable;
-import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.popular.PopularityCounter;
 import org.opengrok.suggest.query.SuggesterRangeQuery;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
-import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
@@ -52,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,23 +141,24 @@ class SuggesterSearcher extends IndexSearcher {
             return Collections.emptyList();
         }
 
-        boolean shouldLeaveOutSameTerms = shouldLeaveOutSameTerms(query, suggesterQuery);
         Set<BytesRef> tokensAlreadyIncluded = null;
-        if (shouldLeaveOutSameTerms) {
+        if (shouldLeaveOutSameTerms(query, suggesterQuery)) {
             tokensAlreadyIncluded = SuggesterUtils.intoTermsExceptPhraseQuery(query).stream()
                     .filter(t -> t.field().equals(suggesterQuery.getField()))
                     .map(Term::bytes)
                     .collect(Collectors.toSet());
         }
 
-        boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
+        boolean needsDocumentIds = Optional.ofNullable(query)
+                                    .filter(query1 -> !(query1 instanceof MatchAllDocsQuery))
+                                    .isPresent();
 
         ComplexQueryData complexQueryData = null;
         if (needsDocumentIds) {
             complexQueryData = getComplexQueryData(query, leafReaderContext);
-            if (interrupted) {
-                return Collections.emptyList();
-            }
+        }
+        if (interrupted) {
+            return Collections.emptyList();
         }
 
         Terms terms = leafReaderContext.reader().terms(suggesterQuery.getField());
@@ -179,12 +177,7 @@ class SuggesterSearcher extends IndexSearcher {
                 interrupted = true;
                 break;
             }
-
-            if (needPositionsAndFrequencies) {
-                postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.POSITIONS | PostingsEnum.FREQS);
-            } else {
-                postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.NONE);
-            }
+            postingsEnum = derivePostingsEnum(postingsEnum, termsEnum, needPositionsAndFrequencies);
 
             int score = 0;
             if (!needsDocumentIds) {
@@ -195,18 +188,38 @@ class SuggesterSearcher extends IndexSearcher {
                 score = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
             }
 
-            if (score > 0 && (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(term))) {
+            if (shouldAddScoreForTerm(score, term, tokensAlreadyIncluded)) {
                 score += searchCounts.get(term) * TERM_ALREADY_SEARCHED_MULTIPLIER;
-
-                if (queue.canInsert(score)) {
-                    queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), project, score));
-                }
+                insertScoreToQueue(queue, score, term, project);
             }
 
             term = termsEnum.next();
         }
 
         return queue.getResult();
+    }
+
+    private PostingsEnum derivePostingsEnum(PostingsEnum postingsEnum,
+                                           TermsEnum termsEnum,
+                                           boolean needPositionsAndFrequencies) throws IOException {
+        if (needPositionsAndFrequencies) {
+            return termsEnum.postings(postingsEnum, PostingsEnum.POSITIONS | PostingsEnum.FREQS);
+        } else {
+            return termsEnum.postings(postingsEnum, PostingsEnum.NONE);
+        }
+    }
+
+    private boolean shouldAddScoreForTerm(int score, BytesRef term,
+                                          Set<BytesRef> tokensAlreadyIncluded) {
+        return score > 0 && (Objects.isNull(tokensAlreadyIncluded) || !tokensAlreadyIncluded.contains(term));
+
+    }
+    private void insertScoreToQueue(LookupPriorityQueue queue, int score,
+                                    BytesRef term, String project) {
+        if (queue.canInsert(score)) {
+            queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), project, score));
+        }
+
     }
 
     private boolean shouldLeaveOutSameTerms(final Query query, final SuggesterQuery suggesterQuery) {
@@ -225,49 +238,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         BitIntsHolder documentIds = new BitIntsHolder();
         try {
-            search(query, new Collector() {
-                @Override
-                public LeafCollector getLeafCollector(final LeafReaderContext context) {
-                    return new LeafCollector() {
-
-                        final int docBase = context.docBase;
-
-                        @Override
-                        public void setScorer(final Scorable scorer) {
-                            if (leafReaderContext == context) {
-                                if (scorer instanceof PhraseScorer) {
-                                    data.scorer = (PhraseScorer) scorer;
-                                } else {
-                                    try {
-                                        // it is mentioned in the documentation that #getChildren should not be called
-                                        // in #setScorer but no better way was found
-                                        for (var childScorer : scorer.getChildren()) {
-                                            if (childScorer.child instanceof PhraseScorer) {
-                                                data.scorer = (PhraseScorer) childScorer.child;
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        // ignore
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void collect(int doc) {
-                            if (leafReaderContext == context) {
-                                documentIds.set(docBase + doc);
-                            }
-                        }
-                    };
-                }
-
-                @Override
-                public ScoreMode scoreMode() {
-                    return ScoreMode.COMPLETE_NO_SCORES;
-                }
-
-            });
+            search(query, new SuggestResultCollector(leafReaderContext, data, documentIds));
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) {
                 interrupted = true;
@@ -339,14 +310,6 @@ class SuggesterSearcher extends IndexSearcher {
 
     private static int normalizeDocumentFrequency(final int count, final int documents) {
         return (int) (((double) count / documents) * SuggesterUtils.NORMALIZED_DOCUMENT_FREQUENCY_MULTIPLIER);
-    }
-
-    private static class ComplexQueryData {
-
-        private IntsHolder documentIds;
-
-        private PhraseScorer scorer;
-
     }
 
 }

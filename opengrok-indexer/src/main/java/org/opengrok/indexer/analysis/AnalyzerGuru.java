@@ -123,6 +123,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.Statistics;
+import org.opengrok.indexer.util.WrapperIOException;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -194,7 +195,7 @@ public class AnalyzerGuru {
      */
     private static final Comparator<String> descStrlenComparator = (s1, s2) -> {
         // DESC: s2 length <=> s1 length
-        int cmp = Integer.compare(s2.length(), s1.length());
+        var cmp = Integer.compare(s2.length(), s1.length());
         if (cmp != 0) {
             return cmp;
         }
@@ -261,7 +262,7 @@ public class AnalyzerGuru {
                 new IgnorantAnalyzerFactory(),
                 new BZip2AnalyzerFactory(),
                 new XMLAnalyzerFactory(),
-                YamlAnalyzerFactory.DEFAULT_INSTANCE,
+                new YamlAnalyzerFactory(),
                 MandocAnalyzerFactory.DEFAULT_INSTANCE,
                 TroffAnalyzerFactory.DEFAULT_INSTANCE,
                 new ELFAnalyzerFactory(),
@@ -552,7 +553,7 @@ public class AnalyzerGuru {
      */
     public static AbstractAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
         AnalyzerFactory factory = find(in, file);
-        if (factory == null) {
+        if (Objects.isNull(factory)) {
             AbstractAnalyzer defaultAnalyzer = getAnalyzer();
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "''{0}'': fallback {1}",
@@ -616,7 +617,7 @@ public class AnalyzerGuru {
          */
         File fpath = new File(path);
         String fileParent = fpath.getParent();
-        if (fileParent != null && fileParent.length() > 0) {
+        if (fileParent != null && !fileParent.isEmpty()) {
             String normalizedPath = QueryBuilder.normalizeDirPath(fileParent);
             StringField npstring = new StringField(QueryBuilder.DIRPATH, normalizedPath, Store.NO);
             doc.add(npstring);
@@ -704,7 +705,7 @@ public class AnalyzerGuru {
      * @param file file object, used for logging only
      * @throws java.io.IOException if an error occurs while creating the output
      */
-    @SuppressWarnings("java:S5443")
+    @SuppressWarnings({"java:S5443", "java:S107"})
     public static void writeDumpedXref(String contextPath,
             AnalyzerFactory factory, Reader in, Writer out,
             @Nullable Definitions defs, Annotation annotation, Project project, File file) throws IOException {
@@ -902,46 +903,60 @@ public class AnalyzerGuru {
      * @return the analyzer factory to use
      */
     public static AnalyzerFactory find(String file) {
-        String path = file;
-        int i;
+        String path;
+        var i = file.lastIndexOf(File.separatorChar);
 
         // Get basename of the file first.
-        if (((i = path.lastIndexOf(File.separatorChar)) > 0)
-                && (i + 1 < path.length())) {
-            path = path.substring(i + 1);
+        if (i  > 0 && (i + 1 < file.length())) {
+            path = file.substring(i + 1);
+        } else {
+            path = file;
         }
 
-        int dotpos = path.lastIndexOf('.');
-        if (dotpos >= 0) {
-            AnalyzerFactory factory;
-
-            // Try matching the prefix.
-            if (dotpos > 0) {
-                factory = pre.get(path.substring(0, dotpos).toUpperCase(Locale.ROOT));
-                if (factory != null) {
-                    if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.log(Level.FINEST, "''{0}'': chosen by prefix: {1}",
-                            new Object[]{file, factory.getClass().getSimpleName()});
-                    }
-                    return factory;
-                }
-            }
-
-            // Now try matching the suffix. We kind of consider this order (first
+        var dotPos = path.lastIndexOf('.');
+        Optional<AnalyzerFactory> optionalFactory = Optional.empty();
+        if (dotPos >= 0) {
+            // Try matching the prefix and then by suffix.
+            // We kind of consider this order (first
             // prefix then suffix) to be workable although for sure there can be
             // cases when this does not work.
-            factory = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.ROOT));
-            if (factory != null) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "''{0}'': chosen by suffix: {1}",
-                        new Object[]{file, factory.getClass().getSimpleName()});
-                }
-                return factory;
-            }
+            optionalFactory = findByPrefix(file, path, dotPos)
+                    .or(() -> findBySuffix(file, path, dotPos));
+
         }
 
         // file doesn't have any of the prefix or extensions we know, try full match
-        return FILE_NAMES.get(path.toUpperCase(Locale.ROOT));
+        return optionalFactory
+                .orElseGet(() -> FILE_NAMES.get(path.toUpperCase(Locale.ROOT)));
+    }
+
+    private static Optional<AnalyzerFactory> findBySuffix(String file, String path, int dotPos) {
+        var suffixFactory = Optional.of(dotPos)
+                .map(pos -> path.substring(dotPos + 1))
+                .map(suffix -> suffix.toUpperCase(Locale.ROOT))
+                .map(ext::get);
+        suffixFactory.ifPresent(factory -> {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "''{0}'': chosen by suffix: {1}",
+                        new Object[]{file, factory.getClass().getSimpleName()});
+            }
+        });
+        return suffixFactory;
+    }
+
+    private static Optional<AnalyzerFactory> findByPrefix(String file, String path, int dotPos) {
+        var prefixFactory = Optional.of(dotPos)
+                .map(pos -> path.substring(0, dotPos))
+                .filter(prefix -> !prefix.isEmpty())
+                .map(prefix -> prefix.toUpperCase(Locale.ROOT))
+                .map(pre::get);
+        prefixFactory.ifPresent(factory -> {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "''{0}'': chosen by prefix: {1}",
+                        new Object[]{file, factory.getClass().getSimpleName()});
+            }
+        });
+        return prefixFactory;
     }
 
     /**
@@ -973,98 +988,90 @@ public class AnalyzerGuru {
         int len = in.read(content);
         in.reset();
 
-        if (len < MAGIC_BYTES_NUM) {
-            /*
-             * Need at least 4 bytes to perform magic string matching.
-             */
-            if (len < 4) {
-                return null;
-            }
-            content = Arrays.copyOf(content, len);
+        /*
+         * Need at least 4 bytes to perform magic string matching.
+         */
+        if (len < 4) {
+            return null;
         }
-
-        AnalyzerFactory fac;
-
-        // First, do precise-magic Matcher matching
-        for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            if (matcher.isPreciseMagic()) {
-                fac = matcher.isMagic(content, in);
-                if (fac != null) {
-                    if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.log(Level.FINEST,
-                            "''{0}'': chosen by precise magic: {1}",
-                                new Object[]{file, fac.getClass().getSimpleName()});
-                    }
-                    return fac;
-                }
-            }
+        var finalContent = Arrays.copyOf(content, len);
+        try {
+            return findFactoryUsingMatcher(finalContent, in, file, true)
+                    .or(() -> findUsingMagicString(finalContent, in, file))
+                    .or(() -> findFactoryUsingMatcher(finalContent, in, file, false))
+                    .orElse(null);
+        } catch (WrapperIOException ex) {
+            throw ex.getParentIOException();
         }
-
-        // Next, look for magic strings
-        String opening = readOpening(in, content);
-        fac = findMagicString(opening, file);
-        if (fac != null) {
-            return fac;
-        }
-
-        // Last, do imprecise-magic Matcher matching
-        for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            if (!matcher.isPreciseMagic()) {
-                fac = matcher.isMagic(content, in);
-                if (fac != null) {
-                    if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.log(Level.FINEST,
-                            "''{0}'': chosen by imprecise magic: {1}",
-                            new Object[]{file, fac.getClass().getSimpleName()});
-                    }
-                    return fac;
-                }
-            }
-        }
-
-        return null;
     }
 
-    private static AnalyzerFactory findMagicString(String opening, String file) {
+    private static Optional<AnalyzerFactory> findFactoryUsingMatcher(byte[] content, InputStream in,
+                                                                 String file,
+                                                              boolean isPrecise) {
+        var optionalFactory = matchers.stream()
+                .filter(matcher -> isPrecise == matcher.isPreciseMagic())
+                .map(matcher -> {
+                    try {
+                        return matcher.isMagic(content, in);
+                    } catch (IOException e) {
+                        throw new WrapperIOException(e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst();
+
+        optionalFactory.ifPresent(factory -> {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST,
+                        "''{0}'': chosen by {1} magic: {2}",
+                        new Object[]{file, isPrecise ? "precise" : "imprecise",
+                                factory.getClass().getSimpleName()});
+            }
+        });
+        return optionalFactory;
+
+    }
+
+    private static Optional<AnalyzerFactory> findUsingMagicString(byte[] content, InputStream in, String file) {
+        String opening;
+        try {
+            opening = readOpening(in, content);
+        } catch (IOException e) {
+            throw new WrapperIOException(e);
+        }
 
         // first, try to look up two words in magics
         String fragment = getWords(opening, 2);
         AnalyzerFactory fac = magics.get(fragment);
-        if (fac != null) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "''{0}'': chosen by magic {2}: {1}",
-                    new Object[]{file, fac.getClass().getSimpleName(), fragment});
-            }
-            return fac;
-        }
 
         // second, try to look up one word in magics
-        fragment = getWords(opening, 1);
-        fac = magics.get(fragment);
+        if (Objects.isNull(fac)) {
+            fragment = getWords(opening, 1);
+            fac = magics.get(fragment);
+        }
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "''{0}'': chosen by magic {2}: {1}",
                     new Object[]{file, fac.getClass().getSimpleName(), fragment});
             }
-            return fac;
+            return Optional.of(fac);
         }
-
         // try to match initial substrings (DESC strlen)
-        for (Map.Entry<String, AnalyzerFactory> entry :
-            magics.entrySet()) {
-            String magic = entry.getKey();
-            if (opening.startsWith(magic)) {
-                fac = entry.getValue();
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST,
-                        "''{0}'': chosen by magic(substr) {2}: {1}",
-                            new Object[]{file, fac.getClass().getSimpleName(), magic});
-                }
-                return fac;
-            }
-        }
+        return magics.entrySet()
+                .stream()
+                .filter(entry -> opening.startsWith(entry.getKey()))
+                .map(entry -> {
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST,
+                                "''{0}'': chosen by magic(substr) {2}: {1}",
+                                new Object[]{file,
+                                        entry.getValue().getClass().getSimpleName(), entry.getKey()}
+                        );
+                    }
+                    return entry.getValue();
+                })
+                .findFirst();
 
-        return null;
     }
 
     /**
@@ -1109,64 +1116,66 @@ public class AnalyzerGuru {
 
         in.mark(MARK_READ_LIMIT);
 
-        String encoding = IOUtils.findBOMEncoding(sig);
-        if (encoding == null) {
+        var startingString = findAndSkipBomEncoding(in, sig)
+                     .map(encoding -> readOpeningFromBomSkippedStream(in, encoding))
+                     .orElse("");
+        in.reset();
+        return startingString;
+    }
+
+    private static String readOpeningFromBomSkippedStream(InputStream in, String encoding) {
+        var opening = new StringBuilder();
+        try {
+            var readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+            var ignoreWhiteSpace = true;
+            var breakOnNewLine = false;
+            for (int nRead = 0, r = readr.read(); r != -1 && nRead <= OPENING_MAX_CHARS;
+                 r = readr.read(), nRead++) {
+
+                var c = (char) r;
+                if (breakOnNewLine && c == '\n') {
+                    break;
+                }
+                if (Character.isWhitespace(c)) {
+                    if (!ignoreWhiteSpace) {
+                        opening.append(' ');
+                        ignoreWhiteSpace = true;
+                    }
+                } else {
+                    opening.append(c);
+                    // If the opening starts with "#!", then track so that any
+                    // trailing whitespace after the hashbang is ignored.
+                    ignoreWhiteSpace = opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!';
+                    breakOnNewLine = true;
+
+                }
+            }
+        } catch (IOException e) {
+            throw new WrapperIOException(e);
+        }
+
+        return opening.toString();
+    }
+
+    /**
+     * Identify the BOM encoding or default to utf 8, skips the encoding bytes .
+     *  Empty optional is returned if all bom bytes are not skipped
+     * @param in The input stream containing the data
+     * @param sig The initial sequence of bytes in the input stream
+     * @return optional of encoding
+     * @throws IOException in case of any read error
+     */
+    private static Optional<String> findAndSkipBomEncoding(InputStream in, byte[] sig) throws IOException {
+        var encoding = IOUtils.findBOMEncoding(sig);
+        if (Objects.isNull(encoding)) {
             // SRCROOT is read with UTF-8 as a default.
             encoding = StandardCharsets.UTF_8.name();
-        } else {
-            int skipForBOM = IOUtils.skipForBOM(sig);
-            if (in.skip(skipForBOM) < skipForBOM) {
-                in.reset();
-                return "";
-            }
         }
-
-        int nRead = 0;
-        boolean sawNonWhitespace = false;
-        boolean lastWhitespace = false;
-        boolean postHashbang = false;
-        int r;
-
-        StringBuilder opening = new StringBuilder();
-        BufferedReader readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
-        while ((r = readr.read()) != -1) {
-            if (++nRead > OPENING_MAX_CHARS) {
-                break;
-            }
-            char c = (char) r;
-            boolean isWhitespace = Character.isWhitespace(c);
-            if (!sawNonWhitespace) {
-                if (isWhitespace) {
-                    continue;
-                }
-                sawNonWhitespace = true;
-            }
-            if (c == '\n') {
-                break;
-            }
-
-            if (isWhitespace) {
-                // Track `lastWhitespace' to condense stretches of whitespace,
-                // and use ' ' regardless of actual whitespace character to
-                // accord with magic string definitions.
-                if (!lastWhitespace && !postHashbang) {
-                    opening.append(' ');
-                }
-            } else {
-                opening.append(c);
-                postHashbang = false;
-            }
-            lastWhitespace = isWhitespace;
-
-            // If the opening starts with "#!", then track so that any
-            // trailing whitespace after the hashbang is ignored.
-            if (opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!') {
-                postHashbang = true;
-            }
+        var skipForBOM = IOUtils.skipForBOM(sig);
+        if (skipForBOM != 0 && in.skip(skipForBOM) < skipForBOM) {
+            return Optional.empty();
         }
-
-        in.reset();
-        return opening.toString();
+        return Optional.of(encoding);
     }
 
     private static void addCustomizationKey(String k) {
@@ -1195,4 +1204,6 @@ public class AnalyzerGuru {
         }
         return aName == null || !aName.equals(bName);
     }
+
+
 }

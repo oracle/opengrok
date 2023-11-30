@@ -143,9 +143,7 @@ public class MessagesContainer {
     private void addMessage(final AcceptedMessage acceptedMessage) {
         boolean added = false;
         for (String tag : acceptedMessage.getMessage().getTags()) {
-            if (!tagMessages.containsKey(tag)) {
-                tagMessages.put(tag, new TreeSet<>());
-            }
+            tagMessages.computeIfAbsent(tag, key -> new TreeSet<>());
             if (tagMessages.get(tag).add(acceptedMessage)) {
                 messagesInTheSystem++;
                 added = true;

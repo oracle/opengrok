@@ -32,11 +32,11 @@ import org.opengrok.indexer.web.Util;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

@@ -112,31 +112,24 @@ public class Filter implements Serializable {
         if (filenames.contains(fileName)) {
             return true;
         }
-
-        for (Pattern p : patterns) {
-            // Try to match the basename first.
-            Matcher m = p.matcher(fileName);
-            if (m.matches()) {
-                return true;
-            }
-            // Try the full path next.
-            if (checkAbsolute && p.pattern().contains("/")) {
-                m = p.matcher(absolute);
-                if (m.matches()) {
-                    return true;
-                }
-            }
+        // Try to match the basename first.
+        var matchFound = patterns.stream()
+                .map(p -> p.matcher(fileName))
+                .anyMatch(Matcher::matches);
+        // Try the full path next.
+        if (!matchFound) {
+            matchFound = patterns.stream()
+                    .filter(p -> checkAbsolute && p.pattern().contains("/"))
+                    .map(p -> p.matcher(absolute))
+                    .anyMatch(Matcher::matches);
+        }
+        if (!matchFound) {
+            matchFound = paths.stream()
+                    .filter(path -> checkAbsolute)
+                    .anyMatch(absolute::endsWith);
         }
 
-        if (checkAbsolute) {
-            for (String path : paths) {
-                if (absolute.endsWith(path)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return matchFound;
     }
 
     /**
@@ -194,7 +187,7 @@ public class Filter implements Serializable {
         int pos = 0;
         String[] components = pattern.split("[*?]");
         for (String str : components) {
-            if (str.length() > 0) {
+            if (!str.isEmpty()) {
                 // Quote the characters up to next wildcard or end of string.
                 regex.append(Pattern.quote(str));
                 pos += str.length();

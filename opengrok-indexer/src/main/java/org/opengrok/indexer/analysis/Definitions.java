@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.analysis;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.WhitelistObjectInputFilter;
 
 import java.io.ByteArrayInputStream;
@@ -33,11 +34,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Definitions implements Serializable {
 
@@ -60,14 +64,14 @@ public class Definitions implements Serializable {
     public static class LineTagMap implements Serializable {
 
         private static final long serialVersionUID = 1191703801007779481L;
-        private final Map<String, Set<Tag>> sym_tags; //NOPMD
+        private final Map<String, Set<Tag>> symTags; //NOPMD
 
         protected LineTagMap() {
-            this.sym_tags = new HashMap<>();
+            this.symTags = new HashMap<>();
         }
     }
     // line number -> tag map
-    private final Map<Integer, LineTagMap> line_maps;
+    private final Map<Integer, LineTagMap> lineMaps;
 
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
@@ -80,7 +84,7 @@ public class Definitions implements Serializable {
 
     public Definitions() {
         symbols = new HashMap<>();
-        line_maps = new HashMap<>();
+        lineMaps = new HashMap<>();
         tags = new ArrayList<>();
     }
 
@@ -121,16 +125,18 @@ public class Definitions implements Serializable {
      * @return {@code true} if {@code symbol} is defined on the specified line
      */
     public boolean hasDefinitionAt(String symbol, int lineNumber, String[] strs) {
-        Set<Integer> lines = symbols.get(symbol);
         if (strs.length > 0) {
             strs[0] = "none";
         }
 
         // Get tag info
-        if (lines != null && lines.contains(lineNumber)) {
-            LineTagMap lineMap = line_maps.get(lineNumber);
+        boolean isDefinitionPresent = Optional.ofNullable(symbols.get(symbol))
+                .filter(lines -> lines.contains(lineNumber))
+                .isPresent();
+        if (isDefinitionPresent) {
+            LineTagMap lineMap = lineMaps.get(lineNumber);
             if (lineMap != null) {
-                for (Tag tag : lineMap.sym_tags.get(symbol)) {
+                for (Tag tag : lineMap.symTags.get(symbol)) {
                     if (tag.used) {
                         continue;
                     }
@@ -180,20 +186,15 @@ public class Definitions implements Serializable {
      * Get a list of all tags on given line.
      *
      * @param line line number
-     * @return list of tags
+     * @return list of tags or null
      */
-    public List<Tag> getTags(int line) {
-        LineTagMap lineMap = line_maps.get(line);
-        List<Tag> result = null;
-
-        if (lineMap != null) {
-            result = new ArrayList<>();
-            for (Set<Tag> ltags : lineMap.sym_tags.values()) {
-                result.addAll(ltags);
-            }
-        }
-
-        return result;
+    public @Nullable List<Tag> getTags(int line) {
+        return Optional.ofNullable(lineMaps.get(line))
+                .map(lineMap -> lineMap.symTags.values().stream()
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList())
+                )
+                .orElse(null);
     }
 
     /**
@@ -267,26 +268,20 @@ public class Definitions implements Serializable {
         Tag newTag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
         tags.add(newTag);
-        Set<Integer> lines = symbols.get(symbol);
-        if (lines == null) {
-            lines = new HashSet<>();
-            symbols.put(symbol, lines);
-        }
+        Set<Integer> lines = symbols.computeIfAbsent(symbol,
+                k -> new HashSet<>());
         Integer aLine = line;
         lines.add(aLine);
 
         // Get per line map
-        LineTagMap lineMap = line_maps.get(aLine);
-        if (lineMap == null) {
-            lineMap = new LineTagMap();
-            line_maps.put(aLine, lineMap);
-        }
+        LineTagMap lineMap = lineMaps.computeIfAbsent(aLine,
+                key -> new LineTagMap());
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = lineMap.sym_tags.get(symbol);
+        Set<Tag> ltags = lineMap.symTags.get(symbol);
         if (ltags == null) {
             ltags = new HashSet<>();
-            lineMap.sym_tags.put(symbol, ltags);
+            lineMap.symTags.put(symbol, ltags);
         }
         ltags.add(newTag);
     }

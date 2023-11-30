@@ -258,11 +258,9 @@ public class CtagsReader {
         addTag(defs, cidx.lineno, def, type, match, classInher, signature,
             cidx.lineStart, cidx.lineEnd);
 
-        String[] args;
         if (signature != null && !signature.equals("()") &&
-                !signature.startsWith("() ") && (args =
-                splitSignature(signature)) != null) {
-            for (String arg : args) {
+                !signature.startsWith("() ") ) {
+            for (String arg : splitSignature(signature)) {
                 //TODO this algorithm assumes that data types occur to
                 //     the left of the argument name, so it will not
                 //     work for languages like rust, kotlin, etc. which
@@ -287,7 +285,7 @@ public class CtagsReader {
                     arg = a[0];  // throws away assigned value
                 }
                 arg = arg.trim();
-                if (arg.length() < 1) {
+                if (arg.isEmpty()) {
                     continue;
                 }
 
@@ -433,7 +431,7 @@ public class CtagsReader {
      * @return a defined instance
      */
     private CpatIndex bestIndexOfArg(int lineno, String whole, String arg) {
-        if (whole.length() < 1) {
+        if (whole.isEmpty()) {
             return new CpatIndex(lineno, 0, 1, true);
         }
 
@@ -551,9 +549,9 @@ public class CtagsReader {
      * ending with a word character.
      */
     private int strictIndexOf(String whole, String substr) {
-        boolean strictLeft = substr.length() > 0 && WORD_CHAR.matcher(
+        boolean strictLeft = !substr.isEmpty() && WORD_CHAR.matcher(
             String.valueOf(substr.charAt(0))).matches();
-        boolean strictRight = substr.length() > 0 && WORD_CHAR.matcher(
+        boolean strictRight = !substr.isEmpty() && WORD_CHAR.matcher(
             String.valueOf(substr.charAt(substr.length() - 1))).matches();
 
         int spos = 0;
@@ -703,7 +701,7 @@ public class CtagsReader {
         int soff = off0;
         int eoff = offz;
         if (soff >= eoff) {
-            return null;
+            return new String[0];
         }
 
         // Trim outer punctuation if it exists.

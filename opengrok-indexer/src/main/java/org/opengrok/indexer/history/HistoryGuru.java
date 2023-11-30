@@ -1317,8 +1317,8 @@ public final class HistoryGuru {
                         }
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING, "Could not create " + repositoryInfo.getType()
-                                + " repository object for '" + repositoryInfo.getDirectoryName() + "'", ex);
+                        LOGGER.log(Level.WARNING, ex, () -> "Could not create " + repositoryInfo.getType()
+                                + " repository object for '" + repositoryInfo.getDirectoryName() + "'");
                     } finally {
                         latch.countDown();
                         progress.increment();

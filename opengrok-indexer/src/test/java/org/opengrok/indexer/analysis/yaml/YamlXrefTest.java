@@ -37,7 +37,7 @@ class YamlXrefTest extends XrefTestBase {
     @Test
     @SuppressWarnings("squid:S2699")
     void sampleTest() throws IOException {
-        writeAndCompare(YamlAnalyzerFactory.DEFAULT_INSTANCE,
+        writeAndCompare(new YamlAnalyzerFactory(),
                 "analysis/yaml/sample.yml",
                 "analysis/yaml/sample_xref.html",
                 readTagsFromResource("analysis/yaml/sampletags"), 21);

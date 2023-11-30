@@ -105,7 +105,7 @@ public abstract class XrefTestBase {
         writeArgs.setDefs(defs);
 
         Xrefer xref = analyzer.writeXref(writeArgs);
-        oss.print(out.toString());
+        oss.print(out);
 
         oss.print(getHtmlEnd());
         return xref.getLOC();

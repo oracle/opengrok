@@ -199,7 +199,7 @@ public class OptionParser {
             line.append("\n");
             if (description != null) {
                 line.append("\t");
-                line.append(description.toString().replaceAll("\\n", "\n\t"));
+                line.append(description.toString().replace("\n", "\n\t"));
             }
 
             return line.toString();
@@ -546,11 +546,9 @@ public class OptionParser {
             option = getOption(args[ii], ii);
 
             // When scanning for specific options...
-            if (scanning) {
-                if (option == null || (option = candidate(option, ii)) == null) {
-                    optind = ++ii;  // skip over everything else
-                    continue;
-                }
+            if (scanning && (option == null || (option = candidate(option, ii)) == null)) {
+                optind = ++ii;  // skip over everything else
+                continue;
             }
 
             if (option == null) {  // no more options? we be done.
@@ -589,7 +587,7 @@ public class OptionParser {
 
                     // When option is last in list...
                     if (ii >= args.length) {
-                        if (!opt.mandatory) {
+                        if (Boolean.FALSE.equals(opt.mandatory)) {
                             opt.value = "";  // indicate this option's value was optional
                         }
                     } else {
@@ -614,13 +612,11 @@ public class OptionParser {
                 }
 
                 // Only specific values allowed?
-                if (opt.allowedValues != null) {
-                    if (!opt.allowedValues.contains(opt.value)) {
-                        throw new ParseException(
-                           "'" + opt.value +
-                           "' is unknown value for option " + opt.names +
-                           ". Must be one of " + opt.allowedValues, ii);
-                    }
+                if (opt.allowedValues != null && !opt.allowedValues.contains(opt.value)) {
+                    throw new ParseException(
+                       "'" + opt.value +
+                       "' is unknown value for option " + opt.names +
+                       ". Must be one of " + opt.allowedValues, ii);
                 }
 
                 Object value = opt.value;

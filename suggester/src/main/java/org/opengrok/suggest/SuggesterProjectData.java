@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -289,7 +290,7 @@ class SuggesterProjectData implements Closeable {
         }
     }
 
-    @SuppressWarnings("java:S2095")
+    @SuppressWarnings("{java:S2095,java:S1181}")
     private void initSearchCountMap() throws IOException {
         searchCountMaps.values().forEach(PopularityMap::close);
         searchCountMaps.clear();
@@ -310,33 +311,12 @@ class SuggesterProjectData implements Closeable {
 
             File f = getChronicleMapFile(field);
 
-            ChronicleMapAdapter m;
-            try {
-                m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
-            } catch (IllegalArgumentException e) {
-                logger.log(Level.SEVERE, String.format("Could not create ChronicleMap for field %s in directory " +
-                                "'%s' due to invalid key size (%f) or number of entries: (%d):",
-                        field, suggesterDir,  conf.getAverageKeySize(), conf.getEntries()), e);
-                return;
-            } catch (Throwable t) {
-                logger.log(Level.SEVERE,
-                        String.format("Could not create ChronicleMap for field %s in directory '%s'"
-                                +  " , most popular completion disabled, if you are using "
-                                + "JDK9+ make sure to specify: "
-                                + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
-                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED "
-                                + "--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED "
-                                + "--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED "
-                                + "--add-opens jdk.compiler/com.sun.tools.javac=ALL-UNNAMED "
-                                + "--add-opens java.base/java.lang=ALL-UNNAMED "
-                                + "--add-opens java.base/java.lang.reflect=ALL-UNNAMED "
-                                + "--add-opens java.base/java.io=ALL-UNNAMED "
-                                + "--add-opens java.base/java.util=ALL-UNNAMED", field, suggesterDir), t);
+            var chronicleMapAdapter = createChronicleMapAdapter(field, conf, f);
+            if (Objects.isNull(chronicleMapAdapter)) {
                 return;
             }
-
             if (getCommitVersion() != getDataVersion()) {
-                removeOldTerms(m, lookups.get(field));
+                removeOldTerms(chronicleMapAdapter, lookups.get(field));
 
                 if (conf.getEntries() < lookups.get(field).getCount()) {
                     int newEntriesCount = (int) lookups.get(field).getCount();
@@ -346,11 +326,41 @@ class SuggesterProjectData implements Closeable {
                     conf.setAverageKeySize(newKeyAvgLength);
                     conf.save(suggesterDir, field);
 
-                    m.resize(newEntriesCount, newKeyAvgLength);
+                    chronicleMapAdapter.resize(newEntriesCount, newKeyAvgLength);
                 }
             }
-            searchCountMaps.put(field, m);
+            searchCountMaps.put(field, chronicleMapAdapter);
+
         }
+    }
+
+    @SuppressWarnings("java:S1181")
+    private ChronicleMapAdapter createChronicleMapAdapter(final String name,
+                                                          final ChronicleMapConfiguration conf,
+                                                          final File file) {
+        ChronicleMapAdapter mapAdapter = null;
+        try {
+            mapAdapter = new ChronicleMapAdapter(name, conf.getAverageKeySize(), conf.getEntries(), file);
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.SEVERE, String.format("Could not create ChronicleMap for field %s in directory " +
+                            "'%s' due to invalid key size (%f) or number of entries: (%d):",
+                    name, suggesterDir,  conf.getAverageKeySize(), conf.getEntries()), e);
+        } catch (Throwable t) {
+            logger.log(Level.SEVERE,
+                    String.format("Could not create ChronicleMap for field %s in directory '%s'"
+                            +  " , most popular completion disabled, if you are using "
+                            + "JDK9+ make sure to specify: "
+                            + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
+                            + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED "
+                            + "--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED "
+                            + "--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED "
+                            + "--add-opens jdk.compiler/com.sun.tools.javac=ALL-UNNAMED "
+                            + "--add-opens java.base/java.lang=ALL-UNNAMED "
+                            + "--add-opens java.base/java.lang.reflect=ALL-UNNAMED "
+                            + "--add-opens java.base/java.io=ALL-UNNAMED "
+                            + "--add-opens java.base/java.util=ALL-UNNAMED", name, suggesterDir), t);
+        }
+        return mapAdapter;
     }
 
     private File getChronicleMapFile(final String field) {
@@ -613,7 +623,7 @@ class SuggesterProjectData implements Closeable {
                 int add = searchCounts.get(last);
 
                 return SuggesterUtils.computeScore(indexReader, field, last)
-                        + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;
+                        + (long) add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;
             }
 
             return DEFAULT_WEIGHT;

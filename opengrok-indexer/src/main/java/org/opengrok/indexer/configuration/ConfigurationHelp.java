@@ -32,8 +32,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.AuthorizationStack;
@@ -194,14 +198,14 @@ public class ConfigurationHelp {
         }
     }
 
-    private static Object getSampleListValue(Type genType) {
-        if (!(genType instanceof ParameterizedType)) {
-            return null;
-        }
-        ParameterizedType genParamType = (ParameterizedType) genType;
-        Type actType = genParamType.getActualTypeArguments()[0];
+    private static Object getSampleListValue(@Nullable Type genType) {
+        var actType = Optional.ofNullable(genType)
+                .filter(ParameterizedType.class::isInstance)
+                .map(ParameterizedType.class::cast)
+                .map(genParamType -> genParamType.getActualTypeArguments()[0])
+                .orElse(null);
 
-        if (actType != RepositoryInfo.class) {
+        if (Objects.nonNull(actType) && actType != RepositoryInfo.class) {
             throw new UnsupportedOperationException(NOT_SUPPORTED_MSG + actType);
         }
         return null;
@@ -300,22 +304,21 @@ public class ConfigurationHelp {
                 return null;
             }
         }
-
-        // Return a text override for some objects.
-        switch (gname) {
-            case "getSuggesterConfig":
-                return "as below but with Boolean opposites, non-zeroes decremented by 1, null " +
-                        "for allowed-projects, and also including \"full\" in allowed-fields";
-            case "getPluginStack":
-                return "an empty stack";
-            case "getIncludedNames":
-                return "an empty filter";
-            case "getIgnoredNames":
-                return "OpenGrok's standard set of ignored files and directories";
-        }
-
         try {
-            return getter.invoke(cinst);
+            // Return a text override for some objects.
+            switch (gname) {
+                case "getSuggesterConfig":
+                    return "as below but with Boolean opposites, non-zeroes decremented by 1, null " +
+                            "for allowed-projects, and also including \"full\" in allowed-fields";
+                case "getPluginStack":
+                    return "an empty stack";
+                case "getIncludedNames":
+                    return "an empty filter";
+                case "getIgnoredNames":
+                    return "OpenGrok's standard set of ignored files and directories";
+                default:
+                    return getter.invoke(cinst);
+            }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             return null;
         }

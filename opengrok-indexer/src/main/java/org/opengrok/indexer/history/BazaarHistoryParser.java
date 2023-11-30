@@ -37,6 +37,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -92,20 +94,18 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
 
-        HistoryEntry entry = null;
+        var entry  = createHistoryEntry();
         int state = 0;
         while ((s = in.readLine()) != null) {
             if ("------------------------------------------------------------".equals(s)) {
-                if (entry != null && state > 2) {
+                if (state > 2) {
                     entries.add(entry);
                 }
-                entry = new HistoryEntry();
-                entry.setActive(true);
+                entry = createHistoryEntry();
                 state = 0;
                 continue;
             }
@@ -113,81 +113,148 @@ class BazaarHistoryParser implements Executor.StreamHandler {
             switch (state) {
                 case 0:
                     // First, go on until revno is found.
-                    if (s.startsWith("revno:")) {
-                        String[] rev = s.substring("revno:".length()).trim().split(" ");
-                        entry.setRevision(rev[0]);
-                        ++state;
-                    }
+                    state = state + populateRevisionInHistoryEntry(s, entry);
                     break;
                 case 1:
                     // Then, look for committer.
-                    if (s.startsWith("committer:")) {
-                        entry.setAuthor(s.substring("committer:".length()).trim());
-                        ++state;
-                    }
+                    state = state + populateCommitterInHistoryEntry(s, entry);
                     break;
                 case 2:
                     // And then, look for timestamp.
-                    if (s.startsWith("timestamp:")) {
-                        try {
-                            Date date = repository.parse(s.substring("timestamp:".length()).trim());
-                            entry.setDate(date);
-                        } catch (ParseException e) {
-                            //
-                            // Overriding processStream() thus need to comply with the
-                            // set of exceptions it can throw.
-                            //
-                            throw new IOException("Failed to parse history timestamp:" + s, e);
-                        }
-                        ++state;
-                    }
+                    state = state + populateDateInHistoryEntry(s, entry);
                     break;
                 case 3:
-                    // Expect the commit message to follow immediately after
-                    // the timestamp, and that everything up to the list of
-                    // modified, added and removed files is part of the commit
-                    // message.
-                    if (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:")) {
-                        ++state;
-                    } else if (s.startsWith("  ")) {
-                        // Commit messages returned by bzr log -v are prefixed
-                        // with two blanks.
-                        entry.appendMessage(s.substring(2));
-                    }
+                    // Expect the commit message to follow immediately after the timestamp
+                    state = state + populateCommitMessageInHistoryEntry(s, entry);
                     break;
                 case 4:
                     // Finally, store the list of modified, added and removed
                     // files. (Except the labels.)
-                    if (!(s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
-                        // The list of files is prefixed with blanks.
-                        s = s.trim();
-
-                        int idx = s.indexOf(" => ");
-                        if (idx != -1) {
-                            s = s.substring(idx + 4);
-                        }
-
-                        File f = new File(myDir, s);
-                        try {
-                            String name = env.getPathRelativeToSourceRoot(f);
-                            entry.addFile(name.intern());
-                        } catch (ForbiddenSymlinkException e) {
-                            LOGGER.log(Level.FINER, e.getMessage());
-                            // ignored
-                        } catch (InvalidPathException e) {
-                            LOGGER.log(Level.WARNING, e.getMessage());
-                        }
-                    }
+                    populateCommitFilesInHistoryEntry(s, entry);
                     break;
                 default:
                     LOGGER.log(Level.WARNING, "Unknown parser state: {0}", state);
                     break;
-                }
+            }
         }
 
-        if (entry != null && state > 2) {
+        if (state > 2) {
             entries.add(entry);
         }
+    }
+
+    private HistoryEntry createHistoryEntry() {
+        var entry  = new HistoryEntry();
+        entry.setActive(true);
+        return entry;
+    }
+
+    /**
+     *
+     * @param currentLine currentLine of string from stream
+     * @param historyEntry current history entry to populate committer
+     */
+    private void populateCommitFilesInHistoryEntry(@NotNull String currentLine,
+                                           @NotNull HistoryEntry historyEntry) throws IOException {
+
+        if (!(currentLine.startsWith("modified:") || currentLine.startsWith("added:")
+                || currentLine.startsWith("removed:"))) {
+            // The list of files is prefixed with blanks.
+            currentLine = currentLine.trim();
+
+            int idx = currentLine.indexOf(" => ");
+            if (idx != -1) {
+                currentLine = currentLine.substring(idx + 4);
+            }
+
+            File f = new File(myDir, currentLine);
+            try {
+                String name = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(f);
+                historyEntry.addFile(name.intern());
+            } catch (ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINER, e.getMessage());
+                // ignored
+            } catch (InvalidPathException e) {
+                LOGGER.log(Level.WARNING, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     *
+     * @param currentLine currentLine of string from stream
+     * @param historyEntry current history entry to populate committer
+     * @return 1 if committer is populated else 0
+     */
+    private int populateCommitMessageInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
+        // everything up to the list of
+        // modified, added and removed files is part of the commit
+        // message.
+        int state = 0;
+        if (currentLine.startsWith("modified:") || currentLine.startsWith("added:") || currentLine.startsWith("removed:")) {
+            ++state;
+        } else if (currentLine.startsWith("  ")) {
+            // Commit messages returned by bzr log -v are prefixed
+            // with two blanks.
+            historyEntry.appendMessage(currentLine.substring(2));
+        }
+        return state;
+    }
+
+    /**
+     *
+     * @param currentLine currentLine of string from stream
+     * @param historyEntry current history entry to populate committer
+     * @return 1 if committer is populated else 0
+     */
+    private int populateCommitterInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
+        int state = 0;
+        if (currentLine.startsWith("committer:")) {
+            historyEntry.setAuthor(currentLine.substring("committer:".length()).trim());
+            ++state;
+        }
+        return state;
+    }
+
+    /**
+     *
+     * @param currentLine currentLine of string from stream
+     * @param historyEntry current history entry to populate Date
+     * @return 1 if Date is populated else 0
+     * @throws IOException on failure to parse timestamp
+     */
+    private int populateDateInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) throws IOException {
+        int state = 0;
+        if (currentLine.startsWith("timestamp:")) {
+            try {
+                Date date = repository.parse(currentLine.substring("timestamp:".length()).trim());
+                historyEntry.setDate(date);
+            } catch (ParseException e) {
+                //
+                // Overriding processStream() thus need to comply with the
+                // set of exceptions it can throw.
+                //
+                throw new IOException("Failed to parse history timestamp:" + currentLine, e);
+            }
+            ++state;
+        }
+        return state;
+    }
+
+    /**
+     *
+     * @param currentLine currentLine of string from stream
+     * @param historyEntry current history entry to populate Revision
+     * @return 1 if revision is populated else 0
+     */
+    private int populateRevisionInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
+        int state = 0;
+        if (currentLine.startsWith("revno:")) {
+            String[] rev = currentLine.substring("revno:".length()).trim().split(" ");
+            historyEntry.setRevision(rev[0]);
+            ++state;
+        }
+        return state;
     }
 
    /**
