@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.13-jdk17
+FROM tomcat:10.1.16-jdk17
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # Add Perforce apt source.
