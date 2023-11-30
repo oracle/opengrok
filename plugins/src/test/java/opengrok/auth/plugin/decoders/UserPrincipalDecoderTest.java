@@ -18,19 +18,28 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UserPrincipalDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
@@ -51,6 +60,19 @@ class UserPrincipalDecoderTest {
         assertEquals("foo", result.getUsername());
         assertNull(result.getId());
         assertFalse(result.isTimeouted());
+    }
+
+    private static Collection<Principal> invalidPrincipals() {
+         return Arrays.asList(() -> null, () -> "");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidPrincipals")
+    void testInvalidUsername(Principal principal) {
+        HttpServletRequest mockRequest = mock(DummyHttpServletRequestUser.class);
+        when(mockRequest.getUserPrincipal()).thenReturn(principal);
+        User result = decoder.fromRequest(mockRequest);
+        assertNull(result);
     }
 
     @Test

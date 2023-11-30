@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -37,6 +37,7 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -78,6 +79,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private Integer instanceNum;
 
     // for testing
+    @VisibleForTesting
     void load(Map<String, Object> parameters, AbstractLdapProvider provider) {
         super.load(provider);
 

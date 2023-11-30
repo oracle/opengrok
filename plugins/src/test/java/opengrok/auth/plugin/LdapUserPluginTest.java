@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -131,6 +131,24 @@ class LdapUserPluginTest {
 
         assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
         assertEquals(dn, ((LdapUser) request.getSession().getAttribute(SESSION_ATTR)).getDn());
+    }
+
+    /**
+     * Test that supplied LDAP filter is expanded for the LDAP query.
+     */
+    @Test
+    void testFilterExpansion() throws Exception {
+        AbstractLdapProvider mockprovider = mock(LdapFacade.class);
+        HttpServletRequest request = new DummyHttpServletRequestLdap();
+        User user = new User("foo@example.com", "id");
+        LdapUserPlugin plugin = new LdapUserPlugin();
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapUserPlugin.ATTRIBUTES, "mail");
+        params.put(LdapUserPlugin.LDAP_FILTER, "%guid%");
+        plugin.load(params, mockprovider);
+        plugin.fillSession(request, user);
+        final String expectedFilter = plugin.expandFilter(user);
+        verify(mockprovider).lookupLdapContent(eq(null), eq(expectedFilter), any(String[].class));
     }
 
     @Test

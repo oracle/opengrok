@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package opengrok.auth.plugin.decoders;
@@ -43,12 +43,12 @@ public class OSSOHeaderDecoder implements IUserDecoder {
 
     private static final Logger LOGGER = Logger.getLogger(OSSOHeaderDecoder.class.getName());
 
-    protected static String OSSO_COOKIE_TIMESTAMP_HEADER = "osso-cookie-timestamp";
-    protected static String OSSO_TIMEOUT_EXCEEDED_HEADER = "osso-idle-timeout-exceeded";
-    protected static String OSSO_SUBSCRIBER_DN_HEADER = "osso-subscriber-dn";
-    protected static String OSSO_SUBSCRIBER_HEADER = "osso-subscriber";
-    protected static String OSSO_USER_DN_HEADER = "osso-user-dn";
-    protected static String OSSO_USER_GUID_HEADER = "osso-user-guid";
+    protected static final String OSSO_COOKIE_TIMESTAMP_HEADER = "osso-cookie-timestamp";
+    protected static final String OSSO_TIMEOUT_EXCEEDED_HEADER = "osso-idle-timeout-exceeded";
+    protected static final String OSSO_SUBSCRIBER_DN_HEADER = "osso-subscriber-dn";
+    protected static final String OSSO_SUBSCRIBER_HEADER = "osso-subscriber";
+    protected static final String OSSO_USER_DN_HEADER = "osso-user-dn";
+    protected static final String OSSO_USER_GUID_HEADER = "osso-user-guid";
 
     @Override
     public User fromRequest(HttpServletRequest request) {

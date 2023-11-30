@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.entity;
 
@@ -65,10 +65,6 @@ public class User {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -81,46 +77,12 @@ public class User {
         return cookieTimestamp;
     }
 
-    public void setCookieTimestamp(Date cookieTimestamp) {
-        this.cookieTimestamp = cookieTimestamp;
-    }
-
     public boolean getTimeouted() {
         return isTimeouted();
     }
 
-    public void setTimeouted(boolean timeouted) {
-        this.timeouted = timeouted;
-    }
-
     public boolean isTimeouted() {
         return timeouted;
-    }
-
-    /**
-     * Implemented for the forced authentication as described in
-     * <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm#i1006381">mod_osso documentation</a>.
-     *
-     * @param forcedAuthDate the date of the forced authentication trigger
-     * @param newLoginDate the date of the new login
-     * @return true if login date was before forced auth date or cookie timestamp
-     */
-    public boolean isForcedTimeouted(Date forcedAuthDate, Date newLoginDate) {
-        if (cookieTimestamp == null || forcedAuthDate == null || newLoginDate == null) {
-            return true;
-        }
-
-        return newLoginDate.before(forcedAuthDate) || newLoginDate.before(cookieTimestamp);
-    }
-
-    /**
-     * Get custom user property.
-     *
-     * @param key the key
-     * @return the the value associated with the key
-     */
-    public Object getAttribute(String key) {
-        return attrs.get(key);
     }
 
     /**
@@ -132,16 +94,6 @@ public class User {
      */
     public Object setAttribute(String key, Object value) {
         return attrs.put(key, value);
-    }
-
-    /**
-     * Remote custom user property.
-     *
-     * @param key the key
-     * @return the value previously associated with the key
-     */
-    public Object removeAttribute(String key) {
-        return attrs.remove(key);
     }
 
     @Override
