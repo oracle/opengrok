@@ -22,6 +22,9 @@
  */
 package org.opengrok.indexer.web;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -76,11 +79,12 @@ public class Laundromat {
 
     /**
      * Sanitize {@code map} where it will be used in a log message only.
-     * @return {@code null} if null or else {@code map} with keys and values
+     * @return  {@code map} with keys and values
      * sanitized with {@link #launderLog(String)}. If the sanitizing causes key
      * collisions, the colliding keys' values are combined.
      */
-    public static Map<String, String[]> launderLog(Map<String, String[]> map) {
+    @NotNull
+    public static Map<String, String[]> launderLog(@Nullable Map<String, String[]> map) {
 
         return Optional.ofNullable(map)
                 .stream()
@@ -94,20 +98,25 @@ public class Laundromat {
                 ));
     }
 
-    private static String[] launderLogArray(String[] values) {
+    @NotNull
+    private static String[] launderLogArray(@Nullable String[] values) {
         return Optional.ofNullable(values)
                 .stream().flatMap(Arrays::stream)
                 .map(Laundromat::launderLog)
                 .toArray(String[]::new);
     }
 
-    private static String[] mergeLogArrays(String[] existingSafeEntries, String[] newSafeEntries) {
+    @NotNull
+    private static String[] mergeLogArrays(@NotNull String[] existingSafeEntries,
+                                           @NotNull String[] newSafeEntries) {
         return Stream.concat(Arrays.stream(newSafeEntries), Arrays.stream(existingSafeEntries))
                 .toArray(String[]::new);
 
     }
 
-    private static String replaceAll(String value, String regex, String replacement) {
+    @Nullable
+    private static String replaceAll(@Nullable String value, @NotNull String regex,
+                                               @NotNull String replacement) {
         return Optional.ofNullable(value)
                 .map(val -> val.replaceAll(regex, replacement))
                 .orElse(null);
