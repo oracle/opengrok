@@ -64,14 +64,16 @@ public class Definitions implements Serializable {
     public static class LineTagMap implements Serializable {
 
         private static final long serialVersionUID = 1191703801007779481L;
-        private final Map<String, Set<Tag>> symTags; //NOPMD
+        @SuppressWarnings("java:S116")
+        private final Map<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
-            this.symTags = new HashMap<>();
+            this.sym_tags = new HashMap<>();
         }
     }
     // line number -> tag map
-    private final Map<Integer, LineTagMap> lineMaps;
+    @SuppressWarnings("java:S116")
+    private final Map<Integer, LineTagMap> line_maps;
 
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
@@ -84,7 +86,7 @@ public class Definitions implements Serializable {
 
     public Definitions() {
         symbols = new HashMap<>();
-        lineMaps = new HashMap<>();
+        line_maps = new HashMap<>();
         tags = new ArrayList<>();
     }
 
@@ -134,9 +136,9 @@ public class Definitions implements Serializable {
                 .filter(lines -> lines.contains(lineNumber))
                 .isPresent();
         if (isDefinitionPresent) {
-            LineTagMap lineMap = lineMaps.get(lineNumber);
+            LineTagMap lineMap = line_maps.get(lineNumber);
             if (lineMap != null) {
-                for (Tag tag : lineMap.symTags.get(symbol)) {
+                for (Tag tag : lineMap.sym_tags.get(symbol)) {
                     if (tag.used) {
                         continue;
                     }
@@ -189,8 +191,8 @@ public class Definitions implements Serializable {
      * @return list of tags or null
      */
     public @Nullable List<Tag> getTags(int line) {
-        return Optional.ofNullable(lineMaps.get(line))
-                .map(lineMap -> lineMap.symTags.values().stream()
+        return Optional.ofNullable(line_maps.get(line))
+                .map(lineMap -> lineMap.sym_tags.values().stream()
                         .flatMap(Collection::stream)
                         .collect(Collectors.toList())
                 )
@@ -274,14 +276,14 @@ public class Definitions implements Serializable {
         lines.add(aLine);
 
         // Get per line map
-        LineTagMap lineMap = lineMaps.computeIfAbsent(aLine,
+        LineTagMap lineMap = line_maps.computeIfAbsent(aLine,
                 key -> new LineTagMap());
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = lineMap.symTags.get(symbol);
+        Set<Tag> ltags = lineMap.sym_tags.get(symbol);
         if (ltags == null) {
             ltags = new HashSet<>();
-            lineMap.symTags.put(symbol, ltags);
+            lineMap.sym_tags.put(symbol, ltags);
         }
         ltags.add(newTag);
     }
