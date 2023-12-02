@@ -11,17 +11,17 @@ if [[ -n $OPENGROK_REF && $OPENGROK_REF == refs/heads/* ]]; then
 fi
 
 extra_args=""
-if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" && "x$OPENGROK_BRANCH" == "xmaster" ]]; then
-	echo "Enabling Coveralls"
-	if [[ -n $OPENGROK_COVERALLS_TOKEN ]]; then
-		extra_args="$extra_args -DrepoToken=$OPENGROK_COVERALLS_TOKEN"
-	fi
-	extra_args="$extra_args jacoco:report coveralls:report"
+
+if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" &&
+    -z "${OPENGROK_PULL_REQUEST}" &&
+    "x$OPENGROK_BRANCH" == "xmaster" ]]; then
+	echo "Enabling Jacoco Coverage"
+	extra_args="$extra_args jacoco:report "
 
 	#
-	# Sonar seems to only work on master branch commits.
+	# Enable sonar for master branch linux build
 	#
-	if [[ -z "${OPENGROK_PULL_REQUEST}" ]]; then
+	if [[ "$RUNNER_OS" == "Linux" ]]; then
 		echo "Enabling Sonar"
 		extra_args="$extra_args -P sonar -Dsonar.login=$OPENGROK_SONAR_TOKEN sonar:sonar"
 	fi
