@@ -18,20 +18,12 @@
  */
 
  /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.logger;
 
-import org.opengrok.indexer.logger.formatter.ConsoleFormatter;
-import org.opengrok.indexer.logger.formatter.FileLogFormatter;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -41,157 +33,22 @@ import java.util.logging.Logger;
  */
 public class LoggerUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerUtil.class);
-
     public static final String BASE_LOGGER = "org.opengrok";
-    private static final int DEFAULT_FILEHANDLER_LIMIT = 52428800;
-    private static final int DEFAULT_FILEHANDLER_COUNT = 3;
-
-    private static volatile String loggerFile = null;
 
     private LoggerUtil() {
     }
 
-    public static Logger getBaseLogger() {
+    private static Logger getBaseLogger() {
         return Logger.getLogger(BASE_LOGGER);
     }
 
     public static void setBaseConsoleLogLevel(Level level) {
-        setBaseLogLevel(ConsoleHandler.class, level);
-    }
-
-    public static Level getBaseConsoleLogLevel() {
-        return getBaseLogLevel(ConsoleHandler.class);
-    }
-
-    public static void setBaseFileLogLevel(Level level) {
-        setBaseLogLevel(FileHandler.class, level);
-    }
-
-    public static Level getBaseFileLogLevel() {
-        return getBaseLogLevel(FileHandler.class);
-    }
-
-    private static void setBaseLogLevel(Class<? extends Handler> handlerClass, Level level) {
-        for (Handler handler : getBaseLogger().getHandlers()) {
-            if (handlerClass.isInstance(handler)) {
-                handler.setLevel(level);
-            }
-        }
-    }
-
-    private static Level getBaseLogLevel(Class<? extends Handler> handlerClass) {
-        for (Handler handler : getBaseLogger().getHandlers()) {
-            if (handlerClass.isInstance(handler)) {
-                return handler.getLevel();
-            }
-        }
-        return Level.OFF;
+        Arrays.stream(getBaseLogger().getHandlers())
+                .filter(ConsoleHandler.class::isInstance)
+                .forEach(handler -> handler.setLevel(level));
     }
 
     public static String getFileHandlerPattern() {
         return LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
-    }
-
-    public static void setFileHandlerLogPath(String path) throws IOException {
-        if (path != null) {
-            File jlp = new File(path);
-            if (!jlp.exists() && !jlp.mkdirs()) {
-                throw new IOException("could not make logpath: "
-                        + jlp.getAbsolutePath());
-            }
-        }
-
-        StringBuilder logfile = new StringBuilder();
-        logfile.append(path == null ? "%t" : path);
-        logfile.append(File.separatorChar).append("opengrok%g.%u.log");
-
-        for (Handler handler : getBaseLogger().getHandlers()) {
-            if (handler instanceof FileHandler) {
-                FileHandler fileHandler = (FileHandler) handler;
-                FileHandler newFileHandler;
-                try {
-                    int logFilesSizeLimit = loggerIntProperty("java.util.logging.FileHandler.limit", DEFAULT_FILEHANDLER_LIMIT);
-                    int logFilesCount = loggerIntProperty("java.util.logging.FileHandler.count", DEFAULT_FILEHANDLER_COUNT);
-                    newFileHandler = new FileHandler(logfile.toString(), logFilesSizeLimit, logFilesCount);
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Cannot create new logger FileHandler: " + logfile.toString(), e);
-                    return;
-                }
-                String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
-                newFileHandler.setLevel(fileHandler.getLevel());
-                try {
-                    newFileHandler.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
-                        | InvocationTargetException e) {
-                    newFileHandler.setFormatter(new FileLogFormatter());
-                }
-                getBaseLogger().addHandler(newFileHandler);
-                getBaseLogger().removeHandler(fileHandler);
-                loggerFile = logfile.toString();
-            }
-        }
-    }
-
-    public static String getFileHandlerLogPath() {
-        return loggerFile != null ? loggerFile : LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
-    }
-
-    private static int loggerIntProperty(String name, int def) {
-        String val = LogManager.getLogManager().getProperty(name);
-        if (val == null) {
-            return def;
-        }
-        try {
-            return Integer.parseInt(val);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
-
-    public static String initLogger(String logpath, Level filelevel, Level consolelevel) throws IOException {
-        if (logpath != null) {
-            File jlp = new File(logpath);
-            if (!jlp.exists() && !jlp.mkdirs()) {
-                throw new RuntimeException("could not make logpath: "
-                        + jlp.getAbsolutePath());
-            }
-            if (!jlp.canWrite() && !Level.OFF.equals(filelevel)) {
-                throw new IOException("logpath not writeable " + jlp.getAbsolutePath());
-            }
-        }
-
-        Logger.getGlobal().setLevel(Level.OFF);
-        getBaseLogger().setLevel(Level.ALL);
-        StringBuilder logfile = new StringBuilder();
-        logfile.append(logpath == null ? "%t" : logpath);
-        logfile.append(File.separatorChar).append("opengrok%g.%u.log");
-        try {
-            FileHandler fh = new FileHandler(logfile.toString(),
-                    loggerIntProperty("java.util.logging.FileHandler.limit", DEFAULT_FILEHANDLER_LIMIT),
-                    loggerIntProperty("java.util.logging.FileHandler.count", DEFAULT_FILEHANDLER_COUNT));
-
-            fh.setLevel(filelevel);
-            String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
-            try {
-                fh.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
-                    | InvocationTargetException e) {
-                fh.setFormatter(new FileLogFormatter());
-            }
-
-            getBaseLogger().addHandler(fh);
-            loggerFile = logfile.toString();
-
-            ConsoleHandler ch = new ConsoleHandler();
-            ch.setLevel(consolelevel);
-            ch.setFormatter(new ConsoleFormatter());
-            getBaseLogger().addHandler(ch);
-
-        } catch (IOException | SecurityException ex1) {
-            LOGGER.log(Level.SEVERE, "Exception logging", ex1);
-            throw new IOException("Exception setting up logging " + ex1);
-        }
-        return logpath;
     }
 }
