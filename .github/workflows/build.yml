@@ -53,7 +53,6 @@ jobs:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
-        OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
