@@ -58,7 +58,7 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
-    unzip inotify-tools python3 python3-pip \
+    unzip python3 python3-pip \
     python3-venv python3-setuptools openssh-client libyaml-dev
 
 # compile and install universal-ctags
@@ -72,6 +72,9 @@ RUN apt-get install --no-install-recommends -y pkg-config automake build-essenti
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Update the Python tooling in order to successfully install the opengrok-tools package.
+RUN python3 -m pip install --upgrade pip setuptools
+
 # prepare OpenGrok binaries and directories
 # hadolint ignore=DL3010
 COPY --from=build opengrok.tar.gz /opengrok.tar.gz
@@ -79,7 +82,7 @@ COPY --from=build opengrok.tar.gz /opengrok.tar.gz
 RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
     rm -f /opengrok.tar.gz && \
-    python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools* && \
+    python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools.tar.gz && \
     python3 -m pip install --no-cache-dir Flask Flask-HTTPAuth waitress # for /reindex REST endpoint handled by start.py
 
 COPY --from=build /mvn/VERSION /opengrok/VERSION
