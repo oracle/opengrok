@@ -16,7 +16,6 @@
  */
 package org.opengrok.suggest.query.customized;
 
-import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.PostingsEnum;
@@ -251,12 +250,10 @@ public class CustomPhraseQuery extends Query {
             super(query);
             this.query = query;
 
-            IndexReaderContext context = searcher.getTopReaderContext();
-
             this.states = new TermStates[query.terms.length];
             for(int i = 0; i < query.terms.length; ++i) {
                 Term term = query.terms[i];
-                this.states[i] = TermStates.build(context, term, false);
+                this.states[i] = TermStates.build(searcher, term, false);
             }
         }
 
