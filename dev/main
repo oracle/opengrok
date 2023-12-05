@@ -23,7 +23,7 @@ if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" &&
 	#
 	if [[ "$RUNNER_OS" == "Linux" ]]; then
 		echo "Enabling Sonar"
-		extra_args="$extra_args -P sonar -Dsonar.login=$OPENGROK_SONAR_TOKEN sonar:sonar"
+		extra_args="$extra_args -P sonar -Dsonar.token=$OPENGROK_SONAR_TOKEN -Dsonar.python.version=3.9 sonar:sonar"
 	fi
 fi
 
