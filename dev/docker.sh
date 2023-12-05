@@ -42,7 +42,7 @@ if [[ -n $OPENGROK_TAG ]]; then
 	TAGS="$VERSION $VERSION_SHORT latest"
 
 	echo "Building docker image for release ($TAGS)"
-	docker build \
+	docker buildx build \
 	    -t $IMAGE:$VERSION \
 	    -t $IMAGE:$VERSION_SHORT \
 	    -t $IMAGE:latest .
@@ -50,7 +50,7 @@ else
 	TAGS="master"
 
 	echo "Building docker image for master"
-	docker build -t $IMAGE:master .
+	docker buildx build -t $IMAGE:master .
 fi
 
 #
