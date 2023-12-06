@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 import argparse
@@ -33,20 +33,20 @@ from .utils.exitvals import (
     SUCCESS_EXITVAL
 )
 """
- Wrapper for Java program merging OpenGrok configuration.
+ Wrapper for the ConfigMerge Java program merging OpenGrok configuration files.
 """
 
 
 def merge_config_files(read_only, current, out_file, jar,
                        loglevel=logging.INFO):
 
-    return config_merge_wrapper([read_only, current], jar=jar,
-                                out_file=out_file, loglevel=loglevel)
+    return config_merge_wrapper([read_only, current, out_file], jar=jar,
+                                loglevel=loglevel)
 
 
 def config_merge_wrapper(options, loglevel=logging.INFO,
                          jar=None, java=None, java_opts=None,
-                         doprint=False, out_file=None):
+                         doprint=False):
 
     # Avoid using utils.log.get_console_level() since the stdout of the program
     # is interpreted as data.
@@ -63,11 +63,6 @@ def config_merge_wrapper(options, loglevel=logging.INFO,
         logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
         return FAILURE_EXITVAL
-    else:
-        if out_file:
-            out_file.write(cmd.getoutputstr())
-        else:
-            print(cmd.getoutputstr())
 
     return SUCCESS_EXITVAL
 

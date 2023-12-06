@@ -18,13 +18,15 @@
  */
 
  /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -140,7 +142,7 @@ public class ConfigMerge {
         }
 
         int optind = getopt.getOptind();
-        if (optind < 0 || argv.length - optind != 2) {
+        if (optind < 0 || argv.length - optind != 3) {
             aUsage(System.err);
             System.exit(1);
         }
@@ -168,14 +170,18 @@ public class ConfigMerge {
             System.exit(1);
         }
 
-        // Write the resulting XML representation to standard output.
-        OutputStream os = System.out;
-        cfgNew.encodeObject(os);
+        // Write the resulting XML representation to the output file.
+        try (OutputStream os = new FileOutputStream(argv[optind + 2])) {
+            cfgNew.encodeObject(os);
+        } catch (IOException ex) {
+            System.err.print(ex);
+            System.exit(1);
+        }
     }
 
     private static void aUsage(PrintStream out) {
         out.println("Usage:");
-        out.println(NAME + " [-h] <config_file_base> <config_file_new>");
+        out.println(NAME + " [-h] <config_file_base> <config_file_new> <output_file>");
         out.println();
         out.println("OPTIONS:");
         out.println("Help");
