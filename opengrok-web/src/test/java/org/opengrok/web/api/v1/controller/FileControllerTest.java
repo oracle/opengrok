@@ -18,30 +18,41 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
-import jakarta.ws.rs.core.Application;
-import org.glassfish.jersey.server.ResourceConfig;
+import jakarta.ws.rs.core.GenericType;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.ServletDeploymentContext;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.web.api.v1.RestApp;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class FileControllerTest extends OGKJerseyTest {
 
@@ -50,9 +61,15 @@ class FileControllerTest extends OGKJerseyTest {
     private TestRepository repository;
 
     @Override
-    protected Application configure() {
-        return new ResourceConfig(FileController.class);
+    protected DeploymentContext configureDeployment() {
+        return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
+
+    @Override
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new GrizzlyWebTestContainerFactory();
+    }
+
 
     @BeforeEach
     @Override
@@ -112,5 +129,26 @@ class FileControllerTest extends OGKJerseyTest {
                 .request()
                 .get(String.class);
         assertEquals("PLAIN", genre);
+    }
+
+    @Test
+    void testFileDefinitions() {
+        final String path = "git/main.c";
+        GenericType<List<Definitions.Tag>> type = new GenericType<>() {
+        };
+        List<Definitions.Tag> defs = target("file")
+                .path("defs")
+                .queryParam("path", path)
+                .request()
+                .get(type);
+        assertFalse(defs.isEmpty());
+        assertAll(() -> assertFalse(defs.stream().map(Definitions.Tag::getType).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getSymbol).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getText).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().filter(e -> !e.getType().equals("local")).
+                        map(Definitions.Tag::getSignature).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLine).anyMatch(e -> e <= 0)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLineStart).anyMatch(e -> e <= 0)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLineEnd).anyMatch(e -> e <= 0)));
     }
 }
