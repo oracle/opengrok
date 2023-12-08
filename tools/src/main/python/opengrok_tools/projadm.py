@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -54,7 +54,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.5"
+__version__ = "0.6"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -148,20 +148,18 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
         else:
             logger.info('Refreshing configuration '
                         '(merging with read-only config)')
-            configmerge_cmd = configmerge
-            configmerge_cmd.extend(['-a', jar_file, roconfig, fcur.name])
-            if java:
-                configmerge_cmd.append('-j')
-                configmerge_cmd.append(java)
-            merged_config = exec_command(doit, logger,
-                                         configmerge_cmd,
-                                         "cannot merge configuration")
             with tempfile.NamedTemporaryFile() as fmerged:
                 logger.debug("Temporary file for merged config: {}".
                              format(fmerged.name))
+                configmerge_cmd = configmerge
+                configmerge_cmd.extend(['-a', jar_file, roconfig, fcur.name, fmerged.name])
+                if java:
+                    configmerge_cmd.append('-j')
+                    configmerge_cmd.append(java)
+                exec_command(doit, logger,
+                             configmerge_cmd,
+                             "cannot merge configuration")
                 if doit:
-                    fmerged.write(bytearray(''.join(merged_config), "UTF-8"))
-                    fmerged.flush()
                     install_config(doit, logger, fmerged.name, main_config)
 
 
@@ -251,7 +249,7 @@ def main():
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
     parser.add_argument('-c', '--configmerge',
-                        help='path to the ConfigMerge binary')
+                        help='path to the ConfigMerge program')
     parser.add_argument('--java', help='Path to java binary '
                                        '(needed for config merge program)')
     parser.add_argument('-j', '--jar', help='Path to jar archive to run')
@@ -315,7 +313,7 @@ def main():
 
     # If read-only configuration file is specified, this means read-only
     # configuration will need to be merged with active webapp configuration.
-    # This requires config merge tool to be run so couple of other things
+    # This requires config merge tool to be run so a couple of other things
     # need to be checked.
     if args.roconfig:
         if path.isfile(args.roconfig):
