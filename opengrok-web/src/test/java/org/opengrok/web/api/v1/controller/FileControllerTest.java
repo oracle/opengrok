@@ -37,12 +37,14 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +55,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileControllerTest extends OGKJerseyTest {
 
@@ -150,5 +154,25 @@ class FileControllerTest extends OGKJerseyTest {
                 () -> assertFalse(defs.stream().map(Definitions.Tag::getLine).anyMatch(e -> e <= 0)),
                 () -> assertFalse(defs.stream().map(Definitions.Tag::getLineStart).anyMatch(e -> e <= 0)),
                 () -> assertFalse(defs.stream().map(Definitions.Tag::getLineEnd).anyMatch(e -> e <= 0)));
+    }
+
+    /**
+     * Negative test case for file definitions API endpoint for a file that exists under the source root,
+     * however does not have matching document in the respective index database.
+     */
+    @Test
+    void testFileDefinitionsNull() throws Exception {
+        final String path = "git/extra.file";
+        Path createdPath = Files.createFile(Path.of(env.getSourceRootPath(), path));
+        // Assumes that the API endpoint indeed calls IndexDatabase#getDefinitions()
+        assertNull(IndexDatabase.getDefinitions(createdPath.toFile()));
+        GenericType<List<Definitions.Tag>> type = new GenericType<>() {
+        };
+        List<Definitions.Tag> defs = target("file")
+                .path("defs")
+                .queryParam("path", path)
+                .request()
+                .get(type);
+        assertTrue(defs.isEmpty());
     }
 }
