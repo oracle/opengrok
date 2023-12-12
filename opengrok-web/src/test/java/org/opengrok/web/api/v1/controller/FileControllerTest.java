@@ -70,6 +70,8 @@ class FileControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    private static final String validPath = "git/main.c";
+
     private TestRepository repository;
 
     @Override
@@ -134,10 +136,9 @@ class FileControllerTest extends OGKJerseyTest {
 
     @Test
     void testFileGenre() {
-        final String path = "git/main.c";
         String genre = target("file")
                 .path("genre")
-                .queryParam("path", path)
+                .queryParam("path", validPath)
                 .request()
                 .get(String.class);
         assertEquals("PLAIN", genre);
@@ -145,12 +146,11 @@ class FileControllerTest extends OGKJerseyTest {
 
     @Test
     void testFileDefinitions() {
-        final String path = "git/main.c";
         GenericType<List<Definitions.Tag>> type = new GenericType<>() {
         };
         List<Definitions.Tag> defs = target("file")
                 .path("defs")
-                .queryParam("path", path)
+                .queryParam("path", validPath)
                 .request()
                 .get(type);
         assertFalse(defs.isEmpty());
@@ -203,10 +203,9 @@ class FileControllerTest extends OGKJerseyTest {
         framework.reload();
         env.setAuthorizationFramework(framework);
 
-        final String path = "git/main.c";
         Response response = target("file")
                 .path("defs")
-                .queryParam("path", path)
+                .queryParam("path", validPath)
                 .request().get();
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
 
