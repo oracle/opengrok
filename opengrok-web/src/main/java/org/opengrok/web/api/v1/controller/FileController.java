@@ -48,9 +48,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 import static org.opengrok.indexer.index.IndexDatabase.getDocument;
@@ -164,7 +164,10 @@ public class FileController {
         File file = toFile(path);
         Definitions defs = IndexDatabase.getDefinitions(file);
         return Optional.ofNullable(defs).
-                map(Definitions::getTags).orElse(Collections.emptyList()).
-                stream().map(DTOUtil::createDTO).collect(Collectors.toList());
+                map(Definitions::getTags).
+                stream().
+                flatMap(Collection::stream).
+                map(DTOUtil::createDTO).
+                collect(Collectors.toList());
     }
 }
