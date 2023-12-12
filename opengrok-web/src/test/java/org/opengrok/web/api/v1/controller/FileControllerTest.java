@@ -191,7 +191,7 @@ class FileControllerTest extends OGKJerseyTest {
     void testFileDefinitionsNotAuthorized() throws Exception {
         AuthorizationStack stack = new AuthorizationStack(AuthControlFlag.REQUIRED, "stack");
         stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, "opengrok.auth.plugin.FalsePlugin"));
-        URL pluginsURL = AuthorizationFramework.class.getResource("/authorization/plugins/testplugins.jar");
+        URL pluginsURL = getClass().getResource("/testplugins.jar");
         assertNotNull(pluginsURL);
         Path pluginsPath = Paths.get(pluginsURL.toURI());
         assertNotNull(pluginsPath);
