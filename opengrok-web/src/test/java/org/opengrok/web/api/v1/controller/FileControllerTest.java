@@ -24,6 +24,7 @@
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.ServletDeploymentContext;
@@ -34,6 +35,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.authorization.AuthControlFlag;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationPlugin;
+import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -42,11 +47,15 @@ import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +64,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -174,5 +184,35 @@ class FileControllerTest extends OGKJerseyTest {
                 .request()
                 .get(type);
         assertTrue(defs.isEmpty());
+    }
+
+    /**
+     * Make sure that file definitions API performs authorization check.
+     */
+    @Test
+    void testFileDefinitionsNotAuthorized() throws Exception {
+        AuthorizationStack stack = new AuthorizationStack(AuthControlFlag.REQUIRED, "stack");
+        stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, "opengrok.auth.plugin.FalsePlugin"));
+        URL pluginsURL = AuthorizationFramework.class.getResource("/authorization/plugins/testplugins.jar");
+        assertNotNull(pluginsURL);
+        Path pluginsPath = Paths.get(pluginsURL.toURI());
+        assertNotNull(pluginsPath);
+        File pluginDirectory = pluginsPath.toFile().getParentFile();
+        assertNotNull(pluginDirectory);
+        assertTrue(pluginDirectory.isDirectory());
+        AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath(), stack);
+        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
+        framework.reload();
+        env.setAuthorizationFramework(framework);
+
+        final String path = "git/main.c";
+        Response response = target("file")
+                .path("defs")
+                .queryParam("path", path)
+                .request().get();
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+
+        // Cleanup.
+        env.setAuthorizationFramework(null);
     }
 }
