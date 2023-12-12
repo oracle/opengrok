@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
@@ -179,7 +180,7 @@ public final class MessagesUtils {
      * @see #messagesToJson(String...)
      */
     public static String messagesToJson(Project project, String... additionalTags) {
-        if (project == null) {
+        if (Objects.isNull(project)) {
             return JSONable.EMPTY;
         }
 
