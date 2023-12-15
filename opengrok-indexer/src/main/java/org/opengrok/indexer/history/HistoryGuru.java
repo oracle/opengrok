@@ -47,6 +47,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -57,12 +59,16 @@ import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
+import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
+
+import static org.opengrok.indexer.index.IndexDatabase.getDocument;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -684,14 +690,25 @@ public final class HistoryGuru {
      * Check if we can annotate the specified file.
      *
      * @param file the file to check
-     * @return whether the file is under version control, can be annotated and the
-     * version control system supports annotation
+     * @return whether the file can be annotated
      */
     public boolean hasAnnotation(File file) {
         if (file.isDirectory()) {
             LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'') to check annotation presence",
                     file);
             return false;
+        }
+
+        try {
+            Document doc;
+            if ((doc = IndexDatabase.getDocument(file)) != null) {
+                String fileType = doc.get(QueryBuilder.T);
+                // Consistent with the genre check below
+                return !AbstractAnalyzer.Genre.IMAGE.typeName().equals(fileType)
+                        && !AbstractAnalyzer.Genre.DATA.typeName().equals(fileType);
+            }
+        } catch (ParseException|IOException e) {
+            // pass
         }
 
         AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
