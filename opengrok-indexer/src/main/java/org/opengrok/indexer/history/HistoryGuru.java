@@ -697,26 +697,29 @@ public final class HistoryGuru {
             return false;
         }
 
+        Boolean docIsEligible = null;
         try {
             Document doc;
             if ((doc = IndexDatabase.getDocument(file)) != null) {
                 String fileType = doc.get(QueryBuilder.T);
                 // Consistent with the genre check below
-                return !AbstractAnalyzer.Genre.IMAGE.typeName().equals(fileType)
+                docIsEligible = !AbstractAnalyzer.Genre.IMAGE.typeName().equals(fileType)
                         && !AbstractAnalyzer.Genre.DATA.typeName().equals(fileType);
             }
         } catch (ParseException | IOException e) {
             // pass
         }
 
-        AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
-        if (genre == null) {
-            LOGGER.log(Level.INFO, "will not produce annotation for ''{0}'' with unknown genre", file);
-            return false;
-        }
-        if (genre.equals(AbstractAnalyzer.Genre.DATA) || genre.equals(AbstractAnalyzer.Genre.IMAGE)) {
-            LOGGER.log(Level.INFO, "no sense to produce annotation for binary file ''{0}''", file);
-            return false;
+        if (docIsEligible == null) {
+            AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
+            if (genre == null) {
+                LOGGER.log(Level.INFO, "will not produce annotation for ''{0}'' with unknown genre", file);
+                return false;
+            }
+            if (genre.equals(AbstractAnalyzer.Genre.DATA) || genre.equals(AbstractAnalyzer.Genre.IMAGE)) {
+                LOGGER.log(Level.INFO, "no sense to produce annotation for binary file ''{0}''", file);
+                return false;
+            }
         }
 
         Repository repo = getRepository(file);
