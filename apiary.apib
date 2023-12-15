@@ -145,6 +145,90 @@ The `Content-type` header of the reply will be set accordingly.
 
             genre as identified by analyzer, could be PLAIN, XREFABLE, IMAGE, DATA, HTML
 
+## File definitions [/file/defs{?path}]
+
+### get file definitions [GET]
+
++ Parameters
+  + path (string) - path of file, relative to source root
+
++ Response 200 (application/json)
+  + Body
+
+            [
+              {
+                "type": "function",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "void AES_cbc_encrypt(const unsigned char *in, unsigned char *out,",
+                "symbol": "AES_cbc_encrypt",
+                "lineStart": 5,
+                "lineEnd": 20,
+                "line": 20,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "in",
+                "lineStart": 21,
+                "lineEnd": 44,
+                "line": 20,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "out",
+                "lineStart": 46,
+                "lineEnd": 64,
+                "line": 20,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "len",
+                "lineStart": 21,
+                "lineEnd": 31,
+                "line": 21,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "key",
+                "lineStart": 33,
+                "lineEnd": 51,
+                "line": 21,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "ivec",
+                "lineStart": 21,
+                "lineEnd": 40,
+                "line": 22,
+                "namespace": null
+              },
+              {
+                "type": "argument",
+                "signature": "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "text": "AES_cbc_encrypt(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)",
+                "symbol": "enc",
+                "lineStart": 42,
+                "lineEnd": 55,
+                "line": 22,
+                "namespace": null
+              }
+            ]
+
+
 ## History [/history{?path,withFiles,start,max}]
 
 ### get history entries [GET]

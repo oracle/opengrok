@@ -18,41 +18,72 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
-import jakarta.ws.rs.core.Application;
-import org.glassfish.jersey.server.ResourceConfig;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.ServletDeploymentContext;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.authorization.AuthControlFlag;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationPlugin;
+import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.web.api.v1.RestApp;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    private static final String validPath = "git/main.c";
+
     private TestRepository repository;
 
     @Override
-    protected Application configure() {
-        return new ResourceConfig(FileController.class);
+    protected DeploymentContext configureDeployment() {
+        return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
+
+    @Override
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new GrizzlyWebTestContainerFactory();
+    }
+
 
     @BeforeEach
     @Override
@@ -105,12 +136,80 @@ class FileControllerTest extends OGKJerseyTest {
 
     @Test
     void testFileGenre() {
-        final String path = "git/main.c";
         String genre = target("file")
                 .path("genre")
-                .queryParam("path", path)
+                .queryParam("path", validPath)
                 .request()
                 .get(String.class);
         assertEquals("PLAIN", genre);
+    }
+
+    @Test
+    void testFileDefinitions() {
+        GenericType<List<Definitions.Tag>> type = new GenericType<>() {
+        };
+        List<Definitions.Tag> defs = target("file")
+                .path("defs")
+                .queryParam("path", validPath)
+                .request()
+                .get(type);
+        assertFalse(defs.isEmpty());
+        assertAll(() -> assertFalse(defs.stream().map(Definitions.Tag::getType).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getSymbol).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getText).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().filter(e -> !e.getType().equals("local")).
+                        map(Definitions.Tag::getSignature).anyMatch(Objects::isNull)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLine).anyMatch(e -> e <= 0)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLineStart).anyMatch(e -> e <= 0)),
+                () -> assertFalse(defs.stream().map(Definitions.Tag::getLineEnd).anyMatch(e -> e <= 0)));
+    }
+
+    /**
+     * Negative test case for file definitions API endpoint for a file that exists under the source root,
+     * however does not have matching document in the respective index database.
+     */
+    @Test
+    void testFileDefinitionsNull() throws Exception {
+        final String path = "git/extra.file";
+        Path createdPath = Files.createFile(Path.of(env.getSourceRootPath(), path));
+        // Assumes that the API endpoint indeed calls IndexDatabase#getDefinitions()
+        assertNull(IndexDatabase.getDefinitions(createdPath.toFile()));
+        GenericType<List<Definitions.Tag>> type = new GenericType<>() {
+        };
+        List<Definitions.Tag> defs = target("file")
+                .path("defs")
+                .queryParam("path", path)
+                .request()
+                .get(type);
+        assertTrue(defs.isEmpty());
+    }
+
+    /**
+     * Make sure that file definitions API performs authorization check.
+     */
+    @Test
+    void testFileDefinitionsNotAuthorized() throws Exception {
+        AuthorizationStack stack = new AuthorizationStack(AuthControlFlag.REQUIRED, "stack");
+        stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, "opengrok.auth.plugin.FalsePlugin"));
+        URL pluginsURL = getClass().getResource("/testplugins.jar");
+        assertNotNull(pluginsURL);
+        Path pluginsPath = Paths.get(pluginsURL.toURI());
+        assertNotNull(pluginsPath);
+        File pluginDirectory = pluginsPath.toFile().getParentFile();
+        assertNotNull(pluginDirectory);
+        assertTrue(pluginDirectory.isDirectory());
+        AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath(), stack);
+        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
+        framework.reload();
+        env.setAuthorizationFramework(framework);
+
+        Response response = target("file")
+                .path("defs")
+                .queryParam("path", validPath)
+                .request().get();
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+
+        // Cleanup.
+        env.setAuthorizationFramework(null);
     }
 }

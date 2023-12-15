@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.util.DTOElement;
 import org.opengrok.indexer.util.WhitelistObjectInputFilter;
 
 import java.io.ByteArrayInputStream;
@@ -206,45 +207,90 @@ public class Definitions implements Serializable {
 
         private static final long serialVersionUID = 1217869075425651465L;
 
+        public int getLine() {
+            return line;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+
         /**
          * Line number of the tag.
          */
+        @DTOElement
         public final int line;
         /**
          * The symbol used in the definition.
          */
+        @DTOElement
         public final String symbol;
+
+        public String getType() {
+            return type;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+
+        public int getLineStart() {
+            return lineStart;
+        }
+
+        public int getLineEnd() {
+            return lineEnd;
+        }
+
         /**
          * The type of the tag.
          */
+        @DTOElement
         public final String type;
         /**
          * The full line on which the definition occurs.
          */
+        @DTOElement
         public final String text;
         /**
          * Namespace/class of tag definition.
          */
+        @DTOElement
         public final String namespace;
         /**
          * Scope of tag definition.
          */
+        @DTOElement
         public final String signature;
         /**
          * The starting offset (possibly approximate) of {@link #symbol} from
          * the start of the line.
          */
+        @DTOElement
         public final int lineStart;
         /**
          * The ending offset (possibly approximate) of {@link #symbol} from
          * the start of the line.
          */
+        @DTOElement
         public final int lineEnd;
 
         /**
          * A non-serialized marker for marking a tag to avoid its reuse.
          */
         private transient boolean used;
+
+        protected Tag() {
+            this(0, null, null, null, null, null, 0, 0);
+        }
 
         protected Tag(int line, String symbol, String type, String text,
                 String namespace, String signature, int lineStart,

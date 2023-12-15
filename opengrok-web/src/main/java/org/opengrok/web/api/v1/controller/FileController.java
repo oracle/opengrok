@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -35,9 +35,12 @@ import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
+import org.opengrok.web.util.DTOUtil;
 import org.opengrok.web.util.NoPathParameterException;
 
 import java.io.File;
@@ -45,6 +48,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.opengrok.indexer.index.IndexDatabase.getDocument;
 import static org.opengrok.web.util.FileUtil.toFile;
@@ -53,6 +60,8 @@ import static org.opengrok.web.util.FileUtil.toFile;
 public class FileController {
 
     public static final String PATH = "file";
+
+
 
     private StreamingOutput transfer(File file) throws FileNotFoundException {
         if (!file.exists()) {
@@ -140,5 +149,25 @@ public class FileController {
         }
 
         return genre.toString();
+    }
+
+    @GET
+    @CorsEnable
+    @PathAuthorized
+    @Path("/defs")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Object> getDefinitions(@Context HttpServletRequest request,
+                                                @Context HttpServletResponse response,
+                                                @QueryParam("path") final String path)
+            throws IOException, NoPathParameterException, ParseException, ClassNotFoundException {
+
+        File file = toFile(path);
+        Definitions defs = IndexDatabase.getDefinitions(file);
+        return Optional.ofNullable(defs).
+                map(Definitions::getTags).
+                stream().
+                flatMap(Collection::stream).
+                map(DTOUtil::createDTO).
+                collect(Collectors.toList());
     }
 }
