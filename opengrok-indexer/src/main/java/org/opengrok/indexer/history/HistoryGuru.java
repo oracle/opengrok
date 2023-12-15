@@ -68,8 +68,6 @@ import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 
-import static org.opengrok.indexer.index.IndexDatabase.getDocument;
-
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
  * source control systems.
@@ -707,7 +705,7 @@ public final class HistoryGuru {
                 return !AbstractAnalyzer.Genre.IMAGE.typeName().equals(fileType)
                         && !AbstractAnalyzer.Genre.DATA.typeName().equals(fileType);
             }
-        } catch (ParseException|IOException e) {
+        } catch (ParseException | IOException e) {
             // pass
         }
 
