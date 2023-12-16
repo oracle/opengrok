@@ -18,9 +18,10 @@
  */
 
 /*
- * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2023, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -816,56 +817,103 @@ public class SearchHelper {
     }
 
     /**
-     * Search Helper Builder Class.
+     * Builder Class for Search Helper.
      */
     public static final class Builder {
         private final SearchHelper searchHelper;
 
         /**
          * Search Helper Builder Class constructor.
-         * start parameter is defaulted to zero
-         * maxItems parameter is defaulted to 10
-         * all boolean parameters(crossRefSearch,guiSearch,noRedirect) is defaulted to false
-         * order is defaulted to RELEVANCY based sorting
-         * @param dataRoot dataRoot
-         * @param sourceRoot sourceRoot
-         * @param eftarFileReader eftarFileReader
-         * @param queryBuilder queryBuilder
-         * @param contextPath contextPath
+         * <p>
+         * Parameters which are defaulting while using this builder
+         * <ul>
+         * <li>{@link #start} default value zero</li>
+         * <li>{@link #maxItems} default value 10</li>
+         * <li>{@link #crossRefSearch} default value false</li>
+         * <li>{@link #guiSearch} default value false</li>
+         * <li>{@link #noRedirect} default value false</li>
+         * <li>{@link #order} defaulted to RELEVANCY based sorting</li>
+         * </ul>
+         * @param dataRoot used to find the search index file
+         * @param sourceRoot the source root directory.
+         * @param eftarFileReader the <i>Eftar</i> file-reader to use.
+         * @param queryBuilder The QueryBuilder used to create the query.
+         * @param contextPath the applications' context path (usually /source) to use
+         *                      when generating a redirect URL
          */
         public Builder(File dataRoot, File sourceRoot,
                      EftarFileReader eftarFileReader, QueryBuilder queryBuilder,
                      String contextPath) {
             searchHelper = new SearchHelper(dataRoot, sourceRoot, eftarFileReader, queryBuilder, contextPath);
         }
+
+        /**
+         * Set result cursor start index , i.e. where to start displaying results.
+         * @param start result cursor start index
+         * @return search helper builder instance
+         */
         public Builder start(int start) {
             searchHelper.start = start;
             return this;
         }
+
+        /**
+         *  set max. number of result items to show.
+         * @param maxItems maximum result items to show
+         * @return search helper builder instance
+         */
         public Builder maxItems(int maxItems) {
             searchHelper.maxItems = maxItems;
             return this;
         }
+
+        /**
+         * Sets order used for ordering query results.
+         * @param order query results sort order
+         * @return search helper builder instance
+         */
         public Builder order(SortOrder order) {
             searchHelper.order = order;
             return this;
         }
 
+        /**
+         * Indicate whether this is search from a cross-reference. If {@code true}
+         *  {@link #executeQuery()} sets {@link #redirect} if certain conditions are met.
+         * @param crossRefSearch enable or disable crossRefSearch
+         * @return search helper builder instance
+         */
         public Builder crossRefSearch(boolean crossRefSearch) {
             searchHelper.crossRefSearch = crossRefSearch;
             return this;
         }
 
+        /**
+         *As with {@link #crossRefSearch}, but here indicating either a
+         * cross-reference search or a "full blown search".
+         * @param guiSearch enable or disable guiSearch
+         * @return search helper builder instance
+         */
         public Builder guiSearch(boolean guiSearch) {
             searchHelper.guiSearch = guiSearch;
             return this;
         }
 
+        /**
+         * A value indicating if redirection should be short-circuited when state or
+         *  query result would have indicated otherwise.
+         * @param noRedirect enable or disable redirection parameter
+         * @return search helper builder instance
+         */
         public Builder noRedirect(boolean noRedirect) {
             searchHelper.noRedirect = noRedirect;
             return this;
         }
 
+        /**
+         * Create and return the final search helper instance.
+         * @return search helper configured to the specification of previous calls to this builder
+         */
         public SearchHelper build() {
             return this.searchHelper;
         }

@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web.messages;
 
