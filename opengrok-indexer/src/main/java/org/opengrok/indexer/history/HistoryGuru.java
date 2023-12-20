@@ -686,7 +686,7 @@ public final class HistoryGuru {
 
     /**
      * Check if we can annotate the specified file.
-     *
+     * TODO: how is this called from the indexer ?
      * @param file the file to check
      * @return whether the file can be annotated
      */
@@ -697,6 +697,7 @@ public final class HistoryGuru {
             return false;
         }
 
+        // call this only in the webapp ?
         Boolean docIsEligible = null;
         try {
             Document doc;
@@ -711,6 +712,7 @@ public final class HistoryGuru {
         }
 
         if (docIsEligible == null) {
+            // TODO: how come this does not perform magic bytes matching ?
             AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
             if (genre == null) {
                 LOGGER.log(Level.INFO, "will not produce annotation for ''{0}'' with unknown genre", file);
