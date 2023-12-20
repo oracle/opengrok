@@ -47,11 +47,12 @@
   </dependencies>
 
   <build>
+      <finalName>opengrok-${project.version}</finalName>
       <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.6.1</version>
             <executions>
               <execution>
                 <id>copy-dependencies</id>
@@ -70,9 +71,8 @@
           </plugin>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.6.0</version>
             <configuration>
-              <finalName>opengrok-${project.version}</finalName>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
                 <descriptor>assembly.xml</descriptor>
