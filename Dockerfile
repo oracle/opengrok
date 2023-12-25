@@ -57,9 +57,13 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 # install dependencies and Python tools
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame helix-p4d \
+    apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame \
     unzip python3 python3-pip \
     python3-venv python3-setuptools openssh-client libyaml-dev
+
+RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
+        echo "aarch64: do not install helix-p4d."; else \
+        apt-get install --no-install-recommends -y helix-p4d; fi
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
