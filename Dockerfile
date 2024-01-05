@@ -61,6 +61,7 @@ RUN apt-get update && \
     unzip python3 python3-pip \
     python3-venv python3-setuptools openssh-client libyaml-dev
 
+# hadolint ignore=DL3008,DL3059
 RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
         echo "aarch64: do not install helix-p4d."; else \
         apt-get install --no-install-recommends -y helix-p4d; fi
