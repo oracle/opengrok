@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -51,15 +51,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
-import org.opengrok.indexer.analysis.AbstractAnalyzer;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -67,6 +64,9 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
+
+import static org.opengrok.indexer.analysis.AnalyzerGuru.isXrefable;
+import static org.opengrok.indexer.index.IndexDatabase.getDocument;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -233,10 +233,14 @@ public final class HistoryGuru {
      */
     @Nullable
     private Annotation getAnnotation(File file, @Nullable String rev, boolean fallback) throws IOException {
-        Annotation annotation;
-
         Repository repository = getRepository(file);
-        if (annotationCache != null && repository != null && repository.isAnnotationCacheEnabled()) {
+        if (repository == null) {
+            LOGGER.log(Level.FINER, "no repository found for ''{0}'' to check for annotation", file);
+            return null;
+        }
+
+        Annotation annotation;
+        if (annotationCache != null && repository.isAnnotationCacheEnabled()) {
             try {
                 annotation = annotationCache.get(file, rev);
                 if (annotation != null) {
@@ -252,9 +256,13 @@ public final class HistoryGuru {
             return null;
         }
 
+        if (!HistoryGuru.getInstance().hasAnnotation(file)) {
+            LOGGER.log(Level.FINER, "skipped getting annotation for file ''{0}}''", file);
+            return null;
+        }
+
         // Fall back to repository based annotation.
-        // It might be possible to store the annotation to the annotation cache here, needs further thought.
-        annotation = getAnnotationFromRepository(file, rev);
+        annotation = getAnnotationFromRepository(file, rev, repository);
         if (annotation != null) {
             annotation.setRevision(LatestRevisionUtil.getLatestRevision(file));
         }
@@ -264,24 +272,21 @@ public final class HistoryGuru {
 
     /**
      * Annotate given file using repository method. Makes sure that the resulting annotation has the revision set.
+     * Assumes the {@link HistoryGuru#hasAnnotation(File)} check was already done.
      * @param file file object to generate the annotation for
      * @param rev revision to get the annotation for or {@code null} for latest revision of given file
+     * @param repository {@link Repository} instance
      * @return annotation object or {@code null}
      * @throws IOException on error when getting the annotation
      */
     @Nullable
-    private Annotation getAnnotationFromRepository(File file, @Nullable String rev) throws IOException {
+    private Annotation getAnnotationFromRepository(File file, @Nullable String rev, Repository repository) throws IOException {
         if (!env.getPathAccepter().accept(file)) {
             LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for annotation", file);
             return null;
         }
 
-        Repository repository = getRepository(file);
-        if (repository != null && hasAnnotation(file)) {
-            return repository.annotate(file, rev);
-        }
-
-        return null;
+        return repository.annotate(file, rev);
     }
 
     /**
@@ -685,51 +690,60 @@ public final class HistoryGuru {
     }
 
     /**
-     * Check if we can annotate the specified file.
-     * TODO: how is this called from the indexer ?
+     * Check if annotation can be produced for the specified file. If related document is specified,
+     * it will be used for negative check. If the document indicates that the type of file is xref-able
+     * or the document is {@code null}, the capability to produce annotation for the file will be checked
+     * in related repository.
+     * @param file the file to check
+     * @param document {@link Document} object related to the file, can be {@code null}.
+     * @return whether the file can be annotated
+     */
+    public boolean hasAnnotation(File file, @Nullable Document document) {
+        if (file.isDirectory()) {
+            LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'')", file);
+            return false;
+        }
+
+        if (document != null) {
+            // The "T" field is added to the document currently only for xref-able input data,
+            // however it does not hurt to check in case this will change.
+            String fileType = document.get(QueryBuilder.T);
+            if (fileType == null || !isXrefable(fileType)) {
+                LOGGER.log(Level.FINEST, "no file type found in document for ''{0}'' or not xref-able", file);
+                return false;
+            }
+        }
+
+        return hasAnnotationInRepo(file);
+    }
+
+    /**
+     * Check if annotation can be produced for the specified file. Wrapper of {@link #hasAnnotation(File, Document)}
      * @param file the file to check
      * @return whether the file can be annotated
      */
     public boolean hasAnnotation(File file) {
         if (file.isDirectory()) {
-            LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'') to check annotation presence",
-                    file);
+            LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'')", file);
             return false;
         }
 
-        // call this only in the webapp ?
-        Boolean docIsEligible = null;
+        Document document = null;
         try {
-            Document doc;
-            if ((doc = IndexDatabase.getDocument(file)) != null) {
-                String fileType = doc.get(QueryBuilder.T);
-                // Consistent with the genre check below
-                docIsEligible = !AbstractAnalyzer.Genre.IMAGE.typeName().equals(fileType)
-                        && !AbstractAnalyzer.Genre.DATA.typeName().equals(fileType);
-            }
+            document = getDocument(file);
         } catch (ParseException | IOException e) {
-            // pass
+            LOGGER.log(Level.FINEST, String.format("cannot get document for '%s' to check annotation", file), e);
         }
 
-        if (docIsEligible == null) {
-            // TODO: how come this does not perform magic bytes matching ?
-            AbstractAnalyzer.Genre genre = AnalyzerGuru.getGenre(file.toString());
-            if (genre == null) {
-                LOGGER.log(Level.INFO, "will not produce annotation for ''{0}'' with unknown genre", file);
-                return false;
-            }
-            if (genre.equals(AbstractAnalyzer.Genre.DATA) || genre.equals(AbstractAnalyzer.Genre.IMAGE)) {
-                LOGGER.log(Level.INFO, "no sense to produce annotation for binary file ''{0}''", file);
-                return false;
-            }
-        }
+        return hasAnnotation(file, document);
+    }
 
+    private boolean hasAnnotationInRepo(File file) {
         Repository repo = getRepository(file);
         if (repo == null) {
             LOGGER.log(Level.FINEST, "cannot find repository for ''{0}'' to check annotation presence", file);
             return false;
         }
-
         if (!repo.isWorking()) {
             LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check annotation presence",
                     new Object[]{repo, file});
@@ -1136,7 +1150,7 @@ public final class HistoryGuru {
         LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", file);
         try {
             Statistics statistics = new Statistics();
-            Annotation annotation = getAnnotationFromRepository(file, null);
+            Annotation annotation = getAnnotationFromRepository(file, null, repository);
             statistics.report(LOGGER, Level.FINEST, String.format("retrieved annotation for ''%s''", file),
                     "annotation.retrieve.latency");
 

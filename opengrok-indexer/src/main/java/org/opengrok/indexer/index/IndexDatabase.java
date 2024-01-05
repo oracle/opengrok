@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -1229,22 +1229,31 @@ public class IndexDatabase {
 
         setDirty();
 
+        createAnnotationCache(file, doc);
+
+        for (IndexChangedListener listener : listeners) {
+            listener.fileAdded(path, fa.getClass().getSimpleName());
+        }
+    }
+
+    private static void createAnnotationCache(File file, Document doc) {
+        if (!HistoryGuru.getInstance().hasAnnotation(file, doc)) {
+            LOGGER.log(Level.FINER, "skipped creating annotation cache for file ''{0}}''", file);
+            return;
+        }
+
         String lastRev = doc.get(QueryBuilder.LASTREV);
         if (lastRev != null) {
             try {
                 // The last revision should be fresh. Using LatestRevisionUtil#getLatestRevision()
                 // would not work here, because it uses IndexDatabase#getDocument() and the index searcher used therein
-                // does not know about updated document yet, so stale revision would be returned.
+                // does not know about the updated document yet, so stale revision would be returned.
                 // Instead, use the last revision (retrieved from the history in the populateDocument()
                 // call above) directly.
                 HistoryGuru.getInstance().createAnnotationCache(file, lastRev);
             } catch (CacheException e) {
                 LOGGER.log(e.getLevel(), "failed to create annotation", e);
             }
-        }
-
-        for (IndexChangedListener listener : listeners) {
-            listener.fileAdded(path, fa.getClass().getSimpleName());
         }
     }
 
