@@ -600,13 +600,13 @@ def main():
             merge_config_files(
                 read_only_config_file,
                 OPENGROK_CONFIG_FILE,
-                tmp_out,
+                out_file,
                 jar=OPENGROK_JAR,
                 loglevel=log_level,
             )
 
         if out_file and os.path.getsize(out_file) > 0:
-            shutil.move(tmp_out.name, OPENGROK_CONFIG_FILE)
+            shutil.move(out_file, OPENGROK_CONFIG_FILE)
         else:
             logger.warning(
                 "Failed to merge read-only configuration, "
