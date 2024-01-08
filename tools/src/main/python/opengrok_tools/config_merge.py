@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 
 import argparse
@@ -37,10 +37,18 @@ from .utils.exitvals import (
 """
 
 
-def merge_config_files(read_only, current, out_file, jar,
+def merge_config_files(read_only_config_path, current_config_path, out_file_path, jar,
                        loglevel=logging.INFO):
+    """
+    :param read_only_config_path: path to the read-only configuration
+    :param current_config_path: path to the current configuration
+    :param out_file_path: path to the merged configuration
+    :param jar: path to the opengrok jar file
+    :param loglevel: log level
+    :return: either FAILURE_EXITVAL or SUCCESS_EXITVAL
+    """
 
-    return config_merge_wrapper([read_only, current, out_file], jar=jar,
+    return config_merge_wrapper([read_only_config_path, current_config_path, out_file_path], jar=jar,
                                 loglevel=loglevel)
 
 
