@@ -22,7 +22,7 @@ Entry point for the OpenGrok Docker container.
 # CDDL HEADER END
 
 #
-# Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -592,28 +592,28 @@ def main():
             "Merging read-only configuration from '{}' with current "
             "configuration in '{}'".format(read_only_config_file, OPENGROK_CONFIG_FILE)
         )
-        out_file = None
+        out_file_path = None
         with tempfile.NamedTemporaryFile(
             mode="w+", delete=False, prefix="merged_config"
-        ) as tmp_out:
-            out_file = tmp_out.name
+        ) as tmp_out_fobj:
+            out_file_path = tmp_out_fobj.name
             merge_config_files(
                 read_only_config_file,
                 OPENGROK_CONFIG_FILE,
-                tmp_out,
+                out_file_path,
                 jar=OPENGROK_JAR,
                 loglevel=log_level,
             )
 
-        if out_file and os.path.getsize(out_file) > 0:
-            shutil.move(tmp_out.name, OPENGROK_CONFIG_FILE)
+        if out_file_path and os.path.getsize(out_file_path) > 0:
+            shutil.move(out_file_path, OPENGROK_CONFIG_FILE)
         else:
             logger.warning(
                 "Failed to merge read-only configuration, "
                 "leaving the original in place"
             )
-            if out_file:
-                os.remove(out_file)
+            if out_file_path:
+                os.remove(out_file_path)
 
     sync_enabled = True
     if use_projects:
