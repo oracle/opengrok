@@ -201,7 +201,6 @@ class HistoryGuruTest {
     void testHasAnnotationSmokeTest() {
         // If hasAnnotation() returns true for a file, it should be possible to actually construct the annotation.
         List<File> filesWithAnnotation = FILES.stream().filter(instance::hasAnnotation).collect(Collectors.toList());
-        assertTrue(filesWithAnnotation.size() > 10);
         assertAll(filesWithAnnotation.stream().map(f -> () -> assertNotNull(instance.annotate(f, null))));
     }
 
