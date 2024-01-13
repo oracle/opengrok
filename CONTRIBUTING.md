@@ -13,7 +13,7 @@ vulnerability, do not raise a GitHub issue and follow the instructions in our
 When submitting a new Issue for what seems is a bug, please note the versions
 (OpenGrok, Tomcat, Universal ctags etc.) you're running and ideally steps to reproduce.
 
-Make sure to add a comment line to the changeset saying which Issue it is is fixing,
+Make sure to add a comment line to the changeset saying which Issue it is fixing,
 e.g. `fixes #XYZ` so that the issue can be automatically closed when the associated
 pull request is merged.
 
@@ -50,7 +50,7 @@ Please follow pre-existing coding style.
 
 Asking questions via creating new [discussion](https://github.com/oracle/opengrok/discussions) is fine.
 
-Feel free to add a Copyright line to the source files wehre you made non-trivial changes.
+Feel free to add a Copyright line to the source files where you made non-trivial changes.
 
 1. Ensure there is an issue created to track and discuss the fix or enhancement
    you intend to submit.
