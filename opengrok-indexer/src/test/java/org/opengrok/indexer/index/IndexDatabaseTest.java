@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -415,7 +415,34 @@ class IndexDatabaseTest {
             assertFalse(fooFile.exists());
 
             addMergeCommit(git, repositoryRoot);
+
+            addSymlinksToGitRepository(git, repositoryRoot);
         }
+    }
+
+    private void addSymlinksToGitRepository(Git git, File repositoryRoot) throws Exception {
+        Path target = Path.of(repositoryRoot.toString(), "main.c");
+        assertTrue(target.toFile().exists());
+        final String fileLinkName = "symlink";
+        Path fileLink = Path.of(repositoryRoot.toString(), fileLinkName);
+        assertFalse(fileLink.toFile().exists());
+        Files.createSymbolicLink(fileLink, target);
+        assertTrue(fileLink.toFile().exists());
+
+        final String dirLinkName = "dirsymlink";
+        Path dirLink = Path.of(repositoryRoot.toString(), dirLinkName);
+        assertFalse(dirLink.toFile().exists());
+        target = Path.of(repositoryRoot.toString(), "moved2");
+        assertTrue(target.toFile().isDirectory());
+        Files.createSymbolicLink(dirLink, target);
+        assertTrue(dirLink.toFile().exists());
+
+        git.add().
+                addFilepattern(fileLinkName).
+                addFilepattern(dirLinkName).call();
+
+        git.commit().setMessage("add symlinks").setAuthor("foo", "foobar@example.com").
+                setAll(true).call();
     }
 
     private static Stream<Arguments> provideParamsFortestGetIndexDownArgs() {
@@ -541,6 +568,7 @@ class IndexDatabaseTest {
         expectedFileSet.add(Path.of("/git/zzz.txt"));
         expectedFileSet.add(Path.of("/git/zzzzzz.txt"));
         expectedFileSet.add(Path.of("/git/new.txt"));
+        expectedFileSet.add(Path.of("/git/symlink"));
         assertEquals(expectedFileSet, args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
 
         assertEquals(Set.of(
@@ -694,6 +722,9 @@ class IndexDatabaseTest {
                 contains(File.separator + gitProject.getName() +
                         File.separator + subRepoName +
                         File.separator + changedFileName));
+
+        // cleanup
+        env.setFileCollector("git", null);
     }
 
     /**

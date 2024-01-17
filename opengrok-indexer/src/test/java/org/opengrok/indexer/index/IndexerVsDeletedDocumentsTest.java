@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -331,7 +331,7 @@ class IndexerVsDeletedDocumentsTest {
 
             if (useGit && projectsEnabled) {
                 // Verify the history based reindex was actually used.
-                verify(indexDatabase, atLeast(1)).processFileIncremental(any(), any(), any());
+                verify(indexDatabase, atLeast(1)).processFileHistoryBased(any(), any(), any());
             } else {
                 verify(indexDatabase, atLeast(1)).processFile(any(), any(), any());
             }
