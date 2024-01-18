@@ -61,7 +61,7 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
     /**
      * Creates a string joiner with given prefix and empty string.
      * @param prefix prefix before the joined string
-     * @param emptyString empty string to display if collection is empty
+     * @param emptyString string to display if collection is empty, can be {@code null}
      */
     public ErrorMessageCollector(@NotNull String prefix, @Nullable String emptyString) {
         this.prefix = prefix;
