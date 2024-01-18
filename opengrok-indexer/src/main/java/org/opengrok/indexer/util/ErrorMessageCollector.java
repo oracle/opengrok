@@ -69,7 +69,6 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
         this.returnNullWhenEmpty = Objects.isNull(emptyString);
 
     }
-    
     /**
      * A function that creates and returns a new mutable result container.
      *
