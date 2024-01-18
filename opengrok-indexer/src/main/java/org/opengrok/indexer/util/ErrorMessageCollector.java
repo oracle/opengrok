@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 /**
- * Custom collector to collect error messages for list of projects and join it with comma.
+ * Custom collector to collect error messages for list of projects and join them with comma.
  *
  *
  * @author Gino Augustine
