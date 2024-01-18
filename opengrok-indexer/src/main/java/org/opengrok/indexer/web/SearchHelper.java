@@ -562,6 +562,7 @@ public class SearchHelper {
         }
 
     }
+    
     private int calculateRedirectOffset(Matches matches, List<String> contextFields) {
         int offset = -1;
         try {
