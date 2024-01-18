@@ -51,7 +51,7 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
 
     /**
      * Creates a collector with given prefix and
-     * returns optional empty for empty collection .
+     * returns optional empty for empty collection.
      * @param prefix prefix before the joined string
      */
     public ErrorMessageCollector(@NotNull String prefix) {
