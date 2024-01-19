@@ -2220,7 +2220,7 @@ public class IndexDatabase {
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
         if (actTabSize != null && !actTabSize.equals(reqTabSize)) {
-            LOGGER.log(Level.FINE, "Tabsize mismatch: {0}", path);
+            LOGGER.log(Level.FINE, "Tabsize mismatch: ''{0}''", path);
             return false;
         }
 
@@ -2232,7 +2232,7 @@ public class IndexDatabase {
             // Read a limited-fields version of the document.
             Document doc = storedFields.document(postsIter.docID(), CHECK_FIELDS);
             if (doc == null) {
-                LOGGER.log(Level.FINER, "No Document: {0}", path);
+                LOGGER.log(Level.FINER, "No Document for ''{0}''", path);
                 continue;
             }
 
@@ -2253,7 +2253,7 @@ public class IndexDatabase {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
                 if (fileTypeName == null) {
                     // (Should not get here, but break just in case.)
-                    LOGGER.log(Level.FINEST, "Missing TYPE field: {0}", path);
+                    LOGGER.log(Level.FINEST, "Missing TYPE field: ''{0}''", path);
                     break;
                 }
 
@@ -2267,14 +2267,14 @@ public class IndexDatabase {
                  * selection of analyzer or return a value to indicate the
                  * analyzer is now mis-matched.
                  */
-                LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
+                LOGGER.log(Level.FINER, "Guru version mismatch: ''{0}''", path);
 
                 fa = getAnalyzerFor(file, path);
                 fileTypeName = fa.getFileTypeName();
                 String oldTypeName = doc.get(QueryBuilder.TYPE);
                 if (!fileTypeName.equals(oldTypeName)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Changed {0} to {1}: {2}",
+                        LOGGER.log(Level.FINE, "Changed {0} to {1}: ''{2}''",
                             new Object[]{oldTypeName, fileTypeName, path});
                     }
                     return false;
@@ -2286,7 +2286,7 @@ public class IndexDatabase {
             Long actVersion = settings.getAnalyzerVersion(fileTypeName);
             if (actVersion == null || !actVersion.equals(reqVersion)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "{0} version mismatch: {1}",
+                    LOGGER.log(Level.FINE, "{0} version mismatch: ''{1}''",
                         new Object[]{fileTypeName, path});
                 }
                 return false;
@@ -2300,14 +2300,14 @@ public class IndexDatabase {
             break;
         }
         if (n < 1) {
-            LOGGER.log(Level.FINER, "Missing index Documents: {0}", path);
+            LOGGER.log(Level.FINER, "Missing index Documents: ''{0}''", path);
             return false;
         }
 
         // If the economy mode is on, this should be treated as a match.
         if (!env.isGenerateHtml()) {
             if (xrefExistsFor(path)) {
-                LOGGER.log(Level.FINEST, "Extraneous {0} , removing its xref file", path);
+                LOGGER.log(Level.FINEST, "Extraneous ''{0}'' , removing its xref file", path);
                 removeXrefFile(path);
             }
             return true;
