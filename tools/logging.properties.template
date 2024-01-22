@@ -5,7 +5,10 @@
 handlers= java.util.logging.FileHandler
 
 # Default global logging level.
-.level= FINE
+#.level= FINE
+
+# OpenGrok log level
+org.opengrok.level = FINE
 
 # The '%PROJ%' pattern will be expanded by the the opengrok-reindex-project script 
 # and therefore needs to match the argument to the -p option.
