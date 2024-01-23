@@ -34,8 +34,8 @@ public class IndexVersionException extends IndexCheckException {
     private final int luceneIndexVersion;
     private final int indexVersion;
 
-    public IndexVersionException(String s, Path path, int luceneIndexVersion, int indexVersion) {
-        super(s, path);
+    public IndexVersionException(String message, Path path, int luceneIndexVersion, int indexVersion) {
+        super(message, path);
         this.indexVersion = indexVersion;
         this.luceneIndexVersion = luceneIndexVersion;
     }

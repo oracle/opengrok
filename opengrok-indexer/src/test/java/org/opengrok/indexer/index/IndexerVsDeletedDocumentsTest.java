@@ -62,6 +62,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -386,9 +387,10 @@ class IndexerVsDeletedDocumentsTest {
      * similar to what is done in {@link IndexDatabase#update()}.
      */
     private void checkLiveDocs(String projectName) throws IOException {
-        List<String> livePaths = getLiveDocumentPaths(getIndexPath(projectName));
+        var livePaths = getLiveDocumentPaths(getIndexPath(projectName));
 
-        assertTrue(livePaths.size() > 0);
+        assertNotNull(livePaths);
+        assertFalse(livePaths.isEmpty());
         assertEquals(new HashSet<>(livePaths).size(), livePaths.size());
     }
 }

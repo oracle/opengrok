@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -106,6 +106,12 @@ class IndexCheckTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
+
+        // The configuration needs to be populated with projects discovered in prepareIndexer()
+        // for the project based index check to work as it uses configuration rather than RuntimeEnvironment.
+        if (projectsEnabled) {
+            configuration.setProjects(env.getProjects());
+        }
 
         try (IndexCheck indexCheck = new IndexCheck(configuration, subFiles)) {
             assertDoesNotThrow(() -> indexCheck.check(mode));
@@ -249,6 +255,10 @@ class IndexCheckTest {
                 null, null);
         Indexer.getInstance().doIndexerExecution(null, null);
 
+        // The configuration needs to be populated with projects discovered in prepareIndexer()
+        // for the project based index check to work as it uses configuration rather than RuntimeEnvironment.
+        configuration.setProjects(env.getProjects());
+
         try (IndexCheck indexCheck = new IndexCheck(configuration)) {
             for (int i = 0; i < 3; i++) {
                 assertDoesNotThrow(() -> indexCheck.check(IndexCheck.IndexCheckMode.VERSION));
@@ -259,8 +269,46 @@ class IndexCheckTest {
     @Test
     void testNullConfiguration() throws Exception {
         assertThrows(NullPointerException.class, () -> {
-            new IndexCheck(null);
-            }
+                    new IndexCheck(null);
+                }
         );
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testMissingSourceDocumentCheck(boolean projectsEnabled) throws Exception {
+        env.setProjectsEnabled(projectsEnabled);
+        configuration.setProjectsEnabled(projectsEnabled);
+        Indexer.getInstance().prepareIndexer(env, true, projectsEnabled,
+                null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
+
+        final String sourceRoot = env.getSourceRootPath();
+        Path originPath = Path.of(sourceRoot, "git", "main.c");
+        assertTrue(originPath.toFile().isFile());
+        Path tempPath = Path.of(sourceRoot, "git", "main.c.tmp");
+        Files.move(originPath, tempPath);
+
+        // The configuration needs to be populated with projects discovered in prepareIndexer()
+        // for the project based index check to work as it uses configuration rather than RuntimeEnvironment.
+        if (projectsEnabled) {
+            configuration.setProjects(env.getProjects());
+        }
+
+        try (IndexCheck indexCheck = new IndexCheck(configuration)) {
+            IndexCheckException exception = assertThrows(IndexCheckException.class,
+                    () -> indexCheck.check(IndexCheck.IndexCheckMode.DOCUMENTS));
+            assertEquals(1, exception.getFailedPaths().size());
+            Path expectedPath;
+            if (projectsEnabled) {
+                expectedPath = Path.of(sourceRoot, "git");
+            } else {
+                expectedPath = Path.of(sourceRoot);
+            }
+            assertTrue(exception.getFailedPaths().contains(expectedPath));
+        }
+
+        // cleanup
+        Files.move(tempPath, originPath);
     }
 }

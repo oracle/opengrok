@@ -18,33 +18,48 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Exception thrown when index contains duplicate live documents.
+ * Exception thrown when index document check fails.
  */
 public class IndexDocumentException extends IndexCheckException {
-    private static final long serialVersionUID = 5693446916108385595L;
+    private static final long serialVersionUID = -277429315137557112L;
 
-    private final Map<String, Integer> fileMap;
+    private final Map<Path, Integer> duplicatePathMap;
+    private final Set<Path> missingPaths;
 
     public IndexDocumentException(String s, Path path) {
         super(s, path);
-        this.fileMap = null;
+        this.duplicatePathMap = null;
+        this.missingPaths = null;
     }
 
-    public IndexDocumentException(String s, Path path, Map<String, Integer> fileMap) {
-        super(s, path);
-        this.fileMap = fileMap;
+    public IndexDocumentException(String message, Path indexPath, Map<Path, Integer> duplicateFileMap, Set<Path> missingPaths) {
+        super(message, indexPath);
+        this.duplicatePathMap = duplicateFileMap;
+        this.missingPaths = missingPaths;
     }
 
     @Override
     public String toString() {
-        return getMessage() + ": " + (fileMap == null ? "" : fileMap);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getMessage());
+        stringBuilder.append(":");
+        if (!duplicatePathMap.isEmpty()) {
+            stringBuilder.append(" duplicate paths = ");
+            stringBuilder.append(duplicatePathMap);
+        }
+        if (!missingPaths.isEmpty()) {
+            stringBuilder.append(" missing paths = ");
+            stringBuilder.append(missingPaths);
+        }
+        return stringBuilder.toString();
     }
 }
