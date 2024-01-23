@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -35,16 +35,19 @@ public class IndexCheckException extends Exception {
 
     private final Set<Path> failedPaths = new HashSet<>();
 
-    public IndexCheckException(String s, Path path) {
-        super(s);
+    public IndexCheckException(String message, Path path) {
+        super(message);
         failedPaths.add(path);
     }
 
-    public IndexCheckException(String s, Set<Path> paths) {
-        super(s);
+    public IndexCheckException(String message, Set<Path> paths) {
+        super(message);
         failedPaths.addAll(paths);
     }
 
+    /**
+     * @return set of source paths which failed the check
+     */
     public Set<Path> getFailedPaths() {
         return Collections.unmodifiableSet(failedPaths);
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +64,6 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Configuration;
@@ -232,7 +232,9 @@ public class IndexCheck implements AutoCloseable {
     /**
      * Perform specified check on given index directory. All exceptions except {@code IOException} are swallowed
      * and result in return value of 1.
+     * @param sourcePath source root path
      * @param indexPath directory with index
+     * @param mode index check mode
      * @throws IOException on I/O error
      * @throws IndexCheckException if the index failed given check
      */
@@ -270,7 +272,7 @@ public class IndexCheck implements AutoCloseable {
                 checkVersion(sourcePath, indexPath);
                 break;
             case DOCUMENTS:
-                checkDuplicateDocuments(sourcePath, indexPath);
+                checkDocuments(sourcePath, indexPath);
                 break;
             case DEFINITIONS:
                 checkDefinitions(sourcePath, indexPath);
@@ -410,14 +412,14 @@ public class IndexCheck implements AutoCloseable {
                     errors++;
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "failure when checking definitions", e);
+                LOGGER.log(Level.WARNING, String.format("failure when checking definitions for '%s'", indexPath), e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof IOException) {
                     ioException = (IOException) cause;
                 }
             }
         }
-        statistics.report(LOGGER, Level.FINE, String.format("checked %d files", paths.size()));
+        statistics.report(LOGGER, Level.FINE, String.format("checked %d files for '%s'", paths.size(), indexPath));
 
         // If there were multiple cases of IOException, they were logged above.
         // Propagate the last one so that upper layers can properly decide on how to treat the index check.
@@ -426,17 +428,17 @@ public class IndexCheck implements AutoCloseable {
         }
 
         if (errors > 0) {
-            throw new IndexDocumentException(String.format("document check failed for (%d documents out of %d)",
-                    errors, paths.size()), indexPath);
+            throw new IndexDocumentException(String.format("definitions check failed for '%s' (%d documents out of %d)",
+                    indexPath, errors, paths.size()), sourcePath);
         }
     }
 
     /**
-     * @param sourcePath path to the source
-     * @param indexPath path to the index directory
-     * @throws IOException on I/O error
+     * @param sourcePath source path
+     * @param indexPath  path to the index directory
+     * @throws IOException           on I/O error
      * @throws IndexVersionException if the version stored in the document does not match the version
-     * used by the running program
+     *                               used by the running program
      */
     private void checkVersion(Path sourcePath, Path indexPath) throws IOException, IndexVersionException {
         LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
@@ -456,7 +458,7 @@ public class IndexCheck implements AutoCloseable {
                 new Object[]{indexPath, segVersion, Version.LATEST.major});
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
-                String.format("Index for '%s' has index version discrepancy", sourcePath), sourcePath,
+                String.format("Index in '%s' has index version discrepancy", indexPath), sourcePath,
                     Version.LATEST.major, segVersion);
         }
     }
@@ -506,21 +508,18 @@ public class IndexCheck implements AutoCloseable {
      * or {@code null} if live documents cannot be retrieved.
      * @throws IOException on I/O error
      */
-    @Nullable
     @VisibleForTesting
-    static List<String> getLiveDocumentPaths(Path indexPath) throws IOException {
+    static List<Path> getLiveDocumentPaths(Path indexPath) throws IOException {
         try (IndexReader indexReader = getIndexReader(indexPath)) {
-            List<String> livePaths = new ArrayList<>();
+            List<Path> livePaths = new ArrayList<>();
 
             Bits liveDocs = MultiBits.getLiveDocs(indexReader);
-            if (liveDocs == null) { // the index has no deletions
-                return null;
-            }
 
             for (int i = 0; i < indexReader.maxDoc(); i++) {
                 Document doc = indexReader.storedFields().document(i);
 
-                if (!liveDocs.get(i)) {
+                // liveDocs is null if the index has no deletions.
+                if (liveDocs != null && !liveDocs.get(i)) {
                     continue;
                 }
 
@@ -528,7 +527,7 @@ public class IndexCheck implements AutoCloseable {
                 IndexableField field = doc.getField(QueryBuilder.U);
                 if (field != null) {
                     String uid = field.stringValue();
-                    livePaths.add(Util.uid2url(uid));
+                    livePaths.add(Path.of(Util.uid2url(uid)));
                 }
             }
 
@@ -536,42 +535,61 @@ public class IndexCheck implements AutoCloseable {
         }
     }
 
-    private static void checkDuplicateDocuments(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
+    /**
+     * Check live (not deleted) documents in the index whether they have the following properties.
+     * <ul>
+     *     <li>they have corresponding file under source root</li>
+     *     <li>there is exactly one document with the same path</li>
+     * </ul>
+     * @param sourcePath source root path
+     * @param indexPath index path
+     * @throws IOException on I/O error
+     * @throws IndexDocumentException if the index failed the check
+     */
+    private void checkDocuments(Path sourcePath, Path indexPath) throws IOException, IndexDocumentException {
+
+        Statistics stat = new Statistics();
+        List<Path> livePaths = getLiveDocumentPaths(indexPath);
+
+        LOGGER.log(Level.FINE, "checking documents in ''{0}}'' have corresponding file under source root ''{1}''",
+                new Object[]{indexPath, sourcePath});
+        Set<Path> missingPaths = new TreeSet<>();
+        for (Path relativePath : livePaths) {
+            Path absolutePath = Path.of(configuration.getSourceRoot(), relativePath.toString());
+            if (!Files.exists(absolutePath)) {
+                LOGGER.log(Level.FINER, "path ''{0}'' does not exist", absolutePath);
+                missingPaths.add(absolutePath);
+            }
+        }
 
         LOGGER.log(Level.FINE, "Checking duplicate documents in ''{0}''", indexPath);
-        Statistics stat = new Statistics();
-        List<String> livePaths = getLiveDocumentPaths(indexPath);
-        if (livePaths == null) {
-            throw new IndexDocumentException(String.format("cannot determine live paths for '%s'", indexPath),
-                    indexPath);
-        }
-        HashSet<String> pathSet = new HashSet<>(livePaths);
-        Map<String, Integer> fileMap = new ConcurrentHashMap<>();
+        HashSet<Path> pathSet = new HashSet<>(livePaths);
+        Map<Path, Integer> duplicatePathMap = new ConcurrentHashMap<>();
         if (pathSet.size() != livePaths.size()) {
             LOGGER.log(Level.FINE,
                     "index in ''{0}'' has document path set ({1}) vs document list ({2}) discrepancy",
                     new Object[]{indexPath, pathSet.size(), livePaths.size()});
-            for (String path : livePaths) {
+            for (Path path : livePaths) {
                 if (pathSet.contains(path)) {
-                    fileMap.putIfAbsent(path, 0);
-                    fileMap.put(path, fileMap.get(path) + 1);
+                    duplicatePathMap.putIfAbsent(path, 0);
+                    duplicatePathMap.put(path, duplicatePathMap.get(path) + 1);
                 }
             }
         }
 
         // Traverse the file map and leave only duplicate entries.
-        for (String path: fileMap.keySet()) {
-            if (fileMap.get(path) > 1) {
+        for (Path path: duplicatePathMap.keySet()) {
+            if (duplicatePathMap.get(path) > 1) {
                 LOGGER.log(Level.FINER, "duplicate path: ''{0}''", path);
             } else {
-                fileMap.remove(path);
+                duplicatePathMap.remove(path);
             }
         }
 
-        stat.report(LOGGER, Level.FINE, String.format("duplicate check in '%s' done", indexPath));
-        if (!fileMap.isEmpty()) {
-            throw new IndexDocumentException(String.format("index for '%s' contains duplicate live documents",
-                    sourcePath), sourcePath, fileMap);
+        stat.report(LOGGER, Level.FINE, String.format("document check in '%s' done", indexPath));
+        if (!duplicatePathMap.isEmpty() || !missingPaths.isEmpty()) {
+            throw new IndexDocumentException(String.format("index '%s' failed document check",
+                    indexPath), sourcePath, duplicatePathMap, missingPaths);
         }
     }
 }
