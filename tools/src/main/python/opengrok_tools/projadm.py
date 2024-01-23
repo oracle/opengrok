@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -54,7 +54,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.6"
+__version__ = "0.7"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -265,7 +265,7 @@ def main():
     add_http_headers(parser)
     parser.add_argument('--api_timeout', type=int, default=3,
                         help='Set response timeout in seconds for RESTful API calls')
-    parser.add_argument('--async_api_timeout', type=int, default=300,
+    parser.add_argument('--async_api_timeout', type=int, default=None,
                         help='Set timeout in seconds for asynchronous RESTful API calls')
 
     group = parser.add_mutually_exclusive_group()
