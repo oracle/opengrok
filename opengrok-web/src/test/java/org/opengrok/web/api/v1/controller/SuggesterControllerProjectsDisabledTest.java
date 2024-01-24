@@ -33,7 +33,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -43,13 +42,10 @@ import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
