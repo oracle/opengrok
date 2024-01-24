@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -108,7 +108,7 @@ class SuggesterTest {
         var terminationDuration = Duration.ofMinutes(5);
         assertThrows(IllegalArgumentException.class,
                 () -> new Suggester(null, 10, terminationDuration, false,
-                        true, null, Integer.MAX_VALUE, 1, registry,
+                        true, null, Integer.MAX_VALUE, 1, 1, registry,
                         false));
     }
 
@@ -129,7 +129,7 @@ class SuggesterTest {
                                         .orElse(null);
         try {
             new Suggester(tempFile.toFile(), 10, objDuration, false,
-                    true, null, Integer.MAX_VALUE, 1, registry,
+                    true, null, Integer.MAX_VALUE, 1, 1, registry,
                     false);
         } finally {
             tempFile.toFile().delete();
@@ -148,7 +148,8 @@ class SuggesterTest {
 
         Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
                 true, Collections.singleton("test"), Integer.MAX_VALUE,
-                Runtime.getRuntime().availableProcessors(), registry, false);
+                Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                registry, false);
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
 
@@ -172,7 +173,7 @@ class SuggesterTest {
     }
 
     private static int getSuggesterProjectDataSize(final Suggester suggester) throws Exception {
-        java.lang.reflect.Field f2 = Suggester.class.getDeclaredField("projectData");
+        java.lang.reflect.Field f2 = Suggester.class.getDeclaredField("projectDataMap");
         f2.setAccessible(true);
 
         return ((Map) f2.get(suggester)).size();
@@ -222,7 +223,8 @@ class SuggesterTest {
 
         t.s = new Suggester(t.suggesterDir.toFile(), 10, Duration.ofMinutes(1), false,
                 true, Collections.singleton("test"), Integer.MAX_VALUE,
-                Runtime.getRuntime().availableProcessors(), registry, false);
+                Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                registry, false);
 
         t.s.init(Collections.singleton(t.getNamedIndexDir()));
 
