@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -102,7 +102,7 @@ class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
         f.setAccessible(true);
         Suggester suggester = (Suggester) f.get(SuggesterServiceImpl.getInstance());
 
-        Field f2 = Suggester.class.getDeclaredField("projectData");
+        Field f2 = Suggester.class.getDeclaredField("projectDataMap");
         f2.setAccessible(true);
 
         return ((Map) f2.get(suggester)).size();
