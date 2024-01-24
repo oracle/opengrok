@@ -136,7 +136,7 @@ class SuggesterTest {
         }
     }
 
-    private SuggesterTestData initSuggester() throws IOException {
+    private SuggesterTestData initSuggester() throws Exception {
         Path tempIndexDir = Files.createTempDirectory("opengrok");
         Directory dir = FSDirectory.open(tempIndexDir);
 
@@ -152,8 +152,7 @@ class SuggesterTest {
                 registry, false);
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
-
-        await().atMost(2, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize(s) == 1);
+        s.waitForInit(2, TimeUnit.SECONDS);
 
         SuggesterTestData testData = new SuggesterTestData();
         testData.s = s;
@@ -172,15 +171,8 @@ class SuggesterTest {
         }
     }
 
-    private static int getSuggesterProjectDataSize(final Suggester suggester) throws Exception {
-        java.lang.reflect.Field f2 = Suggester.class.getDeclaredField("projectDataMap");
-        f2.setAccessible(true);
-
-        return ((Map) f2.get(suggester)).size();
-    }
-
     @Test
-    void testSimpleSuggestions() throws IOException {
+    void testSimpleSuggestions() throws Exception {
         SuggesterTestData t = initSuggester();
 
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
@@ -195,7 +187,7 @@ class SuggesterTest {
     }
 
     @Test
-    void testRefresh() throws IOException {
+    void testRefresh() throws Exception {
         SuggesterTestData t = initSuggester();
 
         addText(t.getIndexDirectory(), "a1 a2");
@@ -214,7 +206,7 @@ class SuggesterTest {
     }
 
     @Test
-    void testIndexChangedWhileOffline() throws IOException {
+    void testIndexChangedWhileOffline() throws Exception {
         SuggesterTestData t = initSuggester();
 
         t.s.close();
@@ -227,8 +219,7 @@ class SuggesterTest {
                 registry, false);
 
         t.s.init(Collections.singleton(t.getNamedIndexDir()));
-
-        await().atMost(2, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize(t.s) == 1);
+        t.s.waitForInit(2, TimeUnit.SECONDS);
 
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
 
@@ -242,7 +233,7 @@ class SuggesterTest {
     }
 
     @Test
-    void testRemove() throws IOException {
+    void testRemove() throws Exception {
         SuggesterTestData t = initSuggester();
 
         t.s.remove(Collections.singleton("test"));
@@ -254,7 +245,7 @@ class SuggesterTest {
     }
 
     @Test
-    void testComplexQuerySearch() throws IOException {
+    void testComplexQuerySearch() throws Exception {
         SuggesterTestData t = initSuggester();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(t.getNamedIndexReader()),
@@ -268,7 +259,7 @@ class SuggesterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    void testOnSearch() throws IOException {
+    void testOnSearch() throws Exception {
         SuggesterTestData t = initSuggester();
 
         Query q = new BooleanQuery.Builder()
@@ -287,7 +278,7 @@ class SuggesterTest {
     }
 
     @Test
-    void testGetSearchCountsForUnknown() throws IOException {
+    void testGetSearchCountsForUnknown() throws Exception {
         SuggesterTestData t = initSuggester();
 
         assertTrue(t.s.getSearchCounts("unknown", "unknown", 0, 10).isEmpty());
@@ -297,7 +288,7 @@ class SuggesterTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains()
-    void testIncreaseSearchCount() throws IOException {
+    void testIncreaseSearchCount() throws Exception {
         SuggesterTestData t = initSuggester();
 
         t.s.increaseSearchCount("test", new Term("test", "term2"), 100, true);
