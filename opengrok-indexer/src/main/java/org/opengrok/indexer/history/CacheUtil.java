@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -65,7 +65,7 @@ public class CacheUtil {
             repoDirBasename = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
-                    String.format("Could not resolve repository %s relative to source root", repository), ex);
+                    String.format("Could not resolve repository '%s' relative to source root", repository), ex);
             return null;
         } catch (ForbiddenSymlinkException ex) {
             LOGGER.log(Level.FINER, ex.getMessage());
@@ -84,7 +84,7 @@ public class CacheUtil {
             try {
                 IOUtils.removeRecursive(Paths.get(histDir));
             } catch (NoSuchFileException ex) {
-                LOGGER.log(Level.WARNING, String.format("directory %s does not exist", histDir));
+                LOGGER.log(Level.WARNING, String.format("directory '%s' does not exist", histDir));
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "tried removeRecursive()", ex);
             }
