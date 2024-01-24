@@ -91,21 +91,10 @@ class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
     }
 
     @BeforeEach
-    void before() {
-        await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
+    void before() throws Exception {
+        SuggesterServiceImpl.getInstance().waitForInit(15, TimeUnit.SECONDS);
 
         env.setSuggesterConfig(new SuggesterConfig());
-    }
-
-    private static int getSuggesterProjectDataSize() throws Exception {
-        Field f = SuggesterServiceImpl.class.getDeclaredField("suggester");
-        f.setAccessible(true);
-        Suggester suggester = (Suggester) f.get(SuggesterServiceImpl.getInstance());
-
-        Field f2 = Suggester.class.getDeclaredField("projectDataMap");
-        f2.setAccessible(true);
-
-        return ((Map) f2.get(suggester)).size();
     }
 
     @Test
