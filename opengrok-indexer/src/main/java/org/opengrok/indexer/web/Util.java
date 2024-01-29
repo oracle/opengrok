@@ -823,7 +823,7 @@ public final class Util {
      * walk of the file hierarchy. Thus, null character (\u0000) is used both to
      * separate directory components and to separate the path from the date.
      *
-     * @param path path to mangle.
+     * @param path path to mangle. This is assumed to be relative to source root.
      * @param date date string to use.
      * @return the mangled path.
      */
