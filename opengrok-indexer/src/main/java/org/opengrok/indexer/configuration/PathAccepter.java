@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -59,12 +59,12 @@ public class PathAccepter {
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
-            LOGGER.log(Level.FINER, "not including {0}", file.getAbsolutePath());
+            LOGGER.log(Level.FINER, "not including ''{0}''", file.getAbsolutePath());
             return false;
         }
 
         if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring {0}", file.getAbsolutePath());
+            LOGGER.log(Level.FINER, "ignoring ''{0}''", file.getAbsolutePath());
             return false;
         }
 
