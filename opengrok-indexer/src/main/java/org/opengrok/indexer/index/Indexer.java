@@ -287,7 +287,12 @@ public final class Indexer {
                     System.exit(2);
                 } catch (IndexCheckException e) {
                     System.err.printf("Index check failed%n");
-                    System.err.print("You might want to remove " + e.getFailedPaths());
+                    if (!e.getFailedPaths().isEmpty()) {
+                        System.err.print("You might want to remove " + e.getFailedPaths());
+                    } else {
+                        System.err.println("with exception: " + e);
+                        e.printStackTrace(System.err);
+                    }
                     System.exit(1);
                 }
 

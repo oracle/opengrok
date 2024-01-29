@@ -134,7 +134,24 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
-    private static final Comparator<File> FILENAME_COMPARATOR = Comparator.comparing(File::getName);
+    @VisibleForTesting
+    static final Comparator<File> FILENAME_COMPARATOR = Comparator.comparing(File::getName);
+
+    @VisibleForTesting
+    static final Comparator<Path> FILEPATH_COMPARATOR = (p1, p2) -> {
+        int nameCount = Math.min(p1.getNameCount(), p2.getNameCount());
+        int i;
+        for (i = 0; i < nameCount; i++) {
+            var c1 = p1.getName(i).toString();
+            var c2 = p2.getName(i).toString();
+            if (c1.equals(c2)) {
+                continue;
+            }
+            return c1.compareTo(c2);
+        }
+
+        return Integer.compare(p1.getNameCount(), p2.getNameCount());
+    };
 
     private static final Set<String> CHECK_FIELDS;
 
@@ -195,6 +212,22 @@ public class IndexDatabase {
      */
     public IndexDatabase() throws IOException {
         this(null);
+    }
+
+    /**
+     * Anyone using this constructor is supposed to never call {@link #update()}.
+     * Do not use for anything besides testing.
+     * @param uidIter uid iterator
+     * @param writer index writer
+     * @throws IOException on error
+     */
+    @VisibleForTesting
+    IndexDatabase(Project project, TermsEnum uidIter, IndexWriter writer) throws IOException {
+        this(project, new IndexDownArgsFactory());
+        this.uidIter = uidIter;
+        this.writer = writer;
+        this.completer = new PendingFileCompleter();
+        initialize();
     }
 
     /**
@@ -709,8 +742,7 @@ public class IndexDatabase {
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
-                                "Couldn''t find a start term for {0}, empty u field?",
-                                startUid);
+                                "Couldn''t find a start term for {0}, empty u field?", startUid);
                         }
                     }
 
@@ -819,18 +851,24 @@ public class IndexDatabase {
         Statistics stat = new Statistics();
         LOGGER.log(Level.FINEST, "traversing the documents in {0} to collect uids of deleted documents",
                 indexDirectory);
+        StoredFields storedFields = reader.storedFields();
         for (int i = 0; i < reader.maxDoc(); i++) {
+            Document doc = storedFields.document(i, LIVE_CHECK_FIELDS);  // use limited-field version
+            IndexableField field = doc.getField(QueryBuilder.U);
             if (!liveDocs.get(i)) {
-                StoredFields storedFields = reader.storedFields();
-                Document doc = storedFields.document(i, LIVE_CHECK_FIELDS);  // use limited-field version
-                IndexableField field = doc.getField(QueryBuilder.U);
                 if (field != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         String uidString = field.stringValue();
-                        LOGGER.log(Level.FINEST, "adding ''{0}'' at {1} to deleted uid set",
-                                new Object[]{Util.uid2url(uidString), Util.uid2date(uidString)});
+                        LOGGER.log(Level.FINEST, "adding ''{0}'' ({2}) at {1} to deleted uid set",
+                                new Object[]{Util.uid2url(uidString), Util.uid2date(uidString), i});
                     }
                     deletedUids.add(field.stringValue());
+                }
+            } else {
+                if (field != null) {
+                    String uidString = field.stringValue();
+                    LOGGER.log(Level.FINEST, "live doc: ''{0}'' ({2}) at {1}",
+                            new Object[]{Util.uid2url(uidString), Util.uid2date(uidString), i});
                 }
             }
         }
@@ -931,12 +969,17 @@ public class IndexDatabase {
 
         try (Progress progress = new Progress(LOGGER, String.format("collecting files for %s", project),
                 fileCollector.getFiles().size())) {
-            for (String path : fileCollector.getFiles()) {
+            List<Path> paths = fileCollector.getFiles().stream().
+                    map(Path::of).
+                    sorted(FILEPATH_COMPARATOR).
+                    collect(Collectors.toList());
+            LOGGER.log(Level.FINEST, "collected sorted files: {0}", paths);
+            for (Path path : paths) {
                 if (isInterrupted()) {
                     return;
                 }
-                File file = new File(sourceRoot, path);
-                processFileHistoryBased(args, file, path);
+                File file = new File(sourceRoot, path.toString());
+                processFileHistoryBased(args, file, path.toString());
                 progress.increment();
             }
         }
@@ -1096,16 +1139,17 @@ public class IndexDatabase {
      * and queue the removal of the associated xref file.
      *
      * @param removeHistory if false, do not remove history cache for this file
+     * @return deleted uid (as string)
      * @throws java.io.IOException if an error occurs
      */
-    private void removeFile(boolean removeHistory) throws IOException {
+    private String removeFile(boolean removeHistory) throws IOException {
         String path = Util.uid2url(uidIter.term().utf8ToString());
 
         for (IndexChangedListener listener : listeners) {
             listener.fileRemove(path);
         }
 
-        removeFileDocUid(path);
+        String deletedUid = removeFileDocUid(path);
 
         removeXrefFile(path);
 
@@ -1122,9 +1166,11 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileRemoved(path);
         }
+
+        return deletedUid;
     }
 
-    private void removeFileDocUid(String path) throws IOException {
+    private String removeFileDocUid(String path) throws IOException {
 
         // Determine if a reversal of counts is necessary, and execute if so.
         if (isCountingDeltas) {
@@ -1141,6 +1187,8 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
+
+        return uidIter.term().utf8ToString();
     }
 
     private void decrementLOCforDoc(String path, Document doc) {
@@ -1649,6 +1697,17 @@ public class IndexDatabase {
     }
 
     /**
+     * wrapper for fatal errors during indexing.
+     */
+    public static class IndexerFault extends RuntimeException {
+        private static final long serialVersionUID = -1;
+
+        public IndexerFault(String message) {
+            super(message);
+        }
+    }
+
+    /**
      * Compared with {@link #processFile(IndexDownArgs, File, String)}, this method's file/path arguments
      * represent files that have actually changed in some way, while the other method's argument represent
      * files present on disk.
@@ -1660,12 +1719,14 @@ public class IndexDatabase {
     @VisibleForTesting
     void processFileHistoryBased(IndexDownArgs args, File file, String path) throws IOException {
         final boolean fileExists = file.exists();
-
+        final Set<String> deletedUidsHere = new HashSet<>();
         path = Util.fixPathIfWindows(path);
+
         // Traverse terms until reaching document beyond path of given file.
-        while (uidIter != null && uidIter.term() != null
-                && uidIter.term().compareTo(emptyBR) != 0
-                && Util.uid2url(uidIter.term().utf8ToString()).compareTo(path) <= 0) {
+        while (uidIter != null && uidIter.term() != null && uidIter.term().compareTo(emptyBR) != 0
+                && FILEPATH_COMPARATOR.compare(
+                        Path.of(Util.uid2url(uidIter.term().utf8ToString())),
+                        Path.of(path)) <= 0) {
 
             if (deletedUids.contains(uidIter.term().utf8ToString())) {
                 logIgnoredUid(uidIter.term().utf8ToString());
@@ -1688,9 +1749,10 @@ public class IndexDatabase {
                 if (!matchOK) {
                     removeFile(false);
                     addWorkHistoryBased(args, termFile, termPath);
+                    deletedUidsHere.add(removeFile(false));
                 }
             } else {
-                removeFile(!fileExists);
+                deletedUidsHere.add(removeFile(!fileExists));
             }
 
             BytesRef next = uidIter.next();
@@ -1703,6 +1765,18 @@ public class IndexDatabase {
         // That said, it is necessary to check whether the file can be accepted. This is done in the function below.
         // Also, allow for broken symbolic links (File.exists() returns false for these).
         if (fileExists || Files.isSymbolicLink(file.toPath())) {
+            // This assumes that the last modified time is indeed what the indexer uses when adding the document.
+            String time = DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND);
+            if (deletedUidsHere.contains(Util.path2uid(path, time))) {
+                //
+                // Adding document with the same date of a pre-existing document which is being removed
+                // will lead to index corruption (duplicate documents). Hence, make the indexer to fail hard.
+                //
+                throw new IndexerFault(
+                        String.format("attempting to add file '%s' with date matching deleted document: %s",
+                                path, time));
+            }
+
             addWorkHistoryBased(args, file, path);
         }
     }

@@ -45,6 +45,10 @@ public class IndexCheckException extends Exception {
         failedPaths.addAll(paths);
     }
 
+    public IndexCheckException(Exception e) {
+        super(e);
+    }
+
     /**
      * @return set of source paths which failed the check
      */

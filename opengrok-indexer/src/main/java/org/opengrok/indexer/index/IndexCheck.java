@@ -185,6 +185,8 @@ public class IndexCheck implements AutoCloseable {
                     // It will be thrown once all the checks complete.
                     LOGGER.log(Level.WARNING, "could not perform index check", exception);
                     ioException = (IOException) exception;
+                } else {
+                    throw new IndexCheckException(exception);
                 }
             }
         }
@@ -515,19 +517,30 @@ public class IndexCheck implements AutoCloseable {
 
             Bits liveDocs = MultiBits.getLiveDocs(indexReader);
 
+            LOGGER.log(Level.FINEST, "maxDoc = {0}", indexReader.maxDoc());
             for (int i = 0; i < indexReader.maxDoc(); i++) {
                 Document doc = indexReader.storedFields().document(i);
 
                 // liveDocs is null if the index has no deletions.
                 if (liveDocs != null && !liveDocs.get(i)) {
+                    IndexableField field = doc.getField(QueryBuilder.U);
+                    if (field != null) {
+                        String uidString = field.stringValue();
+                        LOGGER.log(Level.FINEST, "ignoring ''{0}'' at {1}",
+                                new Object[]{Util.uid2url(uidString), Util.uid2date(uidString)});
+                    } else {
+                        LOGGER.log(Level.FINEST, "ignoring {0}", doc);
+                    }
                     continue;
                 }
 
                 // This should avoid the special LOC documents.
                 IndexableField field = doc.getField(QueryBuilder.U);
                 if (field != null) {
-                    String uid = field.stringValue();
-                    livePaths.add(Path.of(Util.uid2url(uid)));
+                    String uidString = field.stringValue();
+                    LOGGER.log(Level.FINEST, "live doc: ''{0}'' at {1}",
+                            new Object[]{Util.uid2url(uidString), Util.uid2date(uidString)});
+                    livePaths.add(Path.of(Util.uid2url(uidString)));
                 }
             }
 

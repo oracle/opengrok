@@ -18,15 +18,15 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class is meant to collect files that were touched in some way by SCM update.
@@ -36,14 +36,11 @@ import java.util.TreeSet;
  * in one changeset a file may be deleted, only to be re-added in the next changeset etc.
  */
 public class FileCollector extends ChangesetVisitor {
-    private final SortedSet<String> files;
+    private final Set<String> files;
 
-    /**
-     * Assumes comparing in the same way as {@code org.opengrok.indexer.index.IndexDatabase#FILENAME_COMPARATOR}.
-     */
     public FileCollector(boolean consumeMergeChangesets) {
         super(consumeMergeChangesets);
-        files = new TreeSet<>();
+        files = new HashSet<>();
     }
 
     public void accept(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
@@ -58,7 +55,10 @@ public class FileCollector extends ChangesetVisitor {
         }
     }
 
-    public SortedSet<String> getFiles() {
+    /**
+     * @return set of file paths relative to source root. There are no guarantees w.r.t. ordering.
+     */
+    public Set<String> getFiles() {
         return files;
     }
 
