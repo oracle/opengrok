@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -735,13 +735,11 @@ public final class PageConfig {
     }
 
     /**
-     * Check, whether annotations are available for the related resource.
-     *
-     * @return {@code true} if annotations are available.
+     * @return whether annotations are available for the related resource.
      */
     public boolean hasAnnotations() {
         if (hasAnnotation == null) {
-            hasAnnotation = !isDir() && HistoryGuru.getInstance().hasAnnotation(getResourceFile());
+            hasAnnotation = HistoryGuru.getInstance().hasAnnotation(getResourceFile());
         }
         return hasAnnotation;
     }
@@ -753,7 +751,7 @@ public final class PageConfig {
      */
     public boolean annotate() {
         if (annotate == null) {
-            annotate = hasAnnotations() && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
+            annotate = Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM)) && hasAnnotations();
         }
         return annotate;
     }

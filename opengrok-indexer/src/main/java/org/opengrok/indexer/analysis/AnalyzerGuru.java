@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -624,15 +624,25 @@ public class AnalyzerGuru {
         }
 
         if (fa != null) {
-            AbstractAnalyzer.Genre g = fa.getGenre();
-            if (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.XREFABLE || g == AbstractAnalyzer.Genre.HTML) {
-                doc.add(new Field(QueryBuilder.T, g.typeName(), string_ft_stored_nanalyzed_norms));
+            AbstractAnalyzer.Genre genre = fa.getGenre();
+            if (isXrefable(genre.typeName())) {
+                doc.add(new Field(QueryBuilder.T, genre.typeName(), string_ft_stored_nanalyzed_norms));
             }
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
 
             String type = fa.getFileTypeName();
             doc.add(new StringField(QueryBuilder.TYPE, type, Store.YES));
         }
+    }
+
+    /**
+     * @param genreName genre name
+     * @return whether it is possible to produce xref for the genre
+     */
+    public static boolean isXrefable(String genreName) {
+        return (genreName.equals(AbstractAnalyzer.Genre.PLAIN.typeName())
+                || genreName.equals(AbstractAnalyzer.Genre.XREFABLE.typeName())
+                || genreName.equals(AbstractAnalyzer.Genre.HTML.typeName()));
     }
 
     private static void populateDocumentHistory(Document doc, File file) {

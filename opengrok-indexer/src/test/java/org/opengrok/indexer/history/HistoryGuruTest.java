@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -46,15 +47,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.search.DirectoryEntry;
+import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -70,6 +80,8 @@ class HistoryGuruTest {
     private static RuntimeEnvironment env;
 
     private static int savedNestingMaximum;
+
+    HistoryGuru instance = HistoryGuru.getInstance();
 
     @BeforeAll
     static void setUpClass() throws Exception {
@@ -139,14 +151,57 @@ class HistoryGuruTest {
         }
     }
 
-    @Test
-    void testAnnotationSmokeTest() throws Exception {
-        HistoryGuru instance = HistoryGuru.getInstance();
-        for (File f : FILES) {
-            if (instance.hasAnnotation(f)) {
-                assertNotNull(instance.annotate(f, null));
-            }
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testHasAnnotationWithDocument(boolean isXrefable) {
+        File file = Paths.get(repository.getSourceRoot(), "git", "main.c").toFile();
+        assertTrue(file.isFile());
+        Document document = new Document();
+        String typeName;
+        if (isXrefable) {
+            typeName = AbstractAnalyzer.Genre.PLAIN.typeName();
+        } else {
+            typeName = AbstractAnalyzer.Genre.DATA.typeName();
         }
+        assertEquals(isXrefable, AnalyzerGuru.isXrefable(typeName));
+        document.add(new Field(QueryBuilder.T, typeName, new FieldType(StringField.TYPE_STORED)));
+
+        /*
+         * This test class does not perform the 2nd phase of indexing, therefore getDocument() for any file
+         * should result in exception. This differentiates the two hasAnnotation() implementations.
+         */
+        assertThrows(IndexNotFoundException.class, () -> IndexDatabase.getDocument(file));
+        assertTrue(instance.hasAnnotation(file));
+        assertEquals(isXrefable, instance.hasAnnotation(file, document));
+    }
+
+    /**
+     * Check that {@link HistoryGuru#hasAnnotation(File, Document)} falls back to repository check
+     * if the document is {@code null}. Complements the {@link #testHasAnnotationWithDocument(boolean)} test.
+     */
+    @Test
+    void testHasAnnotationWithoutDocument() {
+        File file = Paths.get(repository.getSourceRoot(), "git", "main.c").toFile();
+        assertTrue(file.isFile());
+        Repository repositoryForGit = HistoryGuru.getInstance().getRepository(file);
+        assertNotNull(repositoryForGit);
+        assertTrue(repositoryForGit.isWorking());
+        var repoHasAnnotation = repositoryForGit.fileHasAnnotation(file);
+        assertAll(() -> assertEquals(repoHasAnnotation, instance.hasAnnotation(file, null)),
+                () -> assertEquals(repoHasAnnotation, instance.hasAnnotation(file)));
+    }
+
+    /**
+     * Simple smoke test for hasAnnotation(). Because of the way how {@link HistoryGuru#hasAnnotation(File)}
+     * works and given this test class does not perform 2nd phase of the indexing, there will be some binary
+     * files in the list. These should not be included if the 2nd indexing phase was done as the
+     * {@link HistoryGuru#hasAnnotation(File)} should use the index document for negative check.
+     */
+    @Test
+    void testHasAnnotationSmokeTest() {
+        // If hasAnnotation() returns true for a file, it should be possible to actually construct the annotation.
+        List<File> filesWithAnnotation = FILES.stream().filter(instance::hasAnnotation).collect(Collectors.toList());
+        assertAll(filesWithAnnotation.stream().map(f -> () -> assertNotNull(instance.annotate(f, null))));
     }
 
     /**
@@ -184,6 +239,7 @@ class HistoryGuruTest {
         assertNotNull(latestRev);
         instance.createAnnotationCache(file, latestRev);
         Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
 
         // Ensure the annotation is loaded from the cache by moving the dot git directory away.
         final String tmpDirName = "gitdisabled";
