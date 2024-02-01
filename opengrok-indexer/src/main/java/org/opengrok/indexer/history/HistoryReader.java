@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.util.IOUtils;
@@ -47,7 +48,7 @@ public class HistoryReader extends Reader {
         if (input == null) {
             input = createInternalReader();
         }
-        return input.read(cbuf, off, len);
+        return input.read(Objects.requireNonNull(cbuf, "cbuf"), off, len);
     }
 
     @Override

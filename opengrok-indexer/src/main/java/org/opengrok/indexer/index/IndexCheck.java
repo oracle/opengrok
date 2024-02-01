@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -101,7 +102,7 @@ public class IndexCheck implements AutoCloseable {
      * @param configuration configuration based on which to perform the check
      */
     public IndexCheck(@NotNull Configuration configuration) {
-        this(configuration, null);
+        this(configuration, null); // configuration is guarded against null inside this constructor
     }
 
     /**
@@ -111,7 +112,7 @@ public class IndexCheck implements AutoCloseable {
      *                     on whether projects are enabled in the configuration.
      */
     public IndexCheck(@NotNull Configuration configuration, Collection<String> projectNames) {
-        this.configuration = configuration;
+        this.configuration = Objects.requireNonNull(configuration, "configuration");
         if (projectNames != null) {
             this.projectNames.addAll(projectNames);
         }
