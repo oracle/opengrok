@@ -800,7 +800,7 @@ public class IndexDatabase {
 
     /**
      * The traversal of the uid terms done in {@link #processFile(IndexDownArgs, File, String)}
-     * and {@link #processFileIncremental(IndexDownArgs, File, String)} needs to skip over deleted documents
+     * and {@link #processFileHistoryBased(IndexDownArgs, File, String)} needs to skip over deleted documents
      * that are often found in multi-segment indexes. This method stores the uids of these documents
      * and is expected to be called before the traversal for the top level directory is started.
      * @throws IOException if the index cannot be read for some reason
@@ -932,8 +932,11 @@ public class IndexDatabase {
         try (Progress progress = new Progress(LOGGER, String.format("collecting files for %s", project),
                 fileCollector.getFiles().size())) {
             for (String path : fileCollector.getFiles()) {
+                if (isInterrupted()) {
+                    return;
+                }
                 File file = new File(sourceRoot, path);
-                processFileIncremental(args, file, path);
+                processFileHistoryBased(args, file, path);
                 progress.increment();
             }
         }
@@ -1288,6 +1291,7 @@ public class IndexDatabase {
 
     /**
      * Check if I should accept this file into the index database.
+     * Directories are automatically accepted.
      *
      * @param file the file to check
      * @param ret defined instance whose {@code localRelPath} property will be
@@ -1306,7 +1310,7 @@ public class IndexDatabase {
         }
 
         if (!file.canRead()) {
-            LOGGER.log(Level.WARNING, "Could not read {0}", absolutePath);
+            LOGGER.log(Level.WARNING, "Could not read ''{0}''", absolutePath);
             return false;
         }
 
@@ -1314,8 +1318,7 @@ public class IndexDatabase {
             Path absolute = Paths.get(absolutePath);
             if (Files.isSymbolicLink(absolute)) {
                 File canonical = file.getCanonicalFile();
-                if (!absolutePath.equals(canonical.getPath()) &&
-                        !acceptSymlink(absolute, canonical, ret)) {
+                if (!absolutePath.equals(canonical.getPath()) && !acceptSymlink(absolute, canonical, ret)) {
                     if (ret.localRelPath == null) {
                         LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
                                 new Object[] {absolutePath, canonical});
@@ -1323,36 +1326,33 @@ public class IndexDatabase {
                     return false;
                 }
             }
-            //below will only let go files and directories, anything else is considered special and is not added
+            // Below will only let go files and directories, anything else is considered special and is not added.
             if (!file.isFile() && !file.isDirectory()) {
-                LOGGER.log(Level.WARNING, "Ignored special file {0}",
-                    absolutePath);
+                LOGGER.log(Level.WARNING, "Ignored special file ''{0}''", absolutePath);
                 return false;
             }
         } catch (IOException exp) {
-            LOGGER.log(Level.WARNING, "Failed to resolve name: {0}",
-                absolutePath);
+            LOGGER.log(Level.WARNING, "Failed to resolve name: ''{0}''", absolutePath);
             LOGGER.log(Level.FINE, "Stack Trace: ", exp);
         }
 
         if (file.isDirectory()) {
-            // always accept directories so that their files can be examined
+            // Always accept directories so that their files can be examined.
             return true;
         }
-
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // Lookup history if indexing versioned files only.
         // Skip the lookup entirely (which is expensive) if unversioned files are allowed
         if (env.isIndexVersionedFilesOnly()) {
             if (HistoryGuru.getInstance().hasHistory(file)) {
-                // versioned files should always be accepted
+                // Versioned files should always be accepted.
                 return true;
             }
             LOGGER.log(Level.FINER, "not accepting unversioned {0}", absolutePath);
             return false;
         }
-        // unversioned files are allowed
+        // Unversioned files are allowed.
         return true;
     }
 
@@ -1374,7 +1374,7 @@ public class IndexDatabase {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
             if (f1.equals(f2)) {
-                LOGGER.log(Level.INFO, "Skipping links to itself...: {0} {1}",
+                LOGGER.log(Level.INFO, "Skipping links to itself...: ''{0}'' ''{1}''",
                         new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                 return false;
             }
@@ -1383,7 +1383,7 @@ public class IndexDatabase {
             File t1 = f1;
             while ((t1 = t1.getParentFile()) != null) {
                 if (f2.equals(t1)) {
-                    LOGGER.log(Level.INFO, "Skipping links to parent...: {0} {1}",
+                    LOGGER.log(Level.INFO, "Skipping links to parent...: ''{0}'' ''{1}''",
                             new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                     return false;
                 }
@@ -1391,7 +1391,7 @@ public class IndexDatabase {
 
             return accept(file, ret);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Failed to resolve name: {0} {1}",
+            LOGGER.log(Level.WARNING, "Failed to resolve name: ''{0}'' ''{1}''",
                     new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
         }
         return false;
@@ -1423,7 +1423,7 @@ public class IndexDatabase {
         if (isLocal(canonical1)) {
             if (!isCanonicalDir) {
                 if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "Local {0} has symlink from {1}",
+                    LOGGER.log(Level.FINEST, "Local ''{0}'' has symlink from ''{1}''",
                             new Object[] {canonical1, absolute1});
                 }
                 /*
@@ -1452,7 +1452,7 @@ public class IndexDatabase {
                  * the file already -- but we are forced to handle.
                  */
                 LOGGER.log(Level.WARNING, String.format(
-                        "Unexpected error getting relative for %s", canonical), e);
+                        "Unexpected error getting relative for '%s'", canonical), e);
                 absolute0 = absolute1;
             }
             indexed1 = new IndexedSymlink(absolute0, canonical1, true);
@@ -1477,7 +1477,7 @@ public class IndexDatabase {
                     Paths.get(indexed0.getAbsolute())).toString();
 
             if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "External dir {0} has symlink from {1} after first {2}",
+                LOGGER.log(Level.FINEST, "External dir ''{0}'' has symlink from ''{1}'' after first ''{2}''",
                         new Object[] {canonical1, absolute1, indexed0.getAbsolute()});
             }
             return false;
@@ -1495,7 +1495,7 @@ public class IndexDatabase {
                 if (!isCanonicalDir) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                                "External file {0} has symlink from {1} under previous {2}",
+                                "External file ''{0}'' has symlink from ''{1}'' under previous ''{2}''",
                                 new Object[] {canonical1, absolute1, absolute0});
                     }
                     // Do not add to indexedSymlinks for a non-directory.
@@ -1512,7 +1512,7 @@ public class IndexDatabase {
 
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST,
-                            "External dir {0} has symlink from {1} under previous {2}",
+                            "External dir ''{0}'' has symlink from ''{1}'' under previous ''{2}''",
                             new Object[] {canonical1, absolute1, absolute0});
                 }
                 return false;
@@ -1523,7 +1523,7 @@ public class IndexDatabase {
         for (String canonicalRoot : canonicalRoots) {
             if (canonical1.startsWith(canonicalRoot)) {
                 if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "Allowed symlink {0} per canonical root {1}",
+                    LOGGER.log(Level.FINEST, "Allowed symlink ''{0}'' per canonical root ''{1}''",
                             new Object[] {absolute1, canonical1});
                 }
                 if (isCanonicalDir) {
@@ -1540,7 +1540,7 @@ public class IndexDatabase {
             try {
                 allowedTarget = new File(allowedSymlink).getCanonicalPath();
             } catch (IOException e) {
-                LOGGER.log(Level.FINE, "unresolvable symlink: {0}", allowedSymlink);
+                LOGGER.log(Level.FINE, "unresolvable symlink: ''{0}''", allowedSymlink);
                 continue;
             }
             /*
@@ -1610,9 +1610,8 @@ public class IndexDatabase {
      * {@link #removeFile(boolean)}. New or updated files are noted for indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
-     * @param args arguments to control execution and for collecting a list of
+     * @param args arguments to control execution and for collecting a list of files for indexing
      * @param progress {@link Progress} instance
-     * files for indexing
      */
     @VisibleForTesting
     void indexDown(File dir, String parent, IndexDownArgs args, Progress progress) throws IOException {
@@ -1629,8 +1628,7 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            LOGGER.log(Level.SEVERE, "Failed to get file listing for: {0}",
-                dir.getPath());
+            LOGGER.log(Level.SEVERE, "Failed to get file listing for: ''{0}''", dir.getPath());
             return;
         }
         Arrays.sort(files, FILENAME_COMPARATOR);
@@ -1660,7 +1658,7 @@ public class IndexDatabase {
      * @throws IOException on error
      */
     @VisibleForTesting
-    void processFileIncremental(IndexDownArgs args, File file, String path) throws IOException {
+    void processFileHistoryBased(IndexDownArgs args, File file, String path) throws IOException {
         final boolean fileExists = file.exists();
 
         path = Util.fixPathIfWindows(path);
@@ -1689,9 +1687,7 @@ public class IndexDatabase {
                         checkSettings(termFile, termPath);
                 if (!matchOK) {
                     removeFile(false);
-
-                    args.curCount++;
-                    args.works.add(new IndexFileWork(termFile, termPath));
+                    addWorkHistoryBased(args, termFile, termPath);
                 }
             } else {
                 removeFile(!fileExists);
@@ -1703,10 +1699,33 @@ public class IndexDatabase {
             }
         }
 
-        // The function would not be called if the file was not changed in some way.
-        if (fileExists) {
+        // This function would not be called if the file was not changed in some way (including deletion).
+        // That said, it is necessary to check whether the file can be accepted. This is done in the function below.
+        // Also, allow for broken symbolic links (File.exists() returns false for these).
+        if (fileExists || Files.isSymbolicLink(file.toPath())) {
+            addWorkHistoryBased(args, file, path);
+        }
+    }
+
+    /**
+     * Check if file can be accepted into the index database. If yes, change the {@code args} argument appropriately.
+     * @param args {@link IndexDownArgs} instance to which an entry will be added if deemed acceptable
+     * @param file file object
+     * @param path path of the file relative to given source root (not necessarily global source root)
+     */
+    private void addWorkHistoryBased(IndexDownArgs args, File file, String path) {
+        AcceptSymlinkRet ret = new AcceptSymlinkRet();
+        if (accept(file, ret)) {
+            // accept() returns true for directories because it was made to work with indexDown().
+            if (file.isDirectory()) {
+                LOGGER.log(Level.FINER, "not accepting directory ''{0}'' into the index", file);
+                return;
+            }
+
             args.curCount++;
             args.works.add(new IndexFileWork(file, path));
+        } else {
+            handleSymlink(file.getParent(), ret);
         }
     }
 
@@ -2210,7 +2229,7 @@ public class IndexDatabase {
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
         if (actTabSize != null && !actTabSize.equals(reqTabSize)) {
-            LOGGER.log(Level.FINE, "Tabsize mismatch: {0}", path);
+            LOGGER.log(Level.FINE, "Tabsize mismatch: ''{0}''", path);
             return false;
         }
 
@@ -2222,7 +2241,7 @@ public class IndexDatabase {
             // Read a limited-fields version of the document.
             Document doc = storedFields.document(postsIter.docID(), CHECK_FIELDS);
             if (doc == null) {
-                LOGGER.log(Level.FINER, "No Document: {0}", path);
+                LOGGER.log(Level.FINER, "No Document for ''{0}''", path);
                 continue;
             }
 
@@ -2243,7 +2262,7 @@ public class IndexDatabase {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
                 if (fileTypeName == null) {
                     // (Should not get here, but break just in case.)
-                    LOGGER.log(Level.FINEST, "Missing TYPE field: {0}", path);
+                    LOGGER.log(Level.FINEST, "Missing TYPE field: ''{0}''", path);
                     break;
                 }
 
@@ -2257,14 +2276,14 @@ public class IndexDatabase {
                  * selection of analyzer or return a value to indicate the
                  * analyzer is now mis-matched.
                  */
-                LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
+                LOGGER.log(Level.FINER, "Guru version mismatch: ''{0}''", path);
 
                 fa = getAnalyzerFor(file, path);
                 fileTypeName = fa.getFileTypeName();
                 String oldTypeName = doc.get(QueryBuilder.TYPE);
                 if (!fileTypeName.equals(oldTypeName)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Changed {0} to {1}: {2}",
+                        LOGGER.log(Level.FINE, "Changed {0} to {1}: ''{2}''",
                             new Object[]{oldTypeName, fileTypeName, path});
                     }
                     return false;
@@ -2276,7 +2295,7 @@ public class IndexDatabase {
             Long actVersion = settings.getAnalyzerVersion(fileTypeName);
             if (actVersion == null || !actVersion.equals(reqVersion)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "{0} version mismatch: {1}",
+                    LOGGER.log(Level.FINE, "{0} version mismatch: ''{1}''",
                         new Object[]{fileTypeName, path});
                 }
                 return false;
@@ -2290,14 +2309,14 @@ public class IndexDatabase {
             break;
         }
         if (n < 1) {
-            LOGGER.log(Level.FINER, "Missing index Documents: {0}", path);
+            LOGGER.log(Level.FINER, "Missing index Documents: ''{0}''", path);
             return false;
         }
 
         // If the economy mode is on, this should be treated as a match.
         if (!env.isGenerateHtml()) {
             if (xrefExistsFor(path)) {
-                LOGGER.log(Level.FINEST, "Extraneous {0} , removing its xref file", path);
+                LOGGER.log(Level.FINEST, "Extraneous ''{0}'' , removing its xref file", path);
                 removeXrefFile(path);
             }
             return true;

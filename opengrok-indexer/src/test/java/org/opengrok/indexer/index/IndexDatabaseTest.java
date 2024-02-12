@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -42,6 +42,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
@@ -369,12 +370,17 @@ class IndexDatabaseTest {
         git.commit().setAuthor("foo bar", "foobar@example.com").call();
     }
 
+    private void changeGitRepository(File repositoryRoot) throws Exception {
+        changeGitRepository(repositoryRoot, false);
+    }
+
     /**
      * Add some commits to the Git repository - change/remove/add/rename a file in separate commits,
      * also add a merge commit.
      * @param repositoryRoot Git repository root
+     * @param addSymlinks whether to add a changeset with symbolic links
      */
-    private void changeGitRepository(File repositoryRoot) throws Exception {
+    private void changeGitRepository(File repositoryRoot, boolean addSymlinks) throws Exception {
         try (Git git = Git.init().setDirectory(repositoryRoot).call()) {
             // This name is specifically picked to add file that would exercise the end of term traversal
             // in processFileIncremental(), that is (uidIter == null).
@@ -415,7 +421,36 @@ class IndexDatabaseTest {
             assertFalse(fooFile.exists());
 
             addMergeCommit(git, repositoryRoot);
+
+            if (addSymlinks) {
+                addSymlinksToGitRepository(git, repositoryRoot);
+            }
         }
+    }
+
+    private void addSymlinksToGitRepository(Git git, File repositoryRoot) throws Exception {
+        Path target = Path.of(repositoryRoot.toString(), "main.c");
+        assertTrue(target.toFile().exists());
+        final String fileLinkName = "symlink";
+        Path fileLink = Path.of(repositoryRoot.toString(), fileLinkName);
+        assertFalse(fileLink.toFile().exists());
+        Files.createSymbolicLink(fileLink, target);
+        assertTrue(fileLink.toFile().exists());
+
+        final String dirLinkName = "dirsymlink";
+        Path dirLink = Path.of(repositoryRoot.toString(), dirLinkName);
+        assertFalse(dirLink.toFile().exists());
+        target = Path.of(repositoryRoot.toString(), "moved2");
+        assertTrue(target.toFile().isDirectory());
+        Files.createSymbolicLink(dirLink, target);
+        assertTrue(dirLink.toFile().exists());
+
+        git.add().
+                addFilepattern(fileLinkName).
+                addFilepattern(dirLinkName).call();
+
+        git.commit().setMessage("add symlinks").setAuthor("foo", "foobar@example.com").
+                setAll(true).call();
     }
 
     private static Stream<Arguments> provideParamsFortestGetIndexDownArgs() {
@@ -503,7 +538,8 @@ class IndexDatabaseTest {
 
         File repositoryRoot = new File(repository.getSourceRoot(), "git");
         assertTrue(repositoryRoot.isDirectory());
-        changeGitRepository(repositoryRoot);
+        final boolean createSymlinks = !SystemUtils.IS_OS_WINDOWS;
+        changeGitRepository(repositoryRoot, createSymlinks);
 
         // Re-generate the history cache so that the data is ready for history based re-index.
         HistoryGuru.getInstance().clear();
@@ -541,6 +577,9 @@ class IndexDatabaseTest {
         expectedFileSet.add(Path.of("/git/zzz.txt"));
         expectedFileSet.add(Path.of("/git/zzzzzz.txt"));
         expectedFileSet.add(Path.of("/git/new.txt"));
+        if (createSymlinks) {
+            expectedFileSet.add(Path.of("/git/symlink"));
+        }
         assertEquals(expectedFileSet, args.works.stream().map(v -> Path.of(v.path)).collect(Collectors.toSet()));
 
         assertEquals(Set.of(
@@ -694,6 +733,9 @@ class IndexDatabaseTest {
                 contains(File.separator + gitProject.getName() +
                         File.separator + subRepoName +
                         File.separator + changedFileName));
+
+        // cleanup
+        env.setFileCollector("git", null);
     }
 
     /**
