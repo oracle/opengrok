@@ -2124,7 +2124,7 @@ public class IndexDatabase {
 
         @Override
         public void write(@NotNull char[] chars, int off, int len) throws IOException {
-            out.write(chars, off, len);
+            out.write(Objects.requireNonNull(chars), off, len);
             count += len;
         }
 

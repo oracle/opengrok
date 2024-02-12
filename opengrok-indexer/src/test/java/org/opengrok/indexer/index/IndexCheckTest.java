@@ -255,4 +255,12 @@ class IndexCheckTest {
             }
         }
     }
+
+    @Test
+    void testNullConfiguration() throws Exception {
+        assertThrows(NullPointerException.class, () -> {
+            new IndexCheck(null);
+            }
+        );
+    }
 }
