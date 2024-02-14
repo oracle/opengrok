@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -30,6 +30,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.opengrok.indexer.web.Laundromat.launderLog;
 
 /**
  * This class is handy for logging messages (and updating metrics)
@@ -54,7 +56,7 @@ public class Statistics {
     private boolean logIt(Logger logger, Level logLevel, String msg, Duration duration) {
         if (logger.isLoggable(logLevel)) {
             String timeStr = StringUtils.getReadableTime(duration.toMillis());
-            logger.log(logLevel, String.format("%s (took %s)", msg, timeStr));
+            logger.log(logLevel, String.format("%s (took %s)", launderLog(msg), timeStr));
             return true;
         }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.opengrok.indexer.web.Laundromat.launderLog;
 
 public class FileAnnotationCache extends AbstractCache implements AnnotationCache {
 
@@ -169,11 +171,16 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
              * should be present to catch weird cases of someone not using the store() or general badness.
              */
             if (storedRevision == null) {
-                LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''", file);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''",
+                            launderLog(file.toString()));
+                }
             } else if (!storedRevision.equals(latestRevision)) {
-                LOGGER.log(Level.FINER,
-                        "stored revision {0} for ''{1}'' does not match latest revision {2}",
-                        new Object[]{storedRevision, file, rev});
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER,
+                            "stored revision {0} for ''{1}'' does not match latest revision {2}",
+                            new Object[]{storedRevision, launderLog(file.toString()), rev});
+                }
             } else {
                 // read from the cache
                 annotation = readAnnotation(file);
@@ -188,8 +195,10 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
             if (fileAnnotationCacheMisses != null) {
                 fileAnnotationCacheMisses.increment();
             }
-            LOGGER.log(Level.FINEST, "annotation cache miss for ''{0}'' in revision {1}",
-                    new Object[]{file, rev});
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "annotation cache miss for ''{0}'' in revision {1}",
+                        new Object[]{launderLog(file.toString()), rev});
+            }
             return null;
         }
 

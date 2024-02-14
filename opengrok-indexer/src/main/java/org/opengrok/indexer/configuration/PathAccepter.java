@@ -29,6 +29,8 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.opengrok.indexer.web.Laundromat.launderLog;
+
 /**
  * Represents a gatekeeper that decides whether a particular file or directory
  * is acceptable for history or code analysis with respect to configuration of
@@ -59,12 +61,16 @@ public class PathAccepter {
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
-            LOGGER.log(Level.FINER, "not including ''{0}''", file.getAbsolutePath());
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "not including ''{0}''", launderLog(file.getAbsolutePath()));
+            }
             return false;
         }
 
         if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring ''{0}''", file.getAbsolutePath());
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "ignoring ''{0}''", launderLog(file.getAbsolutePath()));
+            }
             return false;
         }
 
