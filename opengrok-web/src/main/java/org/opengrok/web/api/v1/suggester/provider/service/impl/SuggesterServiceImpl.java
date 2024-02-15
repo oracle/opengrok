@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.provider.service.impl;
 
@@ -30,6 +30,7 @@ import com.cronutils.parser.CronParser;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.suggest.Suggester;
@@ -193,14 +194,14 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public void rebuild(final String project) {
-        Project p = env.getProjects().get(project);
-        if (p == null) {
+    public void rebuild(final String projectName) {
+        Project project = env.getProjects().get(projectName);
+        if (project == null) {
             logger.log(Level.WARNING, "Cannot rebuild suggester because project for name {0} was not found",
                     project);
             return;
         }
-        if (!p.isIndexed()) {
+        if (!project.isIndexed()) {
             logger.log(Level.WARNING, "Cannot rebuild project {0} because it is not indexed yet", project);
             return;
         }
@@ -210,7 +211,7 @@ public class SuggesterServiceImpl implements SuggesterService {
                 logger.log(Level.FINE, "Cannot rebuild {0} because suggester is not initialized", project);
                 return;
             }
-            suggester.rebuild(Collections.singleton(getNamedIndexDir(p)));
+            suggester.rebuild(Collections.singleton(getNamedIndexDir(project)));
         } finally {
             lock.readLock().unlock();
         }
@@ -299,6 +300,16 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
     }
 
+    private int getParallelismLevel(int ncpuPercent, String prefix) {
+        int paralleismLevel = (int) (((float) ncpuPercent / 100) * Runtime.getRuntime().availableProcessors());
+        if (paralleismLevel == 0) {
+            paralleismLevel = 1;
+        }
+        logger.log(Level.FINER, "Suggester {0} parallelism level: {1}", new Object[]{prefix, paralleismLevel});
+
+        return paralleismLevel;
+    }
+
     private void initSuggester() {
         SuggesterConfig suggesterConfig = env.getSuggesterConfig();
         if (!suggesterConfig.isEnabled()) {
@@ -306,21 +317,15 @@ public class SuggesterServiceImpl implements SuggesterService {
             return;
         }
 
-        File suggesterDir = new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR);
-        int rebuildParalleismLevel = (int) (((float) suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent() / 100)
-                * Runtime.getRuntime().availableProcessors());
-        if (rebuildParalleismLevel == 0) {
-            rebuildParalleismLevel = 1;
-        }
-        logger.log(Level.FINER, "Suggester rebuild parallelism level: {}", rebuildParalleismLevel);
-        suggester = new Suggester(suggesterDir,
+        suggester = new Suggester(new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR),
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
                 suggesterConfig.isAllowMostPopular(),
                 env.isProjectsEnabled(),
                 suggesterConfig.getAllowedFields(),
                 suggesterConfig.getTimeThreshold(),
-                rebuildParalleismLevel,
+                getParallelismLevel(suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent(), "rebuild"),
+                getParallelismLevel(suggesterConfig.getSearchThreadPoolSizeInNcpuPercent(), "search"),
                 Metrics.getRegistry(),
                 env.isPrintProgress());
 
@@ -405,10 +410,12 @@ public class SuggesterServiceImpl implements SuggesterService {
         return d.get();
     }
 
+    @VisibleForTesting
     public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
         suggester.waitForRebuild(timeout, unit);
     }
 
+    @VisibleForTesting
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
         suggester.waitForInit(timeout, unit);
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -33,7 +33,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -43,13 +42,10 @@ import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
@@ -91,21 +87,10 @@ class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
     }
 
     @BeforeEach
-    void before() {
-        await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
+    void before() throws Exception {
+        SuggesterServiceImpl.getInstance().waitForInit(15, TimeUnit.SECONDS);
 
         env.setSuggesterConfig(new SuggesterConfig());
-    }
-
-    private static int getSuggesterProjectDataSize() throws Exception {
-        Field f = SuggesterServiceImpl.class.getDeclaredField("suggester");
-        f.setAccessible(true);
-        Suggester suggester = (Suggester) f.get(SuggesterServiceImpl.getInstance());
-
-        Field f2 = Suggester.class.getDeclaredField("projectData");
-        f2.setAccessible(true);
-
-        return ((Map) f2.get(suggester)).size();
     }
 
     @Test

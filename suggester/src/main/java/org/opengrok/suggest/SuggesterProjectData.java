@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -105,6 +105,8 @@ class SuggesterProjectData implements Closeable {
 
     private final Directory tempDir;
 
+    private boolean initialized;    // Whether init() was called.
+
     SuggesterProjectData(
             final Directory indexDir,
             final Path suggesterDir,
@@ -163,6 +165,8 @@ class SuggesterProjectData implements Closeable {
             }
 
             storeDataVersion(commitVersion);
+
+            initialized = true;
         } finally {
             lock.writeLock().unlock();
         }
@@ -244,6 +248,15 @@ class SuggesterProjectData implements Closeable {
             }
 
             storeDataVersion(getCommitVersion());
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public boolean isInitialized() {
+        lock.writeLock().lock();
+        try {
+            return initialized;
         } finally {
             lock.writeLock().unlock();
         }

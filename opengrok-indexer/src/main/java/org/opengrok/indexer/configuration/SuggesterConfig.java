@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -51,6 +51,7 @@ public class SuggesterConfig {
     public static final int BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
     public static final int TIME_THRESHOLD_DEFAULT = 2000; // 2 sec
     public static final int REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT = 80;
+    public static final int SEARCH_THREAD_POOL_PERCENT_NCPUS_DEFAULT = 90;
 
     private static final Set<String> allowedProjectsDefault = null;
     private static final Set<String> allowedFieldsDefault = Set.of(
@@ -141,6 +142,11 @@ public class SuggesterConfig {
      */
     private int rebuildThreadPoolSizeInNcpuPercent;
 
+    /**
+     * Number of threads used for search pool expressed in percent of available CPUs in the system.
+     */
+    private int searchThreadPoolSizeInNcpuPercent;
+
     public SuggesterConfig() {
         setEnabled(ENABLED_DEFAULT);
         setMaxResults(MAX_RESULTS_DEFAULT);
@@ -157,6 +163,7 @@ public class SuggesterConfig {
         setRebuildCronConfig(REBUILD_CRON_CONFIG_DEFAULT);
         setBuildTerminationTime(BUILD_TERMINATION_TIME_DEFAULT);
         setRebuildThreadPoolSizeInNcpuPercent(REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT);
+        setSearchThreadPoolSizeInNcpuPercent(SEARCH_THREAD_POOL_PERCENT_NCPUS_DEFAULT);
     }
 
     public boolean isEnabled() {
@@ -302,6 +309,17 @@ public class SuggesterConfig {
         return rebuildThreadPoolSizeInNcpuPercent;
     }
 
+    public void setSearchThreadPoolSizeInNcpuPercent(final int percent) {
+        if (percent < 0 || percent > 100) {
+            throw new IllegalArgumentException("Need percentage value");
+        }
+        this.searchThreadPoolSizeInNcpuPercent = percent;
+    }
+
+    public int getSearchThreadPoolSizeInNcpuPercent() {
+        return searchThreadPoolSizeInNcpuPercent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -355,6 +373,8 @@ public class SuggesterConfig {
         res.setRebuildCronConfig("1 0 * * *");
         res.setBuildTerminationTime(1 + res.getBuildTerminationTime());
         res.setRebuildThreadPoolSizeInNcpuPercent(1 + res.getRebuildThreadPoolSizeInNcpuPercent());
+        res.setSearchThreadPoolSizeInNcpuPercent(1 + res.getSearchThreadPoolSizeInNcpuPercent());
+
         return res;
     }
 
