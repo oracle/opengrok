@@ -26,7 +26,6 @@ package org.opengrok.indexer.configuration;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.opengrok.indexer.web.Laundromat.launderLog;
