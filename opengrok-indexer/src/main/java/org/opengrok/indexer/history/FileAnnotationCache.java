@@ -171,16 +171,11 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
              * should be present to catch weird cases of someone not using the store() or general badness.
              */
             if (storedRevision == null) {
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "no stored revision in annotation cache for ''{0}''",
-                            launderLog(file.toString()));
-                }
+                LOGGER.finer(() -> String.format("no stored revision in annotation cache for '%s'",
+                        launderLog(file.toString())));
             } else if (!storedRevision.equals(latestRevision)) {
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER,
-                            "stored revision {0} for ''{1}'' does not match latest revision {2}",
-                            new Object[]{storedRevision, launderLog(file.toString()), rev});
-                }
+                LOGGER.finer(() -> String.format("stored revision %s for '%s' does not match latest revision %s",
+                        storedRevision, launderLog(file.toString()), rev));
             } else {
                 // read from the cache
                 annotation = readAnnotation(file);
@@ -195,10 +190,8 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
             if (fileAnnotationCacheMisses != null) {
                 fileAnnotationCacheMisses.increment();
             }
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "annotation cache miss for ''{0}'' in revision {1}",
-                        new Object[]{launderLog(file.toString()), rev});
-            }
+            LOGGER.finest(() -> String.format("annotation cache miss for '%s' in revision %s",
+                    launderLog(file.toString()), rev));
             return null;
         }
 

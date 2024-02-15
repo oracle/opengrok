@@ -61,16 +61,13 @@ public class PathAccepter {
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "not including ''{0}''", launderLog(file.getAbsolutePath()));
-            }
+
+            LOGGER.finer(() -> String.format("not including '%s'", launderLog(file.getAbsolutePath())));
             return false;
         }
 
         if (ignoredNames.ignore(file)) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "ignoring ''{0}''", launderLog(file.getAbsolutePath()));
-            }
+            LOGGER.finer(() -> String.format("ignoring '%s'", launderLog(file.getAbsolutePath())));
             return false;
         }
 

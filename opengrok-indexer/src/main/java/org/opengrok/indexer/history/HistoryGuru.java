@@ -284,9 +284,7 @@ public final class HistoryGuru {
     @Nullable
     private Annotation getAnnotationFromRepository(File file, @Nullable String rev, Repository repository) throws IOException {
         if (!env.getPathAccepter().accept(file)) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for annotation", launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("file '%s' not accepted for annotation", launderLog(file.toString())));
             return null;
         }
 
@@ -318,18 +316,14 @@ public final class HistoryGuru {
     public Annotation annotate(File file, @Nullable String rev, boolean fallback) throws IOException {
         Annotation annotation = getAnnotation(file, rev, fallback);
         if (annotation == null) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "no annotation for ''{0}''", launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("no annotation for '%s'", launderLog(file.toString())));
             return null;
         }
 
         Repository repo = getRepository(file);
         if (repo == null) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "cannot get repository for file ''{0}'' to complete annotation",
-                        launderLog(file.toString()));
-            }
+            LOGGER.finer(() -> String.format("cannot get repository for file '%s' to complete annotation",
+                    launderLog(file.toString())));
             return null;
         }
 
@@ -454,13 +448,14 @@ public final class HistoryGuru {
         LOGGER.log(Level.FINEST, "started retrieval of last history entry for ''{0}''", file);
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
+        final String meterName = "history.entry.latest";
 
         try {
             HistoryEntry lastHistoryEntry = getLastHistoryEntryFromCache(file, repository);
             if (lastHistoryEntry != null) {
                 statistics.report(LOGGER, Level.FINEST,
                         String.format("got latest history entry %s for ''%s'' from history cache",
-                        lastHistoryEntry, launderLog(file.toString())), "history.entry.latest");
+                        lastHistoryEntry, launderLog(file.toString())), meterName);
                 return lastHistoryEntry;
             }
         } catch (CacheException e) {
@@ -474,14 +469,14 @@ public final class HistoryGuru {
             statistics.report(LOGGER, Level.FINEST,
                     String.format("cannot retrieve the last history entry for ''%s'' in %s because fallback to" +
                                     "repository method is disabled",
-                            launderLog(file.toString()), repository), "history.entry.latest");
+                            launderLog(file.toString()), repository), meterName);
             return null;
         }
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
             statistics.report(LOGGER, Level.FINEST,
                     String.format("cannot retrieve the last history entry for ''%s'' in %s because of settings",
-                    launderLog(file.toString()), repository), "history.entry.latest");
+                    launderLog(file.toString()), repository), meterName);
             return null;
         }
 
@@ -489,7 +484,7 @@ public final class HistoryGuru {
         HistoryEntry lastHistoryEntry = repository.getLastHistoryEntry(file, ui);
         statistics.report(LOGGER, Level.FINEST,
                 String.format("finished retrieval of last history entry for '%s' using repository method (%s)",
-                        launderLog(file.toString()), lastHistoryEntry != null ? "success" : "fail"), "history.entry.latest");
+                        launderLog(file.toString()), lastHistoryEntry != null ? "success" : "fail"), meterName);
         return lastHistoryEntry;
     }
 
@@ -541,8 +536,7 @@ public final class HistoryGuru {
     private History getHistoryFromRepository(File file, Repository repository, boolean ui) throws HistoryException {
 
         if (!isRepoHistoryEligible(repository, file, ui)) {
-            LOGGER.log(Level.FINEST, "''{0}'' in {1} is not eligible for history",
-                    new Object[]{file, repository});
+            LOGGER.finest(() -> String.format("'%s' in %s is not eligible for history", file, repository));
             return null;
         }
 
@@ -556,16 +550,13 @@ public final class HistoryGuru {
         if (env.isIndexer() && isHistoryIndexDone() &&
                 repository.isHistoryEnabled() && repository.hasHistoryForDirectories() &&
                 !env.isFetchHistoryWhenNotInCache()) {
-            LOGGER.log(Level.FINE, "not getting the history for ''{0}'' in repository {1} as the it supports "
-                    + "history for directories",
-                    new Object[]{launderLog(file.toString()), repository});
+            LOGGER.fine(() -> String.format("not getting the history for '%s' in repository %s as the it supports "
+                    + "history for directories", launderLog(file.toString()), repository));
             return null;
         }
 
         if (!env.getPathAccepter().accept(file)) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "file ''{0}'' not accepted for history", launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("file '%s' not accepted for history", launderLog(file.toString())));
             return null;
         }
 
@@ -575,8 +566,8 @@ public final class HistoryGuru {
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
-            LOGGER.log(Level.FINEST, "repository {0} does not have history for ''{1}''",
-                    new Object[]{repository, launderLog(file.toString())});
+            LOGGER.finest(() -> String.format("repository %s does not have history for '%s'",
+                    repository, launderLog(file.toString())));
             return null;
         }
 
@@ -630,19 +621,15 @@ public final class HistoryGuru {
                     return true;
                 }
             } catch (CacheException e) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "cannot determine if history cache for ''{0}'' is fresh",
-                            launderLog(file.toString()));
-                }
+                LOGGER.finest(() -> String.format("cannot determine if history cache for '%s' is fresh",
+                        launderLog(file.toString())));
             }
         }
 
         Repository repo = getRepository(file);
         if (repo == null) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to check history presence",
-                        launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("cannot find repository for '%s' to check history presence",
+                    launderLog(file.toString())));
             return false;
         }
 
@@ -658,11 +645,9 @@ public final class HistoryGuru {
                 || !repo.isRemote());
 
         if (!remoteSupported) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "not eligible to display history for ''{0}'' as repository {1} is remote " +
-                                "and the global setting is {2}",
-                        new Object[]{launderLog(file.toString()), repo, globalRemoteSupport});
-            }
+            LOGGER.finest(() -> String.format("not eligible to display history for '%s' as repository %s is remote " +
+                            "and the global setting is %s",
+                    launderLog(file.toString()), repo, globalRemoteSupport));
         }
 
         return remoteSupported;
@@ -670,24 +655,20 @@ public final class HistoryGuru {
 
     private static boolean repositoryHasHistory(File file, Repository repo) {
         if (!repo.isWorking()) {
-            LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check history presence",
-                    new Object[]{repo, launderLog(file.toString())});
+            LOGGER.finest(() -> String.format("repository %s for '%s' is not working to check history presence",
+                    repo, launderLog(file.toString())));
             return false;
         }
 
         if (!repo.isHistoryEnabled()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' does not have history enabled " +
-                        "to check history presence", new Object[]{repo, launderLog(file.toString())});
-            }
+            LOGGER.finest(() -> String.format("repository %s for '%s' does not have history enabled " +
+                    "to check history presence", repo, launderLog(file.toString())));
             return false;
         }
 
         if (!repo.fileHasHistory(file)) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "''{0}'' in repository {1} does not have history to check history presence",
-                        new Object[]{launderLog(file.toString()), repo});
-            }
+            LOGGER.finest(() -> String.format("'%s' in repository %s does not have history to check history presence",
+                    launderLog(file.toString()), repo));
             return false;
         }
 
@@ -700,22 +681,17 @@ public final class HistoryGuru {
      */
     public boolean hasHistoryCacheForFile(File file) {
         if (!useHistoryCache()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "history cache is off for ''{0}'' to check history cache presence",
-                        launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("history cache is off for '%s' to check history cache presence",
+                    launderLog(file.toString())));
             return false;
         }
 
         try {
             return historyCache.hasCacheForFile(file);
         } catch (CacheException ex) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE,
-                        String.format("failed to get history cache for file '%s' to check history cache presence",
-                                launderLog(file.toString())),
-                        ex);
-            }
+            LOGGER.fine(() ->
+                    String.format("failed to get history cache for file '%s' to check history cache presence: %s",
+                            launderLog(file.toString()), ex));
             return false;
         }
     }
@@ -763,11 +739,8 @@ public final class HistoryGuru {
         try {
             document = getDocument(file);
         } catch (ParseException | IOException e) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST,
-                        String.format("cannot get document for '%s' to check annotation", launderLog(file.toString())),
-                        e);
-            }
+            LOGGER.finest(() -> String.format("cannot get document for '%s' to check annotation: %s",
+                            launderLog(file.toString()), e));
         }
 
         return hasAnnotation(file, document);
@@ -776,17 +749,13 @@ public final class HistoryGuru {
     private boolean hasAnnotationInRepo(File file) {
         Repository repo = getRepository(file);
         if (repo == null) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "cannot find repository for ''{0}'' to check annotation presence",
-                        launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("cannot find repository for '%s' to check annotation presence",
+                    launderLog(file.toString())));
             return false;
         }
         if (!repo.isWorking()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "repository {0} for ''{1}'' is not working to check annotation presence",
-                        new Object[]{repo, launderLog(file.toString())});
-            }
+            LOGGER.finest(() -> String.format("repository %s for '%s' is not working to check annotation presence",
+                    repo, launderLog(file.toString())));
             return false;
         }
 
@@ -799,22 +768,17 @@ public final class HistoryGuru {
      */
     public boolean hasAnnotationCacheForFile(File file) {
         if (!useAnnotationCache()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "annotation cache is off for ''{0}'' to check history cache presence",
-                        launderLog(file.toString()));
-            }
+            LOGGER.finest(() -> String.format("annotation cache is off for '%s' to check history cache presence",
+                    launderLog(file.toString())));
             return false;
         }
 
         try {
             return annotationCache.hasCacheForFile(file);
         } catch (CacheException ex) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE,
-                        String.format("failed to get annotation cache for file '%s' to check history cache presence",
-                                launderLog(file.toString())),
-                        ex);
-            }
+            LOGGER.fine(() ->
+                    String.format("failed to get annotation cache for file '%s' to check history cache presence: %s",
+                            launderLog(file.toString()), ex));
             return false;
         }
     }
@@ -830,27 +794,21 @@ public final class HistoryGuru {
     public boolean fillLastHistoryEntries(File directory, List<DirectoryEntry> entries) throws CacheException {
 
         if (!env.isUseHistoryCacheForDirectoryListing()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "using history cache to retrieve last modified times for ''{0}}'' is disabled",
-                        launderLog(directory.toString()));
-            }
+            LOGGER.finest(() -> String.format("using history cache to retrieve last modified times for '%s' is disabled",
+                    launderLog(directory.toString())));
             return true;
         }
 
         if (!useHistoryCache()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "history cache is disabled for ''{0}'' to retrieve last modified times",
-                        launderLog(directory.toString()));
-            }
+            LOGGER.finest(() -> String.format("history cache is disabled for '%s' to retrieve last modified times",
+                    launderLog(directory.toString())));
             return true;
         }
 
         Repository repository = getRepository(directory);
         if (repository == null) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "cannot find repository for ''{0}}'' to retrieve last modified times",
-                        launderLog(directory.toString()));
-            }
+            LOGGER.finest(() -> String.format("cannot find repository for '%s' to retrieve last modified times",
+                    launderLog(directory.toString())));
             return true;
         }
 
@@ -858,11 +816,9 @@ public final class HistoryGuru {
         // could be introduced and changed solely via merge changesets. The call would presumably fall back
         // to file system based time stamps, however that might be confusing, so avoid that.
         if (repository.isMergeCommitsSupported() && !repository.isMergeCommitsEnabled()) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST,
-                        "will not retrieve last modified times due to merge changesets disabled for ''{0}}''",
-                        launderLog(directory.toString()));
-            }
+            LOGGER.finest(() -> String.format(
+                    "will not retrieve last modified times due to merge changesets disabled for '%s'",
+                    launderLog(directory.toString())));
             return true;
         }
 
@@ -1202,9 +1158,7 @@ public final class HistoryGuru {
                             repository, file), Level.FINER);
         }
 
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "creating annotation cache for ''{0}''", launderLog(file.toString()));
-        }
+        LOGGER.finest(() -> String.format("creating annotation cache for '%s'", launderLog(file.toString())));
         try {
             Statistics statistics = new Statistics();
             Annotation annotation = getAnnotationFromRepository(file, null, repository);
