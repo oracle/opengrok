@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -36,6 +36,8 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.opengrok.indexer.web.Laundromat.launderLog;
 
 /**
  * Helper class for getting the latest revision of a file.
@@ -67,7 +69,7 @@ public class LatestRevisionUtil {
         try {
             return getLastRevFromHistory(file);
         } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "cannot get latest revision for {0}", file);
+            LOGGER.log(Level.WARNING, "cannot get latest revision for {0}", launderLog(file.toString()));
             return null;
         }
     }
@@ -85,7 +87,7 @@ public class LatestRevisionUtil {
         try {
             doc = IndexDatabase.getDocument(file);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", file), e);
+            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", launderLog(file.toString())), e);
         }
 
         String lastRev = null;
@@ -102,7 +104,7 @@ public class LatestRevisionUtil {
                 }
                 Date fileDate = new Date(file.lastModified());
                 if (docDate.compareTo(fileDate) < 0) {
-                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", file);
+                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", launderLog(file.toString()));
                     return null;
                 }
             }

@@ -26,8 +26,9 @@ package org.opengrok.indexer.configuration;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.opengrok.indexer.web.Laundromat.launderLog;
 
 /**
  * Represents a gatekeeper that decides whether a particular file or directory
@@ -59,12 +60,13 @@ public class PathAccepter {
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
-            LOGGER.log(Level.FINER, "not including ''{0}''", file.getAbsolutePath());
+
+            LOGGER.finer(() -> String.format("not including '%s'", launderLog(file.getAbsolutePath())));
             return false;
         }
 
         if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring ''{0}''", file.getAbsolutePath());
+            LOGGER.finer(() -> String.format("ignoring '%s'", launderLog(file.getAbsolutePath())));
             return false;
         }
 
