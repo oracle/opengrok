@@ -24,7 +24,6 @@
 package org.opengrok.indexer.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -47,7 +46,7 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
 
     private final String prefix;
     private final String emptyString;
-    private final Boolean returnNullWhenEmpty;
+    private final boolean returnNullWhenEmpty;
 
     /**
      * Creates a collector with given prefix and
@@ -55,18 +54,23 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
      * @param prefix prefix before the joined string
      */
     public ErrorMessageCollector(@NotNull String prefix) {
-        this(prefix, null);
+        Objects.requireNonNull(prefix);
+        this.prefix = prefix;
+        this.emptyString = "";
+        this.returnNullWhenEmpty = true;
     }
 
     /**
      * Creates a string joiner with given prefix and empty string.
      * @param prefix prefix before the joined string
-     * @param emptyString string to display if collection is empty, can be {@code null}
+     * @param emptyString string to display if collection is empty
      */
-    public ErrorMessageCollector(@NotNull String prefix, @Nullable String emptyString) {
+    public ErrorMessageCollector(@NotNull String prefix, @NotNull String emptyString) {
+        Objects.requireNonNull(prefix);
+        Objects.requireNonNull(emptyString);
         this.prefix = prefix;
-        this.emptyString = Objects.isNull(emptyString) ? "" : emptyString;
-        this.returnNullWhenEmpty = Objects.isNull(emptyString);
+        this.emptyString = emptyString;
+        this.returnNullWhenEmpty = false;
 
     }
     /**
@@ -77,7 +81,7 @@ public class ErrorMessageCollector implements Collector<String, StringJoiner, Op
     @Override
     public Supplier<StringJoiner> supplier() {
         return () -> {
-            var joiner = new StringJoiner(", ", emptyString + prefix, "");
+            var joiner = new StringJoiner(", ", prefix, "");
             joiner.setEmptyValue(emptyString);
             return joiner;
         };

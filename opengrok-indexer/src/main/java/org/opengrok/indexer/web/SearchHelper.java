@@ -401,7 +401,7 @@ public class SearchHelper {
                     searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 } else {
                     errorMsg = projects.stream()
-                            .collect(new ErrorMessageCollector(" for projects: ",
+                            .collect(new ErrorMessageCollector("Failed to initialize search. Check the index for projects: ",
                                     "Failed to initialize search. Check the index"))
                             .orElse("");
                     return this;
@@ -430,7 +430,7 @@ public class SearchHelper {
         } catch (FileNotFoundException e) {
 
             errorMsg = projects.stream()
-                    .collect(new ErrorMessageCollector(" for projects: ",
+                    .collect(new ErrorMessageCollector("Index database not found. Check the index for projects: ",
                             "Index database not found. Check the index"))
                     .orElse("");
             errorMsg += "; " + e.getMessage();
