@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -72,7 +72,7 @@ public abstract class AbstractCache implements Cache {
             }
             sb.append(add);
         } catch (ForbiddenSymlinkException | IOException e) {
-            throw new CacheException("Failed to get path relative to source root for " + file, e);
+            throw new CacheException(String.format("Failed to get path relative to source root for '%s'", file), e);
         }
 
         String suffix = getCacheFileSuffix();
@@ -94,7 +94,7 @@ public abstract class AbstractCache implements Cache {
                         new Object[]{repo.getDirectoryName(), this.getInfo()});
             } catch (CacheException e) {
                 LOGGER.log(Level.WARNING,
-                        "Clearing cache for repository {0} failed: {1}",
+                        "Clearing cache for repository ''{0}'' failed: {1}",
                         new Object[]{repo.getDirectoryName(), e.getLocalizedMessage()});
             }
         }
@@ -110,11 +110,11 @@ public abstract class AbstractCache implements Cache {
         File parent = file.getParentFile();
 
         if (!file.delete() && file.exists()) {
-            LOGGER.log(Level.WARNING, "Failed to remove obsolete cache-file: {0}", file.getAbsolutePath());
+            LOGGER.log(Level.WARNING, "Failed to remove obsolete cache-file: ''{0}''", file.getAbsolutePath());
         }
 
         if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty cache dir:{0}", parent.getAbsolutePath());
+            LOGGER.log(Level.FINE, "Removed empty cache dir: ''{0}''", parent.getAbsolutePath());
         }
     }
 
