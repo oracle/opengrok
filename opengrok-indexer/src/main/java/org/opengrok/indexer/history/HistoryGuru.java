@@ -236,7 +236,8 @@ public final class HistoryGuru {
     private Annotation getAnnotation(File file, @Nullable String rev, boolean fallback) throws IOException {
         Repository repository = getRepository(file);
         if (repository == null) {
-            LOGGER.log(Level.FINER, "no repository found for ''{0}'' to check for annotation", file);
+            LOGGER.finer(() -> String.format("no repository found for '%s' to check for annotation",
+                    launderLog(file.toString())));
             return null;
         }
 
@@ -259,7 +260,7 @@ public final class HistoryGuru {
         }
 
         if (!HistoryGuru.getInstance().hasAnnotation(file)) {
-            LOGGER.log(Level.FINER, "skipped getting annotation for file ''{0}}''", file);
+            LOGGER.finer(() -> String.format("skipped getting annotation for file '%s'", launderLog(file.toString())));
             return null;
         }
 
@@ -445,7 +446,8 @@ public final class HistoryGuru {
     @Nullable
     public HistoryEntry getLastHistoryEntry(File file, boolean ui, boolean fallback) throws HistoryException {
         Statistics statistics = new Statistics();
-        LOGGER.log(Level.FINEST, "started retrieval of last history entry for ''{0}''", file);
+        LOGGER.finest(() -> String.format("started retrieval of last history entry for '%s'",
+                launderLog(file.toString())));
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
         final String meterName = "history.entry.latest";
@@ -707,7 +709,7 @@ public final class HistoryGuru {
      */
     public boolean hasAnnotation(File file, @Nullable Document document) {
         if (file.isDirectory()) {
-            LOGGER.log(Level.FINEST, "no annotations for directories (''{0}'')", file);
+            LOGGER.finest(() -> String.format("no annotations for directories: '%s'", launderLog(file.toString())));
             return false;
         }
 
@@ -716,7 +718,8 @@ public final class HistoryGuru {
             // however it does not hurt to check in case this will change.
             String fileType = document.get(QueryBuilder.T);
             if (fileType == null || !isXrefable(fileType)) {
-                LOGGER.log(Level.FINEST, "no file type found in document for ''{0}'' or not xref-able", file);
+                LOGGER.finest(() -> String.format("no file type found in document for '%s' or not xref-able",
+                        launderLog(file.toString())));
                 return false;
             }
         }
