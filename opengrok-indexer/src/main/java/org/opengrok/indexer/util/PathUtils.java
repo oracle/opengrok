@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -139,7 +140,7 @@ public class PathUtils {
             if (Objects.nonNull(allowedSymlinks) && Files.isSymbolicLink(iterPath) &&
                 !isWhitelisted(iterCanon.toString(), canonicalRoots) &&
                 !isAllowedSymlink(iterCanon, allowedSymlinks)) {
-                    String format = String.format("%1$s is prohibited symlink", iterPath);
+                    String format = String.format("'%1$s' is prohibited symlink", iterPath);
                     LOGGER.finest(format);
                     throw new ForbiddenSymlinkException(format);
             }
@@ -180,8 +181,7 @@ public class PathUtils {
                 canonicalLink = fileSystem.getPath(allowedSymlink).toRealPath().toString();
             } catch (IOException e) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("unresolvable symlink: %s",
-                        allowedSymlink));
+                    LOGGER.fine(String.format("unresolvable symlink: '%s'", allowedSymlink));
                 }
                 continue;
             }
