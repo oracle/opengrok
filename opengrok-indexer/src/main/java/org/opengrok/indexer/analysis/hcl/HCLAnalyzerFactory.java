@@ -40,7 +40,7 @@ public class HCLAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link HCLAnalyzerFactory}.
      */
     public HCLAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     /**

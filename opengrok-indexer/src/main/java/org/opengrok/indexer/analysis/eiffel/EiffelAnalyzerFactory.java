@@ -40,7 +40,7 @@ public class EiffelAnalyzerFactory extends FileAnalyzerFactory {
      */
     public EiffelAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN,
-            NAME);
+            NAME, true);
     }
 
     /**

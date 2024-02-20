@@ -88,7 +88,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
     public static final PlainAnalyzerFactory DEFAULT_INSTANCE = new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

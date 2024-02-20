@@ -41,7 +41,7 @@ public class VerilogAnalyzerFactory extends FileAnalyzerFactory {
      */
     public VerilogAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN,
-                NAME);
+                NAME, true);
     }
 
     /**

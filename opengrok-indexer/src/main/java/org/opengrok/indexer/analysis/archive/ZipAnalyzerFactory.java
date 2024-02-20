@@ -57,7 +57,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
             new ZipAnalyzerFactory();
 
     private ZipAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME, false);
     }
 
     @Override

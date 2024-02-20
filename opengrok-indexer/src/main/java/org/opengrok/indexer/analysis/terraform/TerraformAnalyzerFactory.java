@@ -40,7 +40,7 @@ public class TerraformAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link TerraformAnalyzerFactory}.
      */
     public TerraformAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     /**

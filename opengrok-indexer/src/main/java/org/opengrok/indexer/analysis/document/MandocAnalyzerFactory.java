@@ -53,7 +53,7 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
         new MandocAnalyzerFactory();
 
     protected MandocAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

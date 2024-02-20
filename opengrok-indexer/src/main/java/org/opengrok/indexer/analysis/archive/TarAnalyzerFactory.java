@@ -34,7 +34,7 @@ public class TarAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public TarAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
+        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.XREFABLE, NAME, false);
     }
 
     @Override

@@ -50,7 +50,7 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
         new TroffAnalyzerFactory();
 
     protected TroffAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

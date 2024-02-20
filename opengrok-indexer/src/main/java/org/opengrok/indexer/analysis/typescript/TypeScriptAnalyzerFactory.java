@@ -33,7 +33,7 @@ public class TypeScriptAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {"TS"};
 
     public TypeScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

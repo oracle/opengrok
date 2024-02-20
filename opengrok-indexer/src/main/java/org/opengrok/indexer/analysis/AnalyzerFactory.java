@@ -64,6 +64,10 @@ public abstract class AnalyzerFactory {
      * The genre for files recognized by this kind of analyzer.
      */
     protected AbstractAnalyzer.Genre genre;
+    /**
+     * Whether the files can be annotated.
+     */
+    protected boolean hasAnnotations;
 
     protected AnalyzerFactory(FileAnalyzerFactory.Matcher matcher, String contentType) {
         cachedAnalyzer = new ThreadLocal<>();
@@ -146,11 +150,15 @@ public abstract class AnalyzerFactory {
     }
 
     /**
-     * The user friendly name of this analyzer.
+     * The user-friendly name of this analyzer.
      *
      * @return a genre
      */
     public abstract String getName();
+
+    public boolean hasAnnotations() {
+        return hasAnnotations;
+    }
 
     public abstract AbstractAnalyzer getAnalyzer();
 

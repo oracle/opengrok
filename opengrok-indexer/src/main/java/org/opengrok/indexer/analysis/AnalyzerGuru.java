@@ -771,6 +771,7 @@ public class AnalyzerGuru {
      * @param fileTypeName a defined instance
      * @return a defined instance or {@code null}
      */
+    @Nullable
     public static AnalyzerFactory findByFileTypeName(String fileTypeName) {
         return FILETYPE_FACTORIES.get(fileTypeName);
     }

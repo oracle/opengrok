@@ -35,7 +35,7 @@ public class KotlinAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public KotlinAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

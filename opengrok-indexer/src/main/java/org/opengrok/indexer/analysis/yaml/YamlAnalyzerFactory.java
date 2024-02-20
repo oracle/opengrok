@@ -38,7 +38,7 @@ public class YamlAnalyzerFactory extends FileAnalyzerFactory {
 
     public YamlAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain",
-                AbstractAnalyzer.Genre.PLAIN, NAME);
+                AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

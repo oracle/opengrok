@@ -63,7 +63,8 @@ public final class JarAnalyzerFactory extends FileAnalyzerFactory {
             new JarAnalyzerFactory();
 
     private JarAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
+        super(null, null, SUFFIXES, null, MATCHER, null,
+                AbstractAnalyzer.Genre.XREFABLE, NAME, false);
     }
 
     @Override

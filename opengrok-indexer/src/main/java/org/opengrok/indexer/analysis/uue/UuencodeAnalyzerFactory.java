@@ -51,7 +51,7 @@ public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public UuencodeAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, false);
     }
 
     @Override

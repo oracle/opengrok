@@ -39,7 +39,7 @@ public class AsmAnalyzerFactory extends FileAnalyzerFactory {
      * ".s" with {@link AsmAnalyzer}.
      */
     public AsmAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     /**

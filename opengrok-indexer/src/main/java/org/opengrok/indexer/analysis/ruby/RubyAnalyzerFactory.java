@@ -50,7 +50,7 @@ public class RubyAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link RubyAnalyzerFactory}.
      */
     public RubyAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     /**

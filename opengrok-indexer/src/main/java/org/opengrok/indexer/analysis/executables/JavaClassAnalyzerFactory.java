@@ -95,7 +95,8 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         new JavaClassAnalyzerFactory();
 
     private JavaClassAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
+        super(null, null, SUFFIXES, null, MATCHER, null,
+                AbstractAnalyzer.Genre.XREFABLE, NAME, false);
     }
 
     /**

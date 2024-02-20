@@ -41,7 +41,7 @@ public class RAnalyzerFactory extends FileAnalyzerFactory {
      * ".r", ".rdata", ".rda", and ".rds" with {@link RAnalyzer}.
      */
     public RAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     /**

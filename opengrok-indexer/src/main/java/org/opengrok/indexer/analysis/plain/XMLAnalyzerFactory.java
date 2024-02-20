@@ -40,7 +40,7 @@ public class XMLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public XMLAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

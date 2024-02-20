@@ -34,14 +34,14 @@ import java.util.List;
  */
 public class FileAnalyzerFactory extends AnalyzerFactory {
 
-    /** The user friendly name of this analyzer. */
+    /** The user-friendly name of this analyzer. */
     private final String name;
 
     /**
      * Create an instance of {@code FileAnalyzerFactory}.
      */
     FileAnalyzerFactory() {
-        this(null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, false);
     }
 
     /**
@@ -56,12 +56,13 @@ public class FileAnalyzerFactory extends AnalyzerFactory {
      * @param contentType content type for this analyzer (possibly {@code null})
      * @param genre the genre for this analyzer (if {@code null}, {@code
      * Genre.DATA} is used)
-     * @param name user friendly name of this analyzer (or null if it shouldn't be listed)
+     * @param name user-friendly name of this analyzer (or null if it shouldn't be listed)
+     * @param hasAnnotations whether the files processed by the analyzers produced by this factory can be annotated
      */
     protected FileAnalyzerFactory(
             String[] names, String[] prefixes, String[] suffixes,
             String[] magics, Matcher matcher, String contentType,
-            AbstractAnalyzer.Genre genre, String name) {
+            AbstractAnalyzer.Genre genre, String name, boolean hasAnnotations) {
         super(matcher, contentType);
         this.names = asList(names);
         this.prefixes = asList(prefixes);
@@ -69,6 +70,7 @@ public class FileAnalyzerFactory extends AnalyzerFactory {
         this.magics = asList(magics);
         this.genre = (genre == null) ? AbstractAnalyzer.Genre.DATA : genre;
         this.name = name;
+        this.hasAnnotations = hasAnnotations;
     }
 
     /**

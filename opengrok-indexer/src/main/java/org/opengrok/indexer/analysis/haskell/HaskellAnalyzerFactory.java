@@ -40,7 +40,7 @@ public class HaskellAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public HaskellAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class FortranAnalyzerFactory extends FileAnalyzerFactory {
         "F15"};
 
     public FortranAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override
