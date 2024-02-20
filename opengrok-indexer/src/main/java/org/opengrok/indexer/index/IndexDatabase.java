@@ -2336,7 +2336,7 @@ public class IndexDatabase {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
                 if (fileTypeName == null) {
                     // (Should not get here, but break just in case.)
-                    LOGGER.log(Level.FINEST, "Missing TYPE field: ''{0}''", path);
+                    LOGGER.log(Level.WARNING, "Missing TYPE field: ''{0}''", path);
                     break;
                 }
 

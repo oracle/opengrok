@@ -155,24 +155,33 @@ class HistoryGuruTest {
         }
     }
 
+    /**
+     * The parameters need to be consistent with respective AnalyzerFactory classes' values.
+     */
     private static Stream<Arguments> provideParamsForHasAnnotationTestWithDocument() {
         return Stream.of(
-                Arguments.of(AbstractAnalyzer.Genre.PLAIN.typeName(), true),
-                Arguments.of(AbstractAnalyzer.Genre.DATA.typeName(), false),
-                Arguments.of(null, false)
+                Arguments.of(AbstractAnalyzer.Genre.PLAIN.typeName(), true, "c", true),
+                Arguments.of(AbstractAnalyzer.Genre.XREFABLE.typeName(), true, "elf", false),
+                Arguments.of(AbstractAnalyzer.Genre.DATA.typeName(), false, "gzip", false),
+                Arguments.of(null, false, "file", false) // Genre.IMAGE
                 );
     }
 
     @ParameterizedTest
     @MethodSource("provideParamsForHasAnnotationTestWithDocument")
-    void testHasAnnotationWithDocument(@Nullable String typeName, boolean isXrefable) {
+    void testHasAnnotationWithDocument(@Nullable String genreName, boolean isXrefable,
+                                       String typeName, boolean hasAnnotation) {
         File file = Paths.get(repository.getSourceRoot(), "git", "main.c").toFile();
         assertTrue(file.isFile());
         Document document = new Document();
-        if (typeName != null) {
-            document.add(new Field(QueryBuilder.T, typeName, new FieldType(StringField.TYPE_STORED)));
-            assertEquals(isXrefable, AnalyzerGuru.isXrefable(typeName));
+        if (genreName != null) {
+            document.add(new Field(QueryBuilder.T, genreName, new FieldType(StringField.TYPE_STORED)));
+            assertEquals(isXrefable, AnalyzerGuru.isXrefable(genreName));
         }
+
+        // Technically the TYPE field should be present in all documents.
+        assertNotNull(AnalyzerGuru.findByFileTypeName(typeName));
+        document.add(new Field(QueryBuilder.TYPE, typeName, new FieldType(StringField.TYPE_STORED)));
 
         /*
          * This test class does not perform the 2nd phase of indexing, therefore getDocument() for any file
@@ -180,7 +189,10 @@ class HistoryGuruTest {
          */
         assertThrows(IndexNotFoundException.class, () -> IndexDatabase.getDocument(file));
         assertTrue(instance.hasAnnotation(file));
-        assertEquals(isXrefable, instance.hasAnnotation(file, document));
+        if (!isXrefable) {
+            assertFalse(hasAnnotation);
+        }
+        assertEquals(hasAnnotation, instance.hasAnnotation(file, document));
     }
 
     /**
