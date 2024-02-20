@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.sql;
 
