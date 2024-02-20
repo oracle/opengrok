@@ -46,17 +46,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexNotFoundException;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -151,20 +155,24 @@ class HistoryGuruTest {
         }
     }
 
+    private static Stream<Arguments> provideParamsForHasAnnotationTestWithDocument() {
+        return Stream.of(
+                Arguments.of(AbstractAnalyzer.Genre.PLAIN.typeName(), true),
+                Arguments.of(AbstractAnalyzer.Genre.DATA.typeName(), false),
+                Arguments.of(null, false)
+                );
+    }
+
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void testHasAnnotationWithDocument(boolean isXrefable) {
+    @MethodSource("provideParamsForHasAnnotationTestWithDocument")
+    void testHasAnnotationWithDocument(@Nullable String typeName, boolean isXrefable) {
         File file = Paths.get(repository.getSourceRoot(), "git", "main.c").toFile();
         assertTrue(file.isFile());
         Document document = new Document();
-        String typeName;
-        if (isXrefable) {
-            typeName = AbstractAnalyzer.Genre.PLAIN.typeName();
-        } else {
-            typeName = AbstractAnalyzer.Genre.DATA.typeName();
+        if (typeName != null) {
+            document.add(new Field(QueryBuilder.T, typeName, new FieldType(StringField.TYPE_STORED)));
+            assertEquals(isXrefable, AnalyzerGuru.isXrefable(typeName));
         }
-        assertEquals(isXrefable, AnalyzerGuru.isXrefable(typeName));
-        document.add(new Field(QueryBuilder.T, typeName, new FieldType(StringField.TYPE_STORED)));
 
         /*
          * This test class does not perform the 2nd phase of indexing, therefore getDocument() for any file
@@ -177,7 +185,7 @@ class HistoryGuruTest {
 
     /**
      * Check that {@link HistoryGuru#hasAnnotation(File, Document)} falls back to repository check
-     * if the document is {@code null}. Complements the {@link #testHasAnnotationWithDocument(boolean)} test.
+     * if the document is {@code null}. Complements the {@link #testHasAnnotationWithDocument} test.
      */
     @Test
     void testHasAnnotationWithoutDocument() {
