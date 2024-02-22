@@ -18,15 +18,14 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
- * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
+ * Copyright (c) 2024, Oracle and/or its affiliates.
+ * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.util;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -48,14 +47,16 @@ class ErrorMessageCollectorTest {
     @Test
     void noEmptyStringWithMultiElementCollectionReturnJoinedString() {
         var collector = new ErrorMessageCollector("TestPrefix ");
-        var returnValue = Set.of("a", "b").stream().collect(collector);
-        Assertions.assertTrue(returnValue.orElse("").startsWith("TestPrefix "));
+        var returnValue = Stream.of("a", "b").collect(collector);
+        Assertions.assertTrue(returnValue.isPresent());
+        Assertions.assertEquals("TestPrefix a, b", returnValue.get());
     }
     @Test
     void emptyStringWithMultiElementCollectionReturnJoinedStringWithoutEmptyString() {
         var collector = new ErrorMessageCollector("TestPrefix ", "TestEmptyString");
-        var returnValue = Set.of("a", "b").stream().collect(collector);
-        Assertions.assertTrue(returnValue.orElse("").startsWith("TestPrefix "));
+        var returnValue = Stream.of("a", "b").collect(collector);
+        Assertions.assertTrue(returnValue.isPresent());
+        Assertions.assertEquals("TestPrefix a, b", returnValue.get());
     }
 
 }

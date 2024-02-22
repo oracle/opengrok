@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2011, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
- * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
+ * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web;
 
