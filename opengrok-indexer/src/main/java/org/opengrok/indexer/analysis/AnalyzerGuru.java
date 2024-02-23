@@ -237,8 +237,7 @@ public class AnalyzerGuru {
      * Maps from {@link FileAnalyzer#getFileTypeName()} to
      * {@link FileAnalyzerFactory}.
      */
-    private static final Map<String, AnalyzerFactory> FILETYPE_FACTORIES =
-            new HashMap<>();
+    private static final Map<String, AnalyzerFactory> FILETYPE_FACTORIES = new HashMap<>();
 
     /**
      * Maps from {@link FileAnalyzer#getFileTypeName()} to
@@ -771,6 +770,7 @@ public class AnalyzerGuru {
      * @param fileTypeName a defined instance
      * @return a defined instance or {@code null}
      */
+    @Nullable
     public static AnalyzerFactory findByFileTypeName(String fileTypeName) {
         return FILETYPE_FACTORIES.get(fileTypeName);
     }

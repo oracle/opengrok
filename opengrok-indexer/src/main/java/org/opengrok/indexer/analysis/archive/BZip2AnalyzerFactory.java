@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.archive;
 
@@ -38,7 +38,7 @@ public class BZip2AnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public BZip2AnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME, false);
     }
 
     @Override

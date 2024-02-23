@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013, Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
 package org.opengrok.indexer.analysis.uue;
@@ -51,7 +51,7 @@ public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public UuencodeAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, false);
     }
 
     @Override

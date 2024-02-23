@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.plain;
 
@@ -40,7 +40,7 @@ public class XMLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public XMLAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

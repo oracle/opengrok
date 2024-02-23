@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.data;
 
@@ -45,7 +45,7 @@ public class IgnorantAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public IgnorantAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null, null);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, null, false);
     }
 
     @Override

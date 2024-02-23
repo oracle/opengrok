@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2024, Oracle and/or its affiliates.
  * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.analysis.yaml;
@@ -38,7 +38,7 @@ public class YamlAnalyzerFactory extends FileAnalyzerFactory {
 
     public YamlAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain",
-                AbstractAnalyzer.Genre.PLAIN, NAME);
+                AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -88,7 +88,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
     public static final PlainAnalyzerFactory DEFAULT_INSTANCE = new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);
     }
 
     @Override

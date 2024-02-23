@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.archive;
 
@@ -38,9 +38,8 @@ public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public GZIPAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME, false);
     }
-
     @Override
     protected AbstractAnalyzer newAnalyzer() {
         return new GZIPAnalyzer(this);

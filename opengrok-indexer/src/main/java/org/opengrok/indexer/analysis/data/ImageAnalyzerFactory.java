@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.data;
 
@@ -38,7 +38,7 @@ public class ImageAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ImageAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.IMAGE, NAME);
+        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.IMAGE, NAME, false);
     }
 
     @Override

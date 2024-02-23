@@ -51,6 +51,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
@@ -721,6 +723,18 @@ public final class HistoryGuru {
                 LOGGER.finest(() -> String.format("no file type found in document for '%s' or not xref-able",
                         launderLog(file.toString())));
                 return false;
+            }
+
+            // xref-able file does not mean it can be annotated. Use the TYPE stored in each document
+            // to lookup AnalyzerFactory which utters the negative verdict.
+            String type = document.get(QueryBuilder.TYPE);
+            if (type != null) {
+                AnalyzerFactory analyzerFactory = AnalyzerGuru.findByFileTypeName(type);
+                if (analyzerFactory != null && !analyzerFactory.hasAnnotations()) {
+                    LOGGER.finest(() -> String.format("file '%s' has type %s that cannot be annotated",
+                            launderLog(file.toString()), type));
+                    return false;
+                }
             }
         }
 
