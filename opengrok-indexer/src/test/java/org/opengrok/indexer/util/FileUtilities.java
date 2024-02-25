@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class FileUtilities {
 
     public static void extractArchive(File sourceBundle, File root) throws IOException {
-        try (ZipFile zipfile = new ZipFile(sourceBundle)) {
+        try (ZipFile zipfile =  ZipFile.builder().setFile(sourceBundle).get()) {
             Enumeration<ZipArchiveEntry> e = zipfile.getEntries();
 
             while (e.hasMoreElements()) {
