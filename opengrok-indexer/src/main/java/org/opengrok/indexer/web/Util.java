@@ -1382,9 +1382,8 @@ public final class Util {
      * @return string containing slider html
      */
     public static String createSlider(int offset, int limit, long size, HttpServletRequest request) {
-        String slider = "";
         if (limit < size) {
-            final StringBuilder buf = new StringBuilder(4096);
+            final StringBuilder slider = new StringBuilder(4096);
             int lastPage = (int) Math.ceil((double) size / limit);
             // startingResult is the number of a first result on the current page
             int startingResult = offset - limit * (offset / limit % 10 + 1);
@@ -1396,10 +1395,10 @@ public final class Util {
                     .map(query -> query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, ""))
                     .map(query -> query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, ""))
                     .orElse("");
-            IntConsumer generatePageLink = pageNumber -> {
+            IntConsumer addToSliderPageWithPageNumber = pageNumber -> {
                 var isFirstPage = pageNumber == myFirstPage;
                 var isLastPage = pageNumber == myLastPage;
-                buf.append(
+                slider.append(
                         generatePageLink(pageNumber, offset, limit, size, isFirstPage, isLastPage, queryString)
                 );
             };
@@ -1407,18 +1406,18 @@ public final class Util {
 
             // slider composition
             if (myFirstPage != 1) {
-                generatePageLink.accept(1);
-                buf.append("<span>...</span>");
+                addToSliderPageWithPageNumber.accept(1);
+                slider.append("<span>...</span>");
             }
             IntStream.rangeClosed(myFirstPage, myLastPage)
-                    .forEach(generatePageLink);
+                    .forEach(addToSliderPageWithPageNumber);
             if (myLastPage != lastPage) {
-                buf.append("<span>...</span>");
-                generatePageLink.accept(lastPage);
+                slider.append("<span>...</span>");
+                addToSliderPageWithPageNumber.accept(lastPage);
             }
-            return buf.toString();
+            return slider.toString();
         }
-        return slider;
+        return "";
     }
 
     private static String generatePageLink(int page, int offset, int limit, long size,
