@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
+ * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -55,11 +56,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.function.IntFunction;
+import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -419,7 +421,7 @@ public final class Util {
      */
     public static String breadcrumbPath(String urlPrefix, String path,
             char sep, String urlPostfix, boolean compact, boolean isDir) {
-        if (path == null || path.length() == 0) {
+        if (path == null || path.isEmpty()) {
             return path;
         }
         String[] pnames = normalize(path.split(escapeForRegex(sep)), compact);
@@ -475,7 +477,7 @@ public final class Util {
      * @return always a canonical path which starts with a '/'.
      */
     public static String getCanonicalPath(String path, char sep) {
-        if (path == null || path.length() == 0) {
+        if (path == null || path.isEmpty()) {
             return "/";
         }
         String[] pnames = normalize(path.split(escapeForRegex(sep)), true);
@@ -1380,69 +1382,78 @@ public final class Util {
      * @return string containing slider html
      */
     public static String createSlider(int offset, int limit, long size, HttpServletRequest request) {
-        String slider = "";
         if (limit < size) {
-            final StringBuilder buf = new StringBuilder(4096);
+            final StringBuilder slider = new StringBuilder(4096);
             int lastPage = (int) Math.ceil((double) size / limit);
             // startingResult is the number of a first result on the current page
             int startingResult = offset - limit * (offset / limit % 10 + 1);
             int myFirstPage = startingResult < 0 ? 1 : startingResult / limit + 1;
             int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
-
-            // function taking the page number and appending the desired content into the final buffer
-            IntFunction<Void> generatePageLink = page -> {
-                int myOffset = Math.max(0, (page - 1) * limit);
-                if (myOffset <= offset && offset < myOffset + limit) {
-                    // do not generate anchor for current page
-                    buf.append("<span class=\"sel\">").append(page).append(SPAN_END);
-                } else {
-                    buf.append("<a class=\"more\" href=\"?");
-                    // append request parameters
-                    if (request != null && request.getQueryString() != null) {
-                        String query = request.getQueryString();
-                        query = query.replaceFirst(RE_Q_E_A_A_COUNT_EQ_VAL, "");
-                        query = query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, "");
-                        query = query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, "");
-                        if (!query.isEmpty()) {
-                            buf.append(query);
-                            buf.append(AMP);
-                        }
-                    }
-                    buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
-                    if (myOffset != 0) {
-                        buf.append(AMP).append(QueryParameters.START_PARAM_EQ).
-                                append(myOffset);
-                    }
-                    buf.append("\">");
-                    // add << or >> if this link would lead to another section
-                    if (page == myFirstPage && page != 1) {
-                        buf.append("&lt;&lt");
-                    } else if (page == myLastPage && myOffset + limit < size) {
-                        buf.append("&gt;&gt;");
-                    } else {
-                        buf.append(page);
-                    }
-                    buf.append("</a>");
-                }
-                return null;
+            String queryString = Optional.ofNullable(request)
+                    .map(HttpServletRequest::getQueryString)
+                    .map(query -> query.replaceFirst(RE_Q_E_A_A_COUNT_EQ_VAL, ""))
+                    .map(query -> query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, ""))
+                    .map(query -> query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, ""))
+                    .orElse("");
+            IntConsumer addToSliderPageWithPageNumber = pageNumber -> {
+                var isFirstPage = pageNumber == myFirstPage;
+                var isLastPage = pageNumber == myLastPage;
+                slider.append(
+                        generatePageLink(pageNumber, offset, limit, size, isFirstPage, isLastPage, queryString)
+                );
             };
+
 
             // slider composition
             if (myFirstPage != 1) {
-                generatePageLink.apply(1);
-                buf.append("<span>...</span>");
+                addToSliderPageWithPageNumber.accept(1);
+                slider.append("<span>...</span>");
             }
-            for (int page = myFirstPage; page <= myLastPage; page++) {
-                generatePageLink.apply(page);
-            }
+            IntStream.rangeClosed(myFirstPage, myLastPage)
+                    .forEach(addToSliderPageWithPageNumber);
             if (myLastPage != lastPage) {
-                buf.append("<span>...</span>");
-                generatePageLink.apply(lastPage);
+                slider.append("<span>...</span>");
+                addToSliderPageWithPageNumber.accept(lastPage);
             }
-            return buf.toString();
+            return slider.toString();
         }
-        return slider;
+        return "";
     }
+
+    private static String generatePageLink(int page, int offset, int limit, long size,
+                                           boolean isFirstPage, boolean isLastPage, String queryString) {
+        final var buf = new StringBuilder(100);
+        var myOffset = Math.max(0, (page - 1) * limit);
+        if (myOffset <= offset && offset < myOffset + limit) {
+            // do not generate anchor for current page
+            buf.append("<span class=\"sel\">").append(page).append(SPAN_END);
+        } else {
+            buf.append("<a class=\"more\" href=\"?");
+            // append request parameters
+            if (!queryString.isEmpty()) {
+                buf.append(queryString);
+                buf.append(AMP);
+            }
+            buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
+            if (myOffset != 0) {
+                buf.append(AMP).append(QueryParameters.START_PARAM_EQ).
+                        append(myOffset);
+            }
+            buf.append("\">");
+            // add << or >> if this link would lead to another section
+            if (isFirstPage && page != 1) {
+                buf.append("&lt;&lt");
+            } else if (isLastPage && myOffset + limit < size) {
+                buf.append("&gt;&gt;");
+            } else {
+                buf.append(page);
+            }
+            buf.append("</a>");
+        }
+        return buf.toString();
+
+    }
+
 
     /**
      * Check if the string is a HTTP URL.

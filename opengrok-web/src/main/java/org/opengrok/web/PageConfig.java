@@ -21,6 +21,7 @@
  * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.web;
 
@@ -1522,10 +1523,15 @@ public final class PageConfig {
      */
     public SearchHelper prepareInternalSearch(SortOrder sortOrder) {
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
-        return new SearchHelper(getStartIndex(), sortOrder, getDataRoot(), new File(getSourceRootPath()),
-                getMaxItems(), getEftarReader(), getQueryBuilder(), getPrefix() == Prefix.SEARCH_R,
-                req.getContextPath(), getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P,
-                xrValue != null && !xrValue.isEmpty());
+        return new SearchHelper.Builder(getDataRoot(), new File(getSourceRootPath()), getEftarReader(),
+                getQueryBuilder(), req.getContextPath())
+                .start(getStartIndex())
+                .order(sortOrder)
+                .maxItems(getMaxItems())
+                .crossRefSearch(getPrefix() == Prefix.SEARCH_R)
+                .guiSearch(getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P)
+                .noRedirect(xrValue != null && !xrValue.isEmpty())
+                .build();
     }
 
     /**

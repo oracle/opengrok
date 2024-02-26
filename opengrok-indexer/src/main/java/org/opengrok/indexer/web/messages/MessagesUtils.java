@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web.messages;
 
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
@@ -170,7 +172,7 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print messages for given project into JSON. These messages are
+     * Convert messages for given project into JSON. These messages are
      * tagged by project description or tagged by any of the project's group name.
      *
      * @param project the project
@@ -179,7 +181,7 @@ public final class MessagesUtils {
      * @see #messagesToJson(String...)
      */
     public static String messagesToJson(Project project, String... additionalTags) {
-        if (project == null) {
+        if (Objects.isNull(project)) {
             return JSONable.EMPTY;
         }
 
@@ -191,44 +193,20 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print messages for given project into JSON array. These messages are
-     * tagged by project description or tagged by any of the project's group
-     * name.
-     *
-     * @param project the project
-     * @return the json array
-     * @see #messagesToJson(Project, String...)
-     */
-    public static String messagesToJson(Project project) {
-        return messagesToJson(project, new String[0]);
-    }
-
-    /**
-     * Print messages for given group into JSON.
+     * Convert messages for given group into JSON.
      *
      * @param group the group
      * @param additionalTags additional list of tags
      * @return JSON string
      * @see #messagesToJson(java.util.List)
      */
-    private static String messagesToJson(Group group, String... additionalTags) {
+    public static String messagesToJson(Group group, String... additionalTags) {
         List<String> tags = new ArrayList<>();
 
         tags.add(group.getName());
         tags.addAll(Arrays.asList(additionalTags));
 
         return messagesToJson(tags);
-    }
-
-    /**
-     * Convert messages for given group into JSON.
-     *
-     * @param group the group
-     * @return JSON string
-     * @see #messagesToJson(Group, String...)
-     */
-    public static String messagesToJson(Group group) {
-        return messagesToJson(group, new String[0]);
     }
 
     /**

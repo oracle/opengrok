@@ -18,9 +18,10 @@
  */
 
 /*
- * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -30,26 +31,28 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Matches;
-import org.apache.lucene.search.MatchesIterator;
 import org.apache.lucene.search.MatchesUtils;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -59,7 +62,6 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
-import org.apache.lucene.search.Weight;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
@@ -77,7 +79,9 @@ import org.opengrok.indexer.search.SettingsHelper;
 import org.opengrok.indexer.search.Summarizer;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.util.ErrorMessageCollector;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.WrapperIOException;
 
 /**
  * Working set for a search basically to factor out/separate search related
@@ -85,6 +89,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
  *
  * @author Jens Elkner
  */
+@SuppressWarnings("java:S1135")
 public class SearchHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchHelper.class);
@@ -125,11 +130,11 @@ public class SearchHelper {
     /**
      * the result cursor start index, i.e. where to start displaying results
      */
-    private final int start;
+    private int start;
     /**
      * max. number of result items to show
      */
-    private final int maxItems;
+    private int maxItems;
     /**
      * The QueryBuilder used to create the query.
      */
@@ -137,18 +142,18 @@ public class SearchHelper {
     /**
      * The order used for ordering query results.
      */
-    private final SortOrder order;
+    private SortOrder order;
     /**
      * Indicate whether this is search from a cross-reference. If {@code true}
      * {@link #executeQuery()} sets {@link #redirect} if certain conditions are
      * met.
      */
-    private final boolean crossRefSearch;
+    private boolean crossRefSearch;
     /**
      * As with {@link #crossRefSearch}, but here indicating either a
      * cross-reference search or a "full blown search".
      */
-    private final boolean guiSearch;
+    private boolean guiSearch;
     /**
      * if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
@@ -159,7 +164,7 @@ public class SearchHelper {
      * A value indicating if redirection should be short-circuited when state or
      * query result would have indicated otherwise.
      */
-    private final boolean noRedirect;
+    private boolean noRedirect;
     /**
      * if not {@code null}, the UI should show this error message and stop
      * processing the search. Automatically set via
@@ -222,20 +227,18 @@ public class SearchHelper {
 
     private SettingsHelper settingsHelper;
 
-    public SearchHelper(int start, SortOrder sortOrder, File dataRoot, File sourceRoot, int maxItems,
-                        EftarFileReader eftarFileReader, QueryBuilder queryBuilder, boolean crossRefSearch,
-                        String contextPath, boolean guiSearch, boolean noRedirect) {
-        this.start = start;
-        this.order = sortOrder;
+    private SearchHelper(File dataRoot, File sourceRoot,
+                         EftarFileReader eftarFileReader, QueryBuilder queryBuilder,
+                         String contextPath) {
+        this.start = 0;
+        this.order = SortOrder.RELEVANCY;
         this.dataRoot = dataRoot;
         this.sourceRoot = sourceRoot;
-        this.maxItems = maxItems;
+        this.maxItems = 10;
         this.desc = eftarFileReader;
         this.builder = queryBuilder;
-        this.crossRefSearch = crossRefSearch;
         this.contextPath = contextPath;
-        this.guiSearch = guiSearch;
-        this.noRedirect = noRedirect;
+
     }
 
     public File getDataRoot() {
@@ -321,7 +324,6 @@ public class SearchHelper {
     /**
      * User readable description for file types. Only those listed in
      * fileTypeDescription will be shown to the user.
-     *
      * Returns a set of file type descriptions to be used for a search form.
      *
      * @return Set of tuples with file type and description.
@@ -361,7 +363,7 @@ public class SearchHelper {
         // the Query created by the QueryBuilder
         try {
             query = builder.build();
-            if (projects == null) {
+            if (Objects.isNull(projects)) {
                 errorMsg = "No project selected!";
                 return this;
             }
@@ -374,24 +376,21 @@ public class SearchHelper {
                 reader = superIndexSearcher.getIndexReader();
             } else {
                 // Check list of project names first to make sure all of them are valid and indexed.
-                Set<String> invalidProjects = projects.stream().
+                var invalidProjects = projects.stream().
                     filter(proj -> (Project.getByName(proj) == null)).
-                    collect(Collectors.toSet());
-                if (!invalidProjects.isEmpty()) {
-                    errorMsg = "Project list contains invalid projects: " +
-                        String.join(", ", invalidProjects);
-                    return this;
-                }
-                Set<Project> notIndexedProjects =
-                    projects.stream().
-                    map(Project::getByName).
-                    filter(proj -> !proj.isIndexed()).
-                    collect(Collectors.toSet());
-                if (!notIndexedProjects.isEmpty()) {
-                    errorMsg = "Some of the projects to be searched are not indexed yet: " +
-                        String.join(", ", notIndexedProjects.stream().
-                        map(Project::getName).
-                        collect(Collectors.toSet()));
+                    collect(new ErrorMessageCollector("Project list contains invalid projects: "));
+
+                errorMsg = invalidProjects.or(() ->
+                            projects.stream().
+                            map(Project::getByName).
+                            filter(Objects::nonNull).
+                            filter(proj -> !proj.isIndexed()).
+                            map(Project::getName).
+                            collect(new ErrorMessageCollector(
+                                    "Some of the projects to be searched are not indexed yet: "
+                            ))
+                        ).orElse(null);
+                if (Objects.nonNull(errorMsg)) {
                     return this;
                 }
 
@@ -401,10 +400,10 @@ public class SearchHelper {
                 if (reader != null) {
                     searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(reader);
                 } else {
-                    errorMsg = "Failed to initialize search. Check the index";
-                    if (!projects.isEmpty()) {
-                        errorMsg += " for projects: " + String.join(", ", projects);
-                    }
+                    errorMsg = projects.stream()
+                            .collect(new ErrorMessageCollector("Failed to initialize search. Check the index for projects: ",
+                                    "Failed to initialize search. Check the index"))
+                            .orElse("");
                     return this;
                 }
             }
@@ -429,10 +428,11 @@ public class SearchHelper {
         } catch (ParseException e) {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
-            errorMsg = "Index database not found. Check the index";
-            if (!projects.isEmpty()) {
-                errorMsg += " for projects: " + String.join(", ", projects);
-            }
+
+            errorMsg = projects.stream()
+                    .collect(new ErrorMessageCollector("Index database not found. Check the index for projects: ",
+                            "Index database not found. Check the index"))
+                    .orElse("");
             errorMsg += "; " + e.getMessage();
         } catch (IOException e) {
             errorMsg = e.getMessage();
@@ -533,40 +533,54 @@ public class SearchHelper {
          * must be subsequently converted to a line number and that is tractable
          * only from plain text.
          */
-        Document doc = searcher.storedFields().document(docID);
-        String genre = doc.get(QueryBuilder.T);
+        var doc = searcher.storedFields().document(docID);
+        var genre = doc.get(QueryBuilder.T);
         if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(genre)) {
             return;
         }
 
-        List<LeafReaderContext> leaves = reader.leaves();
+        var leaves = reader.leaves();
         int subIndex = ReaderUtil.subIndex(docID, leaves);
-        LeafReaderContext leaf = leaves.get(subIndex);
+        var leaf = leaves.get(subIndex);
 
-        Query rewritten = query.rewrite(searcher);
-        Weight weight = rewritten.createWeight(searcher, ScoreMode.COMPLETE_NO_SCORES, 1);
-        Matches matches = weight.matches(leaf, docID - leaf.docBase); // Adjust docID
-        if (matches != null && matches != MatchesUtils.MATCH_WITH_NO_TERMS) {
-            int matchCount = 0;
-            int offset = -1;
+        var rewritten = query.rewrite(searcher);
+        var weight = rewritten.createWeight(searcher, ScoreMode.COMPLETE_NO_SCORES, 1);
+        var matches = weight.matches(leaf, docID - leaf.docBase); // Adjust docID
+        try {
+            Optional.ofNullable(matches)
+                    .filter(Predicate.not(MatchesUtils.MATCH_WITH_NO_TERMS::equals))
+                    .map(objMatches -> calculateRedirectOffset(objMatches, contextFields))
+                    .filter(offset -> offset >= 0)
+                    .ifPresent(offset ->
+                            redirect = contextPath + Prefix.XREF_P
+                                    + Util.uriEncodePath(doc.get(QueryBuilder.PATH))
+                                    + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset
+                    );
+
+        } catch (WrapperIOException ex) {
+            throw ex.getParentIOException();
+        }
+
+    }
+    private int calculateRedirectOffset(Matches matches, List<String> contextFields) {
+        int offset = -1;
+        try {
             for (String field : contextFields) {
-                MatchesIterator matchesIterator = matches.getMatches(field);
+                var matchesIterator = matches.getMatches(field);
                 while (matchesIterator.next()) {
                     if (matchesIterator.startOffset() >= 0) {
                         // Abort if there is more than a single match offset.
-                        if (++matchCount > 1) {
-                            return;
+                        if (offset >= 0) {
+                            return -1;
                         }
                         offset = matchesIterator.startOffset();
                     }
                 }
             }
-            if (offset >= 0) {
-                redirect = contextPath + Prefix.XREF_P
-                        + Util.uriEncodePath(doc.get(QueryBuilder.PATH))
-                        + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset;
-            }
+        } catch (IOException ex) {
+            throw new WrapperIOException(ex);
         }
+        return offset;
     }
 
     private void redirectToFile(int docID) throws IOException {
@@ -574,20 +588,23 @@ public class SearchHelper {
         redirect = contextPath + Prefix.XREF_P + Util.uriEncodePath(doc.get(QueryBuilder.PATH));
     }
 
-    private void getSuggestion(Term term, IndexReader ir,
-            List<String> result) throws IOException {
-        if (term == null) {
-            return;
-        }
-        String[] toks = TAB_SPACE.split(term.text(), 0);
-        for (String tok : toks) {
-            //TODO below seems to be case insensitive ... for refs/defs this is bad
-            SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok),
-                SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
-            for (SuggestWord w : words) {
-                result.add(w.string);
+    private  String[] getSuggestion(Term term, IndexReader ir) {
+        //TODO below seems to be case insensitive ... for refs/defs this is bad
+        Function<String, SuggestWord[]> suggester = token -> {
+            try {
+                return checker.suggestSimilar(new Term(term.field(), token),
+                        SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
+            } catch (IOException ex) {
+                throw new WrapperIOException(ex);
             }
-        }
+        };
+        return Optional.ofNullable(term)
+                .map(fullToken -> TAB_SPACE.split(fullToken.text(), 0))
+                .stream().flatMap(Arrays::stream)
+                .map(suggester)
+                .flatMap(Arrays::stream)
+                .map(suggestWord -> suggestWord.string)
+                .toArray(String[] ::new);
     }
 
     /**
@@ -605,60 +622,44 @@ public class SearchHelper {
         if (projects == null) {
             return new ArrayList<>(0);
         }
-
-        boolean emptyProjects = false;
-        String[] projectNames;
-        if (projects.isEmpty()) {
-            projectNames = new String[]{"/"};
-            emptyProjects = true;
-        } else if (projects.size() == 1) {
-            projectNames = new String[]{projects.first()};
-        } else {
-            projectNames = new String[projects.size()];
-            int ii = 0;
-            for (String proj : projects) {
-                projectNames[ii++] = proj;
-            }
-        }
+        var projectNames = Optional.of(projects)
+                            .filter(projectsList -> !projectsList.isEmpty())
+                            .map(projectsList -> projectsList.toArray(String[]::new))
+                            .orElseGet(() -> new String[]{"/"});
 
         List<Suggestion> res = new ArrayList<>();
-        List<String> dummy = new ArrayList<>();
-        IndexReader ir = null;
-        Term t;
         for (String projectName : projectNames) {
             Suggestion suggestion = new Suggestion(projectName);
             try {
-                SuperIndexSearcher superIndexSearcher;
-                if (emptyProjects) {
-                    superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher("");
-                } else {
-                    superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher(projectName);
-                }
+                var searcherName = projects.isEmpty() ? "" : projectName;
+                var superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher(searcherName);
                 superIndexSearchers.add(superIndexSearcher);
-                ir = superIndexSearcher.getIndexReader();
+                var ir = superIndexSearcher.getIndexReader();
 
-                if (builder.getFreetext() != null && !builder.getFreetext().isEmpty()) {
-                    t = new Term(QueryBuilder.FULL, builder.getFreetext());
-                    getSuggestion(t, ir, dummy);
-                    suggestion.setFreetext(dummy.toArray(new String[0]));
-                    dummy.clear();
-                }
-                if (builder.getRefs() != null && !builder.getRefs().isEmpty()) {
-                    t = new Term(QueryBuilder.REFS, builder.getRefs());
-                    getSuggestion(t, ir, dummy);
-                    suggestion.setRefs(dummy.toArray(new String[0]));
-                    dummy.clear();
-                }
-                if (builder.getDefs() != null && !builder.getDefs().isEmpty()) {
-                    t = new Term(QueryBuilder.DEFS, builder.getDefs());
-                    getSuggestion(t, ir, dummy);
-                    suggestion.setDefs(dummy.toArray(new String[0]));
-                    dummy.clear();
-                }
+                Optional.ofNullable(builder.getFreetext())
+                        .filter(Predicate.not(String::isEmpty))
+                        .map(freeText -> new Term(QueryBuilder.FULL, freeText))
+                        .map(term -> getSuggestion(term, ir))
+                        .ifPresent(suggestion::setFreetext);
+                Optional.ofNullable(builder.getRefs())
+                        .filter(Predicate.not(String::isEmpty))
+                        .map(refs -> new Term(QueryBuilder.REFS, refs))
+                        .map(term -> getSuggestion(term, ir))
+                        .ifPresent(suggestion::setDefs);
+                Optional.ofNullable(builder.getDefs())
+                        .filter(Predicate.not(String::isEmpty))
+                        .map(defs -> new Term(QueryBuilder.DEFS, defs))
+                        .map(term -> getSuggestion(term, ir))
+                        .ifPresent(suggestion::setDefs);
+
                 //TODO suggest also for path and history?
                 if (suggestion.isUsable()) {
                     res.add(suggestion);
                 }
+            } catch (WrapperIOException ex) {
+                LOGGER.log(Level.WARNING,
+                        String.format("Got exception while getting spelling suggestions for project %s:", projectName),
+                        ex.getParentIOException());
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,
                         String.format("Got exception while getting spelling suggestions for project %s:", projectName),
@@ -813,5 +814,109 @@ public class SearchHelper {
         if (settingsHelper == null) {
             settingsHelper = new SettingsHelper(reader);
         }
+    }
+
+    /**
+     * Builder Class for Search Helper.
+     */
+    public static final class Builder {
+        private final SearchHelper searchHelper;
+
+        /**
+         * Search Helper Builder Class constructor.
+         * <p>
+         * Parameters which are defaulting while using this builder
+         * <ul>
+         * <li>{@link #start} default value zero</li>
+         * <li>{@link #maxItems} default value 10</li>
+         * <li>{@link #crossRefSearch} default value false</li>
+         * <li>{@link #guiSearch} default value false</li>
+         * <li>{@link #noRedirect} default value false</li>
+         * <li>{@link #order} defaulted to RELEVANCY based sorting</li>
+         * </ul>
+         * @param dataRoot used to find the search index file
+         * @param sourceRoot the source root directory.
+         * @param eftarFileReader the <i>Eftar</i> file-reader to use.
+         * @param queryBuilder The QueryBuilder used to create the query.
+         * @param contextPath the applications' context path (usually /source) to use
+         *                      when generating a redirect URL
+         */
+        public Builder(File dataRoot, File sourceRoot,
+                     EftarFileReader eftarFileReader, QueryBuilder queryBuilder,
+                     String contextPath) {
+            searchHelper = new SearchHelper(dataRoot, sourceRoot, eftarFileReader, queryBuilder, contextPath);
+        }
+
+        /**
+         * Set result cursor start index , i.e. where to start displaying results.
+         * @param start result cursor start index
+         * @return search helper builder instance
+         */
+        public Builder start(int start) {
+            searchHelper.start = start;
+            return this;
+        }
+
+        /**
+         *  set max. number of result items to show.
+         * @param maxItems maximum result items to show
+         * @return search helper builder instance
+         */
+        public Builder maxItems(int maxItems) {
+            searchHelper.maxItems = maxItems;
+            return this;
+        }
+
+        /**
+         * Sets order used for ordering query results.
+         * @param order query results sort order
+         * @return search helper builder instance
+         */
+        public Builder order(SortOrder order) {
+            searchHelper.order = order;
+            return this;
+        }
+
+        /**
+         * Indicate whether this is search from a cross-reference. If {@code true}
+         *  {@link #executeQuery()} sets {@link #redirect} if certain conditions are met.
+         * @param crossRefSearch enable or disable crossRefSearch
+         * @return search helper builder instance
+         */
+        public Builder crossRefSearch(boolean crossRefSearch) {
+            searchHelper.crossRefSearch = crossRefSearch;
+            return this;
+        }
+
+        /**
+         *As with {@link #crossRefSearch}, but here indicating either a
+         * cross-reference search or a "full blown search".
+         * @param guiSearch enable or disable guiSearch
+         * @return search helper builder instance
+         */
+        public Builder guiSearch(boolean guiSearch) {
+            searchHelper.guiSearch = guiSearch;
+            return this;
+        }
+
+        /**
+         * A value indicating if redirection should be short-circuited when state or
+         *  query result would have indicated otherwise.
+         * @param noRedirect enable or disable redirection parameter
+         * @return search helper builder instance
+         */
+        public Builder noRedirect(boolean noRedirect) {
+            searchHelper.noRedirect = noRedirect;
+            return this;
+        }
+
+        /**
+         * Create and return the final search helper instance.
+         * @return search helper configured to the specification of previous calls to this builder
+         */
+        public SearchHelper build() {
+            return this.searchHelper;
+        }
+
     }
 }

@@ -77,22 +77,19 @@ class SearchHelperTest {
     }
 
     private SearchHelper getSearchHelper(String searchTerm) {
-        SearchHelper sh = new SearchHelper(0, SortOrder.RELEVANCY,
-                env.getDataRootFile(), env.getSourceRootFile(),
-                env.getHitsPerPage(), null,
-                new QueryBuilder().setFreetext(searchTerm), false,
-                env.getUrlPrefix(), false, false);
-
+        SearchHelper sh = new SearchHelper.Builder(env.getDataRootFile(), env.getSourceRootFile(),
+                 null, new QueryBuilder().setFreetext(searchTerm), env.getUrlPrefix())
+                .maxItems(env.getHitsPerPage())
+                .build();
         assertNotSame(0, sh.getBuilder().getSize());
         return sh;
     }
 
     private SearchHelper getSearchHelperPath(String searchTerm) {
-        SearchHelper sh = new SearchHelper(0, SortOrder.RELEVANCY,
-                env.getDataRootFile(), env.getSourceRootFile(),
-                env.getHitsPerPage(), null,
-                new QueryBuilder().setPath(searchTerm), false,
-                env.getUrlPrefix(), false, false);
+        SearchHelper sh = new SearchHelper.Builder(env.getDataRootFile(), env.getSourceRootFile(),
+                null, new QueryBuilder().setFreetext(searchTerm), env.getUrlPrefix())
+                .maxItems(env.getHitsPerPage())
+                .build();
 
         assertNotSame(0, sh.getBuilder().getSize());
         return sh;
