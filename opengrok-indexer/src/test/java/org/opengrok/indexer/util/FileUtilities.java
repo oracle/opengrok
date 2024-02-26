@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class FileUtilities {
 
     public static void extractArchive(File sourceBundle, File root) throws IOException {
-        try (ZipFile zipfile = new ZipFile(sourceBundle)) {
+        try (ZipFile zipfile =  ZipFile.builder().setFile(sourceBundle).get()) {
             Enumeration<ZipArchiveEntry> e = zipfile.getEntries();
 
             while (e.hasMoreElements()) {
