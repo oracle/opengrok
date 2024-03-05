@@ -25,8 +25,6 @@ package org.opengrok.indexer.index;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.opengrok.indexer.analysis.Ctags;
@@ -38,19 +36,17 @@ import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.ObjectFactory;
 import org.opengrok.indexer.util.ObjectPool;
 
-import static java.util.concurrent.ForkJoinPool.defaultForkJoinWorkerThreadFactory;
-
 /**
  * Represents a container for executors that enable parallelism for indexing
  * across projects and repositories and also within any {@link IndexDatabase}
  * instance -- with global limits for all execution.
  * <p>A fixed-thread pool is used for parallelism across repositories, and a
- * work-stealing {@link ForkJoinPool} is used for parallelism within any
+ * {@link #lzIndexWorkExecutor} is used for parallelism within any
  * {@link IndexDatabase}. Threads in the former pool are customers of the
- * latter, and the bulk of work is done in the latter pool. The work-stealing
- * {@link ForkJoinPool} makes use of a corresponding fixed pool of {@link Ctags}
- * instances.
- * <p>Additionally there are pools for executing for history, for renamings in
+ * latter, and the bulk of work is done in the latter pool.
+ * The {@link #lzIndexWorkExecutor} makes use of a corresponding fixed pool
+ * of {@link Ctags} instances.
+ * <p>Additionally there are pools for executing for history, for renames in
  * history, and for watching the {@link Ctags} instances for timing purposes.
  */
 public class IndexerParallelizer implements AutoCloseable {
@@ -58,7 +54,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private final RuntimeEnvironment env;
     private final int indexingParallelism;
 
-    private LazilyInstantiate<ForkJoinPool> lzForkJoinPool;
+    private LazilyInstantiate<ExecutorService> lzIndexWorkExecutor;
     private LazilyInstantiate<ObjectPool<Ctags>> lzCtagsPool;
     private LazilyInstantiate<ExecutorService> lzFixedExecutor;
     private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
@@ -82,7 +78,7 @@ public class IndexerParallelizer implements AutoCloseable {
          */
         this.indexingParallelism = env.getIndexingParallelism();
 
-        createLazyForkJoinPool();
+        createIndexWorkExecutor();
         createLazyCtagsPool();
         createLazyFixedExecutor();
         createLazyHistoryExecutor();
@@ -99,10 +95,10 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     /**
-     * @return the forkJoinPool
+     * @return the executor used for individual file processing in the 2nd stage of indexing
      */
-    public ForkJoinPool getForkJoinPool() {
-        return lzForkJoinPool.get();
+    public ExecutorService getIndexWorkExecutor() {
+        return lzIndexWorkExecutor.get();
     }
 
     /**
@@ -166,7 +162,7 @@ public class IndexerParallelizer implements AutoCloseable {
      * call this method satisfactorily too.
      */
     public void bounce() {
-        bounceForkJoinPool();
+        bounceIndexWorkExecutor();
         bounceFixedExecutor();
         bounceCtagsPool();
         bounceHistoryExecutor();
@@ -175,11 +171,11 @@ public class IndexerParallelizer implements AutoCloseable {
         bounceXrefWatcherExecutor();
     }
 
-    private void bounceForkJoinPool() {
-        if (lzForkJoinPool.isActive()) {
-            ForkJoinPool formerForkJoinPool = lzForkJoinPool.get();
-            createLazyForkJoinPool();
-            formerForkJoinPool.shutdown();
+    private void bounceIndexWorkExecutor() {
+        if (lzIndexWorkExecutor.isActive()) {
+            ExecutorService formerIndexWorkExecutor = lzIndexWorkExecutor.get();
+            createIndexWorkExecutor();
+            formerIndexWorkExecutor.shutdown();
         }
     }
 
@@ -231,13 +227,10 @@ public class IndexerParallelizer implements AutoCloseable {
         }
     }
 
-    private void createLazyForkJoinPool() {
-        lzForkJoinPool = LazilyInstantiate.using(() ->
-                new ForkJoinPool(indexingParallelism, forkJoinPool -> {
-                    ForkJoinWorkerThread thread = defaultForkJoinWorkerThreadFactory.newThread(forkJoinPool);
-                    thread.setName(OpenGrokThreadFactory.PREFIX + "ForkJoinPool-" + thread.getId());
-                    return thread;
-                }, null, false));
+    private void createIndexWorkExecutor() {
+        lzIndexWorkExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(indexingParallelism,
+                        new OpenGrokThreadFactory("index-worker")));
     }
 
     private void createLazyCtagsPool() {
@@ -261,7 +254,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private void createLazyFixedExecutor() {
         lzFixedExecutor = LazilyInstantiate.using(() ->
                 Executors.newFixedThreadPool(indexingParallelism,
-                        new OpenGrokThreadFactory("index-worker")));
+                        new OpenGrokThreadFactory("index-db")));
     }
 
     private void createLazyHistoryExecutor() {

@@ -35,6 +35,7 @@ class IndexFileWork {
     final File file;
     final String path;
     Exception exception;
+    boolean ret;
 
     IndexFileWork(File file, String path) {
         this.file = file;

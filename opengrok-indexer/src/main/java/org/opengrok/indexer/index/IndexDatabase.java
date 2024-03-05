@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -1902,54 +1905,58 @@ public class IndexDatabase {
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
-        Map<Boolean, List<IndexFileWork>> bySuccess = null;
+        Map<Boolean, List<IndexFileWork>> bySuccess = new HashMap<>();
         try (Progress progress = new Progress(LOGGER, String.format("indexing '%s'", dir), worksCount)) {
-            bySuccess = parallelizer.getForkJoinPool().submit(() ->
-                args.works.parallelStream().collect(
-                Collectors.groupingByConcurrent((x) -> {
-                    int tries = 0;
-                    Ctags pctags = null;
-                    boolean ret;
-                    while (true) {
-                        try {
-                            if (alreadyClosedCounter.get() > 0) {
-                                ret = false;
-                            } else {
-                                pctags = ctagsPool.get();
-                                addFile(x.file, x.path, pctags);
-                                successCounter.incrementAndGet();
-                                ret = true;
+            Set<Callable<IndexFileWork>> callables = args.works.stream().
+                    <Callable<IndexFileWork>>map(x -> () -> {
+                        int tries = 0;
+                        Ctags pctags = null;
+                        while (true) {
+                            try {
+                                if (alreadyClosedCounter.get() > 0) {
+                                    x.ret = false;
+                                } else {
+                                    pctags = ctagsPool.get();
+                                    addFile(x.file, x.path, pctags);
+                                    successCounter.incrementAndGet();
+                                    x.ret = true;
+                                }
+                            } catch (AlreadyClosedException e) {
+                                alreadyClosedCounter.incrementAndGet();
+                                String errmsg = String.format("ERROR addFile(): '%s'", x.file);
+                                LOGGER.log(Level.SEVERE, errmsg, e);
+                                x.exception = e;
+                                x.ret = false;
+                            } catch (InterruptedException e) {
+                                // Allow one retry if interrupted
+                                if (++tries <= 1) {
+                                    continue;
+                                }
+                                LOGGER.log(Level.WARNING, "No retry: ''{0}''", x.file);
+                                x.exception = e;
+                                x.ret = false;
+                            } catch (RuntimeException | IOException e) {
+                                String errmsg = String.format("ERROR addFile(): '%s'", x.file);
+                                LOGGER.log(Level.WARNING, errmsg, e);
+                                x.exception = e;
+                                x.ret = false;
+                            } finally {
+                                if (pctags != null) {
+                                    pctags.reset();
+                                    ctagsPool.release(pctags);
+                                }
                             }
-                        } catch (AlreadyClosedException e) {
-                            alreadyClosedCounter.incrementAndGet();
-                            String errmsg = String.format("ERROR addFile(): '%s'", x.file);
-                            LOGGER.log(Level.SEVERE, errmsg, e);
-                            x.exception = e;
-                            ret = false;
-                        } catch (InterruptedException e) {
-                            // Allow one retry if interrupted
-                            if (++tries <= 1) {
-                                continue;
-                            }
-                            LOGGER.log(Level.WARNING, "No retry: ''{0}''", x.file);
-                            x.exception = e;
-                            ret = false;
-                        } catch (RuntimeException | IOException e) {
-                            String errmsg = String.format("ERROR addFile(): '%s'", x.file);
-                            LOGGER.log(Level.WARNING, errmsg, e);
-                            x.exception = e;
-                            ret = false;
-                        } finally {
-                            if (pctags != null) {
-                                pctags.reset();
-                                ctagsPool.release(pctags);
-                            }
-                        }
 
-                        progress.increment();
-                        return ret;
-                    }
-                }))).get();
+                            progress.increment();
+                            return x;
+                        }
+                    }).
+                    collect(Collectors.toSet());
+            List<Future<IndexFileWork>> futures = parallelizer.getIndexWorkExecutor().invokeAll(callables);
+            for (var future : futures) {
+                IndexFileWork work = future.get();
+                bySuccess.computeIfAbsent(work.ret, key -> new ArrayList<>()).add(work);
+            }
         } catch (InterruptedException | ExecutionException e) {
             interrupted = true;
             int successCount = successCounter.intValue();
@@ -1961,14 +1968,9 @@ public class IndexDatabase {
 
         args.curCount = currentCounter.intValue();
 
-        // Start with failureCount=worksCount, and then subtract successes.
-        int failureCount = worksCount;
-        if (bySuccess != null) {
-            List<IndexFileWork> successes = bySuccess.getOrDefault(Boolean.TRUE, null);
-            if (successes != null) {
-                failureCount -= successes.size();
-            }
-        }
+        int failureCount = worksCount - Optional.ofNullable(bySuccess.get(Boolean.TRUE))
+                .map(List::size)
+                .orElse(0);
         if (failureCount > 0) {
             double pctFailed = 100.0 * failureCount / worksCount;
             String exmsg = String.format("%d failures (%.1f%%) while parallel-indexing", failureCount, pctFailed);
