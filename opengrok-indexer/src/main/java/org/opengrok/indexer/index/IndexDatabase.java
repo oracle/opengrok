@@ -1955,10 +1955,7 @@ public class IndexDatabase {
             List<Future<IndexFileWork>> futures = parallelizer.getIndexWorkExecutor().invokeAll(callables);
             for (var future : futures) {
                 IndexFileWork work = future.get();
-                bySuccess.merge(work.ret, new ArrayList<>(List.of(work)), (x, y) -> {
-                    x.addAll(y);
-                    return x;
-                });
+                bySuccess.computeIfAbsent(work.ret, key -> new ArrayList<>()).add(work);
             }
         } catch (InterruptedException | ExecutionException e) {
             interrupted = true;
