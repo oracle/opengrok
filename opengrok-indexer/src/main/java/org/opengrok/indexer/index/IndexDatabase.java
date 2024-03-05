@@ -1968,13 +1968,9 @@ public class IndexDatabase {
 
         args.curCount = currentCounter.intValue();
 
-        // Start with failureCount=worksCount, and then subtract successes.
-        int failureCount = worksCount;
-        List<IndexFileWork> successes = bySuccess.getOrDefault(Boolean.TRUE, null);
-        if (successes != null) {
-            failureCount -= successes.size();
-        }
-
+        int failureCount = worksCount - Optional.ofNullable(bySuccess.get(Boolean.TRUE))
+                .map(List::size)
+                .orElse(0);
         if (failureCount > 0) {
             double pctFailed = 100.0 * failureCount / worksCount;
             String exmsg = String.format("%d failures (%.1f%%) while parallel-indexing", failureCount, pctFailed);
