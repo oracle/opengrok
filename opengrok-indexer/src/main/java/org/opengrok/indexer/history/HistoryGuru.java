@@ -1009,7 +1009,14 @@ public final class HistoryGuru {
      */
     public void storeHistory(File file, History history) {
         Repository repository = getRepository(file);
+        if (Objects.isNull(repository)) {
+            LOGGER.warning(() -> String.format("failed to get repository for '%s'", launderLog(file.toString())));
+            return;
+        }
+
         if (repository.hasHistoryForDirectories()) {
+            LOGGER.finer(() -> String.format("repository %s supports history for directories, skipping '%s'",
+                    repository, launderLog(file.toString())));
             return;
         }
 
@@ -1064,6 +1071,7 @@ public final class HistoryGuru {
             try {
                 latestRev = historyCache.getLatestCachedRevision(repo);
                 repos2process.put(repo, latestRev);
+                LOGGER.finest(() -> String.format("latest cached revision %s for repository %s", latestRev, repo));
             } catch (CacheException he) {
                 LOGGER.log(Level.WARNING, String.format("Failed to retrieve latest cached revision for %s", repo), he);
             }
@@ -1071,7 +1079,7 @@ public final class HistoryGuru {
 
         LOGGER.log(Level.INFO, "Creating history cache for {0} repositories", repos2process.size());
         Map<Repository, Future<Optional<Exception>>> futures = new HashMap<>();
-        try (Progress progress = new Progress(LOGGER, "repository invalidation", repos2process.size())) {
+        try (Progress progress = new Progress(LOGGER, "history cache", repos2process.size())) {
             for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
                 futures.put(entry.getKey(), executor.submit(() -> {
                     try {
