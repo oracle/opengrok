@@ -45,6 +45,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -121,11 +122,10 @@ public class SubversionRepository extends Repository {
     }
 
     /**
-     * Get {@code Document} corresponding to the parsed XML output from
-     * {@code svn info} command.
-     * @return document with data from {@code info} or null if the {@code svn}
-     * command failed
+     * Get {@code Document} corresponding to the parsed XML output from {@code svn info} command.
+     * @return document with data from {@code info} or null if the {@code svn} command failed
      */
+    @Nullable
     private Document getInfoDocument() {
         Document document = null;
         List<String> cmd = new ArrayList<>();
@@ -147,19 +147,14 @@ public class SubversionRepository extends Repository {
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 document = builder.parse(executor.getOutputStream());
             } catch (SAXException saxe) {
-                LOGGER.log(Level.WARNING,
-                        "Parser error parsing svn output", saxe);
+                LOGGER.log(Level.WARNING, "Parser error parsing svn output", saxe);
             } catch (ParserConfigurationException pce) {
-                LOGGER.log(Level.WARNING,
-                        "Parser configuration error parsing svn output", pce);
+                LOGGER.log(Level.WARNING, "Parser configuration error parsing svn output", pce);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING,
-                        "IOException reading from svn process", ioe);
+                LOGGER.log(Level.WARNING, "IOException reading from svn process", ioe);
             }
         } else {
-            LOGGER.log(Level.WARNING,
-                            "Failed to execute svn info for [{0}]. Repository disabled.",
-                            getDirectoryName());
+            LOGGER.log(Level.WARNING, "Failed to execute svn info for ''{0}''", getDirectoryName());
         }
 
         return document;
