@@ -517,7 +517,7 @@ public class SubversionRepository extends Repository {
                 }
             }
         } catch (HistoryException ex) {
-            LOGGER.log(Level.WARNING, "cannot get current version info for {0}",
+            LOGGER.log(Level.WARNING, "cannot get current version info for ''{0}''",
                     getDirectoryName());
         }
 
