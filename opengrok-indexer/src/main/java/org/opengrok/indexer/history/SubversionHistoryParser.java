@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -37,6 +37,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -111,12 +113,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry.setActive(true);
                 entry.setRevision(attr.getValue("revision"));
             } else if ("path".equals(qname) && attr.getIndex(COPYFROM_PATH) != -1) {
-              LOGGER.log(Level.FINER, "rename for {0}", attr.getValue(COPYFROM_PATH));
-              if ("dir".equals(attr.getValue("kind"))) {
-                isRenamedDir = true;
-              } else {
-                isRenamedFile = true;
-              }
+                LOGGER.log(Level.FINER, "rename for {0}", attr.getValue(COPYFROM_PATH));
+                if ("dir".equals(attr.getValue("kind"))) {
+                    isRenamedDir = true;
+                } else {
+                    isRenamedFile = true;
+                }
             }
             sb.setLength(0);
         }
@@ -131,8 +133,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     // need to strip microseconds off - assume final character is Z otherwise invalid anyway.
                     String dateString = s;
                     if (s.length() > SVN_MILLIS_DATE_LENGTH) {
-                      dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) +
-                          dateString.charAt(dateString.length() - 1);
+                        dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) +
+                                dateString.charAt(dateString.length() - 1);
                     }
                     entry.setDate(repository.parse(dateString));
                 } catch (ParseException ex) {
@@ -153,7 +155,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                         renamedFiles.add(path.intern());
                     }
                     if (isRenamedDir) {
-                      renamedToDirectoryRevisions.put(path.intern(), entry.getRevision());
+                        renamedToDirectoryRevisions.put(path.intern(), entry.getRevision());
                     }
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file ''{0}'' outside repository ''{1}''",
@@ -163,6 +165,11 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry.setMessage(s);
             }
             if ("logentry".equals(qname)) {
+                // Avoid adding incomplete history entries.
+                if (Objects.isNull(entry.getDate())) {
+                    throw new SAXException(String.format("date is null in history entry for revision %s",
+                            Optional.ofNullable(entry.getRevision()).orElse("<unknown>")));
+                }
                 entries.add(entry);
             }
             sb.setLength(0);
