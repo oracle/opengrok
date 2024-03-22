@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -156,7 +157,7 @@ public class Executor {
      *
      * @param reportExceptions Should exceptions be added to the log or not
      * @param handler The handler to handle data from standard output
-     * @return The exit code of the process
+     * @return The exit code of the process or -1 on processing error
      */
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
@@ -164,6 +165,7 @@ public class Executor {
         final String cmd_str = escapeForShell(processBuilder.command(), false, SystemUtils.IS_OS_WINDOWS);
         final String dir_str;
         Timer timer = null; // timer for timing out the process
+        boolean gotException = false;
 
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
@@ -242,10 +244,12 @@ public class Executor {
             thread.join();
             stderr = err.getBytes();
         } catch (IOException e) {
+            gotException = true;
             if (reportExceptions) {
                 LOGGER.log(Level.SEVERE, String.format("Failed to read from process: %s", cmdList.get(0)), e);
             }
         } catch (InterruptedException e) {
+            gotException = true;
             if (reportExceptions) {
                 LOGGER.log(Level.SEVERE, String.format("Waiting for process interrupted: %s", cmdList.get(0)), e);
             }
@@ -259,7 +263,12 @@ public class Executor {
                     IOUtils.close(process.getOutputStream());
                     IOUtils.close(process.getInputStream());
                     IOUtils.close(process.getErrorStream());
-                    ret = process.exitValue();
+                    if (!gotException) {
+                        // Do not override the return value if the processing was abnormally terminated.
+                        // If the program exited with 0, returning 0 would create false impression that everything
+                        // went well.
+                        ret = process.exitValue();
+                    }
                 }
             } catch (IllegalThreadStateException e) {
                 process.destroy();
@@ -268,12 +277,13 @@ public class Executor {
 
         if (ret != 0 && reportExceptions) {
             int maxMsgSize = 512; /* limit to avoid flooding the logs */
-            StringBuilder msg = new StringBuilder("Non-zero exit status ")
-                    .append(ret).append(" from command [")
+            StringBuilder msg = new StringBuilder(ret == -1 ?
+                    "Processing failed of" : String.format("Non-zero exit status %d from", ret))
+                    .append(" command [")
                     .append(cmd_str)
                     .append("] in directory '")
-                    .append(dir_str).
-                    append("'");
+                    .append(dir_str)
+                    .append("'");
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");
                     if (stderr.length > maxMsgSize) {
@@ -305,19 +315,21 @@ public class Executor {
     /**
      * Get a reader to read the output from the process.
      *
-     * @return A reader reading the process output
+     * @return A reader reading the process output or {@code null}
      */
+    @Nullable
     public Reader getOutputReader() {
-        return new InputStreamReader(getOutputStream());
+        return Optional.ofNullable(getOutputStream()).map(InputStreamReader::new).orElse(null);
     }
 
     /**
      * Get an input stream read the output from the process.
      *
-     * @return A reader reading the process output
+     * @return A reader reading the process output or {@code null}
      */
+    @Nullable
     public InputStream getOutputStream() {
-        return new ByteArrayInputStream(stdout);
+        return Optional.ofNullable(stdout).map(ByteArrayInputStream::new).orElse(null);
     }
 
     /**
@@ -337,19 +349,21 @@ public class Executor {
     /**
      * Get a reader to read the output the process wrote to the error stream.
      *
-     * @return A reader reading the process error stream
+     * @return A reader reading the process error stream or {@code null}
      */
+    @Nullable
     public Reader getErrorReader() {
-        return new InputStreamReader(getErrorStream());
+        return Optional.ofNullable(getErrorStream()).map(InputStreamReader::new).orElse(null);
     }
 
     /**
      * Get an input stream to read the output the process wrote to the error stream.
      *
-     * @return An input stream for reading the process error stream
+     * @return An input stream for reading the process error stream or {@code null}
      */
+    @Nullable
     public InputStream getErrorStream() {
-        return new ByteArrayInputStream(stderr);
+        return Optional.ofNullable(stderr).map(ByteArrayInputStream::new).orElse(null);
     }
 
     /**
