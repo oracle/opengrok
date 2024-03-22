@@ -161,7 +161,7 @@ public class SubversionRepository extends Repository {
     }
 
     /**
-     * Get value of given tag in 'svn info' document.
+     * Get value of given tag in @{code svn info} document.
      * @param document document object containing {@code info} contents
      * @param tagName name of the tag to return value for
      * @return value string
@@ -411,7 +411,7 @@ public class SubversionRepository extends Repository {
 
     @Override
     public boolean fileHasHistory(File file) {
-        // @TODO: Research how to cheaply test if a file in a given
+        // TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this
         // code can be refined, boosting performance.
         return true;
