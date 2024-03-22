@@ -373,8 +373,7 @@ public class SubversionRepository extends Repository {
         return getHistory(file, sinceRevision, 0, CommandTimeoutType.INDEXER);
     }
 
-    private History getHistory(File file, String sinceRevision, int numEntries,
-            CommandTimeoutType cmdType)
+    private History getHistory(File file, String sinceRevision, int numEntries, CommandTimeoutType cmdType)
             throws HistoryException {
         return new SubversionHistoryParser().parse(file, this, sinceRevision,
                 numEntries, cmdType);

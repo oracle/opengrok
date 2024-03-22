@@ -47,6 +47,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -273,12 +274,13 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     }
 
     /**
-     * Parse the given string.
+     * Parse the given string. Only used in tests.
      *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
+    @VisibleForTesting
     History parse(String buffer) throws IOException {
         handler = new Handler("/", "", 0, new SubversionRepository());
         processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
