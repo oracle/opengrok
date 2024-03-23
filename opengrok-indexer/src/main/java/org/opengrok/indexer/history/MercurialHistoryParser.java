@@ -150,7 +150,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * {@link org.opengrok.indexer.history.RepositoryWithHistoryTraversal.ChangesetInfo} elements.
      *
      * @param input The output from the process
-     * @throws java.io.IOException If an error occurs while reading the stream
+     * @throws IOException If an error occurs while reading the stream
      */
     @Override
     public void processStream(InputStream input) throws IOException {
