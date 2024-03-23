@@ -18,16 +18,18 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,6 +87,30 @@ class ExecutorTest {
         in = new BufferedReader(instance.getErrorReader());
         assertNull(in.readLine());
         in.close();
+    }
+
+    /**
+     * {@link Executor.StreamHandler} implementation that always fails with {@link IOException}.
+     */
+    private static class ErroneousStreamHandler implements Executor.StreamHandler {
+        @Override
+        public void processStream(InputStream input) throws IOException {
+            throw new IOException("error");
+        }
+    }
+
+    @Test
+    void testStreamHandlerError() throws IOException {
+        List<String> cmdList = new ArrayList<>();
+        cmdList.add("echo");
+        cmdList.add("testing org.opengrok.indexer.util.Executor");
+        Executor instance = new Executor(cmdList, new File("."));
+        assertEquals(-1, instance.exec(true, new ErroneousStreamHandler()));
+        Assertions.assertAll(
+                () -> assertNull(instance.getOutputStream()),
+                () -> assertNull(instance.getErrorStream()),
+                () -> assertNull(instance.getErrorReader()),
+                () -> assertNull(instance.getOutputReader()));
     }
 
     @Test

@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -44,6 +45,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -57,10 +59,10 @@ import org.xml.sax.SAXException;
 
 /**
  * Access to a Subversion repository.
- *
+ * <p>
  * <b>TODO</b> The current implementation does <b>not</b> support nested
  * repositories as described in http://svnbook.red-bean.com/en/1.0/ch07s03.html
- *
+ * </p>
  * @author Trond Norbye
  */
 public class SubversionRepository extends Repository {
@@ -120,11 +122,10 @@ public class SubversionRepository extends Repository {
     }
 
     /**
-     * Get {@code Document} corresponding to the parsed XML output from
-     * {@code svn info} command.
-     * @return document with data from {@code info} or null if the {@code svn}
-     * command failed
+     * Get {@code Document} corresponding to the parsed XML output from {@code svn info} command.
+     * @return document with data from {@code info} or null if the {@code svn} command failed
      */
+    @Nullable
     private Document getInfoDocument() {
         Document document = null;
         List<String> cmd = new ArrayList<>();
@@ -146,26 +147,21 @@ public class SubversionRepository extends Repository {
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 document = builder.parse(executor.getOutputStream());
             } catch (SAXException saxe) {
-                LOGGER.log(Level.WARNING,
-                        "Parser error parsing svn output", saxe);
+                LOGGER.log(Level.WARNING, "Parser error parsing svn output", saxe);
             } catch (ParserConfigurationException pce) {
-                LOGGER.log(Level.WARNING,
-                        "Parser configuration error parsing svn output", pce);
+                LOGGER.log(Level.WARNING, "Parser configuration error parsing svn output", pce);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING,
-                        "IOException reading from svn process", ioe);
+                LOGGER.log(Level.WARNING, "IOException reading from svn process", ioe);
             }
         } else {
-            LOGGER.log(Level.WARNING,
-                            "Failed to execute svn info for [{0}]. Repository disabled.",
-                            getDirectoryName());
+            LOGGER.log(Level.WARNING, "Failed to execute svn info for ''{0}''", getDirectoryName());
         }
 
         return document;
     }
 
     /**
-     * Get value of given tag in 'svn info' document.
+     * Get value of given tag in @{code svn info} document.
      * @param document document object containing {@code info} contents
      * @param tagName name of the tag to return value for
      * @return value string
@@ -187,7 +183,7 @@ public class SubversionRepository extends Repository {
                 String url = getInfoPart(document, URL_ATTR);
                 if (url == null) {
                     LOGGER.log(Level.WARNING,
-                            "svn info did not contain an URL for [{0}]. Assuming remote repository.",
+                            "svn info did not contain an URL for ''{0}''. Assuming remote repository.",
                             getDirectoryName());
                     setRemote(true);
                 } else {
@@ -196,8 +192,7 @@ public class SubversionRepository extends Repository {
                     }
                 }
 
-                String root
-                        = getValue(document.getElementsByTagName("root").item(0));
+                String root = getValue(document.getElementsByTagName("root").item(0));
                 if (url != null && root != null) {
                     reposPath = url.substring(root.length());
                     rootFound = Boolean.TRUE;
@@ -243,7 +238,7 @@ public class SubversionRepository extends Repository {
             // fetch the unneeded revision and remove it later.
             cmd.add("BASE:" + sinceRevision);
         }
-        if (filename.length() > 0) {
+        if (!filename.isEmpty()) {
             cmd.add(escapeFileName(filename));
         }
 
@@ -260,8 +255,7 @@ public class SubversionRepository extends Repository {
         try {
             filepath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get canonical path: {0}", exp.getClass());
+            LOGGER.log(Level.SEVERE, "Failed to get canonical path: {0}", exp.getClass());
             return false;
         }
         String filename = filepath.substring(getDirectoryName().length() + 1);
@@ -280,11 +274,13 @@ public class SubversionRepository extends Repository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec() == 0) {
             try {
-                copyBytes(out::write, executor.getOutputStream());
+                InputStream stream = executor.getOutputStream();
+                if (!Objects.isNull(stream)) {
+                    copyBytes(out::write, stream);
+                }
                 return true;
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to get content for {0}",
-                        basename);
+                LOGGER.log(Level.SEVERE, "Failed to get content for ''{0}''", basename);
             }
         }
 
@@ -318,17 +314,16 @@ public class SubversionRepository extends Repository {
      * Provides a list of files that were in a directory at a given revision.
      * This is useful for finding files that will need special renamed file history
      * handling because they were in a directory when it was renamed.
-     *
+     * <p>
      * Note that this doesn't throw an exception even if the command was not completed
      * because we will still be able to get the file history up to this point.
-     *
+     * </p>
      * @param directory the directory to check
      * @param revision the revision to check at
      * @param cmdType the timeout setting.
      * @return the files that were in the directory at that revision
      */
-    Set<String> getFilesInDirectoryAtRevision(String directory, String revision,
-        CommandTimeoutType cmdType) {
+    Set<String> getFilesInDirectoryAtRevision(String directory, String revision, CommandTimeoutType cmdType) {
 
       Executor executor = getDirectoryListExecutor(
             RuntimeEnvironment.getInstance().getSourceRootPath() + File.separator + directory,
@@ -336,17 +331,11 @@ public class SubversionRepository extends Repository {
 
       Set<String> files = new HashSet<>();
 
-      StreamHandler directoryLogStreamHandler = new StreamHandler() {
-
-       @Override
-       public void processStream(InputStream in) throws IOException {
-         new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
-             .lines()
-             .filter(s -> !s.isBlank())
-             .map(s -> directory + File.separator + s)
-             .forEach(files::add);
-       }
-      };
+      StreamHandler directoryLogStreamHandler = in -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+          .lines()
+          .filter(s -> !s.isBlank())
+          .map(s -> directory + File.separator + s)
+          .forEach(files::add);
 
       int status = executor.exec(true, directoryLogStreamHandler);
       if (status != 0) {
@@ -373,15 +362,14 @@ public class SubversionRepository extends Repository {
         return getHistory(file, sinceRevision, 0, CommandTimeoutType.INDEXER);
     }
 
-    private History getHistory(File file, String sinceRevision, int numEntries,
-            CommandTimeoutType cmdType)
+    private History getHistory(File file, String sinceRevision, int numEntries, CommandTimeoutType cmdType)
             throws HistoryException {
         return new SubversionHistoryParser().parse(file, this, sinceRevision,
                 numEntries, cmdType);
     }
 
     private String escapeFileName(String name) {
-        if (name.length() == 0) {
+        if (name.isEmpty()) {
             return name;
         }
         return name + "@";
@@ -423,7 +411,7 @@ public class SubversionRepository extends Repository {
 
     @Override
     public boolean fileHasHistory(File file) {
-        // @TODO: Research how to cheaply test if a file in a given
+        // TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this
         // code can be refined, boosting performance.
         return true;
@@ -517,7 +505,7 @@ public class SubversionRepository extends Repository {
                 }
             }
         } catch (HistoryException ex) {
-            LOGGER.log(Level.WARNING, "cannot get current version info for {0}",
+            LOGGER.log(Level.WARNING, "cannot get current version info for ''{0}''",
                     getDirectoryName());
         }
 
