@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -81,13 +81,12 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false,
                     numCommits);
             int status = executor.exec(true, this);
-
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() +
-                                           "\" Exit code: " + status);
+                throw new HistoryException(String.format("Failed to get history for '%s' (exit status %d)",
+                        file.getAbsolutePath(), status));
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() + "\"", e);
+            throw new HistoryException(String.format("Failed to get history for '%s'", file.getAbsolutePath()), e);
         }
 
         // If a changeset to start from is specified, remove that changeset from the list,
