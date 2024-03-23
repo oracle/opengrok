@@ -181,7 +181,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.startsWith(MercurialRepository.FILES) && entry != null) {
                 String[] strings = s.split(" ");
                 for (int ii = 1; ii < strings.length; ++ii) {
-                    if (strings[ii].length() > 0) {
+                    if (!strings[ii].isEmpty()) {
                         File f = new File(mydir, strings[ii]);
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
@@ -220,7 +220,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.equals(MercurialRepository.END_OF_ENTRY)
                 && entry != null) {
                     entry = null;
-            } else if (s.length() > 0) {
+            } else if (!s.isEmpty()) {
                 LOGGER.log(Level.WARNING,
                     "Invalid/unexpected output {0} from hg log for repo {1}",
                     new Object[]{s, repository.getDirectoryName()});
@@ -234,10 +234,10 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * This is to prevent problems if the log message contains one of the
      * prefixes that {@link #processStream(InputStream)} is looking for (bug
      * #405).
-     *
+     * <p>
      * This method is way too tolerant, and won't complain if the line has
      * a different format than expected. It will return weird results, though.
-     *
+     * </p>
      * @param line the XML encoded line
      * @return the decoded description
      */
