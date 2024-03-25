@@ -132,7 +132,7 @@ class SuggesterProjectData implements Closeable {
                 Set<String> copy = new HashSet<>(allowedFields);
                 copy.removeAll(indexedFields);
                 logger.log(Level.WARNING,
-                        "Fields {0} will be ignored because they were not found in index directory {1}",
+                        "Fields {0} will be ignored because they were not found in index directory ''{1}''",
                         new Object[] {copy, indexDir});
 
                 copy = new HashSet<>(allowedFields);
@@ -201,7 +201,7 @@ class SuggesterProjectData implements Closeable {
                     var wfst = loadStoredWFST(wfstFile);
                     lookups.put(field, wfst);
                 } else {
-                    logger.log(Level.INFO, "Missing WFST file for {0} field in {1}, creating a new one",
+                    logger.log(Level.INFO, "Missing WFST file for {0} field in ''{1}'', creating a new one",
                             new Object[] {field, suggesterDir});
 
                     WFSTCompletionLookup lookup = build(indexReader, field);
@@ -404,12 +404,12 @@ class SuggesterProjectData implements Closeable {
         try {
             WFSTCompletionLookup lookup = lookups.get(field);
             if (lookup == null) {
-                logger.log(Level.WARNING, "No WFST for field {0} in {1}", new Object[] {field, suggesterDir});
+                logger.log(Level.WARNING, "No WFST for field {0} in ''{1}''", new Object[] {field, suggesterDir});
                 return Collections.emptyList();
             }
             return lookup.lookup(prefix, false, resultSize);
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Could not perform lookup in {0} for {1}:{2}",
+            logger.log(Level.WARNING, "Could not perform lookup in ''{0}'' for {1}:{2}",
                     new Object[] {suggesterDir, field, prefix});
         } finally {
             lock.readLock().unlock();
