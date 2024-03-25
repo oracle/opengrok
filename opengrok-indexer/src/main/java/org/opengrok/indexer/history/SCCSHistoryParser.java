@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -68,14 +68,13 @@ final class SCCSHistoryParser {
         try {
             return parseFile(file);
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for " +
-                "\"" + file.getAbsolutePath() + "\":", e);
+            throw new HistoryException(String.format("Failed to get history for '%s'", file.getAbsolutePath()), e);
         } catch (ParseException e) {
-            throw new HistoryException("Failed to parse history for " +
-                "\"" + file.getAbsolutePath() + "\":", e);
+            throw new HistoryException(String.format("Failed to parse history for '%s'", file.getAbsolutePath()), e);
         }
     }
 
+    @Nullable
     private History parseFile(File file) throws IOException, ParseException {
         File f = getSCCSFile(file);
         if (f == null) {
@@ -110,9 +109,9 @@ final class SCCSHistoryParser {
      * Read a single line of delta record into the {@link #sccsRecord} member.
      *
      * @return boolean indicating whether there is another record.
-     * @throws java.io.IOException on I/O error
+     * @throws IOException on I/O error
      */
-    private boolean next() throws java.io.IOException {
+    private boolean next() throws IOException {
         sep = true;
         sccsRecord.setLength(0);
         int c;
@@ -189,7 +188,7 @@ final class SCCSHistoryParser {
         return active;
     }
 
-    private int read() throws java.io.IOException {
+    private int read() throws IOException {
         int c, d, dt;
         while ((c = in.read()) != -1) {
             switch (c) { //NOPMD

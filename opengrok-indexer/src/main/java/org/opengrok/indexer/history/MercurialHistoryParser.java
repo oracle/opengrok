@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -81,13 +81,12 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false,
                     numCommits);
             int status = executor.exec(true, this);
-
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() +
-                                           "\" Exit code: " + status);
+                throw new HistoryException(String.format("Failed to get history for '%s' (exit status %d)",
+                        file.getAbsolutePath(), status));
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \"" + file.getAbsolutePath() + "\"", e);
+            throw new HistoryException(String.format("Failed to get history for '%s'", file.getAbsolutePath()), e);
         }
 
         // If a changeset to start from is specified, remove that changeset from the list,
@@ -151,7 +150,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * {@link org.opengrok.indexer.history.RepositoryWithHistoryTraversal.ChangesetInfo} elements.
      *
      * @param input The output from the process
-     * @throws java.io.IOException If an error occurs while reading the stream
+     * @throws IOException If an error occurs while reading the stream
      */
     @Override
     public void processStream(InputStream input) throws IOException {
@@ -182,7 +181,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.startsWith(MercurialRepository.FILES) && entry != null) {
                 String[] strings = s.split(" ");
                 for (int ii = 1; ii < strings.length; ++ii) {
-                    if (strings[ii].length() > 0) {
+                    if (!strings[ii].isEmpty()) {
                         File f = new File(mydir, strings[ii]);
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
@@ -221,7 +220,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.equals(MercurialRepository.END_OF_ENTRY)
                 && entry != null) {
                     entry = null;
-            } else if (s.length() > 0) {
+            } else if (!s.isEmpty()) {
                 LOGGER.log(Level.WARNING,
                     "Invalid/unexpected output {0} from hg log for repo {1}",
                     new Object[]{s, repository.getDirectoryName()});
@@ -235,10 +234,10 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * This is to prevent problems if the log message contains one of the
      * prefixes that {@link #processStream(InputStream)} is looking for (bug
      * #405).
-     *
+     * <p>
      * This method is way too tolerant, and won't complain if the line has
      * a different format than expected. It will return weird results, though.
-     *
+     * </p>
      * @param line the XML encoded line
      * @return the decoded description
      */
