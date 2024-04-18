@@ -20,7 +20,7 @@
         <destName>source.war</destName>
       </file>
       <file>
-        <source>${project.basedir}/../tools/${project.build.directory}/dist/opengrok-tools-${project.python.package.version}.tar.gz</source>
+        <source>${project.basedir}/../tools/${project.build.directory}/dist/opengrok_tools-${project.python.package.version}.tar.gz</source>
         <outputDirectory>tools</outputDirectory>
         <destName>opengrok-tools.tar.gz</destName>
       </file>
