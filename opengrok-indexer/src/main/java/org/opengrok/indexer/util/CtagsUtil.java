@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -53,6 +53,10 @@ public class CtagsUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(CtagsUtil.class);
 
     public static final String SYSTEM_CTAGS_PROPERTY = "org.opengrok.indexer.analysis.Ctags";
+
+    /** Private to enforce static. */
+    private CtagsUtil() {
+    }
 
     /**
      * Check that {@code ctags} program exists and is working.
@@ -163,7 +167,7 @@ public class CtagsUtil {
         Set<String> result = new HashSet<>();
         for (String lang : split) {
             lang = lang.trim();
-            if (lang.length() > 0) {
+            if (!lang.isEmpty()) {
                 result.add(lang);
             }
         }
@@ -192,7 +196,7 @@ public class CtagsUtil {
                 continue;
             }
 
-            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory {0}", directoryName);
+            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory ''{0}''", directoryName);
             deleteTempFiles(directory);
         }
     }
@@ -205,14 +209,18 @@ public class CtagsUtil {
             return matcher.find();
         });
 
+        if (Objects.isNull(files)) {
+            return;
+        }
+
         for (File file : files) {
-            if (file.isFile() && !file.delete()) {
-                LOGGER.log(Level.WARNING, "cannot delete file {0}", file);
+            if (file.isFile()) {
+                try {
+                    Files.delete(file.toPath());
+                } catch (IOException exception) {
+                    LOGGER.log(Level.WARNING, String.format("cannot delete file '%s'", file), exception);
+                }
             }
         }
-    }
-
-    /** Private to enforce static. */
-    private CtagsUtil() {
     }
 }
