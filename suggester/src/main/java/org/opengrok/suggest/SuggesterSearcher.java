@@ -238,7 +238,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         BitIntsHolder documentIds = new BitIntsHolder();
         try {
-            search(query, new SuggestResultCollector(leafReaderContext, data, documentIds));
+            search(query, SuggestResultCollector.createManager(leafReaderContext, data, documentIds));
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) {
                 interrupted = true;
