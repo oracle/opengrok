@@ -99,7 +99,7 @@ public class FileAnnotationCache extends AbstractCache implements AnnotationCach
                 parser.nextToken();
             }
 
-            if (parser.getCurrentName().equals("revision")) {
+            if (parser.currentName().equals("revision")) {
                 parser.nextToken();
                 if (!parser.getCurrentToken().equals(JsonToken.VALUE_STRING)) {
                     LOGGER.log(Level.WARNING, "the value of the ''revision'' field in ''{0}'' is not string",

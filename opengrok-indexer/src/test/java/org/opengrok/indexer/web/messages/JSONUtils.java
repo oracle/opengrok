@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.messages;
 
@@ -59,7 +59,7 @@ public final class JSONUtils {
                 continue;
             }
 
-            fields.add(jParser.getCurrentName());
+            fields.add(jParser.currentName());
         }
         jParser.close();
 
