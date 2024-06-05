@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -82,12 +82,13 @@ class Java(Command):
         system_name = platform.system()
         if system_name == 'SunOS':
             rel = platform.release()
+            java_home = None
             if rel == '5.10':
                 java_home = "/usr/jdk/instances/jdk1.7.0"
             elif rel == '5.11':
                 java_home = "/usr/jdk/latest"
 
-            if os.path.isdir(java_home):
+            if java_home and os.path.isdir(java_home):
                 java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
             cmd = Command(['/usr/libexec/java_home'])
