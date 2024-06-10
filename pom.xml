@@ -60,7 +60,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     </scm>
 
     <properties>
-        <lucene.version>9.10.0</lucene.version>
+        <lucene.version>9.11.0</lucene.version>
         <mavenjavadocplugin.version>3.6.0</mavenjavadocplugin.version>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
