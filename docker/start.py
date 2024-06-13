@@ -323,6 +323,10 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
     Project less indexer
     """
 
+    indexer_java_opts = os.environ.get("INDEXER_JAVA_OPTS")
+    if indexer_java_opts:
+        indexer_java_opts = indexer_java_opts.split()
+
     wait_for_tomcat(logger, uri)
 
     while True:
@@ -347,7 +351,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
             )
             indexer_options.extend(extra_indexer_options.split())
         indexer = Indexer(
-            indexer_options, logger=logger, jar=OPENGROK_JAR, doprint=True
+            indexer_options, java_opts=indexer_java_opts, logger=logger, jar=OPENGROK_JAR, doprint=True
         )
         indexer.execute()
 
@@ -421,6 +425,10 @@ def create_bare_config(logger, use_projects, extra_indexer_options=None):
     Create bare configuration file with a few basic settings.
     """
 
+    indexer_java_opts = os.environ.get("INDEXER_JAVA_OPTS")
+    if indexer_java_opts:
+        indexer_java_opts = indexer_java_opts.split()
+
     logger.info("Creating bare configuration in {}".format(OPENGROK_CONFIG_FILE))
     indexer_options = [
         "-s",
@@ -444,7 +452,7 @@ def create_bare_config(logger, use_projects, extra_indexer_options=None):
         indexer_options.extend(extra_indexer_options)
     if use_projects:
         indexer_options.append("-P")
-    indexer = Indexer(indexer_options, jar=OPENGROK_JAR, logger=logger, doprint=True)
+    indexer = Indexer(indexer_options, java_opts=indexer_java_opts, jar=OPENGROK_JAR, logger=logger, doprint=True)
     indexer.execute()
     ret = indexer.getretcode()
     if ret != SUCCESS_EXITVAL:
@@ -473,12 +481,16 @@ def check_index_and_wipe_out(logger):
     currently running version and the CHECK_INDEX environment variable
     is non-empty, wipe out the directories under data root.
     """
+    indexer_java_opts = os.environ.get("INDEXER_JAVA_OPTS")
+    if indexer_java_opts:
+        indexer_java_opts = indexer_java_opts.split()
+
     check_index = os.environ.get("CHECK_INDEX")
     if check_index and os.path.exists(OPENGROK_CONFIG_FILE):
         logger.info("Checking if index matches current version")
         indexer_options = ["-R", OPENGROK_CONFIG_FILE, "--checkIndex", "version"]
         indexer = Indexer(
-            indexer_options, logger=logger, jar=OPENGROK_JAR, doprint=True
+            indexer_options, java_opts=indexer_java_opts, logger=logger, jar=OPENGROK_JAR, doprint=True
         )
         indexer.execute()
         if indexer.getretcode() == 1:
