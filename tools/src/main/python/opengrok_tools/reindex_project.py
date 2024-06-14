@@ -127,8 +127,12 @@ def main():
         # Prepend the extra options because we want the arguments to end with a project.
         indexer_options = extra_options.split() + indexer_options
     java_opts = []
+    indexer_java_opts = os.environ.get("INDEXER_JAVA_OPTS")
     if args.java_opts:
         java_opts.extend(args.java_opts)
+    elif indexer_java_opts:
+        java_opts.extend(indexer_java_opts.split())
+
     if logprop_file:
         java_opts.append("-Djava.util.logging.config.file={}".
                          format(logprop_file))
