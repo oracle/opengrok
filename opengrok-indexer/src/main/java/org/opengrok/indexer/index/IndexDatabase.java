@@ -1306,7 +1306,12 @@ public class IndexDatabase {
                 // call above) directly.
                 HistoryGuru.getInstance().createAnnotationCache(file, lastRev);
             } catch (CacheException e) {
-                LOGGER.log(e.getLevel(), "failed to create annotation", e.isLogTrace() ? e : e.getMessage());
+                final String logPrefix = "failed to create annotation";
+                if (e.isLogTrace()) {
+                    LOGGER.log(e.getLevel(), logPrefix, e);
+                } else {
+                    LOGGER.log(e.getLevel(), String.format("%s: %s", logPrefix, e.getMessage()));
+                }
             }
         }
     }
