@@ -49,9 +49,7 @@ public class CacheException extends Exception {
      * @param level suggested log level
      */
     public CacheException(String msg, Level level) {
-        super(msg);
-        this.level = level;
-        this.logTrace = true;
+        this(msg, level, true);
     }
 
     /**
