@@ -1180,7 +1180,7 @@ public final class HistoryGuru {
         if (!repository.isWorking() || !repository.isAnnotationCacheEnabled()) {
             throw new CacheException(
                     String.format("repository %s does not allow to create annotation cache for '%s'",
-                            repository, file), Level.FINER);
+                            repository, file), Level.FINER, false);
         }
 
         LOGGER.finest(() -> String.format("creating annotation cache for '%s'", launderLog(file.toString())));
