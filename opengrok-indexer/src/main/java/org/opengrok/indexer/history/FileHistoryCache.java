@@ -239,7 +239,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
 
         ObjectMapper mapper = new SmileMapper(smileFactory);
-        // ObjectMapper mapper = new JsonMapper();
         ObjectWriter objectWriter = mapper.writer().forType(HashMap.class);
 
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))) {
@@ -255,7 +254,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
 
         ObjectMapper mapper = new SmileMapper(smileFactory);
-        // ObjectMapper mapper = new JsonMapper();
         return mapper.writer().forType(HistoryEntry.class);
     }
 
