@@ -18,15 +18,10 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,24 +30,46 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHooks;
 
 /**
  * Encapsulates configuration for LDAP plugins.
  */
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        creatorVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class Configuration implements Serializable {
 
     private static final long serialVersionUID = -1;
 
+    @JsonProperty
     private List<LdapServer> servers = new ArrayList<>();
+    @JsonProperty
     private int interval;
+    @JsonProperty
     private String searchBase;
+    @JsonProperty
     private WebHooks webHooks;
+    @JsonProperty
     private int searchTimeout;
+    @JsonProperty
     private int connectTimeout;
+    @JsonProperty
     private int readTimeout;
+    @JsonProperty
     private int countLimit;
 
     public void setServers(List<LdapServer> servers) {
@@ -119,20 +136,19 @@ public class Configuration implements Serializable {
         this.searchBase = base;
     }
 
-    public String getXMLRepresentationAsString() {
+    String getObjectRepresentationAsString() throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         this.encodeObject(bos);
         return bos.toString();
     }
 
-    private void encodeObject(OutputStream out) {
-        try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
-            e.writeObject(this);
-        }
+    void encodeObject(OutputStream out) throws IOException {
+        var mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+        mapper.writeValue(out, this);
     }
 
     /**
-     * Read a configuration from a file in XML format.
+     * Read a configuration from a file.
      *
      * @param file input file
      * @return the new configuration object
@@ -144,32 +160,8 @@ public class Configuration implements Serializable {
         }
     }
 
-    /**
-     * Read a configuration from a string in xml format.
-     *
-     * @param xmlconfig input string
-     * @return the new configuration object
-     * @throws IOException if any error occurs
-     */
-    public static Configuration makeXMLStringAsConfiguration(String xmlconfig) throws IOException {
-        final Configuration ret;
-        final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
-        ret = decodeObject(in);
-        return ret;
-    }
-
-    private static Configuration decodeObject(InputStream in) throws IOException {
-        final Object ret;
-
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, null,
-                new PluginConfigurationClassLoader())) {
-            ret = d.readObject();
-        }
-
-        if (!(ret instanceof Configuration)) {
-            throw new IOException("Not a valid configuration file");
-        }
-
-        return (Configuration) ret;
+    static Configuration decodeObject(InputStream in) throws IOException {
+        var mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+        return mapper.readValue(in, Configuration.class);
     }
 }

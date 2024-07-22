@@ -18,31 +18,26 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
-import java.beans.ExceptionListener;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -50,103 +45,54 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class ConfigurationTest {
 
+    /**
+     * Create sample configuration object, encode it to a byte array, decode it to a new object,
+     * compare the string representations of the two objects and some of the members.
+     * @throws IOException on I/O error
+     */
     @Test
-    void testEncodeDecode() {
-        // Create an exception listener to detect errors while encoding and
-        // decoding
-        final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = exceptions::addLast;
-
+    void testEncodeDecode() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        XMLEncoder enc = new XMLEncoder(out);
-        enc.setExceptionListener(listener);
+        Configuration configuration1 = createSampleConfiguration();
+        configuration1.encodeObject(out);
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
-        Configuration configuration1 = new Configuration();
-        configuration1.setInterval(500);
-        configuration1.setSearchTimeout(1000);
-        configuration1.setConnectTimeout(42);
-        configuration1.setCountLimit(10);
-        configuration1.setServers(new ArrayList<>(List.of(new LdapServer("http://server.com"))));
+        Configuration configuration2 = Configuration.decodeObject(in);
+        assertNotNull(configuration2);
+        assertEquals(configuration1.getObjectRepresentationAsString(),
+                configuration2.getObjectRepresentationAsString());
+
+        // Check some of the properties as a smoke test.
+        assertEquals(configuration1.getInterval(), configuration2.getInterval());
+        assertEquals(configuration1.getServers().size(), configuration2.getServers().size());
+        assertEquals(configuration1.getServers().get(0).getUrl(), configuration2.getServers().get(0).getUrl());
+        assertEquals(configuration1.getWebHooks().getFail().getURI(), configuration2.getWebHooks().getFail().getURI());
+    }
+
+    private static @NotNull Configuration createSampleConfiguration() {
+        Configuration configuration = new Configuration();
+        configuration.setInterval(500);
+        configuration.setSearchTimeout(1000);
+        configuration.setConnectTimeout(42);
+        configuration.setCountLimit(10);
+        LdapServer ldapServer1 = new LdapServer("ldap://localhost");
+        LdapServer ldapServer2 = new LdapServer("ldaps://example.com", "username", "password");
+        configuration.setServers(new ArrayList<>(List.of(ldapServer1, ldapServer2)));
         WebHooks webHooks = new WebHooks();
         WebHook hook = new WebHook();
         hook.setContent("foo");
         hook.setURI("http://localhost:8080/source/api/v1/messages");
         webHooks.setFail(hook);
-        configuration1.setWebHooks(webHooks);
-
-        enc.writeObject(configuration1);
-        enc.close();
-
-        // verify that the write didn't fail
-        if (!exceptions.isEmpty()) {
-            throw new AssertionError( "Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
-        }
-
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        XMLDecoder dec = new XMLDecoder(in, null, listener);
-        Configuration configuration2 = (Configuration) dec.readObject();
-        assertNotNull(configuration2);
-        assertEquals(configuration1.getXMLRepresentationAsString(),
-                configuration2.getXMLRepresentationAsString());
-
-        dec.close();
-        // verify that the read didn't fail
-        if (!exceptions.isEmpty()) {
-            throw new AssertionError( "Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
-                    "    <void method=\"exec\">\n" +
-                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
-                    "        <void index=\"0\">\n" +
-                    "          <string>/usr/bin/nc</string>\n" +
-                    "        </void>\n" +
-                    "        <void index=\"1\">\n" +
-                    "          <string>-l</string>\n" +
-                    "        </void>\n" +
-                    "      </array>\n" +
-                    "    </void>\n" +
-                    "  </object>\n" +
-                    "</java>",
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
-                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
-                    "      <void index=\"0\"> \n" +
-                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
-                    "      </void>\n" +
-                    "    </array>\n" +
-                    "    <void method=\"start\"/>\n" +
-                    "  </object>\n" +
-                    "</java>",
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
-                    "  <object class = \"java.io.FileOutputStream\"> \n" +
-                    "    <string>opengrok_test.txt</string>\n" +
-                    "    <method name = \"write\">\n" +
-                    "      <array class=\"byte\" length=\"3\">\n" +
-                    "        <void index=\"0\"><byte>96</byte></void>\n" +
-                    "        <void index=\"1\"><byte>96</byte></void>\n" +
-                    "        <void index=\"2\"><byte>96</byte></void>\n" +
-                    "      </array>\n" +
-                    "    </method>\n" +
-                    "    <method name=\"close\"/>\n" +
-                    "  </object>\n" +
-                    "</java>"
-    })
-    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
-        assertThrows(IllegalAccessError.class, () -> Configuration.makeXMLStringAsConfiguration(exploit));
+        configuration.setWebHooks(webHooks);
+        return configuration;
     }
 
     @Test
     void testReadCacheValid() throws IOException {
-        File testFile = new File(ConfigurationTest.class.getClassLoader().
-                getResource("opengrok/auth/plugin/configuration/plugin-config.xml").getFile());
+        URL url = ConfigurationTest.class.getClassLoader().
+                getResource("opengrok/auth/plugin/configuration/plugin-config.yml");
+        assertNotNull(url);
+        File testFile = new File(url.getFile());
         Configuration config = Configuration.read(testFile);
         assertNotNull(config);
         assertEquals(2, config.getServers().size());
