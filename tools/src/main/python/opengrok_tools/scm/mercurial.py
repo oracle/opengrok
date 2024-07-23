@@ -78,12 +78,20 @@ class MercurialRepository(Repository):
             return 1
 
         hg_command = [self.command, "update"]
+        #
         # Avoid remote branch lookup for default branches since
         # some servers do not support it.
+        #
         if branch == "default":
             hg_command.append("--check")
+
+        #
+        # In a multi-head situation, select the head with the
+        # biggest index as this is likely the correct one.
+        #
         hg_command.append("-r")
-        hg_command.append("tip")
+        hg_command.append("'max(head() and branch(\".\"))'")
+
         cmd = self.get_command(hg_command, work_dir=self.path,
                                env_vars=self.env, logger=self.logger)
         cmd.execute()
