@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -82,6 +82,8 @@ class MercurialRepository(Repository):
         # some servers do not support it.
         if branch == "default":
             hg_command.append("--check")
+        hg_command.append("-r")
+        hg_command.append("tip")
         cmd = self.get_command(hg_command, work_dir=self.path,
                                env_vars=self.env, logger=self.logger)
         cmd.execute()
