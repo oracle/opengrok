@@ -63,13 +63,14 @@ def test_strip_outgoing(create_file_in_parent):
         cmd.execute()
         assert cmd.getretcode() == 0
 
+        file_name = "foo.txt"
         #
         # Create a file in the parent repository. This is done so that
         # after the strip is done in the cloned repository, the branch
         # is still known for 'hg out'. Normally this would be the case.
         #
         if create_file_in_parent:
-            file_path = os.path.join(repo_parent_path, "foo.txt")
+            file_path = os.path.join(repo_parent_path, file_name)
             add_commit_file(file_path, repo_parent_path, "parent")
 
         # Clone the repository and create couple of new changesets.
@@ -80,7 +81,7 @@ def test_strip_outgoing(create_file_in_parent):
         cmd.execute()
         assert cmd.getretcode() == 0
 
-        file_path = os.path.join(repo_clone_path, "foo.txt")
+        file_path = os.path.join(repo_clone_path, file_name)
         add_commit_file(file_path, repo_clone_path, "first")
 
         with open(file_path, "a") as fp:
