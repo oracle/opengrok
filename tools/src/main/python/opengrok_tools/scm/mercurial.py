@@ -129,3 +129,37 @@ class MercurialRepository(Repository):
             return True
         else:
             return False
+
+    def strip_outgoing(self):
+        """
+        Check for outgoing changes and if found, strip them.
+        :return: True if there were any changes stripped, False otherwise.
+        """
+        branch = self.get_branch()
+        if branch is None:
+            return False
+        status, out = self._run_command([self.command, 'out', '-q', '-b', branch,
+                                         '--template={rev}\\n'])
+        if status == 1:
+            return False
+
+        lines = list(filter(None, out.split('\n')))
+        if len(lines) == 0:
+            return False
+
+        # The first revision is the oldest outgoing revision.
+        self.logger.debug("Found outgoing changesets in repository {}: {}".
+                          format(self, lines))
+        cset = lines[0]
+        if len(cset) > 0:
+            self.logger.debug("Resetting the repository {} to parent of changeset '{}'".
+                              format(self, cset))
+            status, out = self._run_command([self.command, '--config', 'extensions.strip=',
+                                             'strip', cset])
+            if status != 0:
+                raise RepositoryException("failed to reset {} to parent of changeset '{}': {}".
+                                          format(self, cset, out))
+            else:
+                return True
+
+        return False
