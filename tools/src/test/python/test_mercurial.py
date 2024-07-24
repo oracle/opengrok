@@ -89,8 +89,6 @@ def test_strip_outgoing(create_file_in_parent):
         cmd.execute()
         assert cmd.getretcode() == 0
 
-        # time.sleep(60)
-
         # Strip the changesets.
         repository = MercurialRepository(
             "hgout", mock(), repo_clone_path, "test-1", None, None, None, None
