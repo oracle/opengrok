@@ -139,8 +139,10 @@ class MercurialRepository(Repository):
         Check for outgoing changes and if found, strip them.
         :return: True if there were any changes stripped, False otherwise.
         """
+        #
         # Avoid _run_command() as it complains to the log about failed command
         # when 'hg out' returns 1 which is legitimate return value.
+        #
         cmd = self.get_command(
             [self.command, "out", "-q", "-b", ".", "--template={rev}\\n"],
             work_dir=self.path,
@@ -162,10 +164,12 @@ class MercurialRepository(Repository):
         if len(revisions) == 0:
             return False
 
+        #
         # The revision specification will produce all outgoing changesets.
         # The 'hg strip' command will remove them all. Also, the 'strip'
         # has become part of core Mercurial, however use the --config to
         # enable the extension for backward compatibility.
+        #
         self.logger.debug(
             f"Removing outgoing changesets in repository {self}: {revisions}"
         )
