@@ -154,7 +154,10 @@ class MercurialRepository(Repository):
         if len(lines) == 0:
             return False
 
-        # The first revision is the oldest outgoing revision.
+        # The revision specification will produce all outgoing changesets.
+        # The 'hg strip' command will remove them all. Also, the 'strip'
+        # has become part of core Mercurial, however use the --config to
+        # enable the extension for backward compatibility.
         self.logger.debug(f"Removing outgoing changesets in repository {self}: {lines}")
         status, out = self._run_command(
             [
