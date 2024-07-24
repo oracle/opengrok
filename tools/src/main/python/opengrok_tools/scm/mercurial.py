@@ -90,7 +90,7 @@ class MercurialRepository(Repository):
         # biggest index as this is likely the correct one.
         #
         hg_command.append("-r")
-        hg_command.append("max(head() and branch(\".\"))")
+        hg_command.append('max(head() and branch("."))')
 
         cmd = self.get_command(
             hg_command, work_dir=self.path, env_vars=self.env, logger=self.logger
@@ -139,9 +139,17 @@ class MercurialRepository(Repository):
         Check for outgoing changes and if found, strip them.
         :return: True if there were any changes stripped, False otherwise.
         """
-        status, out = self._run_command(
-            [self.command, "out", "-q", "-b", ".", "--template={rev}\\n"]
+        # Avoid _run_command() as it complains to the log about failed command
+        # when 'hg out' returns 1 which is legitimate return value.
+        cmd = self.get_command(
+            [self.command, "out", "-q", "-b", ".", "--template={rev}\\n"],
+            work_dir=self.path,
+            env_vars=self.env,
+            logger=self.logger,
         )
+        cmd.execute()
+        status = cmd.getretcode()
+
         #
         # If there are outgoing changes, 'hg out' returns 0, otherwise returns 1.
         # If the 'hg out' command fails for some reason, it will return 255.
@@ -150,7 +158,7 @@ class MercurialRepository(Repository):
         if status > 0:
             return False
 
-        revisions = list(filter(None, out.split("\n")))
+        revisions = list(filter(None, cmd.getoutputstr().split("\n")))
         if len(revisions) == 0:
             return False
 
