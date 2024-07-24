@@ -135,10 +135,7 @@ class MercurialRepository(Repository):
         Check for outgoing changes and if found, strip them.
         :return: True if there were any changes stripped, False otherwise.
         """
-        branch = self.get_branch()
-        if branch is None:
-            return False
-        status, out = self._run_command([self.command, 'out', '-q', '-b', branch,
+        status, out = self._run_command([self.command, 'out', '-q', '-b', '.',
                                          '--template={rev}\\n'])
         #
         # If there are outgoing changes, 'hg out' returns 0, otherwise returns 1.
