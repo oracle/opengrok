@@ -150,15 +150,17 @@ class MercurialRepository(Repository):
         if status > 0:
             return False
 
-        lines = list(filter(None, out.split("\n")))
-        if len(lines) == 0:
+        revisions = list(filter(None, out.split("\n")))
+        if len(revisions) == 0:
             return False
 
         # The revision specification will produce all outgoing changesets.
         # The 'hg strip' command will remove them all. Also, the 'strip'
         # has become part of core Mercurial, however use the --config to
         # enable the extension for backward compatibility.
-        self.logger.debug(f"Removing outgoing changesets in repository {self}: {lines}")
+        self.logger.debug(
+            f"Removing outgoing changesets in repository {self}: {revisions}"
+        )
         status, out = self._run_command(
             [
                 self.command,
