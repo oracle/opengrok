@@ -90,7 +90,7 @@ class MercurialRepository(Repository):
         # biggest index as this is likely the correct one.
         #
         hg_command.append("-r")
-        hg_command.append("'max(head() and branch(\".\"))'")
+        hg_command.append("max(head() and branch(\".\"))")
 
         cmd = self.get_command(hg_command, work_dir=self.path,
                                env_vars=self.env, logger=self.logger)
