@@ -150,18 +150,10 @@ class MercurialRepository(Repository):
             return False
 
         # The first revision is the oldest outgoing revision.
-        self.logger.debug("Found outgoing changesets in repository {}: {}".
-                          format(self, lines))
-        cset = lines[0]
-        if len(cset) > 0:
-            self.logger.debug("Resetting the repository {} to parent of changeset '{}'".
-                              format(self, cset))
-            status, out = self._run_command([self.command, '--config', 'extensions.strip=',
-                                             'strip', cset])
-            if status != 0:
-                raise RepositoryException("failed to reset {} to parent of changeset '{}': {}".
-                                          format(self, cset, out))
-            else:
-                return True
+        self.logger.debug(f"Removing outgoing changesets in repository {self}: {lines}")
+        status, out = self._run_command([self.command, '--config', 'extensions.strip=',
+                                         'strip', 'outgoing() and branch(".")'])
+        if status != 0:
+            raise RepositoryException(f"failed to strip outgoing changesets from {self}")
 
-        return False
+        return True
