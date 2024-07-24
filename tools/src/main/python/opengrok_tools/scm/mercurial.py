@@ -141,7 +141,9 @@ class MercurialRepository(Repository):
         status, out = self._run_command([self.command, 'out', '-q', '-b', branch,
                                          '--template={rev}\\n'])
         #
+        # If there are outgoing changes, 'hg out' returns 0, otherwise returns 1.
         # If the 'hg out' command fails for some reason, it will return 255.
+        # Hence, check for positive value as a bail out indication.
         #
         if status > 0:
             return False
