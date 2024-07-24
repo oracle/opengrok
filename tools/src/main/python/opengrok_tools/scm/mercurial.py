@@ -140,7 +140,10 @@ class MercurialRepository(Repository):
             return False
         status, out = self._run_command([self.command, 'out', '-q', '-b', branch,
                                          '--template={rev}\\n'])
-        if status == 1:
+        #
+        # If the 'hg out' command fails for some reason, it will return 255.
+        #
+        if status > 0:
             return False
 
         lines = list(filter(None, out.split('\n')))

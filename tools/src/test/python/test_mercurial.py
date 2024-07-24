@@ -26,7 +26,6 @@
 import os
 import shutil
 import tempfile
-import time
 
 import pytest
 from mockito import mock
@@ -44,19 +43,18 @@ def add_commit_file(file_path, repo_path, comment):
         fp.write(comment)
     assert os.path.exists(file_path)
 
-    cmd = Command(["hg", "add", file_path],
-                  work_dir=repo_path)
+    cmd = Command(["hg", "add", file_path], work_dir=repo_path)
     cmd.execute()
     assert cmd.getretcode() == 0
 
-    cmd = Command(["hg", "commit", "-m", comment],
-                  work_dir=repo_path)
+    cmd = Command(["hg", "commit", "-m", comment], work_dir=repo_path)
     cmd.execute()
     assert cmd.getretcode() == 0
 
 
+@pytest.mark.parametrize("create_file_in_parent", [True, False])
 @pytest.mark.skipif(shutil.which("hg") is None, reason="need hg")
-def test_strip_outgoing():
+def test_strip_outgoing(create_file_in_parent):
     with tempfile.TemporaryDirectory() as test_root:
         # Initialize Mercurial repository.
         repo_parent_path = os.path.join(test_root, "parent")
@@ -68,15 +66,17 @@ def test_strip_outgoing():
         #
         # Create a file in the parent repository. This is done so that
         # after the strip is done in the cloned repository, the branch
-        # is still known. Normally this would be the case.
+        # is still known for 'hg out'. Normally this would be the case.
         #
-        file_path = os.path.join(repo_parent_path, "foo.txt")
-        add_commit_file(file_path, repo_parent_path, "parent")
+        if create_file_in_parent:
+            file_path = os.path.join(repo_parent_path, "foo.txt")
+            add_commit_file(file_path, repo_parent_path, "parent")
 
         # Clone the repository and create couple of new changesets.
         repo_clone_path = os.path.join(test_root, "clone")
-        cmd = Command(["hg", "clone", repo_parent_path, repo_clone_path],
-                      work_dir=test_root)
+        cmd = Command(
+            ["hg", "clone", repo_parent_path, repo_clone_path], work_dir=test_root
+        )
         cmd.execute()
         assert cmd.getretcode() == 0
 
@@ -85,18 +85,15 @@ def test_strip_outgoing():
 
         with open(file_path, "a") as fp:
             fp.write("bar")
-        cmd = Command(["hg", "commit", "-m", "second"],
-                      work_dir=repo_clone_path)
+        cmd = Command(["hg", "commit", "-m", "second"], work_dir=repo_clone_path)
         cmd.execute()
         assert cmd.getretcode() == 0
 
         # time.sleep(60)
 
         # Strip the changesets.
-        repository = MercurialRepository("hgout", mock(), repo_clone_path, 'test-1',
-                                         None, None, None, None)
+        repository = MercurialRepository(
+            "hgout", mock(), repo_clone_path, "test-1", None, None, None, None
+        )
         assert repository.strip_outgoing()
         assert not repository.strip_outgoing()
-
-
-test_strip_outgoing()
