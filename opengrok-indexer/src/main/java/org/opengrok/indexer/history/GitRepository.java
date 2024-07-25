@@ -481,6 +481,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
             ObjectId objId = repository.resolve(Constants.HEAD);
             if (Objects.isNull(objId)) {
                 if (isRepositoryEmpty()) {
+                    LOGGER.log(Level.FINEST, "ignoring empty repository {}", this);
                     return;
                 }
                 throw new HistoryException("cannot resolve HEAD");
@@ -522,6 +523,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
              RevWalk walk = new RevWalk(repository)) {
 
             if (Objects.isNull(repository.resolve(Constants.HEAD)) && isRepositoryEmpty()) {
+                LOGGER.log(Level.FINEST, "ignoring empty repository {}", this);
                 return;
             }
 
