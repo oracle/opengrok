@@ -459,6 +459,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return MAX_CHANGESETS;
     }
 
+    private boolean isRepositoryEmpty() {
+        File headsFile = Paths.get(getDirectoryName(), Constants.DOT_GIT, "refs", "heads").toFile();
+        return headsFile.isDirectory() && (Objects.requireNonNull(headsFile.listFiles()).length == 0);
+    }
+
     @Override
     public void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor, Progress progress)
             throws HistoryException {
@@ -474,9 +479,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 walk.markUninteresting(walk.lookupCommit(objId));
             }
             ObjectId objId = repository.resolve(Constants.HEAD);
-            // Assuming this is a case of empty repository.
-            if (objId == null) {
-                return;
+            if (Objects.isNull(objId)) {
+                if (isRepositoryEmpty()) {
+                    return;
+                }
+                throw new HistoryException("cannot resolve HEAD");
             }
             walk.markStart(walk.parseCommit(objId));
 
@@ -514,8 +521,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
-            // Assumes this is empty repository.
-            if (Objects.isNull(repository.resolve(Constants.HEAD))) {
+            if (Objects.isNull(repository.resolve(Constants.HEAD)) && isRepositoryEmpty()) {
                 return;
             }
 
