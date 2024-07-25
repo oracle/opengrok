@@ -32,15 +32,16 @@ class MercurialRepository(Repository):
     def __init__(self, name, logger, path, project, command, env, hooks, timeout):
         super().__init__(name, logger, path, project, command, env, hooks, timeout)
 
-        self.command = self._repository_command(command, default=lambda: which('hg'))
+        self.command = self._repository_command(command, default=lambda: which("hg"))
 
         if not self.command:
             raise RepositoryException("Cannot get hg command")
 
     def get_branch(self):
         hg_command = [self.command, "branch"]
-        cmd = self.get_command(hg_command, work_dir=self.path,
-                               env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(
+            hg_command, work_dir=self.path, env_vars=self.env, logger=self.logger
+        )
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -49,12 +50,10 @@ class MercurialRepository(Repository):
             return None
         else:
             if not cmd.getoutput():
-                self.logger.error("no output from {}".
-                                  format(hg_command))
+                self.logger.error("no output from {}".format(hg_command))
                 return None
             if len(cmd.getoutput()) == 0:
-                self.logger.error("empty output from {}".
-                                  format(hg_command))
+                self.logger.error("empty output from {}".format(hg_command))
                 return None
             return cmd.getoutput()[0].strip()
 
@@ -68,8 +67,9 @@ class MercurialRepository(Repository):
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = self.get_command(hg_command, work_dir=self.path,
-                               env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(
+            hg_command, work_dir=self.path, env_vars=self.env, logger=self.logger
+        )
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -90,10 +90,11 @@ class MercurialRepository(Repository):
         # biggest index as this is likely the correct one.
         #
         hg_command.append("-r")
-        hg_command.append("max(head() and branch(\".\"))")
+        hg_command.append('max(head() and branch("."))')
 
-        cmd = self.get_command(hg_command, work_dir=self.path,
-                               env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(
+            hg_command, work_dir=self.path, env_vars=self.env, logger=self.logger
+        )
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -107,25 +108,83 @@ class MercurialRepository(Repository):
         branch = self.get_branch()
         if not branch:
             # Error logged already in get_branch().
-            raise RepositoryException('cannot get branch for repository {}'.
-                                      format(self))
+            raise RepositoryException(
+                "cannot get branch for repository {}".format(self)
+            )
 
-        hg_command = [self.command, 'incoming']
+        hg_command = [self.command, "incoming"]
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = self.get_command(hg_command, work_dir=self.path,
-                               env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(
+            hg_command, work_dir=self.path, env_vars=self.env, logger=self.logger
+        )
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         retcode = cmd.getretcode()
         if cmd.getstate() != Command.FINISHED or retcode not in [0, 1]:
             cmd.log_error("failed to perform incoming")
-            raise RepositoryException('failed to perform incoming command '
-                                      'for repository {}'.format(self))
+            raise RepositoryException(
+                "failed to perform incoming command " "for repository {}".format(self)
+            )
 
         if retcode == 0:
             return True
         else:
             return False
+
+    def strip_outgoing(self):
+        """
+        Check for outgoing changes and if found, strip them.
+        :return: True if there were any changes stripped, False otherwise.
+        """
+        #
+        # Avoid _run_command() as it complains to the log about failed command
+        # when 'hg out' returns 1 which is legitimate return value.
+        #
+        cmd = self.get_command(
+            [self.command, "out", "-q", "-b", ".", "--template={rev}\\n"],
+            work_dir=self.path,
+            env_vars=self.env,
+            logger=self.logger,
+        )
+        cmd.execute()
+        status = cmd.getretcode()
+
+        #
+        # If there are outgoing changes, 'hg out' returns 0, otherwise returns 1.
+        # If the 'hg out' command fails for some reason, it will return 255.
+        # Hence, check for positive value as bail out indication.
+        #
+        if status > 0:
+            return False
+
+        revisions = list(filter(None, cmd.getoutputstr().split("\n")))
+        if len(revisions) == 0:
+            return False
+
+        #
+        # The revision specification will produce all outgoing changesets.
+        # The 'hg strip' command will remove them all. Also, the 'strip'
+        # has become part of core Mercurial, however use the --config to
+        # enable the extension for backward compatibility.
+        #
+        self.logger.debug(
+            f"Removing outgoing changesets in repository {self}: {revisions}"
+        )
+        status, out = self._run_command(
+            [
+                self.command,
+                "--config",
+                "extensions.strip=",
+                "strip",
+                'outgoing() and branch(".")',
+            ]
+        )
+        if status != 0:
+            raise RepositoryException(
+                f"failed to strip outgoing changesets from {self}"
+            )
+
+        return True
