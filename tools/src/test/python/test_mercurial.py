@@ -47,10 +47,19 @@ def add_commit_file(file_path, repo_path, comment):
     cmd.execute()
     assert cmd.getretcode() == 0
 
-    cmd = Command(["hg", "commit", "-m", comment, file_path],
-                  work_dir=repo_path)
+    cmd = Command(
+        [
+            "hg",
+            "commit",
+            "-m",
+            comment,
+            "-u",
+            "Snufkin <snufkin@moominvalley.org>",
+            file_path,
+        ],
+        work_dir=repo_path,
+    )
     cmd.execute()
-    assert cmd.getoutputstr() is None   # TODO: DEBUG only
     assert cmd.getretcode() == 0
 
 
