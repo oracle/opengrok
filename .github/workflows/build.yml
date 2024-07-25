@@ -45,6 +45,7 @@ jobs:
       if: runner.os == 'Windows'
       run: choco install universal-ctags
     - name: Before build actions
+      shell: bash
       run: ./dev/before
     - name: Maven build
       shell: bash
