@@ -33,20 +33,7 @@ from opengrok_tools.scm.mercurial import MercurialRepository
 from opengrok_tools.utils.command import Command
 
 
-def add_commit_file(file_path, repo_path, comment):
-    """
-    :param file_path: path to the file to be created
-    :param repo_path: Mercurial repository path
-    :param comment: content and commit comment
-    """
-    with open(file_path, "w") as fp:
-        fp.write(comment)
-    assert os.path.exists(file_path)
-
-    cmd = Command(["hg", "add", file_path], work_dir=repo_path)
-    cmd.execute()
-    assert cmd.getretcode() == 0
-
+def hg_commit_file(file_path, repo_path, comment):
     cmd = Command(
         [
             "hg",
@@ -61,6 +48,23 @@ def add_commit_file(file_path, repo_path, comment):
     )
     cmd.execute()
     assert cmd.getretcode() == 0
+
+
+def hg_add_commit_file(file_path, repo_path, comment):
+    """
+    :param file_path: path to the file to be created
+    :param repo_path: Mercurial repository path
+    :param comment: content and commit comment
+    """
+    with open(file_path, "w", encoding="ascii") as fp:
+        fp.write(comment)
+    assert os.path.exists(file_path)
+
+    cmd = Command(["hg", "add", file_path], work_dir=repo_path)
+    cmd.execute()
+    assert cmd.getretcode() == 0
+
+    hg_commit_file(file_path, repo_path, comment)
 
 
 @pytest.mark.parametrize("create_file_in_parent", [True, False])
@@ -82,7 +86,7 @@ def test_strip_outgoing(create_file_in_parent):
         #
         if create_file_in_parent:
             file_path = os.path.join(repo_parent_path, file_name)
-            add_commit_file(file_path, repo_parent_path, "parent")
+            hg_add_commit_file(file_path, repo_parent_path, "parent")
 
         # Clone the repository and create couple of new changesets.
         repo_clone_path = os.path.join(test_root, "clone")
@@ -93,13 +97,11 @@ def test_strip_outgoing(create_file_in_parent):
         assert cmd.getretcode() == 0
 
         file_path = os.path.join(repo_clone_path, file_name)
-        add_commit_file(file_path, repo_clone_path, "first")
+        hg_add_commit_file(file_path, repo_clone_path, "first")
 
-        with open(file_path, "a") as fp:
+        with open(file_path, "a", encoding="ascii") as fp:
             fp.write("bar")
-        cmd = Command(["hg", "commit", "-m", "second"], work_dir=repo_clone_path)
-        cmd.execute()
-        assert cmd.getretcode() == 0
+        hg_commit_file(file_path, repo_clone_path, "second")
 
         # Strip the changesets.
         repository = MercurialRepository(
