@@ -142,8 +142,6 @@ class IndexDatabaseTest {
         IOUtils.removeRecursive(gitRepositoryRootPath);
         Files.move(gitCheckoutPath, gitRepositoryRootPath);
 
-        env.releaseIndexSearchers();
-
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(true);
@@ -177,6 +175,7 @@ class IndexDatabaseTest {
 
     @AfterEach
     void tearDownClass() throws Exception {
+        env.releaseIndexSearchers();
         repository.destroy();
     }
 
