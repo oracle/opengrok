@@ -317,6 +317,8 @@ class IndexDatabaseTest {
 
     @Test
     void testGetLastRev() throws IOException, ParseException {
+        // IndexDatabase.getDocument() searches the index, so refresh the IndexSearcher objects
+        // to get fresh results.
         env.maybeRefreshIndexSearchers();
         Document doc = IndexDatabase.getDocument(Paths.get(repository.getSourceRoot(),
                 "git", "main.c").toFile());
