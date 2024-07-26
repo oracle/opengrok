@@ -1926,6 +1926,7 @@ public final class RuntimeEnvironment {
         for (SearcherManager sm : searcherManagerMap.values()) {
             sm.close();
         }
+        searcherManagerMap.clear();
     }
 
     /**
