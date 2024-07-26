@@ -316,6 +316,7 @@ class IndexDatabaseTest {
 
     @Test
     void testGetLastRev() throws IOException, ParseException {
+        env.maybeRefreshIndexSearchers();
         Document doc = IndexDatabase.getDocument(Paths.get(repository.getSourceRoot(),
                 "git", "main.c").toFile());
         assertNotNull(doc);
