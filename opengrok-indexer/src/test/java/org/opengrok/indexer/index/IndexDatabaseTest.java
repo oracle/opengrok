@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,6 +51,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -320,7 +320,7 @@ class IndexDatabaseTest {
         assertEquals("aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a", doc.get(QueryBuilder.LASTREV));
     }
 
-    static void changeFileAndCommit(Git git, File file, String comment) throws Exception {
+    static RevCommit changeFileAndCommit(Git git, File file, String comment) throws Exception {
         String authorName = "Foo Bar";
         String authorEmail = "foobar@example.com";
 
@@ -328,11 +328,11 @@ class IndexDatabaseTest {
             fos.write(comment.getBytes(StandardCharsets.UTF_8));
         }
 
-        commitFile(git, comment, authorName, authorEmail);
+        return commitFile(git, comment, authorName, authorEmail);
     }
 
-    private static void commitFile(Git git, String comment, String authorName, String authorEmail) throws GitAPIException {
-        git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
+    private static RevCommit commitFile(Git git, String comment, String authorName, String authorEmail) throws GitAPIException {
+        return git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
     }
 
     private void addFileAndCommit(Git git, String newFileName, File repositoryRoot, String message) throws Exception {
@@ -1091,31 +1091,50 @@ class IndexDatabaseTest {
      * This test simulates this case.
      * <p>
      * The strategy of this test is as follows:
-     * <ul>
-     *     <li>TODO</li>
-     * </ul>
+     * <ol>
+     *     <li>initialize parent repository</li>
+     *     <li>change+add file <code>foo.txt</code> in parent repository, commit</li>
+     *     <li>change+add file <code>bar.txt</code> in parent repository, commit</li>
+     *     <li>clone parent repository</li>
+     *     <li>index the clone</li>
+     *     <li>change <code>foo.txt</code> in parent repository, commit</li>
+     *     <li>change <code>bar.txt</code> in parent repository, commit</li>
+     *     <li>revert the change done to foo.txt in the last commit in parent repository</li>
+     *     <li>pull the changes to the clone</li>
+     *     <li>index the clone (incremental)</li>
+     * </ol>
      * </p>
+     * Before the fix, the last reindex resulted in RuntimeException caused by the addition of the <code>foo.txt</code>
+     * file with the time stamp of the file before the last changes. This is because history based reindex
+     * extracts the list of files from the changesets, however Git does not update the file if the changes
+     * were nullified.
      */
     @Test
-    void testAnullifiedChanges() throws Exception {
+    void testNullifiedChanges() throws Exception {
         File parentRepositoryRoot = new File(env.getSourceRootPath(), "gitNoChangeParent");
         assertTrue(parentRepositoryRoot.mkdir());
-        final String fooName = "foo.txt";
-        File fooFile = new File(parentRepositoryRoot, fooName);
-        if (!fooFile.createNewFile()) {
-            throw new IOException("Could not create file " + fooFile);
-        }
 
         final String repoName = "gitNoChange";
         List<String> projectList = List.of(File.separator + repoName);
-        final String initialData = "initial";
         try (Git gitParent = Git.init().setDirectory(parentRepositoryRoot).call()) {
+            // Create the files in the parent repository and commit the initial content.
+            final String fooName = "foo.txt";
+            File fooFile = new File(parentRepositoryRoot, fooName);
+            if (!fooFile.createNewFile()) {
+                throw new IOException("Could not create file " + fooFile);
+            }
             gitParent.add().addFilepattern(fooName).call();
-            changeFileAndCommit(gitParent, fooFile, initialData);
+            changeFileAndCommit(gitParent, fooFile, "first foo");
 
-            File barFile = new File(parentRepositoryRoot, "bar.txt");
+            final String barName = "bar.txt";
+            File barFile = new File(parentRepositoryRoot, barName);
+            if (!barFile.createNewFile()) {
+                throw new IOException("Could not create file " + barFile);
+            }
+            gitParent.add().addFilepattern(barName).call();
             changeFileAndCommit(gitParent, barFile, "first bar");
 
+            // Clone the repository at this point so that subsequent changes can be pulled later on.
             final String cloneUrl = parentRepositoryRoot.toURI().toString();
             Path repositoryRootPath = Path.of(env.getSourceRootPath(), repoName);
             try (Git gitClone = Git.cloneRepository()
@@ -1123,45 +1142,55 @@ class IndexDatabaseTest {
                     .setDirectory(repositoryRootPath.toFile())
                     .call()) {
 
-                // Perform initial reindex.
+                // Perform initial index. This is important so that history cache for the repository
+                // is created. It contains ID of the last indexed changeset which so that it can be
+                // used during the final reindex.
                 indexer.prepareIndexer(
                         env, true, true,
                         null, null);
-                // TODO: assert the project/repo was discovered
-                // TODO: per-project index ?
                 env.setRepositories(new ArrayList<>(HistoryGuru.getInstance().getRepositories()));
                 env.generateProjectRepositoriesMap();
+                Project project = Project.getByName(repoName);
+                assertNotNull(project);
+                List<RepositoryInfo> repositoryInfos = env.getProjectRepositoriesMap().get(project);
+                assertEquals(1, repositoryInfos.size());
+                assertEquals("git", repositoryInfos.get(0).getType());
                 indexer.doIndexerExecution(projectList, null);
 
-                // Change the parent repository.
-                final String data = "new";
-
+                // Change the parent repository so that it contains nullified change to the foo.txt file.
+                final String data = "change foo";
                 gitParent.add().addFilepattern(fooName).call();
-                changeFileAndCommit(gitParent, fooFile, data);
+                RevCommit commit = changeFileAndCommit(gitParent, fooFile, data);
+                // Also throw another file into the mix so that it resembles reality a bit more.
+                changeFileAndCommit(gitParent, barFile, "change bar");
+                gitParent.revert().include(commit).call();
 
-                changeFileAndCommit(gitParent, barFile, "bar");
-
-                // TODO: gitParent.revert(). ... call();
-                try (RandomAccessFile raf = new RandomAccessFile(fooFile, "rw")) {
-                    raf.setLength(initialData.length());
-                }
-                commitFile(gitParent, "revert changes", "foo", "bar");
-
+                // Bring the changes to the repository to be indexed. Again, done for better simulation.
                 gitClone.pull().call();
             }
         }
 
-        // TODO: verify history based reindex was used
+        // Final reindex. This should discover the changes done to the clone and index them.
         indexer.prepareIndexer(
                 env, true, true,
                 null, null);
         //
         // Use IndexDatabase instead of indexer.doIndexerExecution(projectList, null) because
-        // it will detect the indexing failure via RuntimeException.
+        // it will detect the indexing failure via RuntimeException. Also, it will be possible
+        // to determine via mocking whether history based reindex was used.
         //
+        IndexDownArgsFactory factory = new IndexDownArgsFactory();
+        IndexDownArgsFactory spyFactory = spy(factory);
+        IndexDownArgs args = new IndexDownArgs();
+        // In this case the getIndexDownArgs() should be called from update() just once so this will suffice.
+        when(spyFactory.getIndexDownArgs()).thenReturn(args);
         Project project = env.getProjects().get(repoName);
         assertNotNull(project);
-        IndexDatabase idb = new IndexDatabase(project);
+        IndexDatabase idbOrig = new IndexDatabase(project, spyFactory);
+        assertNotNull(idbOrig);
+        IndexDatabase idb = spy(idbOrig);
         idb.update();
+        // Verify history based reindex was used.
+        checkIndexDown(true, idb);
     }
 }
