@@ -1030,6 +1030,7 @@ class IndexDatabaseTest {
         // cleanup
         gitProject.setHistoryBasedReindex(projectUseAnnotationOrig);
         env.setDataRoot(dataRootOrig);
+        env.releaseIndexSearchers();
         IOUtils.removeRecursive(dataRoot);
     }
 
