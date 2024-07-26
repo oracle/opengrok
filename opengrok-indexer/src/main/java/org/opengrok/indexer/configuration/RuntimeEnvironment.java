@@ -1921,6 +1921,13 @@ public final class RuntimeEnvironment {
         stat.report(LOGGER, "Done refreshing searcher managers");
     }
 
+    @VisibleForTesting
+    public void releaseIndexSearchers() throws IOException {
+        for (SearcherManager sm : searcherManagerMap.values()) {
+            sm.close();
+        }
+    }
+
     /**
      * Get IndexSearcher for given project or global IndexSearcher.
      * Wrapper of {@link #getSuperIndexSearcher(String)}. Make sure to release the returned
