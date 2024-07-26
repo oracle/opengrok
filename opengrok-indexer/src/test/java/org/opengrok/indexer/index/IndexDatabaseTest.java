@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -326,6 +328,10 @@ class IndexDatabaseTest {
             fos.write(comment.getBytes(StandardCharsets.UTF_8));
         }
 
+        commitFile(git, comment, authorName, authorEmail);
+    }
+
+    private static void commitFile(Git git, String comment, String authorName, String authorEmail) throws GitAPIException {
         git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
     }
 
@@ -338,7 +344,7 @@ class IndexDatabaseTest {
             fos.write("foo bar foo bar foo bar".getBytes(StandardCharsets.UTF_8));
         }
         git.add().addFilepattern(newFileName).call();
-        git.commit().setMessage(message).setAuthor("foo bar", "foobar@example.com").setAll(true).call();
+        commitFile(git, message, "foo bar", "foobar@example.com");
     }
 
     private void addMergeCommit(Git git, File repositoryRoot) throws Exception {
@@ -1075,5 +1081,87 @@ class IndexDatabaseTest {
         File otherFile = new File(repoRoot, "main.c");
         assertFalse(otherFile.exists());
         assertFalse(historyGuru.hasHistoryCacheForFile(otherFile));
+    }
+
+    /**
+     * When incrementally indexing across Git changesets which modify the same file however the outcome
+     * is no change to the file (the changes nullify each other), IndexDatabase needs to filter these files
+     * out because Git does it as well. Otherwise, the indexer would attempt to add the document with
+     * time stamp of pre-existing document which would make indexing of the related project fail.
+     * This test simulates this case.
+     * <p>
+     * The strategy of this test is as follows:
+     * <ul>
+     *     <li>TODO</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    void testAnullifiedChanges() throws Exception {
+        File parentRepositoryRoot = new File(env.getSourceRootPath(), "gitNoChangeParent");
+        assertTrue(parentRepositoryRoot.mkdir());
+        final String fooName = "foo.txt";
+        File fooFile = new File(parentRepositoryRoot, fooName);
+        if (!fooFile.createNewFile()) {
+            throw new IOException("Could not create file " + fooFile);
+        }
+
+        final String repoName = "gitNoChange";
+        List<String> projectList = List.of(File.separator + repoName);
+        final String initialData = "initial";
+        try (Git gitParent = Git.init().setDirectory(parentRepositoryRoot).call()) {
+            gitParent.add().addFilepattern(fooName).call();
+            changeFileAndCommit(gitParent, fooFile, initialData);
+
+            File barFile = new File(parentRepositoryRoot, "bar.txt");
+            changeFileAndCommit(gitParent, barFile, "first bar");
+
+            final String cloneUrl = parentRepositoryRoot.toURI().toString();
+            Path repositoryRootPath = Path.of(env.getSourceRootPath(), repoName);
+            try (Git gitClone = Git.cloneRepository()
+                    .setURI(cloneUrl)
+                    .setDirectory(repositoryRootPath.toFile())
+                    .call()) {
+
+                // Perform initial reindex.
+                indexer.prepareIndexer(
+                        env, true, true,
+                        null, null);
+                // TODO: assert the project/repo was discovered
+                // TODO: per-project index ?
+                env.setRepositories(new ArrayList<>(HistoryGuru.getInstance().getRepositories()));
+                env.generateProjectRepositoriesMap();
+                indexer.doIndexerExecution(projectList, null);
+
+                // Change the parent repository.
+                final String data = "new";
+
+                gitParent.add().addFilepattern(fooName).call();
+                changeFileAndCommit(gitParent, fooFile, data);
+
+                changeFileAndCommit(gitParent, barFile, "bar");
+
+                // TODO: gitParent.revert(). ... call();
+                try (RandomAccessFile raf = new RandomAccessFile(fooFile, "rw")) {
+                    raf.setLength(initialData.length());
+                }
+                commitFile(gitParent, "revert changes", "foo", "bar");
+
+                gitClone.pull().call();
+            }
+        }
+
+        // TODO: verify history based reindex was used
+        indexer.prepareIndexer(
+                env, true, true,
+                null, null);
+        //
+        // Use IndexDatabase instead of indexer.doIndexerExecution(projectList, null) because
+        // it will detect the indexing failure via RuntimeException.
+        //
+        Project project = env.getProjects().get(repoName);
+        assertNotNull(project);
+        IndexDatabase idb = new IndexDatabase(project);
+        idb.update();
     }
 }
