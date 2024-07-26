@@ -43,7 +43,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 
@@ -1116,10 +1118,12 @@ class IndexDatabaseTest {
 
         env.setHistoryBasedReindex(true);
 
+        final String barName = "bar.txt";
         final String repoName = "gitNoChange";
+        Path repositoryRootPath = Path.of(env.getSourceRootPath(), repoName);
         List<String> projectList = List.of(File.separator + repoName);
         try (Git gitParent = Git.init().setDirectory(parentRepositoryRoot).call()) {
-            // Create the files in the parent repository and commit the initial content.
+            // Create initial commits for the files in the parent repository.
             final String fooName = "foo.txt";
             File fooFile = new File(parentRepositoryRoot, fooName);
             if (!fooFile.createNewFile()) {
@@ -1128,7 +1132,6 @@ class IndexDatabaseTest {
             gitParent.add().addFilepattern(fooName).call();
             changeFileAndCommit(gitParent, fooFile, "first foo");
 
-            final String barName = "bar.txt";
             File barFile = new File(parentRepositoryRoot, barName);
             if (!barFile.createNewFile()) {
                 throw new IOException("Could not create file " + barFile);
@@ -1138,7 +1141,6 @@ class IndexDatabaseTest {
 
             // Clone the repository at this point so that subsequent changes can be pulled later on.
             final String cloneUrl = parentRepositoryRoot.toURI().toString();
-            Path repositoryRootPath = Path.of(env.getSourceRootPath(), repoName);
             try (Git gitClone = Git.cloneRepository()
                     .setURI(cloneUrl)
                     .setDirectory(repositoryRootPath.toFile())
@@ -1163,8 +1165,11 @@ class IndexDatabaseTest {
                 final String data = "change foo";
                 gitParent.add().addFilepattern(fooName).call();
                 RevCommit commit = changeFileAndCommit(gitParent, fooFile, data);
+
                 // Also throw another file into the mix so that it resembles reality a bit more.
                 changeFileAndCommit(gitParent, barFile, "change bar");
+
+                // Revert the changes done to foo.txt so that the changes got nullified for the subsequent pull.
                 gitParent.revert().include(commit).call();
 
                 // Bring the changes to the repository to be indexed. Again, done for better simulation.
@@ -1194,6 +1199,19 @@ class IndexDatabaseTest {
         idb.update();
         // Verify history based reindex was used.
         checkIndexDown(true, idb);
-        // TODO: check that the document for bar.txt was updated
+
+        // Check that the document for bar.txt was updated. Serves as a smoke test.
+        File barFile = new File(repositoryRootPath.toString(), barName);
+        assertTrue(barFile.exists());
+        // IndexDatabase.getDocument() performs index search to retrieve the document, so the corresponding
+        // IndexSearcher object has to be bumped in order to get fresh document.
+        env.maybeRefreshIndexSearchers();
+        Document barDoc = IndexDatabase.getDocument(barFile);
+        assertNotNull(barDoc);
+        IndexableField field = barDoc.getField(QueryBuilder.DATE);
+        String docDate = field.stringValue();
+        // Need to use the same resolution as in AnalyzerGuru#populateDocument().
+        String fileDate = DateTools.timeToString(barFile.lastModified(), DateTools.Resolution.MILLISECOND);
+        assertEquals(fileDate, docDate);
     }
 }

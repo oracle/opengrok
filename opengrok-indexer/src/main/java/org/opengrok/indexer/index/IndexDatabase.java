@@ -977,6 +977,7 @@ public class IndexDatabase {
             IndexableField field = doc.getField(QueryBuilder.DATE);
             try {
                 Date docDate = DateTools.stringToDate(field.stringValue());
+                // Assumes millisecond precision.
                 long lastModified = file.lastModified();
                 if (lastModified <= docDate.getTime()) {
                     return false;
