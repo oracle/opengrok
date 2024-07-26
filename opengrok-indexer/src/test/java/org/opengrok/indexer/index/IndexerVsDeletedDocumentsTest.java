@@ -199,7 +199,8 @@ class IndexerVsDeletedDocumentsTest {
 
     @AfterEach
     void cleanup() throws IOException {
-        // Release any references to index files.
+        // Release any references to index files so that it is actually possible to
+        // remove the index files (under data root) on Windows.
         env.releaseIndexSearchers();
         IOUtils.removeRecursive(Path.of(env.getDataRootPath()));
         // FileUtils.deleteDirectory() avoids AccessDeniedException on Windows.
