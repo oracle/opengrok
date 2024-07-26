@@ -1114,6 +1114,8 @@ class IndexDatabaseTest {
         File parentRepositoryRoot = new File(env.getSourceRootPath(), "gitNoChangeParent");
         assertTrue(parentRepositoryRoot.mkdir());
 
+        env.setHistoryBasedReindex(true);
+
         final String repoName = "gitNoChange";
         List<String> projectList = List.of(File.separator + repoName);
         try (Git gitParent = Git.init().setDirectory(parentRepositoryRoot).call()) {
@@ -1192,5 +1194,6 @@ class IndexDatabaseTest {
         idb.update();
         // Verify history based reindex was used.
         checkIndexDown(true, idb);
+        // TODO: check that the document for bar.txt was updated
     }
 }
