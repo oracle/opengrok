@@ -64,7 +64,7 @@ RUN apt-get update && \
 # hadolint ignore=DL3008,DL3059
 RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
         echo "aarch64: do not install helix-p4d."; else \
-        apt-get install --no-install-recommends -y helix-p4d; fi
+        apt-get install --no-install-recommends -y helix-p4d || echo "Failed to install Perforce"; fi
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
