@@ -866,6 +866,11 @@ class FileHistoryCacheTest {
         assertTrue(repositoryRoot.mkdir());
         Git.init().setDirectory(repositoryRoot).call();
 
+        // Create untracked file.
+        Path untrackedFile = repositoryRoot.toPath().resolve("untrackedFile");
+        Files.createFile(untrackedFile);
+        assertTrue(untrackedFile.toFile().exists());
+
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(repository);
         History history = repository.getHistory(repositoryRoot);
