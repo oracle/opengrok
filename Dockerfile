@@ -77,10 +77,6 @@ RUN apt-get install --no-install-recommends -y pkg-config automake build-essenti
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Update the Python tooling in order to successfully install the opengrok-tools package.
-# hadolint ignore=DL3013
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools
-
 # prepare OpenGrok binaries and directories
 # hadolint ignore=DL3010
 COPY --from=build opengrok.tar.gz /opengrok.tar.gz
