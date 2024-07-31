@@ -48,3 +48,6 @@ git switch -c "release_${VERSION}"
 ./mvnw versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
 git commit pom.xml '**/pom.xml' -m "$VERSION"
 git push
+echo
+echo "Create PR with the changes. Once it is merged in, create new release."
+echo
