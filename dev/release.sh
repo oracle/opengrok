@@ -1,9 +1,10 @@
 #!/bin/bash
 #
-# Trigger new release creation on Github.
-# Assumes working Maven + Git.
-#
+# Query current release or trigger new release creation on Github.
+# For the latter, it merely kick-starts the creation of new Release on Github,
 # see https://github.com/oracle/opengrok/wiki/Release-process
+#
+# Assumes working Maven + Git.
 #
 
 set -e
@@ -43,8 +44,7 @@ if [[ $ver == $VERSION ]]; then
 fi
 
 git pull --ff-only
+git switch -c "release_${VERSION}"
 ./mvnw versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
 git commit pom.xml '**/pom.xml' -m "$VERSION"
 git push
-git tag "$VERSION"
-git push origin tag "$VERSION"
