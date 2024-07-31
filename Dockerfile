@@ -43,6 +43,8 @@ RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn
 
 FROM tomcat:10.1.26-jdk17
 LABEL maintainer="https://github.com/oracle/opengrok"
+LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
+LABEL org.opencontainers.image.description="OpenGrok code search"
 
 # Add Perforce apt source.
 # hadolint ignore=DL3008,DL3009
