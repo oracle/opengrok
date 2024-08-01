@@ -422,13 +422,13 @@ public class MercurialRepositoryTest {
         assertNull(annotation);
     }
 
-    private static Stream<Pair<String, List<String>>> provideParametersForNegativeAnnotationTest() {
+    private static Stream<Pair<String, List<String>>> provideParametersForPositiveAnnotationTest() {
         return Stream.of(Pair.of("8:6a8c423f5624", List.of("7", "8")),
                 Pair.of("7:db1394c05268", List.of("7")));
     }
 
     @ParameterizedTest
-    @MethodSource("provideParametersForNegativeAnnotationTest")
+    @MethodSource("provideParametersForPositiveAnnotationTest")
     void testAnnotationPositive(Pair<String, List<String>> pair) throws Exception {
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
