@@ -7,6 +7,8 @@
 #
 
 echo "Getting upload URL for $OPENGROK_TAG"
-upload_url=$( curl -s https://api.github.com/repos/oracle/opengrok/releases/$OPENGROK_TAG | jq -r .upload_url )
-echo "Got $upload_url"
-echo "upload_url=$upload_url" >> $GITHUB_OUTPUT"
+upload_url=$( curl -s https://api.github.com/repos/oracle/opengrok/releases/tags/$OPENGROK_TAG | jq -r .upload_url )
+echo "Got '$upload_url'"
+if [[ -n $GITHUB_OUTPUT ]]; then
+  echo "upload_url=$upload_url" >> $GITHUB_OUTPUT
+fi
