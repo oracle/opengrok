@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
@@ -458,6 +459,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         return MAX_CHANGESETS;
     }
 
+    private boolean isRepositoryEmpty() {
+        File headsFile = Paths.get(getDirectoryName(), Constants.DOT_GIT, "refs", "heads").toFile();
+        return headsFile.isDirectory() && (Objects.requireNonNull(headsFile.listFiles()).length == 0);
+    }
+
     @Override
     public void accept(String sinceRevision, Consumer<BoundaryChangesets.IdWithProgress> visitor, Progress progress)
             throws HistoryException {
@@ -473,7 +479,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
                 walk.markUninteresting(walk.lookupCommit(objId));
             }
             ObjectId objId = repository.resolve(Constants.HEAD);
-            if (objId == null) {
+            if (Objects.isNull(objId)) {
+                if (isRepositoryEmpty()) {
+                    LOGGER.log(Level.FINEST, "ignoring empty repository {}", this);
+                    return;
+                }
                 throw new HistoryException("cannot resolve HEAD");
             }
             walk.markStart(walk.parseCommit(objId));
@@ -512,6 +522,11 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
+            if (Objects.isNull(repository.resolve(Constants.HEAD)) && isRepositoryEmpty()) {
+                LOGGER.log(Level.FINEST, "ignoring empty repository {}", this);
+                return;
+            }
+
             setupWalk(file, sinceRevision, tillRevision, repository, walk);
 
             int num = 0;
@@ -544,17 +559,18 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
     }
 
     private void setupWalk(File file, String sinceRevision, String tillRevision, Repository repository, RevWalk walk)
-            throws IOException, ForbiddenSymlinkException {
+            throws IOException, ForbiddenSymlinkException, HistoryException {
 
         if (sinceRevision != null) {
             walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
         }
 
-        if (tillRevision != null) {
-            walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
-        } else {
-            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+        final String revStr = Objects.requireNonNullElse(tillRevision, Constants.HEAD);
+        ObjectId objectId = repository.resolve(revStr);
+        if (Objects.isNull(objectId)) {
+            throw new HistoryException("failed to lookup revision " + revStr);
         }
+        walk.markStart(walk.lookupCommit(objectId));
 
         String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
         if (!getDirectoryNameRelative().equals(relativePath)) {
