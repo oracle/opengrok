@@ -28,11 +28,11 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.13.13</version>
+        <version>1.13.14</version>
     </parent>
 
     <artifactId>opengrok-web</artifactId>
-    <version>1.13.13</version>
+    <version>1.13.14</version>
     <packaging>war</packaging>
 
     <name>OpenGrok Web</name>
