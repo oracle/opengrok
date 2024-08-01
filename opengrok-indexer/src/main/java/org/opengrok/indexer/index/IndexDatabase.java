@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -960,6 +961,38 @@ public class IndexDatabase {
     }
 
     /**
+     * @param file file under source root
+     * @return false if the document date is newer or equal to the last modified time stamp of the file, otherwise true
+     */
+    private static boolean isStrictlyNewerThanDocument(File file) {
+        if (!file.exists()) {
+            // Case of delete/renamed file.
+            return true;
+        }
+        try {
+            Document doc = IndexDatabase.getDocument(file);
+            if (Objects.isNull(doc)) {
+                return true;
+            }
+            IndexableField field = doc.getField(QueryBuilder.DATE);
+            try {
+                Date docDate = DateTools.stringToDate(field.stringValue());
+                // Assumes millisecond precision.
+                long lastModified = file.lastModified();
+                if (lastModified <= docDate.getTime()) {
+                    return false;
+                }
+            } catch (java.text.ParseException e) {
+                return true;
+            }
+        } catch (ParseException | IOException e) {
+            LOGGER.log(Level.FINEST, "cannot get document for ''{0}''", file);
+        }
+
+        return true;
+    }
+
+    /**
      * Executes the first, serial stage of indexing, by going through set of files assembled from history.
      * @param sourceRoot path to the source root (same as {@link RuntimeEnvironment#getSourceRootPath()})
      * @param args {@link IndexDownArgs} instance where the resulting files to be indexed will be stored
@@ -982,8 +1015,18 @@ public class IndexDatabase {
                     return;
                 }
                 File file = new File(sourceRoot, path.toString());
-                processFileHistoryBased(args, file, path.toString());
                 progress.increment();
+                //
+                // If the changes to the file were nullified across a sequence of changesets, the repository
+                // might not have updated the file. The history collector is not that smart however,
+                // so handle such situation here.
+                //
+                if (!isStrictlyNewerThanDocument(file)) {
+                    LOGGER.log(Level.FINEST, "file ''{0}'' is not newer than its document, skipping",
+                            new Object[]{file});
+                    continue;
+                }
+                processFileHistoryBased(args, file, path.toString());
             }
         }
     }
