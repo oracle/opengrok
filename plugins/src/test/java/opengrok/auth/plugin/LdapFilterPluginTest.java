@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -121,7 +121,7 @@ class LdapFilterPluginTest {
     private Map<String, Object> getParamsMap() {
         Map<String, Object> params = new TreeMap<>();
         params.put(AbstractLdapPlugin.CONFIGURATION_PARAM,
-                Objects.requireNonNull(getClass().getResource("config.xml")).getFile());
+                Objects.requireNonNull(getClass().getResource("config.yml")).getFile());
 
         return params;
     }
