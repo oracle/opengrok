@@ -18,15 +18,17 @@
  */
 
 /*
- * Copyright (c) 2009, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -43,11 +45,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
@@ -255,7 +260,7 @@ public class MercurialRepositoryTest {
      * Test that it is possible to get contents of multiple revisions of a file.
      */
     @Test
-    void testgetHistoryGetForAll() throws Exception {
+    void testGetHistoryGetForAll() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
 
         for (String rev : REVISIONS_novel) {
@@ -405,5 +410,35 @@ public class MercurialRepositoryTest {
 
         // Cleanup.
         env.setMergeCommitsEnabled(isMergeCommitsEnabledOrig);
+    }
+
+    @Test
+    void testAnnotationNegative() throws Exception {
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        File file = new File(repositoryRoot, "nonexistent");
+        assertFalse(file.exists());
+        Annotation annotation = hgRepo.annotate(file, null);
+        assertNull(annotation);
+    }
+
+    private static Stream<Pair<String, List<String>>> provideParametersForPositiveAnnotationTest() {
+        return Stream.of(Pair.of("8:6a8c423f5624", List.of("7", "8")),
+                Pair.of("7:db1394c05268", List.of("7")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideParametersForPositiveAnnotationTest")
+    void testAnnotationPositive(Pair<String, List<String>> pair) throws Exception {
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        File file = new File(repositoryRoot, "novel.txt");
+        assertTrue(file.exists());
+        // The annotate() method calls uses HistoryGuru's getHistory() method which requires the RepositoryLookup
+        // to be initialized. Do so via setRepositories().
+        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
+        Annotation annotation = hgRepo.annotate(file, pair.getKey());
+        assertNotNull(annotation);
+        List<String> revisions = new ArrayList<>(annotation.getRevisions());
+        assertEquals(pair.getValue(), revisions);
     }
 }

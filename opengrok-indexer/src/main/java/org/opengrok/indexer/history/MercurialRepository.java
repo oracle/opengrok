@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -457,6 +458,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
      * @throws java.io.IOException if I/O exception occurred
      */
     @Override
+    @Nullable
     public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -483,6 +485,11 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         // needed later to get user string for particular revision.
         try {
             History hist = HistoryGuru.getInstance().getHistory(file, false);
+            if (Objects.isNull(hist)) {
+                LOGGER.log(Level.SEVERE,
+                        "Error: cannot get history for file ''{0}''", file);
+                return null;
+            }
             for (HistoryEntry e : hist.getHistoryEntries()) {
                 // Chop out the colon and all hexadecimal what follows.
                 // This is because the whole changeset identification is
@@ -492,7 +499,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
             }
         } catch (HistoryException he) {
             LOGGER.log(Level.SEVERE,
-                    "Error: cannot get history for file {0}", file);
+                    "Error: cannot get history for file ''{0}''", file);
             return null;
         }
 
