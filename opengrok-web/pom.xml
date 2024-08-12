@@ -96,6 +96,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
         </dependency>
+        <!-- needed for the authorization plugins' configuration -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
