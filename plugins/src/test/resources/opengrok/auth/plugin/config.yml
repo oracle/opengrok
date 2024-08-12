@@ -1,0 +1,5 @@
+servers:
+  - url: "ldap://example.com"
+    connectTimeout: 10
+interval: 100
+searchBase: dc=example,dc=com

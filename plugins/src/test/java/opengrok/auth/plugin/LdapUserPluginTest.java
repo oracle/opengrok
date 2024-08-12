@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -73,7 +73,7 @@ class LdapUserPluginTest {
     private Map<String, Object> getParamsMap() {
         Map<String, Object> params = new TreeMap<>();
         params.put(AbstractLdapPlugin.CONFIGURATION_PARAM,
-                getClass().getResource("config.xml").getFile());
+                getClass().getResource("config.yml").getFile());
 
         return params;
     }

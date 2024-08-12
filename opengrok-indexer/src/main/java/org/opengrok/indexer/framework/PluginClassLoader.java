@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.framework;
@@ -96,7 +96,7 @@ public class PluginClassLoader extends ClassLoader {
                     try (InputStream is = jar.getInputStream(entry)) {
                         byte[] bytes = loadBytes(is);
                         Class<?> c = defineClass(classname, bytes, 0, bytes.length);
-                        LOGGER.log(Level.FINE, "Class \"{0}\" found in file \"{1}\"",
+                        LOGGER.log(Level.FINE, "Class \"{0}\" found in file ''{1}''",
                                 new Object[]{
                                         classname,
                                         f.getAbsolutePath()
@@ -122,7 +122,7 @@ public class PluginClassLoader extends ClassLoader {
                 byte[] bytes = loadBytes(in);
 
                 Class<?> c = defineClass(classname, bytes, 0, bytes.length);
-                LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
+                LOGGER.log(Level.FINEST, "Class \"{0}\" found in file ''{1}''",
                         new Object[]{
                                 classname,
                                 f.getAbsolutePath()
@@ -154,8 +154,7 @@ public class PluginClassLoader extends ClassLoader {
     }
 
     private void checkClassname(String name) throws SecurityException {
-        if (name.startsWith("org.opengrok.")
-                && !checkWhiteList(name)) {
+        if (name.startsWith("org.opengrok.") && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "
                     + Arrays.toString(CLASS_WHITELIST));

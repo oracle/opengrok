@@ -1,0 +1,13 @@
+servers:
+ - url: "ldap://foo.example.com"
+   connectTimeout: 5000
+ - url: "ldap://bar.example.com"
+interval: 900000
+searchBase: dc=example,dc=com
+webHooks:
+ fail:
+   uri: "http://localhost:8080/source/api/v1/messages"
+   content: '{ "tags": [ "main" ], "messageLevel": "error", "text": "LDAP failed", "duration": "PT1M" }'
+searchTimeout: 500
+connectTimeout: 5000
+countLimit: 100
