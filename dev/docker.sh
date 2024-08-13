@@ -61,6 +61,8 @@ echo "Running the image in container"
 docker run -d $IMAGE
 docker ps -a
 
+env
+
 # This can only work on home repository since it needs encrypted variables.
 if [[ "$GITHUB_EVENT_TYPE" == "pull_request" ]]; then
 	echo "Not pushing Docker image for pull requests"
