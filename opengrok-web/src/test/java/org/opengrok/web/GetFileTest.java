@@ -53,6 +53,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Provides set of functional tests for the {@link GetFile} class.
+ */
 class GetFileTest {
     private static Path sourceRoot;
 
