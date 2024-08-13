@@ -129,7 +129,7 @@ class GetFileTest {
         getFileOrig.init(config);
         GetFile getFile = spy(getFileOrig);
         when(config.getServletContext()).thenReturn(mock(ServletContext.class));
-        when(getFile.getServletContext().getMimeType(anyString())).thenReturn("text/css");
+        when(getFile.getServletContext().getMimeType(anyString())).thenReturn("text/plain");
         final String relativePath = env.getPathRelativeToSourceRoot(sourceFile.toFile());
         HttpServletRequest request = new DummyHttpServletRequest() {
             @Override
