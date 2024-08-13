@@ -69,6 +69,10 @@ public class GetFile extends HttpServlet {
         try {
             if (revision != null) {
                 in = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), revision);
+                if (in == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
             } else {
                 long flast = cfg.getLastModified();
                 if (request.getDateHeader("If-Modified-Since") >= flast) {

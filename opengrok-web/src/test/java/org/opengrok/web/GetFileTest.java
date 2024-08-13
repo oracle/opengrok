@@ -23,31 +23,50 @@
 
 package org.opengrok.web;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class GetFileTest {
     private static Path sourceRoot;
 
+    private static Path sourceFile;
+    private final static String fileContent = "int main();";
+
+    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
     @BeforeAll
     public static void setUpClass() throws IOException {
         sourceRoot = Files.createTempDirectory("tmpDirPrefix");
-        // TODO: create a file
-        RuntimeEnvironment.getInstance().setSourceRoot(sourceRoot.toString());
+        sourceFile = Files.createFile(Path.of(sourceRoot.toString(), "foo.c"));
+        Files.writeString(sourceFile, fileContent, StandardCharsets.UTF_8);
+        env.setSourceRoot(sourceRoot.toString());
     }
 
     @AfterAll
@@ -65,9 +84,43 @@ class GetFileTest {
                 return relativePath;
             }
         };
-        assertFalse(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath).toFile().exists());
+        assertFalse(Path.of(env.getSourceRootPath(), relativePath).toFile().exists());
         HttpServletResponse response = mock(HttpServletResponse.class);
         getFile.service(request, response);
         verify(response).sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    @Test
+    void testGetFileWrite() throws Exception {
+        GetFile getFileOrig = new GetFile();
+        ServletConfig config = mock(ServletConfig.class);
+        getFileOrig.init(config);
+        GetFile getFile = spy(getFileOrig);
+        when(config.getServletContext()).thenReturn(mock(ServletContext.class));
+        when(getFile.getServletContext().getMimeType(anyString())).thenReturn("text/css");
+        final String relativePath = env.getPathRelativeToSourceRoot(sourceFile.toFile());
+        HttpServletRequest request = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return relativePath;
+            }
+
+            @Override
+            public String getServletPath() {
+                return "download";
+            }
+
+            @Override
+            public long getDateHeader(String s) {
+                return 1;
+            }
+        };
+        assertTrue(Path.of(env.getSourceRootPath(), relativePath).toFile().exists());
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        getFile.service(request, response);
+        verify(outputStream).write(ArgumentMatchers.isNotNull(), eq(0), eq(fileContent.length()));
+        verify(outputStream).close();
     }
 }
