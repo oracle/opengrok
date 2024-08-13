@@ -292,7 +292,8 @@ public class LdapServer implements Serializable {
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this);
                 errorTimestamp = 0;
             } catch (NamingException ex) {
-                LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
+                LOGGER.log(Level.WARNING,
+                        String.format("LDAP server %s is not responding", env.get(Context.PROVIDER_URL)), ex);
                 errorTimestamp = System.currentTimeMillis();
                 close();
                 ctx = null;
