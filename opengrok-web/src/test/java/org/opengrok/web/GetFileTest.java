@@ -139,7 +139,7 @@ class GetFileTest {
 
             @Override
             public String getServletPath() {
-                return "download";
+                return Prefix.DOWNLOAD_P.toString();
             }
 
             @Override
