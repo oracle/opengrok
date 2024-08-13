@@ -30,6 +30,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
@@ -40,6 +42,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -122,8 +125,13 @@ class GetFileTest {
         verify(response).sendRedirect(contextPath + prefix + "/");
     }
 
-    @Test
-    void testGetFileWrite() throws Exception {
+    static Stream<Prefix> getFileWritePrefixParams() {
+        return Stream.of(Prefix.DOWNLOAD_P, Prefix.RAW_P);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getFileWritePrefixParams")
+    void testGetFileWrite(Prefix prefix) throws Exception {
         GetFile getFileOrig = new GetFile();
         ServletConfig config = mock(ServletConfig.class);
         getFileOrig.init(config);
@@ -139,7 +147,7 @@ class GetFileTest {
 
             @Override
             public String getServletPath() {
-                return Prefix.DOWNLOAD_P.toString();
+                return prefix.toString();
             }
 
             @Override
