@@ -38,7 +38,6 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
-        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
     - name: Install Python pre-requisites
@@ -46,7 +45,6 @@ jobs:
     - name: Optionally update README on Docker hub
       env:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
-        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: ./dev/dockerhub_readme.py
