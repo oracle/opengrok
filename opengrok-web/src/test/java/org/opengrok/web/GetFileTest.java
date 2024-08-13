@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.web;
 
 import jakarta.servlet.ServletConfig;
@@ -55,9 +54,9 @@ class GetFileTest {
     private static Path sourceRoot;
 
     private static Path sourceFile;
-    private final static String fileContent = "int main();";
+    private static final String fileContent = "int main();";
 
-    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @BeforeAll
     public static void setUpClass() throws IOException {
