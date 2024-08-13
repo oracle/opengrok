@@ -125,7 +125,7 @@ class GetFileTest {
         verify(response).sendRedirect(contextPath + prefix + "/");
     }
 
-    static Stream<Prefix> getFileWritePrefixParams() {
+    private static Stream<Prefix> getFileWritePrefixParams() {
         return Stream.of(Prefix.DOWNLOAD_P, Prefix.RAW_P);
     }
 
