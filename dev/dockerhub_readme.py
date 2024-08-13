@@ -85,7 +85,7 @@ def check_push_env():
         logger.info("Not updating Docker hub README for non main repo")
         sys.exit(0)
 
-    event_type = os.environ.get("GITHUB_EVENT_TYPE")
+    event_type = os.environ.get("GITHUB_EVENT_NAME")
     if event_type and event_type == "pull_request":
         logger.info("Not updating Docker hub README for pull requests")
         sys.exit(0)
