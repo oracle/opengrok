@@ -50,12 +50,12 @@ public class GetFile extends HttpServlet {
         cfg.checkSourceRootExistence();
 
         String redir = cfg.canProcess();
-        if (redir == null || !redir.isEmpty()) {
-            if (redir != null) {
-                response.sendRedirect(redir);
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+        if (redir == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!redir.isEmpty()) {
+            response.sendRedirect(redir);
             return;
         }
 
