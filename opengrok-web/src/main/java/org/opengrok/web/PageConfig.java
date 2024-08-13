@@ -1381,7 +1381,7 @@ public final class PageConfig {
                 return req.getContextPath() + Prefix.XREF_P + '/';
             }
 
-            if (getPath().length() == 0) {
+            if (getPath().isEmpty()) {
                 // => /
                 return null;
             }
@@ -1393,7 +1393,7 @@ public final class PageConfig {
                         + getUriEncodedPath() + trailingSlash(getPath());
             }
             String ts = trailingSlash(getPath());
-            if (ts.length() != 0) {
+            if (!ts.isEmpty()) {
                 return req.getContextPath() + prefix + getUriEncodedPath() + ts;
             }
         }
