@@ -10,6 +10,9 @@ jobs:
   ubuntu:
     runs-on: ubuntu-latest
     steps:
+    - name: Print environment
+      shell: bash
+      run: env
     - name: Checkout master branch
       uses: actions/checkout@v4
     - uses: actions/setup-python@v5
