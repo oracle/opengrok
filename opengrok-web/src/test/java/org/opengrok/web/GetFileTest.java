@@ -35,6 +35,7 @@ import org.mockito.ArgumentMatchers;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
+import org.opengrok.indexer.web.Prefix;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -85,6 +86,41 @@ class GetFileTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         getFile.service(request, response);
         verify(response).sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    @Test
+    void testGetFileRedirect() throws Exception {
+        GetFile getFile = new GetFile();
+        final String relativePath = "/project";
+        Path dir = Path.of(env.getSourceRootPath(), relativePath);
+        Files.createDirectory(dir);
+        final String contextPath = "ctx";
+        final String prefix = Prefix.XREF_P.toString();
+        HttpServletRequest request = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "";
+            }
+
+            @Override
+            public String getRequestURI() {
+                return "foo";
+            }
+
+            @Override
+            public String getServletPath() {
+                return prefix;
+            }
+
+            @Override
+            public String getContextPath() {
+                return contextPath;
+            }
+        };
+        assertTrue(Path.of(env.getSourceRootPath(), relativePath).toFile().isDirectory());
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        getFile.service(request, response);
+        verify(response).sendRedirect(contextPath + prefix + "/");
     }
 
     @Test
