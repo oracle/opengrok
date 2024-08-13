@@ -91,6 +91,31 @@ class GetFileTest {
     }
 
     @Test
+    void testGetFileNoRevision() throws Exception {
+        GetFile getFile = new GetFile();
+        final String relativePath = env.getPathRelativeToSourceRoot(sourceFile.toFile());
+        HttpServletRequest request = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return relativePath;
+            }
+
+            @Override
+            public String getServletPath() {
+                return Prefix.DOWNLOAD_P.toString();
+            }
+
+            public String getParameter(String s) {
+                return "NA";
+            }
+        };
+        assertTrue(Path.of(env.getSourceRootPath(), relativePath).toFile().exists());
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        getFile.service(request, response);
+        verify(response).sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    @Test
     void testGetFileRedirect() throws Exception {
         GetFile getFile = new GetFile();
         final String relativePath = "/project";
