@@ -27,8 +27,10 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -37,6 +39,7 @@ import org.opengrok.indexer.web.Prefix;
 import org.opengrok.web.api.v1.RestApp;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -74,14 +77,21 @@ class AuthorizationFilterTest {
         verify(response, never()).sendError(anyInt(), anyString());
     }
 
+    private static Stream<Pair<Boolean, String>> getParamsForTestIsAllowed() {
+        return Stream.of(Pair.of(true, null),
+                Pair.of(true, "user"),
+                Pair.of(false, null),
+                Pair.of(false, "user"));
+    }
+
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void testIsAllowed(boolean isAllowed) throws ServletException, IOException {
+    @MethodSource("getParamsForTestIsAllowed")
+    void testIsAllowed(Pair<Boolean, String> pair) throws ServletException, IOException {
         AuthorizationFilter filter = new AuthorizationFilter();
         PageConfig pageConfig = mock(PageConfig.class);
         Project project = mock(Project.class);
         when(pageConfig.getProject()).thenReturn(project);
-        when(pageConfig.isAllowed(project)).thenReturn(isAllowed);
+        when(pageConfig.isAllowed(project)).thenReturn(pair.getLeft());
         when(pageConfig.getEnv()).thenReturn(RuntimeEnvironment.getInstance());
         HttpServletRequest request = new DummyHttpServletRequest() {
             @Override
@@ -91,7 +101,7 @@ class AuthorizationFilterTest {
 
             @Override
             public String getRemoteUser() {
-                return "user";
+                return pair.getRight();
             }
 
             @Override
@@ -116,7 +126,7 @@ class AuthorizationFilterTest {
         filter.init(filterConfig);
         filter.doFilter(request, response, chain);
 
-        if (isAllowed) {
+        if (pair.getLeft()) {
             verify(chain).doFilter(request, response);
             verify(response, never()).sendError(anyInt());
             verify(response, never()).sendError(anyInt(), anyString());
