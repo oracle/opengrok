@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.opengrok.indexer.configuration.IncludeFiles;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Laundromat;
@@ -46,7 +48,7 @@ public class AuthorizationFilter implements Filter {
 
     @Override
     public void init(FilterConfig fc) {
-        // Empty since there is No specific init configuration.
+        // Empty since there is no specific init configuration.
     }
 
     /**
@@ -56,49 +58,50 @@ public class AuthorizationFilter implements Filter {
      * so does not have to be exempted here.
      */
     @Override
-    public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-        HttpServletRequest httpReq = (HttpServletRequest) sr;
-        HttpServletResponse httpRes = (HttpServletResponse) sr1;
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain fc)
+            throws IOException, ServletException {
 
-        if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
+        HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+        HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+
+        if (httpRequest.getServletPath().startsWith(RestApp.API_PATH)) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
-                        new Object[] {Laundromat.launderLog(httpReq.getServletPath()),
+                        new Object[] {Laundromat.launderLog(httpRequest.getServletPath()),
                                 AuthorizationFilter.class.getName()});
             }
-            fc.doFilter(sr, sr1);
+            fc.doFilter(servletRequest, servletResponse);
             return;
         }
 
-        PageConfig config = PageConfig.get(httpReq);
-
+        PageConfig config = PageConfig.get(httpRequest);
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                if (httpReq.getRemoteUser() != null) {
+                if (httpRequest.getRemoteUser() != null) {
                     LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
-                            new Object[] {Laundromat.launderLog(httpReq.getRemoteUser()),
-                                    Laundromat.launderLog(httpReq.getRequestURI())});
+                            new Object[] {Laundromat.launderLog(httpRequest.getRemoteUser()),
+                                    Laundromat.launderLog(httpRequest.getRequestURI())});
                 } else {
                     LOGGER.log(Level.INFO, "Access denied for URI: {0}",
-                            Laundromat.launderLog(httpReq.getRequestURI()));
+                            Laundromat.launderLog(httpRequest.getRequestURI()));
                 }
             }
 
-            if (!config.getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false).isEmpty()) {
-                sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
+            IncludeFiles includeFiles = config.getEnv().getIncludeFiles();
+            if (Objects.nonNull(includeFiles) && !includeFiles.getForbiddenIncludeFileContent(false).isEmpty()) {
+                servletRequest.getRequestDispatcher("/eforbidden").forward(servletRequest, servletResponse);
                 return;
             }
 
-            httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
             return;
         }
-        fc.doFilter(sr, sr1);
+        fc.doFilter(servletRequest, servletResponse);
     }
 
     @Override
     public void destroy() {
         // Empty since there is No specific destroy configuration.
     }
-
 }
