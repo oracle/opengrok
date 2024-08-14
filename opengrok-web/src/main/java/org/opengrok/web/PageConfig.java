@@ -1381,19 +1381,17 @@ public final class PageConfig {
                 return req.getContextPath() + Prefix.XREF_P + '/';
             }
 
-            if (getPath().length() == 0) {
+            if (getPath().isEmpty()) {
                 // => /
                 return null;
             }
 
-            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
-                    && prefix != Prefix.RSS_P) {
+            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
-                return req.getContextPath() + Prefix.XREF_P
-                        + getUriEncodedPath() + trailingSlash(getPath());
+                return req.getContextPath() + Prefix.XREF_P + getUriEncodedPath() + trailingSlash(getPath());
             }
             String ts = trailingSlash(getPath());
-            if (ts.length() != 0) {
+            if (!ts.isEmpty()) {
                 return req.getContextPath() + prefix + getUriEncodedPath() + ts;
             }
         }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2011, Jens Elkner.
  */
@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,9 +37,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.Prefix;
 
+/**
+ * Used by the webapp to serve the contents of files on /raw and /download.
+ */
 public class GetFile extends HttpServlet {
 
-    public static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -1;
 
     @Override
     protected void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
@@ -46,26 +50,29 @@ public class GetFile extends HttpServlet {
         cfg.checkSourceRootExistence();
 
         String redir = cfg.canProcess();
-        if (redir == null || redir.length() > 0) {
-            if (redir != null) {
-                response.sendRedirect(redir);
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+        if (redir == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!redir.isEmpty()) {
+            response.sendRedirect(redir);
             return;
         }
 
         File f = cfg.getResourceFile();
         String revision = cfg.getRequestedRevision();
-        if (revision.length() == 0) {
+        if (revision.isEmpty()) {
             revision = null;
         }
 
         InputStream in;
         try {
             if (revision != null) {
-                in = HistoryGuru.getInstance().getRevision(f.getParent(),
-                        f.getName(), revision);
+                in = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), revision);
+                if (in == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
             } else {
                 long flast = cfg.getLastModified();
                 if (request.getDateHeader("If-Modified-Since") >= flast) {
@@ -86,8 +93,7 @@ public class GetFile extends HttpServlet {
             response.setContentType(mimeType);
 
             if (cfg.getPrefix() == Prefix.DOWNLOAD_P) {
-                response.setHeader("content-disposition", "attachment; filename="
-                        + f.getName());
+                response.setHeader("content-disposition", "attachment; filename=" + f.getName());
             } else {
                 response.setHeader("content-type", "text/plain");
             }
@@ -100,7 +106,7 @@ public class GetFile extends HttpServlet {
             o.flush();
             o.close();
         } finally {
-            in.close();
+            Objects.requireNonNull(in).close();
         }
     }
 }
