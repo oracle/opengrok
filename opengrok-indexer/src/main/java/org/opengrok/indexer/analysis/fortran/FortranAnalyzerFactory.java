@@ -49,7 +49,9 @@ public class FortranAnalyzerFactory extends FileAnalyzerFactory {
         "F95",
         "F03",
         "F08",
-        "F15"};
+        "F15",
+        "F77",
+        "I"};
 
     public FortranAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME, true);

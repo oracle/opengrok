@@ -59,7 +59,7 @@ import org.opengrok.indexer.web.HtmlConsts;
     }
 %}
 
-File = [a-zA-Z]{FNameChar}* ".inc"
+File = [a-zA-Z]{FNameChar}* "." ("i"|"inc")
 
 %state  STRING SCOMMENT QSTRING LCOMMENT
 
@@ -95,6 +95,14 @@ File = [a-zA-Z]{FNameChar}* ".inc"
     onNonSymbolMatched(">", yychar + 1 + file.length());
 }
 
+"'" ({File}|{FPath}) "'" {
+    chkLOC();
+    onNonSymbolMatched("'", yychar);
+    String file = yytext();
+    file = file.substring(1, file.length() - 1);
+    onFilelikeMatched(file, yychar + 1);
+    onNonSymbolMatched("'", yychar + 1 + file.length());
+}
 /*{Hier}
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
