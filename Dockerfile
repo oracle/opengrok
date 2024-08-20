@@ -70,7 +70,7 @@ RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
-RUN apt-get install --no-install-recommends -y pkg-config automake build-essential && \
+RUN apt-get install --no-install-recommends -y pkg-config automake build-essential libxml2-dev && \
     git clone https://github.com/universal-ctags/ctags /root/ctags && \
     cd /root/ctags && ./autogen.sh && ./configure && make && make install && \
     apt-get remove -y automake build-essential && \
