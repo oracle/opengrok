@@ -47,7 +47,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -474,6 +473,20 @@ public class MercurialRepositoryTest {
         Set<TagEntry> expectedTags = new TreeSet<>();
         TagEntry tagEntry = new MercurialTagEntry(7, "start_of_novel");
         expectedTags.add(tagEntry);
+        assertEquals(expectedTags, tags);
+    }
+
+    @Test
+    void testBuildTagListOneMore() throws Exception {
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        runHgCommand(repositoryRoot, "tag", "foo");
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        var tags = hgRepo.getTagList();
+        assertNotNull(tags);
+        assertEquals(2, tags.size());
+        Set<TagEntry> expectedTags = Set.of(new MercurialTagEntry(7, "start_of_novel"),
+                new MercurialTagEntry(9, "foo"));
         assertEquals(expectedTags, tags);
     }
 }
