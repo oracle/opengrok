@@ -478,6 +478,10 @@ public class MercurialRepositoryTest {
 
     @Test
     void testBuildTagListOneMore() throws Exception {
+        Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
+                "addedTagTest"));
+        File repositoryRoot = repositoryRootPath.toFile();
+        runHgCommand(this.repositoryRoot, "clone", this.repositoryRoot.toString(), repositoryRootPath.toString());
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
         runHgCommand(repositoryRoot, "tag", "foo");
@@ -488,5 +492,6 @@ public class MercurialRepositoryTest {
         Set<TagEntry> expectedTags = Set.of(new MercurialTagEntry(7, "start_of_novel"),
                 new MercurialTagEntry(9, "foo"));
         assertEquals(expectedTags, tags);
+        IOUtils.removeRecursive(repositoryRootPath);
     }
 }
