@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -56,8 +56,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         try {
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(input))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     String[] parts = line.split("  *");
@@ -88,16 +87,13 @@ public class MercurialTagParser implements Executor.StreamHandler {
                         entries = null;
                         break;
                     }
-                    TagEntry tagEntry
-                            = new MercurialTagEntry(Integer.parseInt(revParts[0]),
-                                    tag);
-                    // Reverse the order of the list
+                    TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
+                    // Reverse the order of the list.
                     entries.add(tagEntry);
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to read tag list: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
             entries = null;
         }
     }
