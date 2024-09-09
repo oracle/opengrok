@@ -449,6 +449,9 @@ public class MercurialRepositoryTest {
         assertEquals(pair.getValue(), revisions);
     }
 
+    /**
+     * Test special case of repository with no tags, in this case empty repository.
+     */
     @Test
     void testBuildTagListEmpty() throws Exception {
         Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
@@ -463,6 +466,9 @@ public class MercurialRepositoryTest {
         IOUtils.removeRecursive(repositoryRootPath);
     }
 
+    /**
+     * Extract the tags from the original repository. It already contains one tag.
+     */
     @Test
     void testBuildTagListInitial() throws Exception {
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
@@ -476,6 +482,10 @@ public class MercurialRepositoryTest {
         assertEquals(expectedTags, tags);
     }
 
+    /**
+     * Clone the original repository, add new tag, check that the extracted tags contain the pre-existing
+     * and new one.
+     */
     @Test
     void testBuildTagListOneMore() throws Exception {
         Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
