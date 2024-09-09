@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +50,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
      *
      * @return entries a set of tag entries
      */
-    public TreeSet<TagEntry> getEntries() {
+    public NavigableSet<TagEntry> getEntries() {
         return entries;
     }
 
@@ -59,7 +60,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    String[] parts = line.split("  *");
+                    String[] parts = line.split("\\|");
                     if (parts.length < 2) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to parse tag list: {0}",
@@ -67,27 +68,15 @@ public class MercurialTagParser implements Executor.StreamHandler {
                         entries = null;
                         break;
                     }
-                    // Grrr, how to parse tags with spaces inside?
-                    // This solution will lose multiple spaces ;-/
-                    String tag = parts[0];
-                    for (int i = 1; i < parts.length - 1; ++i) {
-                        tag = tag.concat(" ");
-                        tag = tag.concat(parts[i]);
-                    }
+                    String rev = parts[0];
+                    String tag = parts[1];
+
                     // The implicit 'tip' tag only causes confusion so ignore it.
                     if (tag.contentEquals("tip")) {
                         continue;
                     }
-                    String[] revParts = parts[parts.length - 1].split(":");
-                    if (revParts.length != 2) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to parse tag list: {0}",
-                                "Mercurial revision parsing error: "
-                                        + parts[parts.length - 1]);
-                        entries = null;
-                        break;
-                    }
-                    TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
+
+                    TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(rev), tag);
                     // Reverse the order of the list.
                     entries.add(tagEntry);
                 }

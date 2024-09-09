@@ -481,17 +481,24 @@ public class MercurialRepositoryTest {
         Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
                 "addedTagTest"));
         File repositoryRoot = repositoryRootPath.toFile();
+        // Clone the internal repository because it will be modified.
+        // This avoids interference with other tests in this class.
         runHgCommand(this.repositoryRoot, "clone", this.repositoryRoot.toString(), repositoryRootPath.toString());
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
-        runHgCommand(repositoryRoot, "tag", "foo");
+        // Using double space on purpose to test the parsing of tags.
+        final String newTagName = "foo  bar";
+        runHgCommand(repositoryRoot, "tag", newTagName);
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
         var tags = hgRepo.getTagList();
         assertNotNull(tags);
         assertEquals(2, tags.size());
-        Set<TagEntry> expectedTags = Set.of(new MercurialTagEntry(7, "start_of_novel"),
-                new MercurialTagEntry(9, "foo"));
-        assertEquals(expectedTags, tags);
+        // TagEntry has special semantics for comparing/equality which does not compare the tags at all,
+        // so using assertEquals() on two sets of TagEntry objects would not help.
+        // Instead, check the tags separately.
+        assertEquals(List.of(7, 9), tags.stream().map(TagEntry::getRevision).collect(Collectors.toList()));
+        List<String> expectedTags = List.of("start_of_novel", newTagName);
+        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
         IOUtils.removeRecursive(repositoryRootPath);
     }
 }

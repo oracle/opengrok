@@ -635,6 +635,11 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tags");
+        argv.add("--template");
+        // Use '|' as a revision separator rather than ':' to avoid collision with the commonly used
+        // separator within the revision string (which is not used in the 'hg tags' output but better
+        // safe than sorry).
+        argv.add("{rev}|{tag}\\n");
 
         Executor executor = new Executor(argv, directory,
                 RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
