@@ -92,7 +92,7 @@ The image contains these directories:
 ## Environment Variables
 
 | Docker Environment Var. | Default value | Description |
-| ----------------------- | -------- | ----------- |
+| ----------------------- | ------------- | ----------- |
 `SYNC_PERIOD_MINUTES` | 10 | Period of automatic synchronization (i.e. mirroring + reindexing) in minutes. Setting to `0` will disable periodic syncing (the sync after container startup will still be done).
 `INDEXER_OPT` | empty | pass **extra** options to OpenGrok Indexer. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide. The default set of indexer options is: `--remote on -P -H -W`. Do not add `-R` as it is used internally. Rather, see below for the `READONLY_CONFIG_FILE` environment variable.
 `INDEXER_JAVA_OPTS` | empty | pass **extra** Java options to OpenGrok Indexer.
