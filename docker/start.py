@@ -498,7 +498,11 @@ def check_index_and_wipe_out(logger):
         logger.info("Checking if index matches current version")
         indexer_options = ["-R", OPENGROK_CONFIG_FILE, "--checkIndex", "version"]
         indexer = Indexer(
-            indexer_options, java_opts=indexer_java_opts, logger=logger, jar=OPENGROK_JAR, doprint=True
+            indexer_options,
+            java_opts=indexer_java_opts,                                        
+            logger=logger,                                                      
+            jar=OPENGROK_JAR,                                                   
+            doprint=True,
         )
         indexer.execute()
         if indexer.getretcode() == 1:
