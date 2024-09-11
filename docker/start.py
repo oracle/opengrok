@@ -459,7 +459,7 @@ def create_bare_config(logger, use_projects, extra_indexer_options=None):
         indexer_options,
         java_opts=indexer_java_opts,
         jar=OPENGROK_JAR,
-        logger=logger,                                                          
+        logger=logger,
         doprint=True,
     indexer.execute()
     ret = indexer.getretcode()
