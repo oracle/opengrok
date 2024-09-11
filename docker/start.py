@@ -461,6 +461,7 @@ def create_bare_config(logger, use_projects, extra_indexer_options=None):
         jar=OPENGROK_JAR,
         logger=logger,
         doprint=True,
+    )
     indexer.execute()
     ret = indexer.getretcode()
     if ret != SUCCESS_EXITVAL:
