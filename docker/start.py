@@ -352,7 +352,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
             indexer_options.extend(extra_indexer_options.split())
         indexer = Indexer(
             indexer_options,
-            java_opts=indexer_java_opts,                                        
+            java_opts=indexer_java_opts,
             logger=logger,                                                      
             jar=OPENGROK_JAR,                                                   
             doprint=True,
