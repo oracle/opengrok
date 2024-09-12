@@ -28,11 +28,11 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.13.20</version>
+        <version>1.13.21</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.13.20</version>
+    <version>1.13.21</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>

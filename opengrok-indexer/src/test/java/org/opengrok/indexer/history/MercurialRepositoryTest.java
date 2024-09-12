@@ -31,19 +31,26 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,7 +104,7 @@ public class MercurialRepositoryTest {
      */
     private void setUpTestRepository() throws IOException, URISyntaxException {
         repository = new TestRepository();
-        repository.create(getClass().getResource("/repositories"));
+        repository.create(Objects.requireNonNull(getClass().getResource("/repositories")));
         repositoryRoot = new File(repository.getSourceRoot(), "mercurial");
     }
 
@@ -440,5 +447,68 @@ public class MercurialRepositoryTest {
         assertNotNull(annotation);
         List<String> revisions = new ArrayList<>(annotation.getRevisions());
         assertEquals(pair.getValue(), revisions);
+    }
+
+    /**
+     * Test special case of repository with no tags, in this case empty repository.
+     */
+    @Test
+    void testBuildTagListEmpty() throws Exception {
+        Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
+                "emptyTagsTest"));
+        File repositoryRoot = repositoryRootPath.toFile();
+        assertTrue(repositoryRoot.isDirectory());
+        runHgCommand(repositoryRoot, "init");
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        assertEquals(0, hgRepo.getTagList().size());
+        IOUtils.removeRecursive(repositoryRootPath);
+    }
+
+    /**
+     * Extract the tags from the original repository. It already contains one tag.
+     */
+    @Test
+    void testBuildTagListInitial() throws Exception {
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        var tags = hgRepo.getTagList();
+        assertEquals(1, tags.size());
+        Set<TagEntry> expectedTags = new TreeSet<>();
+        TagEntry tagEntry = new MercurialTagEntry(7, "start_of_novel");
+        expectedTags.add(tagEntry);
+        assertEquals(expectedTags, tags);
+    }
+
+    /**
+     * Clone the original repository, add new tag, check that the extracted tags contain the pre-existing
+     * and new one.
+     */
+    @Test
+    void testBuildTagListOneMore() throws Exception {
+        Path repositoryRootPath = Files.createDirectory(Path.of(RuntimeEnvironment.getInstance().getSourceRootPath(),
+                "addedTagTest"));
+        File repositoryRoot = repositoryRootPath.toFile();
+        // Clone the internal repository because it will be modified.
+        // This avoids interference with other tests in this class.
+        runHgCommand(this.repositoryRoot, "clone", this.repositoryRoot.toString(), repositoryRootPath.toString());
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        // Using double space on purpose to test the parsing of tags.
+        final String newTagName = "foo  bar";
+        runHgCommand(repositoryRoot, "tag", newTagName);
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        var tags = hgRepo.getTagList();
+        assertNotNull(tags);
+        assertEquals(2, tags.size());
+        // TagEntry has special semantics for comparing/equality which does not compare the tags at all,
+        // so using assertEquals() on two sets of TagEntry objects would not help.
+        // Instead, check the tags separately.
+        assertEquals(List.of(7, 9), tags.stream().map(TagEntry::getRevision).collect(Collectors.toList()));
+        List<String> expectedTags = List.of("start_of_novel", newTagName);
+        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+        IOUtils.removeRecursive(repositoryRootPath);
     }
 }
