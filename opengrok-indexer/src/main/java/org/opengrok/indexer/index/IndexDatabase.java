@@ -1798,9 +1798,8 @@ public class IndexDatabase {
                 boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
                         checkSettings(termFile, termPath);
                 if (!matchOK) {
-                    removeFile(false);
-                    addWorkHistoryBased(args, termFile, termPath);
                     deletedUidsHere.add(removeFile(false));
+                    addWorkHistoryBased(args, termFile, termPath);
                 }
             } else {
                 deletedUidsHere.add(removeFile(!fileExists));
