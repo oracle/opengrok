@@ -40,7 +40,7 @@ class FortranXrefTest extends XrefTestBase {
         writeAndCompare(new FortranAnalyzerFactory(),
                 "analysis/fortran/sample.f",
                 "analysis/fortran/sample_xref.html",
-                readTagsFromResource("analysis/fortran/sampletags"), 28);
+                readTagsFromResource("analysis/fortran/sampletags"), 32);
     }
 
     @Test

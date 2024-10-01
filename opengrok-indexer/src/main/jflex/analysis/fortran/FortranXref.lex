@@ -86,23 +86,16 @@ File = [a-zA-Z]{FNameChar}* "." ("i"|"inc")
     onFilteredSymbolMatched(yytext(), yychar, Consts.kwd, false);
 }
 
+"'" ({File}|{FPath}) "'" |
 "<" ({File}|{FPath}) ">" {
     chkLOC();
-    onNonSymbolMatched("<", yychar);
-    String file = yytext();
-    file = file.substring(1, file.length() - 1);
+    String cmatch = yytext();
+    onNonSymbolMatched(cmatch, yychar);
+    String file = cmatch.substring(1, cmatch.length() - 1);
     onFilelikeMatched(file, yychar + 1);
-    onNonSymbolMatched(">", yychar + 1 + file.length());
+    onNonSymbolMatched(cmatch, yychar + 1 + file.length());
 }
 
-"'" ({File}|{FPath}) "'" {
-    chkLOC();
-    onNonSymbolMatched("'", yychar);
-    String file = yytext();
-    file = file.substring(1, file.length() - 1);
-    onFilelikeMatched(file, yychar + 1);
-    onNonSymbolMatched("'", yychar + 1 + file.length());
-}
 /*{Hier}
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */

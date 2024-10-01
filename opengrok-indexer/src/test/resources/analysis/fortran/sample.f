@@ -227,4 +227,16 @@
 *     End of DGESV
 *
       END
+
+*  A Fortran 77 subroutine that ends in $
+*  =====================================================================
+      SUBROUTINE SUBF77$()
+*
+      INTEGER            VARF77$
+      VARF77$ = 0
+*
+*  =====================================================================
+*
+      CALL SUBF77$
+
       CALL 'http://example.com'
