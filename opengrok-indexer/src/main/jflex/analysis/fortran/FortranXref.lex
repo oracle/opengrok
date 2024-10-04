@@ -93,7 +93,7 @@ File = [a-zA-Z]{FNameChar}* "." ("i"|"inc")
     onNonSymbolMatched(cmatch.substring(0,1), yychar);
     String file = cmatch.substring(1, cmatch.length() - 1);
     onFilelikeMatched(file, yychar + 1);
-    onNonSymbolMatched(cmatch.substring(cmatch.length()-1,1), yychar + 1 + file.length());
+    onNonSymbolMatched(cmatch.substring(cmatch.length() - 1, 1), yychar + 1 + file.length());
 }
 
 /*{Hier}
