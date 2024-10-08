@@ -1510,7 +1510,7 @@ public final class Configuration {
     }
 
     public static Configuration read(File file) throws IOException {
-        LOGGER.log(Level.INFO, "Reading configuration from {0}", file.getCanonicalPath());
+        LOGGER.log(Level.INFO, "Reading configuration from ''{0}''", file.getCanonicalPath());
         try (FileInputStream in = new FileInputStream(file)) {
             return decodeObject(in);
         }
