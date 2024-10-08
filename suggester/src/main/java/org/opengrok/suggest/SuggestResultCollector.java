@@ -27,6 +27,7 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.Scorable;
@@ -35,6 +36,7 @@ import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Collects Suggester query results.
@@ -60,6 +62,29 @@ class SuggestResultCollector implements Collector {
     @Override
     public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException {
         return new SuggesterLeafCollector(context);
+    }
+
+    /**
+     * Creates a {@link CollectorManager} that can concurrently collect matching docs in a {@link
+     * BitIntsHolder}.
+     */
+    public static CollectorManager<SuggestResultCollector, BitIntsHolder> createManager(LeafReaderContext leafReaderContext, ComplexQueryData data,
+                                                                                        BitIntsHolder documentIds) {
+        return new CollectorManager<>() {
+            @Override
+            public SuggestResultCollector newCollector() {
+                return new SuggestResultCollector(leafReaderContext, data, documentIds);
+            }
+
+            @Override
+            public BitIntsHolder reduce(Collection<SuggestResultCollector> collectors) {
+                BitIntsHolder reduced = documentIds;
+                for (SuggestResultCollector collector : collectors) {
+                    documentIds.or(collector.documentIds); //TODO fix as per https://github.com/apache/lucene/pull/766/files
+                }
+                return reduced;
+            }
+        };
     }
 
     /**
