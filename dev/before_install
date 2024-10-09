@@ -28,12 +28,6 @@ if [[ "$RUNNER_OS" == "Linux" ]]; then
 	# Bitkeeper install failure is not critical, so exit code is not checked.
 	sudo ./dev/install-bitkeeper.sh
 
-	sudo -H ./dev/install-python-packages.sh
-	if [[ $? != 0 ]]; then
-		echo "cannot install Python packages"
-		exit 1
-	fi
-
 	sudo ./dev/install-universal_ctags.sh
 	if [[ $? != 0 ]]; then
 		echo "cannot install Universal ctags"

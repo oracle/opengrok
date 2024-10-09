@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 
 import argparse
@@ -51,7 +51,8 @@ def main():
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,
                main_class='org.opengrok.indexer.configuration.Groups',
-               logger=logger, doprint=args.doprint)
+               logger=logger, doprint=args.doprint,
+               max_line_length=-1, max_lines=-1)
     cmd.execute()
     ret = cmd.getretcode()
     if ret is None or ret != SUCCESS_EXITVAL:
