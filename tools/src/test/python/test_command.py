@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2024, Oracle affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -28,6 +28,8 @@ import os
 import platform
 import tempfile
 import time
+
+from enum import Enum
 
 import pytest
 
@@ -181,19 +183,39 @@ def test_stderr():
     assert 'root' in "\n".join(cmd.getoutput())
 
 
+class LongTestMode(Enum):
+    """
+    Enum to parametrize the long output test below.
+    """
+    ORIGINAL = 1
+    SHORTEN = 2
+    UNLIMITED = 3
+
+
 # This test needs the "/bin/cat" command, therefore it is Unix only.
 @posix_only
-@pytest.mark.parametrize('shorten', [True, False])
-def test_long_output(shorten):
+@pytest.mark.parametrize("mode", [LongTestMode.SHORTEN, LongTestMode.ORIGINAL, LongTestMode.UNLIMITED])
+def test_long_output(mode):
     """
     Test that output thread in the Command class captures all the output.
     (and also it does not hang the command by filling up the pipe)
 
+    Also test the truncation.
+
     By default, stderr is redirected to stdout.
     """
-    num_lines = 5000
-    line_length = 1000
-    # should be enough to fill a pipe
+    num_lines_orig = 15000
+    line_length_orig = 1000
+
+    # By using different values than the defaults, the modes which set the lengths
+    # to non-negative/not-None values will verify that non-default values are acted upon.
+    assert line_length_orig > Command.MAX_LINE_LENGTH_DEFAULT
+    assert num_lines_orig > Command.MAX_LINES_DEFAULT
+
+    num_lines = num_lines_orig
+    line_length = line_length_orig
+
+    # Should be enough to fill a pipe on most systems.
     num_bytes = num_lines * (line_length + 1)
     with tempfile.NamedTemporaryFile() as file:
         for _ in range(num_lines):
@@ -202,9 +224,12 @@ def test_long_output(shorten):
         file.flush()
         assert os.path.getsize(file.name) == num_bytes
 
-        if shorten:
+        if mode is LongTestMode.SHORTEN:
             num_lines //= 2
             line_length //= 2
+        elif mode is LongTestMode.UNLIMITED:
+            num_lines = -1
+            line_length = -1
         cmd = Command(["/bin/cat", file.name],
                       max_lines=num_lines, max_line_length=line_length)
         cmd.execute()
@@ -212,11 +237,12 @@ def test_long_output(shorten):
         assert cmd.getstate() == Command.FINISHED
         assert cmd.getretcode() == 0
         assert cmd.geterroutput() is None
-        assert len(cmd.getoutput()) == num_lines
-        if shorten:
+        if mode is LongTestMode.SHORTEN:
+            assert len(cmd.getoutput()) == num_lines
             # Add 3 for the '...' suffix.
             assert all(len(x) <= line_length + 3 for x in cmd.getoutput())
         else:
+            assert len(cmd.getoutput()) == num_lines_orig
             assert len("\n".join(cmd.getoutput()) + "\n") == num_bytes
 
 
