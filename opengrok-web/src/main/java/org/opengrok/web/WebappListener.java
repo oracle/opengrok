@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -55,6 +55,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.opengrok.indexer.util.RuntimeUtil.checkJavaVersion;
+
 /**
  * Initialize webapp context.
  *
@@ -77,8 +79,10 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
-                    new Object[]{Info.getVersion(), Info.getRevision()});
+        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1}) on Java {2}",
+                    new Object[]{Info.getVersion(), Info.getRevision(), Runtime.version()});
+
+        checkJavaVersion();
 
         String configPath = Optional.ofNullable(context.getInitParameter("CONFIGURATION"))
                 .orElseThrow(() -> new WebappError("CONFIGURATION parameter missing in the web.xml file"));
