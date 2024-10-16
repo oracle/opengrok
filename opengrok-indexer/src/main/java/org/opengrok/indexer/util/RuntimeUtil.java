@@ -33,6 +33,10 @@ public class RuntimeUtil {
     static final int JAVA_VERSION_MIN = 11;
     static final int JAVA_VERSION_MAX = 21;
 
+    /**
+     * @throws RuntimeException if the Java runtime version is outside
+     * {@link #JAVA_VERSION_MIN} and {@link #JAVA_VERSION_MAX}.
+     */
     public static void checkJavaVersion() throws RuntimeException {
         Runtime.Version javaVersion = Runtime.version();
         int majorVersion = javaVersion.version().get(0);
