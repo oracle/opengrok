@@ -31,7 +31,7 @@ public class RuntimeUtil {
      * interval of supported Java versions
      */
     static final int JAVA_VERSION_MIN = 11;
-    static final int JAVA_VERSION_MAX = 17;
+    static final int JAVA_VERSION_MAX = 21;
 
     public static void checkJavaVersion() throws RuntimeException {
         Runtime.Version javaVersion = Runtime.version();
