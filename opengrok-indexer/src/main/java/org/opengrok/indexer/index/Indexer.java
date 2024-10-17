@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -85,6 +85,8 @@ import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HostUtil;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.Statistics;
+
+import static org.opengrok.indexer.util.RuntimeUtil.checkJavaVersion;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -371,7 +373,9 @@ public final class Indexer {
             }
 
             LOGGER.log(Level.INFO, "Indexer version {0} ({1}) running on Java {2}",
-                    new Object[]{Info.getVersion(), Info.getRevision(), System.getProperty("java.version")});
+                    new Object[]{Info.getVersion(), Info.getRevision(), Runtime.version()});
+
+            checkJavaVersion();
 
             // Create history cache first.
             if (searchRepositories) {
