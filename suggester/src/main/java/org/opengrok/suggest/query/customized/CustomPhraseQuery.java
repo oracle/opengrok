@@ -293,11 +293,11 @@ public class CustomPhraseQuery extends Query {
 
                 if (query.slop == 0) {
                     ArrayUtil.timSort(postingsFreqs);
-                    //TODO FIX
+                    //FIXME
                     //return new CustomExactPhraseScorer(postingsFreqs, query.offset);
                     return scorerSupplier(leafReaderContext);
                 } else {
-                    //TODO FIX
+                    //FIXME
                     //return new CustomSloppyPhraseScorer(postingsFreqs, query.slop, query.offset);
                     return scorerSupplier(leafReaderContext);
                 }

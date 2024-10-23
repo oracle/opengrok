@@ -62,7 +62,6 @@ import org.opengrok.web.api.v1.suggester.provider.filter.Authorized;
 import org.opengrok.web.api.v1.suggester.provider.filter.Suggester;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;

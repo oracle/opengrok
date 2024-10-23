@@ -453,7 +453,7 @@ class UtilTest {
 
     @Test
     void testBuildLinkInvalidUrl1() {
-        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
+        assertThrows(URISyntaxException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
     @Test

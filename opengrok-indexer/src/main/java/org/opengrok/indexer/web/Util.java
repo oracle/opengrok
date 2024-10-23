@@ -677,9 +677,11 @@ public final class Util {
      * @param urlStr string URL
      * @return the encoded URL
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException URL malformed
      */
-    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
+    public static String encodeURL(String urlStr) throws URISyntaxException {
+        // URL url = new URL(urlStr); - this call
+        //FIXME - above can encode url parts somehow, while if you change it to URI, it won't be able to convert e.g.
+        // http://www.example.com/"quotation"/else\ to http://www.example.com/"quotation"/else , see UtilTest:414
         URI constructed = new URI(urlStr);
         return constructed.toString();
     }
@@ -1465,7 +1467,11 @@ public final class Util {
         } catch (URISyntaxException e) {
             return false;
         }
-        return uri.getScheme().equals("http") || uri.getScheme().equals("https");
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            return false;
+        }
+        return scheme.equals("http") || scheme.equals("https");
     }
 
     protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
@@ -1479,7 +1485,7 @@ public final class Util {
         URL url;
         try {
             url = (new URI(path)).toURL();
-        } catch (MalformedURLException | URISyntaxException e) {
+        } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             // not an URL
             return path;
         }
@@ -1524,7 +1530,7 @@ public final class Util {
                     attrs.put("rel", "noreferrer");
                 }
                 return buildLink(url, attrs);
-            } catch (URISyntaxException | MalformedURLException ex) {
+            } catch (URISyntaxException ex) {
                 return url;
             }
         }
@@ -1541,10 +1547,9 @@ public final class Util {
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException malformed URL
      */
     public static String buildLink(String name, Map<String, String> attrs)
-            throws URISyntaxException, MalformedURLException {
+            throws URISyntaxException {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<a");
         for (Entry<String, String> attr : attrs.entrySet()) {
@@ -1574,10 +1579,9 @@ public final class Util {
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException bad URL
      */
     public static String buildLink(String name, String url)
-            throws URISyntaxException, MalformedURLException {
+            throws URISyntaxException {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", url);
         return buildLink(name, attrs);
