@@ -58,6 +58,7 @@ public class CVSRepository extends RCSRepository {
      */
     public static final String CMD_FALLBACK = "cvs";
 
+    @SuppressWarnings("this-escape")
     public CVSRepository() {
         /*
          * This variable is set in the ancestor to TRUE which has a side effect

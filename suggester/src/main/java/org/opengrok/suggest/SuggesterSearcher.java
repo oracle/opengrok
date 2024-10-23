@@ -299,7 +299,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         if (query instanceof BooleanQuery) {
             for (BooleanClause bc : ((BooleanQuery) query).clauses()) {
-                if (needPositionsAndFrequencies(bc.getQuery())) {
+                if (needPositionsAndFrequencies(bc.query())) {
                     return true;
                 }
             }

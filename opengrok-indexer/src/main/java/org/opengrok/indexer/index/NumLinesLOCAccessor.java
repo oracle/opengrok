@@ -65,7 +65,7 @@ class NumLinesLOCAccessor {
      */
     public boolean hasStored(IndexReader reader) throws IOException {
         DSearchResult searchResult = newDSearch(reader, 1);
-        return searchResult.hits.totalHits.value > 0;
+        return searchResult.hits.totalHits.value() > 0;
     }
 
     /**
@@ -121,8 +121,8 @@ class NumLinesLOCAccessor {
 
         // Index the existing document IDs by QueryBuilder.D.
         HashMap<String, Integer> byDir = new HashMap<>();
-        int intMaximum = Integer.MAX_VALUE < searchResult.hits.totalHits.value ?
-                Integer.MAX_VALUE : (int) searchResult.hits.totalHits.value;
+        int intMaximum = Integer.MAX_VALUE < searchResult.hits.totalHits.value() ?
+                Integer.MAX_VALUE : (int) searchResult.hits.totalHits.value();
         StoredFields storedFields = searchResult.searcher.storedFields();
         for (int i = 0; i < intMaximum; ++i) {
             int docID = searchResult.hits.scoreDocs[i].doc;
@@ -148,7 +148,7 @@ class NumLinesLOCAccessor {
             TopDocs hits = searcher.search(query, 1);
 
             Integer docID = null;
-            if (hits.totalHits.value > 0) {
+            if (hits.totalHits.value() > 0) {
                 docID = hits.scoreDocs[0].doc;
             }
             updateDocumentData(writer, searcher, entry, docID, isAggregatingDeltas);

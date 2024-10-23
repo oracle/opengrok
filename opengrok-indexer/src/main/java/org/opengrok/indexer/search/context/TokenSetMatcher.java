@@ -28,6 +28,7 @@ import java.util.TreeSet;
 public class TokenSetMatcher extends LineMatcher {
     private final Set<String> tokenSet;
 
+    @SuppressWarnings("this-escape")
     public TokenSetMatcher(Set<String> tokenSet, boolean caseInsensitive) {
         super(caseInsensitive);
 

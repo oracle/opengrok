@@ -99,6 +99,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * will be owned by the {@link JFlexXref}.
      * @param matcher a defined instance
      */
+    @SuppressWarnings("this-escape")
     public JFlexXref(ScanningSymbolMatcher matcher) {
         if (matcher == null) {
             throw new IllegalArgumentException("`matcher' is null");

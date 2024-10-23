@@ -33,6 +33,7 @@ import java.util.Set;
 public class IndexCheckException extends Exception {
     private static final long serialVersionUID = 5693446916108385595L;
 
+    @SuppressWarnings("serial")
     private final Set<Path> failedPaths = new HashSet<>();
 
     public IndexCheckException(String message, Path path) {

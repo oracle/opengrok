@@ -680,10 +680,7 @@ public final class Util {
      * @throws MalformedURLException URL malformed
      */
     public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
-        URL url = new URL(urlStr);
-        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
-                url.getHost(), url.getPort(),
-                url.getPath(), url.getQuery(), url.getRef());
+        URI constructed = new URI(urlStr);
         return constructed.toString();
     }
 
@@ -1462,13 +1459,13 @@ public final class Util {
      * @return true if it is http URL, false otherwise
      */
     public static boolean isHttpUri(String string) {
-        URL url;
+        URI uri;
         try {
-            url = new URL(string);
-        } catch (MalformedURLException ex) {
+            uri = new URI(string);
+        } catch (URISyntaxException e) {
             return false;
         }
-        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+        return uri.getScheme().equals("http") || uri.getScheme().equals("https");
     }
 
     protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
@@ -1481,8 +1478,8 @@ public final class Util {
     public static String redactUrl(String path) {
         URL url;
         try {
-            url = new URL(path);
-        } catch (MalformedURLException e) {
+            url = (new URI(path)).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             // not an URL
             return path;
         }

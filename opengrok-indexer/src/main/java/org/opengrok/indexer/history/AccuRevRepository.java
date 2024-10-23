@@ -96,6 +96,7 @@ public class AccuRevRepository extends Repository {
      */
     private static final String DEPOT_ROOT = String.format("%s.%s", File.separator, File.separator);
 
+    @SuppressWarnings("this-escape")
     public AccuRevRepository() {
         type = "AccuRev";
         datePatterns = new String[]{

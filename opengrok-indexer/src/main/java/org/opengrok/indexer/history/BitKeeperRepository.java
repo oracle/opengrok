@@ -88,6 +88,7 @@ public class BitKeeperRepository extends Repository {
     /**
      * The version of the BitKeeper executable. This affects the correct dspec to use for tags.
      */
+    @SuppressWarnings("serial")
     private Version version = null;
 
     /**

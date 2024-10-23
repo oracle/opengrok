@@ -66,6 +66,7 @@ public class LdapServer implements Serializable {
     private int readTimeout;
     private int interval = 10 * 1000;
 
+    @SuppressWarnings("serial")
     private final Map<String, String> env;
     private transient LdapContext ctx;
     private long errorTimestamp = 0;
@@ -74,11 +75,13 @@ public class LdapServer implements Serializable {
         this(prepareEnv());
     }
 
+    @SuppressWarnings("this-escape")
     public LdapServer(String server) {
         this(prepareEnv());
         setName(server);
     }
 
+    @SuppressWarnings("this-escape")
     public LdapServer(String server, String username, String password) {
         this(prepareEnv());
         setName(server);

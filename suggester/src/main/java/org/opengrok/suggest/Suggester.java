@@ -161,7 +161,7 @@ public final class Suggester implements Closeable {
                 runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     // This should match the naming in OpenGrokThreadFactory class.
-                    thread.setName("OpenGrok-suggester-lookup-" + thread.getId());
+                    thread.setName("OpenGrok-suggester-lookup-" + thread.threadId());
                     return thread;
                 });
 
@@ -169,7 +169,7 @@ public final class Suggester implements Closeable {
                 runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     // This should match the naming in OpenGrokThreadFactory class.
-                    thread.setName("OpenGrok-suggester-rebuild-" + thread.getId());
+                    thread.setName("OpenGrok-suggester-rebuild-" + thread.threadId());
                     return thread;
                 });
 

@@ -49,6 +49,7 @@ public class JFlexTokenizer extends Tokenizer
      * will be owned by the {@link JFlexTokenizer}.
      * @param matcher a defined instance
      */
+    @SuppressWarnings("this-escape")
     public JFlexTokenizer(ScanningSymbolMatcher matcher) {
         if (matcher == null) {
             throw new IllegalArgumentException("`matcher' is null");
@@ -83,10 +84,13 @@ public class JFlexTokenizer extends Tokenizer
         matcher.yyclose();
     }
 
+    @SuppressWarnings("this-escape")
     private final CharTermAttribute termAtt = addAttribute(
         CharTermAttribute.class);
+    @SuppressWarnings("this-escape")
     private final OffsetAttribute offsetAtt = addAttribute(
         OffsetAttribute.class);
+    @SuppressWarnings("this-escape")
     private final PositionIncrementAttribute posIncrAtt = addAttribute(
         PositionIncrementAttribute.class);
 

@@ -31,7 +31,7 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.ScoreMode;
-import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.ScorerSupplier;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
@@ -263,8 +263,8 @@ public class CustomPhraseQuery extends Query {
         }
 
         @Override
-        public Scorer scorer(LeafReaderContext context) throws IOException {
-            LeafReader reader = context.reader();
+        public ScorerSupplier scorerSupplier(LeafReaderContext leafReaderContext) throws IOException {
+            LeafReader reader = leafReaderContext.reader();
 
             CustomPhraseQuery.PostingsAndFreq[] postingsFreqs = new CustomPhraseQuery.PostingsAndFreq[query.terms.length];
 
@@ -281,7 +281,7 @@ public class CustomPhraseQuery extends Query {
 
                 for(int i = 0; i < query.terms.length; ++i) {
                     Term t = query.terms[i];
-                    TermState state = this.states[i].get(context);
+                    TermState state = this.states[i].get(leafReaderContext).get();
                     if (state == null) {
                         return null;
                     }
@@ -293,10 +293,13 @@ public class CustomPhraseQuery extends Query {
 
                 if (query.slop == 0) {
                     ArrayUtil.timSort(postingsFreqs);
-
-                    return new CustomExactPhraseScorer(this, postingsFreqs, query.offset);
+                    //TODO FIX
+                    //return new CustomExactPhraseScorer(postingsFreqs, query.offset);
+                    return scorerSupplier(leafReaderContext);
                 } else {
-                    return new CustomSloppyPhraseScorer(this, postingsFreqs, query.slop, query.offset);
+                    //TODO FIX
+                    //return new CustomSloppyPhraseScorer(postingsFreqs, query.slop, query.offset);
+                    return scorerSupplier(leafReaderContext);
                 }
             }
         }
