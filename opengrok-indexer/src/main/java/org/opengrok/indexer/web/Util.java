@@ -1671,20 +1671,20 @@ public final class Util {
 
     /**
      * Parses the specified URL and returns its query params.
-     * @param url URL to retrieve the query params from
+     * @param uri URI to retrieve the query params from
      * @return query params of {@code url}
      */
-    public static Map<String, List<String>> getQueryParams(final URL url) {
-        if (url == null) {
+    public static Map<String, List<String>> getQueryParams(final URI uri) {
+        if (uri == null) {
             throw new IllegalArgumentException("Cannot get query params from the null url");
         }
         Map<String, List<String>> returnValue = new HashMap<>();
 
-        if (url.getQuery() == null) {
+        if (uri.getQuery() == null) {
             return returnValue;
         }
 
-        Arrays.stream(url.getQuery().split("&"))
+        Arrays.stream(uri.getQuery().split("&"))
                 .filter(pair -> !pair.isEmpty())
                 .forEach(pair -> {
                     int idx = pair.indexOf('=');

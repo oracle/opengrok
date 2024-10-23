@@ -199,7 +199,7 @@ public final class SuggesterController {
         for (String urlStr : urls) {
             try {
                 var uri = new URI(urlStr);
-                var params = Util.getQueryParams(uri.toURL());
+                var params = Util.getQueryParams(uri);
 
                 var projects = params.get("project");
 
@@ -215,7 +215,7 @@ public final class SuggesterController {
                         }
                     }
                 }
-            } catch (MalformedURLException | URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 logger.log(Level.WARNING, e, () -> "Could not add search counts for " + urlStr);
             }
         }
