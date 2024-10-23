@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.framework;
 
@@ -330,11 +330,12 @@ public abstract class PluginFramework<P> {
         File file = new File(pluginDirectory.getAbsolutePath(), filePath);
         try {
             if (!file.getCanonicalPath().startsWith(pluginDirectory.getCanonicalPath() + File.separator)) {
-                LOGGER.log(Level.WARNING, "canonical path for jar entry {0} leads outside the origin", filePath);
+                LOGGER.log(Level.WARNING, "canonical path for jar entry ''{0}'' leads outside the origin",
+                        filePath);
                 return null;
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "failed to get canonical path for {0}", file);
+            LOGGER.log(Level.WARNING, "failed to get canonical path for ''{0}''", file);
             return null;
         }
 
@@ -372,12 +373,12 @@ public abstract class PluginFramework<P> {
      */
     public final void reload() {
         if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
-            LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
+            LOGGER.log(Level.WARNING, "Plugin directory ''{0}'' not found or not readable: "
                     + "All requests allowed.", pluginDirectory);
             return;
         }
 
-        LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
+        LOGGER.log(Level.INFO, "Plugins are being reloaded from ''{0}''", pluginDirectory.getAbsolutePath());
 
         // trashing out the old instance of the loader enables us
         // to reload the stack at runtime

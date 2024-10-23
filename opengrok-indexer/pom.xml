@@ -29,11 +29,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.13.7</version>
+        <version>1.13.23</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.13.7</version>
+    <version>1.13.23</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -131,7 +131,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator-core</artifactId>
-            <version>0.47</version>
+            <version>0.59</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -162,7 +162,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>com.google.jimfs</groupId>
             <artifactId>jimfs</artifactId>
-            <version>1.2</version>
+            <version>1.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

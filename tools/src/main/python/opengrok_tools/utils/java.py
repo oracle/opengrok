@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -37,7 +37,8 @@ class Java(Command):
 
     def __init__(self, command, logger=None, main_class=None, java=None,
                  jar=None, java_opts=None, classpath=None, env_vars=None,
-                 redirect_stderr=True, doprint=False):
+                 redirect_stderr=True, doprint=False,
+                 max_line_length=None, max_lines=None):
 
         if not java:
             java = self.FindJava(logger)
@@ -72,7 +73,8 @@ class Java(Command):
         logger.debug("Java command: {}".format(java_command))
 
         super().__init__(java_command, logger=logger, env_vars=env,
-                         redirect_stderr=redirect_stderr, doprint=doprint)
+                         redirect_stderr=redirect_stderr, doprint=doprint,
+                         max_line_length=max_line_length, max_lines=max_lines)
 
     def FindJava(self, logger):
         """
@@ -82,12 +84,13 @@ class Java(Command):
         system_name = platform.system()
         if system_name == 'SunOS':
             rel = platform.release()
+            java_home = None
             if rel == '5.10':
                 java_home = "/usr/jdk/instances/jdk1.7.0"
             elif rel == '5.11':
                 java_home = "/usr/jdk/latest"
 
-            if os.path.isdir(java_home):
+            if java_home and os.path.isdir(java_home):
                 java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
             cmd = Command(['/usr/libexec/java_home'])

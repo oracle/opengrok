@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -28,11 +28,11 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.13.7</version>
+        <version>1.13.23</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.13.7</version>
+    <version>1.13.23</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>
@@ -74,6 +74,11 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>

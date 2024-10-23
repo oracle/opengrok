@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -239,7 +239,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
 
         ObjectMapper mapper = new SmileMapper(smileFactory);
-        // ObjectMapper mapper = new JsonMapper();
         ObjectWriter objectWriter = mapper.writer().forType(HashMap.class);
 
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))) {
@@ -255,7 +254,6 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
 
         ObjectMapper mapper = new SmileMapper(smileFactory);
-        // ObjectMapper mapper = new JsonMapper();
         return mapper.writer().forType(HistoryEntry.class);
     }
 
@@ -715,6 +713,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         Path newPath = Path.of(getRepositoryCachedRevPath(repository));
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newPath.toFile())))) {
             writer.write(rev);
+            LOGGER.finest(() -> String.format("stored latest cached revision %s for repository %s", rev, repository));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
                     String.format("Cannot write latest cached revision to file for repository %s", repository), ex);

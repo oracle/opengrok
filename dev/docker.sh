@@ -62,7 +62,7 @@ docker run -d $IMAGE
 docker ps -a
 
 # This can only work on home repository since it needs encrypted variables.
-if [[ -n "$OPENGROK_PULL_REQUEST" ]]; then
+if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
 	echo "Not pushing Docker image for pull requests"
 	exit 0
 fi
@@ -75,12 +75,12 @@ fi
 
 if [[ -z $DOCKER_USERNAME ]]; then
 	echo "DOCKER_USERNAME is empty, exiting"
-	exit 0
+	exit 1
 fi
 
 if [[ -z $DOCKER_PASSWORD ]]; then
 	echo "DOCKER_PASSWORD is empty, exiting"
-	exit 0
+	exit 1
 fi
 
 # Publish the image to Docker hub.

@@ -113,12 +113,12 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
  * pages (how content gets generated) consistent and to document the request
  * parameters used.
  * <p>
- * General contract for this class (i.e. if not explicitly documented): no
- * method of this class changes neither the request nor the response.
+ * General contract for this class (i.e. if not explicitly documented):
+ * no method of this class changes neither the request nor the response.
  *
  * @author Jens Elkner
  */
-public final class PageConfig {
+public class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
@@ -166,7 +166,7 @@ public final class PageConfig {
      */
     private final Scripts scripts = new Scripts();
 
-    private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
+    static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
 
     private final ExecutorService executor;
@@ -1381,19 +1381,17 @@ public final class PageConfig {
                 return req.getContextPath() + Prefix.XREF_P + '/';
             }
 
-            if (getPath().length() == 0) {
+            if (getPath().isEmpty()) {
                 // => /
                 return null;
             }
 
-            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
-                    && prefix != Prefix.RSS_P) {
+            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
-                return req.getContextPath() + Prefix.XREF_P
-                        + getUriEncodedPath() + trailingSlash(getPath());
+                return req.getContextPath() + Prefix.XREF_P + getUriEncodedPath() + trailingSlash(getPath());
             }
             String ts = trailingSlash(getPath());
-            if (ts.length() != 0) {
+            if (!ts.isEmpty()) {
                 return req.getContextPath() + prefix + getUriEncodedPath() + ts;
             }
         }

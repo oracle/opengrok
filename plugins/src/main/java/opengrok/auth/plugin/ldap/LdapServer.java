@@ -18,9 +18,13 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -44,6 +48,13 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        creatorVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class LdapServer implements Serializable {
 
     private static final long serialVersionUID = -1;
@@ -55,15 +66,21 @@ public class LdapServer implements Serializable {
     private static final String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 
     // default connectTimeout value in milliseconds
-    private static final int LDAP_CONNECT_TIMEOUT = 5000;
+    private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000;
     // default readTimeout value in milliseconds
-    private static final int LDAP_READ_TIMEOUT = 3000;
+    private static final int DEFAULT_LDAP_READ_TIMEOUT = 3000;
 
+    @JsonProperty
     private String url;
+    @JsonProperty
     private String username;
+    @JsonProperty
     private String password;
+    @JsonProperty
     private int connectTimeout;
+    @JsonProperty
     private int readTimeout;
+
     private int interval = 10 * 1000;
 
     @SuppressWarnings("serial")
@@ -169,6 +186,7 @@ public class LdapServer implements Serializable {
         }
     }
 
+    @JsonIgnore
     private boolean isReachable(InetAddress addr, int port, int timeOutMillis) {
         try (Socket soc = new Socket()) {
             soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
@@ -357,8 +375,8 @@ public class LdapServer implements Serializable {
         var e = new HashMap<String, String>();
 
         e.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
-        e.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));
-        e.put(LDAP_READ_TIMEOUT_PARAMETER, Integer.toString(LDAP_READ_TIMEOUT));
+        e.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(DEFAULT_LDAP_CONNECT_TIMEOUT));
+        e.put(LDAP_READ_TIMEOUT_PARAMETER, Integer.toString(DEFAULT_LDAP_READ_TIMEOUT));
 
         return e;
     }

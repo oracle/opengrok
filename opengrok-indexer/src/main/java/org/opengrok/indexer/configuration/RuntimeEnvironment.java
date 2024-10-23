@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -628,8 +628,7 @@ public final class RuntimeEnvironment {
         }
 
         String value = syncReadConfiguration(Configuration::getCtags);
-        return value != null ? value :
-                System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY, "ctags");
+        return value != null ? value : System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY, "ctags");
     }
 
     /**
@@ -699,26 +698,20 @@ public final class RuntimeEnvironment {
      * Validate that there is a Universal ctags program that can actually process input files
      * under source root.
      * <br>
-     * As a side effect, this sets the set of ctags languages that is used by the ctags program.
+     * As a side effect, this sets the set of ctags languages that is used by the <code>ctags</code> program.
      *
      * @return true if success, false otherwise
      */
-    public boolean validateUniversalCtags() {
+    public synchronized boolean validateUniversalCtags() {
         if (ctagsFound == null) {
-            try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
-                //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
-                assert resourceLock != null;
-                if (ctagsFound == null) {
-                    String ctagsBinary = getCtags();
-                    if (ctagsLanguages.isEmpty()) {
-                        // The ctagsLanguages are necessary for the call to validate() below.
-                        Set<String> languages = CtagsUtil.getLanguages(ctagsBinary);
-                        ctagsLanguages.addAll(languages);
-                    }
-
-                    ctagsFound = CtagsUtil.validate(ctagsBinary);
-                }
+            String ctagsBinary = getCtags();
+            if (ctagsLanguages.isEmpty()) {
+                // The ctagsLanguages are necessary for the call to validate() below.
+                Set<String> languages = CtagsUtil.getLanguages(ctagsBinary);
+                ctagsLanguages.addAll(languages);
             }
+
+            ctagsFound = CtagsUtil.validate(ctagsBinary);
         }
 
         if (ctagsFound) {
@@ -1919,6 +1912,14 @@ public final class RuntimeEnvironment {
             maybeRefreshSearcherManager(entry.getValue());
         }
         stat.report(LOGGER, "Done refreshing searcher managers");
+    }
+
+    @VisibleForTesting
+    public void releaseIndexSearchers() throws IOException {
+        for (SearcherManager sm : searcherManagerMap.values()) {
+            sm.close();
+        }
+        searcherManagerMap.clear();
     }
 
     /**

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -32,6 +32,7 @@ public class CacheException extends Exception {
     private static final long serialVersionUID = 1L;
 
     private final Level level;
+    private final boolean logTrace;
 
     /**
      * Construct a {@code CacheException} with the specified message.
@@ -48,8 +49,20 @@ public class CacheException extends Exception {
      * @param level suggested log level
      */
     public CacheException(String msg, Level level) {
+        this(msg, level, true);
+    }
+
+    /**
+     * Construct a {@code CacheException} with the specified message and log level
+     * and whether to log stack trace.
+     * @param msg message
+     * @param level suggested log level
+     * @param logTrace whether to log stack trace
+     */
+    public CacheException(String msg, Level level, boolean logTrace) {
         super(msg);
         this.level = level;
+        this.logTrace = logTrace;
     }
 
     /**
@@ -60,6 +73,7 @@ public class CacheException extends Exception {
     public CacheException(Throwable cause) {
         super(cause);
         this.level = Level.WARNING;
+        this.logTrace = true;
     }
 
     /**
@@ -71,6 +85,7 @@ public class CacheException extends Exception {
     public CacheException(String msg, Throwable cause) {
         super(msg, cause);
         this.level = Level.WARNING;
+        this.logTrace = true;
     }
 
     /**
@@ -78,5 +93,9 @@ public class CacheException extends Exception {
      */
     public Level getLevel() {
         return level;
+    }
+
+    public boolean isLogTrace() {
+        return this.logTrace;
     }
 }

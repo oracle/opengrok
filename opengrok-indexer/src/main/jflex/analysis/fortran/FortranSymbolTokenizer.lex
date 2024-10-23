@@ -52,11 +52,13 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
                         return yystate(); }
               }
 
+{WhspChar}* "include" {WhspChar}* (\'[^\'\n\r]+\'| \"[^\"\n\r]+\")    {}
  {Number}        {}
 
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \!     { yybegin(SCOMMENT); }
+ "C"    { yybegin(SCOMMENT); }
 }
 
 <STRING> {

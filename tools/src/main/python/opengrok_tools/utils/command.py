@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -49,10 +49,13 @@ class Command:
     ERRORED = "errored"
     TIMEDOUT = "timed out"
 
+    MAX_LINE_LENGTH_DEFAULT = 250
+    MAX_LINES_DEFAULT = 10000
+
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False, work_dir=None, env_vars=None, timeout=None,
                  redirect_stderr=True, resource_limits=None, doprint=False,
-                 max_line_length=250, max_lines=10000):
+                 max_line_length=None, max_lines=None):
 
         if doprint is None:
             doprint = False
@@ -72,8 +75,17 @@ class Command:
         self.doprint = doprint
         self.err = None
         self.returncode = None
-        self.max_line_length = int(max_line_length)
-        self.max_lines = int(max_lines)
+
+        # Convert the maximums to integers to avoid exceptions when using them as indexes
+        # in case they are passed as floats.
+        if (max_line_length is None):
+            self.max_line_length = self.MAX_LINE_LENGTH_DEFAULT
+        else:
+            self.max_line_length = int(max_line_length)
+        if (max_lines is None):
+            self.max_lines = self.MAX_LINES_DEFAULT
+        else:
+            self.max_lines = int(max_lines)
 
         self.logger = logger or logging.getLogger(__name__)
 
@@ -162,7 +174,10 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self, event, logger, doprint=False, max_line_length=250, max_lines=10000):
+            def __init__(self, event, logger, doprint=False,
+                         max_line_length=Command.MAX_LINE_LENGTH_DEFAULT,
+                         max_lines=Command.MAX_LINES_DEFAULT):
+
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd, encoding='utf8')
@@ -195,11 +210,11 @@ class Command:
                     line = line.rstrip()    # This will remove not only newline but also whitespace.
 
                     # Assuming that self.max_line_length is bigger than 3.
-                    if len(line) > self.max_line_length:
+                    if self.max_line_length > 0 and len(line) > self.max_line_length:
                         line = line[:self.max_line_length] + "..."
 
                     # Shorten the list to be one less than the maximum because a line is going to be added.
-                    if len(self.out) >= self.max_lines:
+                    if self.max_lines > 0 and len(self.out) >= self.max_lines:
                         self.out = self.out[-self.max_lines + 1:]
                         self.out[0] = "... <truncated>"
 

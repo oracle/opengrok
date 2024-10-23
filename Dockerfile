@@ -41,8 +41,10 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.19-jdk17
+FROM tomcat:10.1.30-jdk17
 LABEL maintainer="https://github.com/oracle/opengrok"
+LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
+LABEL org.opencontainers.image.description="OpenGrok code search"
 
 # Add Perforce apt source.
 # hadolint ignore=DL3008,DL3009
@@ -64,11 +66,11 @@ RUN apt-get update && \
 # hadolint ignore=DL3008,DL3059
 RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
         echo "aarch64: do not install helix-p4d."; else \
-        apt-get install --no-install-recommends -y helix-p4d; fi
+        apt-get install --no-install-recommends -y helix-p4d || echo "Failed to install Perforce"; fi
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
-RUN apt-get install --no-install-recommends -y pkg-config automake build-essential && \
+RUN apt-get install --no-install-recommends -y pkg-config automake build-essential libxml2-dev && \
     git clone https://github.com/universal-ctags/ctags /root/ctags && \
     cd /root/ctags && ./autogen.sh && ./configure && make && make install && \
     apt-get remove -y automake build-essential && \
@@ -77,10 +79,6 @@ RUN apt-get install --no-install-recommends -y pkg-config automake build-essenti
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Update the Python tooling in order to successfully install the opengrok-tools package.
-# hadolint ignore=DL3013
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools
-
 # prepare OpenGrok binaries and directories
 # hadolint ignore=DL3010
 COPY --from=build opengrok.tar.gz /opengrok.tar.gz
@@ -88,8 +86,10 @@ COPY --from=build opengrok.tar.gz /opengrok.tar.gz
 RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
     rm -f /opengrok.tar.gz && \
-    python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools.tar.gz && \
-    python3 -m pip install --no-cache-dir Flask Flask-HTTPAuth waitress # for /reindex REST endpoint handled by start.py
+    python3 -m venv /venv
+ENV PATH=/venv/bin:$PATH
+RUN /venv/bin/python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools.tar.gz && \
+     /venv/bin/python3 -m pip install --no-cache-dir Flask Flask-HTTPAuth waitress # for /reindex REST endpoint handled by start.py
 
 COPY --from=build /mvn/VERSION /opengrok/VERSION
 

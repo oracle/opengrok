@@ -643,10 +643,10 @@ public class Ctags implements Resettable {
             StreamSource src = StreamSource.fromFile(new File(filename));
             splitter.reset(src);
         } catch (NullPointerException | IOException ex) {
-            LOGGER.log(Level.WARNING, "Failed to re-read {0}", filename);
+            LOGGER.log(Level.WARNING, "Failed to re-read ''{0}''", filename);
             return null;
         }
-        LOGGER.log(Level.FINEST, "Re-read {0}", filename);
+        LOGGER.log(Level.FINEST, "Re-read ''{0}''", filename);
         return splitter;
     }
 }

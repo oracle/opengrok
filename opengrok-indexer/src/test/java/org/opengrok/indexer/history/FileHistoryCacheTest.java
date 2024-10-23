@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -858,6 +858,25 @@ class FileHistoryCacheTest {
         assertTrue(barFile.isFile());
         History updatedHistory = cache.get(barFile, gitSpyRepository, false);
         assertEquals(8, updatedHistory.getHistoryEntries().size());
+    }
+
+    @Test
+    void testHistoryCacheForEmptyGitRepository() throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "emptyGit");
+        assertTrue(repositoryRoot.mkdir());
+        Git.init().setDirectory(repositoryRoot).call();
+
+        // Create untracked file.
+        Path untrackedFile = repositoryRoot.toPath().resolve("untrackedFile");
+        Files.createFile(untrackedFile);
+        assertTrue(untrackedFile.toFile().exists());
+
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(repository);
+        History history = repository.getHistory(repositoryRoot);
+        assertNotNull(history);
+        assertTrue(history.getHistoryEntries().isEmpty());
+        repository.createCache(cache, null);
     }
 
     /**

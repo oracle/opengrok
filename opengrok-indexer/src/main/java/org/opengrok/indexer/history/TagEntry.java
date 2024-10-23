@@ -83,6 +83,10 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         this.tags = tags;
     }
 
+    public int getRevision() {
+        return revision;
+    }
+
     public String getTags() {
         return this.tags;
     }
