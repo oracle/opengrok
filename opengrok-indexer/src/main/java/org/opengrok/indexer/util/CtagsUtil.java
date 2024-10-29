@@ -25,6 +25,7 @@ package org.opengrok.indexer.util;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -60,29 +61,33 @@ public class CtagsUtil {
 
     /**
      * Check that {@code ctags} program exists and is working.
-     * @param ctagsBinary name of the ctags program or path
+     * @param ctagsBinary name of the {@code ctags} program or path
      * @return true if the program works, false otherwise
      */
-    public static boolean validate(String ctagsBinary) {
+    public static boolean isValid(String ctagsBinary) {
         if (!isUniversalCtags(ctagsBinary)) {
             return false;
         }
 
-        return canProcessFiles(RuntimeEnvironment.getInstance().getSourceRootFile());
+        // The source root can be read-only. In such case, fall back to the default
+        // temporary directory as a second-best choice how to test that ctags is working.
+        return (canProcessFiles(RuntimeEnvironment.getInstance().getSourceRootFile()) ||
+                canProcessFiles(new File(System.getProperty("java.io.tmpdir"))));
     }
 
     /**
-     * Run ctags program on a known temporary file to be created under given path and see if it was possible
-     * to get some symbols.
+     * Run {@code ctags} program on a known temporary file to be created under given path
+     * and see if it was possible to get some symbols.
      * @param baseDir directory to use for storing the temporary file
      * @return true if at least one symbol was found, false otherwise
      */
-    private static boolean canProcessFiles(File baseDir) {
+    @VisibleForTesting
+    static boolean canProcessFiles(File baseDir) {
         Path inputPath;
         try {
             inputPath = File.createTempFile("ctagsValidation", ".c", baseDir).toPath();
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "cannot create temporary file in ''{0}''", baseDir);
+            LOGGER.log(Level.WARNING, String.format("cannot create temporary file in '%s'", baseDir), e);
             return false;
         }
         final String resourceFileName = "sample.c";
