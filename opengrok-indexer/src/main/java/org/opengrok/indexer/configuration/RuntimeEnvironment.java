@@ -711,7 +711,7 @@ public final class RuntimeEnvironment {
                 ctagsLanguages.addAll(languages);
             }
 
-            ctagsFound = CtagsUtil.validate(ctagsBinary);
+            ctagsFound = CtagsUtil.isValid(ctagsBinary);
         }
 
         if (ctagsFound) {
