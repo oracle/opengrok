@@ -48,10 +48,13 @@ public class DefinitionsTokenStream extends TokenStream {
      */
     private final List<PendingToken> events = new ArrayList<>();
 
+    @SuppressWarnings("this-escape")
     private final CharTermAttribute termAtt = addAttribute(
         CharTermAttribute.class);
+    @SuppressWarnings("this-escape")
     private final OffsetAttribute offsetAtt = addAttribute(
         OffsetAttribute.class);
+    @SuppressWarnings("this-escape")
     private final PositionIncrementAttribute posIncrAtt = addAttribute(
         PositionIncrementAttribute.class);
 

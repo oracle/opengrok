@@ -62,8 +62,8 @@ import org.opengrok.web.api.v1.suggester.provider.filter.Authorized;
 import org.opengrok.web.api.v1.suggester.provider.filter.Suggester;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
@@ -197,8 +197,8 @@ public final class SuggesterController {
     public void addSearchCountsQueries(final List<String> urls) {
         for (String urlStr : urls) {
             try {
-                var url = new URL(urlStr);
-                var params = Util.getQueryParams(url);
+                var uri = new URI(urlStr);
+                var params = Util.getQueryParams(uri);
 
                 var projects = params.get("project");
 
@@ -211,12 +211,10 @@ public final class SuggesterController {
                         } else {
                             getQuery(field, fieldQueryText.get(0))
                                     .ifPresent(q -> suggester.onSearch(projects, q));
-
                         }
                     }
-
                 }
-            } catch (MalformedURLException e) {
+            } catch (URISyntaxException e) {
                 logger.log(Level.WARNING, e, () -> "Could not add search counts for " + urlStr);
             }
         }

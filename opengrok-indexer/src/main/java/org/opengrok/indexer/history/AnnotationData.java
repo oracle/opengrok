@@ -52,6 +52,7 @@ public class AnnotationData implements Serializable {
         this.filename = filename;
     }
 
+    @SuppressWarnings("serial")
     private List<AnnotationLine> annotationLines = new ArrayList<>();
     private int widestRevision;
     private int widestAuthor;

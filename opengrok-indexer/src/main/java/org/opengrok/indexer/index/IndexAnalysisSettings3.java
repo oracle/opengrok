@@ -69,6 +69,7 @@ public final class IndexAnalysisSettings3 implements Serializable {
      * de-serialization circumvents normal construction.
      * @serial
      */
+    @SuppressWarnings("serial")
     private Map<String, Long> analyzersVersions = new HashMap<>();
 
     /**
@@ -78,6 +79,7 @@ public final class IndexAnalysisSettings3 implements Serializable {
      * anything but a simple {@link HashMap} here.
      * @serial
      */
+    @SuppressWarnings("serial")
     private Map<String, IndexedSymlink> indexedSymlinks = new HashMap<>();
 
     /**

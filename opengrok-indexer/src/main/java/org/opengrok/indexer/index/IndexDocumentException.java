@@ -32,7 +32,9 @@ import java.util.Set;
 public class IndexDocumentException extends IndexCheckException {
     private static final long serialVersionUID = -277429315137557112L;
 
+    @SuppressWarnings("serial")
     private final Map<Path, Integer> duplicatePathMap;
+    @SuppressWarnings("serial")
     private final Set<Path> missingPaths;
 
     public IndexDocumentException(String s, Path path) {

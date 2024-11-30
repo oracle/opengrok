@@ -47,7 +47,7 @@ public class OpenGrokThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(@NotNull Runnable runnable) {
         Thread thread = Executors.defaultThreadFactory().newThread(Objects.requireNonNull(runnable, "runnable"));
-        thread.setName(PREFIX + threadPrefix + thread.getId());
+        thread.setName(PREFIX + threadPrefix + thread.threadId());
         return thread;
     }
 }

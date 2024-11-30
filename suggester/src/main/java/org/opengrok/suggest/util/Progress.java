@@ -66,6 +66,7 @@ public class Progress implements AutoCloseable {
      * @param logLevel base log level
      * @param isPrintProgress whether to print the progress
      */
+    @SuppressWarnings("this-escape")
     public Progress(Logger logger, String suffix, long totalCount, Level logLevel, boolean isPrintProgress) {
         this.logger = logger;
         this.suffix = suffix;
