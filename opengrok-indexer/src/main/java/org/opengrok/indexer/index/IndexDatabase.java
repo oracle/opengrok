@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -186,7 +186,6 @@ public class IndexDatabase {
     private PathAccepter pathAccepter;
     private AnalyzerGuru analyzerGuru;
     private File xrefDir;
-    private boolean interrupted;
     private CopyOnWriteArrayList<IndexChangedListener> listeners;
     private File dirtyFile;
     private final Object lock = new Object();
@@ -194,7 +193,7 @@ public class IndexDatabase {
     private boolean running;
     private boolean isCountingDeltas;
     private boolean isWithDirectoryCounts;
-    private List<String> directories;
+    private String directory;
     private LockFactory lockFactory;
     private final BytesRef emptyBR = new BytesRef("");
     private final Set<String> deletedUids = new HashSet<>();
@@ -225,7 +224,6 @@ public class IndexDatabase {
      * @param writer index writer
      * @throws IOException on error
      */
-    @VisibleForTesting
     IndexDatabase(Project project, TermsEnum uidIter, IndexWriter writer) throws IOException {
         this(project, new IndexDownArgsFactory());
         this.uidIter = uidIter;
@@ -241,7 +239,7 @@ public class IndexDatabase {
      * @param factory {@link IndexDownArgsFactory} instance
      * @throws java.io.IOException if an error occurs while creating directories
      */
-    public IndexDatabase(Project project, IndexDownArgsFactory factory) throws IOException {
+    IndexDatabase(Project project, IndexDownArgsFactory factory) throws IOException {
         indexDownArgsFactory = factory;
         this.project = project;
         lockFactory = NoLockFactory.INSTANCE;
@@ -257,7 +255,7 @@ public class IndexDatabase {
      * @param indexWriterConfigFactory {@link IndexWriterConfigFactory} instance
      * @throws java.io.IOException if an error occurs while creating directories
      */
-    public IndexDatabase(Project project, IndexDownArgsFactory indexDownArgsFactory,
+    IndexDatabase(@NotNull Project project, IndexDownArgsFactory indexDownArgsFactory,
                          IndexWriterConfigFactory indexWriterConfigFactory) throws IOException {
         this.indexDownArgsFactory = indexDownArgsFactory;
         this.project = project;
@@ -266,7 +264,6 @@ public class IndexDatabase {
         initialize();
     }
 
-    @VisibleForTesting
     IndexDatabase(Project project) throws IOException {
         this(project, new IndexDownArgsFactory());
     }
@@ -324,14 +321,16 @@ public class IndexDatabase {
      * @param listener where to signal the changes to the database
      * @param historyCacheResults map of repository to optional exception
      * @throws IOException if an error occurs
+     * @throws IndexerException if indexing failed for any reason
      */
-    static CountDownLatch updateAll(IndexChangedListener listener,
-                                    Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+    static void updateAll(IndexChangedListener listener,
+                                    Map<Repository, Optional<Exception>> historyCacheResults)
+            throws IOException, IndexerException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
-        if (env.hasProjects()) {
+        if (env.isProjectsEnabled()) {
             for (Project project : env.getProjectList()) {
                 addIndexDatabaseForProject(null, project, dbs, historyCacheResults);
             }
@@ -341,6 +340,7 @@ public class IndexDatabase {
 
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         CountDownLatch latch = new CountDownLatch(dbs.size());
+        IndexerException exception = new IndexerException();
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (listener != null) {
@@ -351,70 +351,22 @@ public class IndexDatabase {
                 try {
                     db.update();
                 } catch (Throwable e) {
-                    LOGGER.log(Level.SEVERE,
-                            String.format("Problem updating index database in directory %s: ",
-                                    db.indexDirectory.getDirectory()), e);
+                    exception.addSuppressed(e);
+                    LOGGER.log(Level.SEVERE, String.format("Problem updating index database in directory '%s': ",
+                            db.indexDirectory.getDirectory()), e);
                 } finally {
                     latch.countDown();
                 }
             });
         }
-        return latch;
-    }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            exception.addSuppressed(e);
+        }
 
-    /**
-     * Update the index database for a number of sub-directories.
-     *
-     * @param listener where to signal the changes to the database
-     * @param paths list of paths to be indexed
-     */
-    public static void update(IndexChangedListener listener, List<String> paths) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
-        List<IndexDatabase> dbs = new ArrayList<>();
-
-        for (String path : paths) {
-            Project project = Project.getProject(path);
-            if (project == null && env.hasProjects()) {
-                LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
-            } else {
-                IndexDatabase db;
-
-                try {
-                    if (project == null) {
-                        db = new IndexDatabase();
-                    } else {
-                        db = new IndexDatabase(project);
-                    }
-
-                    int idx = dbs.indexOf(db);
-                    if (idx != -1) {
-                        db = dbs.get(idx);
-                    }
-
-                    if (db.addDirectory(path)) {
-                        if (idx == -1) {
-                            dbs.add(db);
-                        }
-                    } else {
-                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\" .", path);
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occurred while updating index", e);
-
-                }
-            }
-
-            for (final IndexDatabase db : dbs) {
-                db.addIndexChangedListener(listener);
-                parallelizer.getFixedExecutor().submit(() -> {
-                    try {
-                        db.update();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
-                    }
-                });
-            }
+        if (exception.getSuppressed().length > 0) {
+            throw exception;
         }
     }
 
@@ -442,37 +394,17 @@ public class IndexDatabase {
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
-            directories = new ArrayList<>();
+            if (project == null) {
+                directory = "";
+            } else {
+                directory = project.getPath();
+            }
 
             if (dirty) {
                 LOGGER.log(Level.WARNING, "Index in ''{0}'' is dirty, the last indexing was likely interrupted." +
                         " It might be worthwhile to reindex from scratch.", indexDir);
             }
         }
-    }
-
-    /**
-     * By default the indexer will traverse all directories in the project. If
-     * you add directories with this function update will just process the
-     * specified directories.
-     *
-     * @param dir The directory to scan
-     * @return <code>true</code> if the file is added, false otherwise
-     */
-    @SuppressWarnings("PMD.UseStringBufferForStringAppends")
-    public boolean addDirectory(String dir) {
-        String directory = dir;
-        if (directory.startsWith("\\")) {
-            directory = directory.replace('\\', '/');
-        } else if (directory.charAt(0) != '/') {
-            directory = "/" + directory;
-        }
-        File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), directory);
-        if (file.exists()) {
-            directories.add(directory);
-            return true;
-        }
-        return false;
     }
 
     private void showFileCount(String dir, IndexDownArgs args) {
@@ -664,14 +596,14 @@ public class IndexDatabase {
      * Update the content of this index database.
      *
      * @throws IOException if an error occurs
+     * @throws IndexerException if the indexing was incomplete/failed
      */
-    public void update() throws IOException {
+    public void update() throws IOException, IndexerException {
         synchronized (lock) {
             if (running) {
-                throw new IOException("Indexer already running!");
+                throw new IndexerException("Indexer already running!");
             }
             running = true;
-            interrupted = false;
         }
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -689,108 +621,99 @@ public class IndexDatabase {
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();
 
-            if (directories.isEmpty()) {
-                if (project == null) {
-                    directories.add("");
-                } else {
-                    directories.add(project.getPath());
-                }
+            String dir = this.directory;
+            File sourceRoot;
+            if ("".equals(dir)) {
+                sourceRoot = env.getSourceRootFile();
+            } else {
+                sourceRoot = new File(env.getSourceRootFile(), dir);
             }
 
-            for (String dir : directories) {
-                File sourceRoot;
-                if ("".equals(dir)) {
-                    sourceRoot = env.getSourceRootFile();
+            dir = Util.fixPathIfWindows(dir);
+
+            String startUid = Util.path2uid(dir, "");
+            reader = DirectoryReader.open(indexDirectory); // open existing index
+            setupDeletedUids();
+            countsAggregator = new NumLinesLOCAggregator();
+            settings = readAnalysisSettings();
+            if (settings == null) {
+                settings = new IndexAnalysisSettings3();
+            }
+            Terms terms = null;
+            if (reader.numDocs() > 0) {
+                terms = MultiTerms.getTerms(reader, QueryBuilder.U);
+
+                NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                if (countsAccessor.hasStored(reader)) {
+                    isWithDirectoryCounts = true;
+                    isCountingDeltas = true;
                 } else {
-                    sourceRoot = new File(env.getSourceRootFile(), dir);
-                }
-
-                dir = Util.fixPathIfWindows(dir);
-
-                String startUid = Util.path2uid(dir, "");
-                reader = DirectoryReader.open(indexDirectory); // open existing index
-                setupDeletedUids();
-                countsAggregator = new NumLinesLOCAggregator();
-                settings = readAnalysisSettings();
-                if (settings == null) {
-                    settings = new IndexAnalysisSettings3();
-                }
-                Terms terms = null;
-                if (reader.numDocs() > 0) {
-                    terms = MultiTerms.getTerms(reader, QueryBuilder.U);
-
-                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
-                    if (countsAccessor.hasStored(reader)) {
-                        isWithDirectoryCounts = true;
-                        isCountingDeltas = true;
-                    } else {
-                        boolean foundCounts = countsAccessor.register(countsAggregator, reader);
-                        isWithDirectoryCounts = false;
-                        isCountingDeltas = foundCounts;
-                        if (!isCountingDeltas) {
-                            LOGGER.info("Forcing reindexing to fully compute directory counts");
-                        }
-                    }
-                } else {
+                    boolean foundCounts = countsAccessor.register(countsAggregator, reader);
                     isWithDirectoryCounts = false;
-                    isCountingDeltas = false;
+                    isCountingDeltas = foundCounts;
+                    if (!isCountingDeltas) {
+                        LOGGER.info("Forcing reindexing to fully compute directory counts");
+                    }
+                }
+            } else {
+                isWithDirectoryCounts = false;
+                isCountingDeltas = false;
+            }
+
+            try {
+                if (terms != null) {
+                    uidIter = terms.iterator();
+                    // The seekCeil() is pretty important because it makes uidIter.term() to become non-null.
+                    // Various indexer methods rely on this when working with the uidIter iterator - rather
+                    // than calling uidIter.next() first thing, they check uidIter.term().
+                    TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid));
+                    if (stat == TermsEnum.SeekStatus.END) {
+                        uidIter = null;
+                        LOGGER.log(Level.WARNING,
+                            "Could not find a start term for {0}, empty u field?", startUid);
+                    }
                 }
 
-                try {
-                    if (terms != null) {
-                        uidIter = terms.iterator();
-                        // The seekCeil() is pretty important because it makes uidIter.term() to become non-null.
-                        // Various indexer methods rely on this when working with the uidIter iterator - rather
-                        // than calling uidIter.next() first thing, they check uidIter.term().
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startUid));
-                        if (stat == TermsEnum.SeekStatus.END) {
-                            uidIter = null;
-                            LOGGER.log(Level.WARNING,
-                                "Couldn''t find a start term for {0}, empty u field?", startUid);
-                        }
-                    }
+                // The actual indexing happens in indexParallel(). Here we merely collect the files
+                // that need to be indexed and the files that should be removed.
+                IndexDownArgs args = indexDownArgsFactory.getIndexDownArgs();
+                boolean usedHistory = getIndexDownArgs(dir, sourceRoot, args);
 
-                    // The actual indexing happens in indexParallel(). Here we merely collect the files
-                    // that need to be indexed and the files that should be removed.
-                    IndexDownArgs args = indexDownArgsFactory.getIndexDownArgs();
-                    boolean usedHistory = getIndexDownArgs(dir, sourceRoot, args);
+                // Traverse the trailing terms. This needs to be done before indexParallel() because
+                // in some cases it can add items to the args parameter.
+                processTrailingTerms(startUid, usedHistory, args);
 
-                    // Traverse the trailing terms. This needs to be done before indexParallel() because
-                    // in some cases it can add items to the args parameter.
-                    processTrailingTerms(startUid, usedHistory, args);
+                args.curCount = 0;
+                Statistics elapsed = new Statistics();
+                LOGGER.log(Level.INFO, "Starting indexing of directory ''{0}''", dir);
+                indexParallel(dir, args);
+                elapsed.report(LOGGER, String.format("Done indexing of directory '%s'", dir),
+                        "indexer.db.directory.index");
 
-                    args.curCount = 0;
-                    Statistics elapsed = new Statistics();
-                    LOGGER.log(Level.INFO, "Starting indexing of directory ''{0}''", dir);
-                    indexParallel(dir, args);
-                    elapsed.report(LOGGER, String.format("Done indexing of directory '%s'", dir),
-                            "indexer.db.directory.index");
-
-                    /*
-                     * As a signifier that #Lines/LOC are comprehensively
-                     * stored so that later calculation is in deltas mode, we
-                     * need at least one D-document saved. For a repo with only
-                     * non-code files, however, no true #Lines/LOC will have
-                     * been saved. Subsequent re-indexing will do more work
-                     * than necessary (until a source code file is placed). We
-                     * can record zeroes for a fake file under the root to get
-                     * a D-document even for this special repo situation.
-                     *
-                     * Metrics are aggregated for directories up to the root,
-                     * so it suffices to put the fake directly under the root.
-                     */
-                    if (!isWithDirectoryCounts) {
-                        final String ROOT_FAKE_FILE = "/.OpenGrok_fake_file";
-                        countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
-                    }
-                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
-                    countsAccessor.store(writer, reader, countsAggregator,
-                            isWithDirectoryCounts && isCountingDeltas);
-
-                    markProjectIndexed(project);
-                } finally {
-                    reader.close();
+                /*
+                 * As a signifier that #Lines/LOC are comprehensively
+                 * stored so that later calculation is in deltas mode, we
+                 * need at least one D-document saved. For a repo with only
+                 * non-code files, however, no true #Lines/LOC will have
+                 * been saved. Subsequent re-indexing will do more work
+                 * than necessary (until a source code file is placed). We
+                 * can record zeroes for a fake file under the root to get
+                 * a D-document even for this special repo situation.
+                 *
+                 * Metrics are aggregated for directories up to the root,
+                 * so it suffices to put the fake directly under the root.
+                 */
+                if (!isWithDirectoryCounts) {
+                    final String ROOT_FAKE_FILE = "/.OpenGrok_fake_file";
+                    countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
                 }
+                NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                countsAccessor.store(writer, reader, countsAggregator,
+                        isWithDirectoryCounts && isCountingDeltas);
+
+                markProjectIndexed(project);
+            } finally {
+                reader.close();
             }
 
             // The RuntimeException thrown from the block above can prevent the writing from completing.
@@ -801,8 +724,7 @@ public class IndexDatabase {
                 finishingException = e;
             }
         } catch (RuntimeException ex) {
-            LOGGER.log(Level.SEVERE,
-                "Failed with unexpected RuntimeException", ex);
+            LOGGER.log(Level.SEVERE, "Failed with unexpected RuntimeException", ex);
             throw ex;
         } finally {
             completer = null;
@@ -814,8 +736,7 @@ public class IndexDatabase {
                 if (finishingException == null) {
                     finishingException = e;
                 }
-                LOGGER.log(Level.WARNING,
-                    "An error occurred while closing writer", e);
+                LOGGER.log(Level.WARNING, "An error occurred while closing writer", e);
             } finally {
                 writer = null;
                 synchronized (lock) {
@@ -828,7 +749,7 @@ public class IndexDatabase {
             throw finishingException;
         }
 
-        if (!isInterrupted() && isDirty()) {
+        if (isDirty()) {
             unsetDirty();
             env.setIndexTimestamp();
         }
@@ -1011,9 +932,6 @@ public class IndexDatabase {
                     collect(Collectors.toList());
             LOGGER.log(Level.FINEST, "collected sorted files: {0}", paths);
             for (Path path : paths) {
-                if (isInterrupted()) {
-                    return;
-                }
                 File file = new File(sourceRoot, path.toString());
                 progress.increment();
                 //
@@ -1714,11 +1632,6 @@ public class IndexDatabase {
      */
     @VisibleForTesting
     void indexDown(File dir, String parent, IndexDownArgs args, Progress progress) throws IOException {
-
-        if (isInterrupted()) {
-            return;
-        }
-
         AcceptSymlinkRet ret = new AcceptSymlinkRet();
         if (!accept(dir, ret)) {
             handleSymlink(parent, ret);
@@ -1938,8 +1851,9 @@ public class IndexDatabase {
      * Executes the second, parallel stage of indexing.
      * @param dir the parent directory (when appended to SOURCE_ROOT)
      * @param args contains a list of files to index, found during the earlier stage
+     * @throws IndexerException in case the indexing failed or was interrupted
      */
-    private void indexParallel(String dir, IndexDownArgs args) {
+    private void indexParallel(String dir, IndexDownArgs args) throws IndexerException {
 
         int worksCount = args.works.size();
         if (worksCount < 1) {
@@ -2005,12 +1919,11 @@ public class IndexDatabase {
                 bySuccess.computeIfAbsent(work.ret, key -> new ArrayList<>()).add(work);
             }
         } catch (InterruptedException | ExecutionException e) {
-            interrupted = true;
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
-            String exmsg = String.format("%d successes (%.1f%%) after aborting parallel-indexing",
-                successCount, successPct);
-            LOGGER.log(Level.SEVERE, exmsg, e);
+            LOGGER.log(Level.SEVERE, String.format("%d successes (%.1f%%) after aborting parallel-indexing",
+                    successCount, successPct));
+            throw new IndexerException(e);
         }
 
         args.curCount = currentCounter.intValue();
@@ -2031,12 +1944,6 @@ public class IndexDatabase {
         int numAlreadyClosed = alreadyClosedCounter.get();
         if (numAlreadyClosed > 0) {
             throw new AlreadyClosedException(String.format("count=%d", numAlreadyClosed));
-        }
-    }
-
-    private boolean isInterrupted() {
-        synchronized (lock) {
-            return interrupted;
         }
     }
 

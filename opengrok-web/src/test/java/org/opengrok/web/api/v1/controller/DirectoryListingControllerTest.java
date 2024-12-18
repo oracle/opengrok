@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -52,9 +52,9 @@ import org.opengrok.web.api.v1.RestApp;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,7 +101,9 @@ class DirectoryListingControllerTest extends OGKJerseyTest {
                 null); // repositories - needed when refreshing history partially
 
         // Run the indexer so that LOC fields are populated.
-        Indexer.getInstance().doIndexerExecution(Collections.singletonList("/git"), null);
+        Project project = Project.getProject("/git");
+        assertNotNull(project);
+        Indexer.getInstance().doIndexerExecution(Set.of(project), null);
     }
 
     @AfterEach

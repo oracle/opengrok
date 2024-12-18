@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -39,6 +39,7 @@ import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -54,9 +55,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -105,7 +106,9 @@ class FileControllerTest extends OGKJerseyTest {
                 // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
-        Indexer.getInstance().doIndexerExecution(Collections.singletonList("/git"), null);
+        Project project = Project.getProject("/git");
+        assertNotNull(project);
+        Indexer.getInstance().doIndexerExecution(Set.of(project), null);
     }
 
     @AfterEach

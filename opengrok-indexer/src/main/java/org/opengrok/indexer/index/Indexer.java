@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -165,14 +166,25 @@ public final class Indexer {
      *
      * @param argv argument vector
      */
-    @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String[] argv) {
+        System.exit(runMain(argv));
+    }
+
+    /**
+     * The body of {@link #main(String[])}. Avoids {@code System.exit()} so that it can be used for testing
+     * without the test runner thinking the VM went away unexpectedly.
+     * @param argv argument vector passed from the wrapper
+     * @return 0 on success, positive number on error
+     */
+    @SuppressWarnings("PMD.UseStringBufferForStringAppends")
+    @VisibleForTesting
+    public static int runMain(String[] argv) {
         Statistics stats = new Statistics(); //this won't count JVM creation though
 
         Executor.registerErrorHandler();
-        List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
-        Set<String> subFilePaths = new HashSet<>();
-        Set<String> subFileArgs = new HashSet<>();
+        Set<String> subFilePaths = new HashSet<>(); // absolute paths
+        Set<String> subFileArgs = new HashSet<>();  // relative to source root
+        int exitCode = 0;
 
         try {
             argv = parseOptions(argv);
@@ -180,7 +192,7 @@ public final class Indexer {
             if (webappURI != null && !HostUtil.isReachable(webappURI, cfg.getConnectTimeout(),
                     cfg.getIndexerAuthenticationToken())) {
                 System.err.println(webappURI + " is not reachable and the -U option was specified, exiting.");
-                System.exit(1);
+                return 1;
             }
 
             /*
@@ -276,30 +288,7 @@ public final class Indexer {
 
             // Check index(es) and exit. Use distinct return code upon failure.
             if (indexCheckMode.ordinal() > IndexCheck.IndexCheckMode.NO_CHECK.ordinal()) {
-                if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
-                    System.err.println("Empty data root in configuration");
-                    System.exit(1);
-                }
-
-                try (IndexCheck indexCheck = new IndexCheck(cfg, subFileArgs)) {
-                    indexCheck.check(indexCheckMode);
-                } catch (IOException e) {
-                    // Use separate return code for cases where the index could not be read.
-                    // This avoids problems with wiping out the index based on the check.
-                    LOGGER.log(Level.WARNING, String.format("Could not perform index check for '%s'", subFileArgs), e);
-                    System.exit(2);
-                } catch (IndexCheckException e) {
-                    System.err.printf("Index check failed%n");
-                    if (!e.getFailedPaths().isEmpty()) {
-                        System.err.print("You might want to remove " + e.getFailedPaths());
-                    } else {
-                        System.err.println("with exception: " + e);
-                        e.printStackTrace(System.err);
-                    }
-                    System.exit(1);
-                }
-
-                System.exit(0);
+                checkIndexAndExit(subFileArgs);
             }
 
             if (bareConfig) {
@@ -308,57 +297,58 @@ public final class Indexer {
 
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
-                System.exit(0);
+                return 0;
+            }
+
+            // The indexer does not support partial reindex, unless this is a case of per project reindex.
+            if (!subFilePaths.isEmpty() && !env.isProjectsEnabled()) {
+                System.err.println("Need to have projects enabled for the extra paths specified");
+                return 1;
             }
 
             /*
-             * Add paths to directories under source root. If projects
-             * are enabled the path should correspond to a project because
-             * project path is necessary to correctly set index directory
-             * (otherwise the index files will end up in index data root
+             * Add paths to directories under source root. Each path must correspond to a project,
+             * because project path is necessary to correctly set index directory
+             * (otherwise the index files will end up in the 'index' directory directly underneath the data root
              * directory and not per project data root directory).
-             * For the check we need to have 'env' already set.
+             * For the check we need to have the 'env' variable already set.
              */
+            Set<Project> projects = new HashSet<>();
             for (String path : subFilePaths) {
                 String srcPath = env.getSourceRootPath();
                 if (srcPath == null) {
                     System.err.println("Error getting source root from environment. Exiting.");
-                    System.exit(1);
+                    return 1;
                 }
 
                 path = path.substring(srcPath.length());
-                if (env.hasProjects()) {
-                    // The paths need to correspond to a project.
-                    Project project;
-                    if ((project = Project.getProject(path)) != null) {
-                        subFiles.add(path);
-                        List<RepositoryInfo> repoList = env.getProjectRepositoriesMap().get(project);
-                        if (repoList != null) {
-                            repositories.addAll(repoList.
-                                    stream().map(RepositoryInfo::getDirectoryNameRelative).collect(Collectors.toSet()));
-                        }
-                    } else {
-                        System.err.println(String.format("The path '%s' does not correspond to a project", path));
-                        System.exit(1);
+                // The paths must correspond to a project.
+                Project project;
+                if ((project = Project.getProject(path)) != null) {
+                    projects.add(project);
+                    List<RepositoryInfo> repoList = env.getProjectRepositoriesMap().get(project);
+                    if (repoList != null) {
+                        repositories.addAll(repoList.
+                                stream().map(RepositoryInfo::getDirectoryNameRelative).collect(Collectors.toSet()));
                     }
                 } else {
-                    // TODO: does this assume projects are enabled ?
-                    subFiles.add(path);
+                    System.err.println(String.format("The path '%s' does not correspond to a project", path));
+                    return 1;
                 }
             }
 
-            if (!subFilePaths.isEmpty() && subFiles.isEmpty()) {
+            if (!subFilePaths.isEmpty() && projects.isEmpty()) {
                 System.err.println("None of the paths were added, exiting");
-                System.exit(1);
+                return 1;
             }
 
-            if (!subFiles.isEmpty() && configFilename != null) {
-                LOGGER.log(Level.WARNING, "The collection of entries to process is non empty ({0}), seems like " +
+            if (!projects.isEmpty() && configFilename != null) {
+                LOGGER.log(Level.WARNING, "The collection of paths to process is non empty ({0}), seems like " +
                         "the intention is to perform per project reindex, however the -W option is used. " +
-                        "This will likely not work.", subFiles);
+                        "This will likely not work.", projects);
             }
 
-            Metrics.updateSubFiles(subFiles);
+            Metrics.updateProjects(projects);
 
             // If the webapp is running with a config that does not contain
             // 'projectsEnabled' property (case of upgrade or transition
@@ -366,12 +356,7 @@ public final class Indexer {
             // so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
             if (addProjects && webappURI != null) {
-                try {
-                    IndexerUtil.enableProjects(webappURI);
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, String.format("Couldn't notify the webapp on %s.", webappURI), e);
-                    System.err.printf("Couldn't notify the webapp on %s: %s.%n", webappURI, e.getLocalizedMessage());
-                }
+                enableProjectsInWebApp();
             }
 
             LOGGER.log(Level.INFO, "Indexer version {0} ({1}) running on Java {2} with properties: {3}",
@@ -401,7 +386,7 @@ public final class Indexer {
                         collect(Collectors.toSet());
             }
             Map<Repository, Optional<Exception>> historyCacheResults = getInstance().prepareIndexer(env,
-                    searchPaths, addProjects, runIndex, subFiles, new ArrayList<>(repositories));
+                    searchPaths, addProjects, runIndex, new ArrayList<>(repositories));
 
             // Set updated configuration in RuntimeEnvironment. This is called so that repositories discovered
             // in prepareIndexer() are stored in the Configuration used by RuntimeEnvironment.
@@ -416,12 +401,12 @@ public final class Indexer {
                 if (ignoreHistoryCacheFailures) {
                     if (historyCacheResults.values().stream().anyMatch(Optional::isPresent)) {
                         LOGGER.log(Level.INFO, "There have been history cache creation failures, " +
-                                "however --ignoreHistoryCacheFailures was used, hence ignoring them: {0}",
+                                        "however --ignoreHistoryCacheFailures was used, hence ignoring them: {0}",
                                 historyCacheResults);
                     }
                     historyCacheResults = Collections.emptyMap();
                 }
-                getInstance().doIndexerExecution(subFiles, progress, historyCacheResults);
+                getInstance().doIndexerExecution(projects, progress, historyCacheResults);
             }
 
             if (reduceSegmentCount) {
@@ -431,21 +416,30 @@ public final class Indexer {
             writeConfigToFile(env, configFilename);
 
             // Finally, send new configuration to the web application in the case of full reindex.
-            if (webappURI != null && subFiles.isEmpty()) {
+            if (webappURI != null && projects.isEmpty()) {
                 getInstance().sendToConfigHost(env, webappURI);
             }
         } catch (ParseException e) {
+            // This is likely a problem with processing command line arguments, hence print the error to standard
+            // error output.
             System.err.println("** " + e.getMessage());
-            System.exit(1);
+            exitCode = 1;
         } catch (IndexerException ex) {
-            LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
-            System.err.println("Exception: " + ex.getLocalizedMessage());
-            System.err.println(optParser.getUsage());
-            System.exit(1);
+            // The exception(s) were logged already however it does not hurt to reiterate them
+            // at the very end of indexing (sans the stack trace) since they might have been buried in the log.
+            LOGGER.log(Level.SEVERE, "Indexer failed with IndexerException");
+            int i = 0;
+            if (ex.getSuppressed().length > 0) {
+                LOGGER.log(Level.INFO, "Suppressed exceptions ({0} in total):", ex.getSuppressed().length);
+                for (Throwable throwable : ex.getSuppressed()) {
+                    LOGGER.log(Level.INFO, "{0}: {1}", new Object[]{++i, throwable.getLocalizedMessage()});
+                }
+            }
+            exitCode = 1;
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Unexpected Exception", e);
             System.err.println("Exception: " + e.getLocalizedMessage());
-            System.exit(1);
+            exitCode = 1;
         } finally {
             env.shutdownSearchExecutor();
             /*
@@ -456,6 +450,48 @@ public final class Indexer {
             env.getIndexerParallelizer().bounce();
             stats.report(LOGGER, "Indexer finished", "indexer.total");
         }
+
+        if (exitCode == 0) {
+            LOGGER.log(Level.INFO, "Indexer finished with success");
+        }
+
+        return exitCode;
+    }
+
+    private static void enableProjectsInWebApp() {
+        try {
+            IndexerUtil.enableProjects(webappURI);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, String.format("Couldn't notify the webapp on %s.", webappURI), e);
+            System.err.printf("Couldn't notify the webapp on %s: %s.%n", webappURI, e.getLocalizedMessage());
+        }
+    }
+
+    private static void checkIndexAndExit(Set<String> subFileArgs) {
+        if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
+            System.err.println("Empty data root in configuration");
+            System.exit(1);
+        }
+
+        try (IndexCheck indexCheck = new IndexCheck(cfg, subFileArgs)) {
+            indexCheck.check(indexCheckMode);
+        } catch (IOException e) {
+            // Use separate return code for cases where the index could not be read.
+            // This avoids problems with wiping out the index based on the check.
+            LOGGER.log(Level.WARNING, String.format("Could not perform index check for '%s'", subFileArgs), e);
+            System.exit(2);
+        } catch (IndexCheckException e) {
+            System.err.printf("Index check failed%n");
+            if (!e.getFailedPaths().isEmpty()) {
+                System.err.print("You might want to remove " + e.getFailedPaths());
+            } else {
+                System.err.println("with exception: " + e);
+                e.printStackTrace(System.err);
+            }
+            System.exit(1);
+        }
+
+        System.exit(0);
     }
 
     /**
@@ -1071,7 +1107,7 @@ public final class Indexer {
 
         return prepareIndexer(env,
                 searchRepositories ? Collections.singleton(env.getSourceRootPath()) : Collections.emptySet(),
-                addProjects, true, subFiles, repositories);
+                addProjects, true, repositories);
     }
 
     /**
@@ -1086,7 +1122,6 @@ public final class Indexer {
      * @param searchPaths        list of paths relative to source root in which to search for repositories
      * @param addProjects        if true, add projects
      * @param createHistoryCache create history cache flag
-     * @param subFiles           list of directories
      * @param repositories       list of repository paths relative to source root
      * @return map of repository to exception
      * @throws IndexerException indexer exception
@@ -1096,7 +1131,6 @@ public final class Indexer {
                                                                Set<String> searchPaths,
                                                                boolean addProjects,
                                                                boolean createHistoryCache,
-                                                               List<String> subFiles,
                                                                List<String> repositories) throws IndexerException, IOException {
 
         if (!env.validateUniversalCtags()) {
@@ -1171,21 +1205,25 @@ public final class Indexer {
         }
     }
 
-    public void doIndexerExecution(List<String> subFiles, IndexChangedListener progress) throws IOException {
-        doIndexerExecution(subFiles, progress, Collections.emptyMap());
+    @VisibleForTesting
+    public void doIndexerExecution(Set<Project> projects, IndexChangedListener progress) throws IOException, IndexerException {
+        doIndexerExecution(projects, progress, Collections.emptyMap());
     }
 
     /**
      * This is the second phase of the indexer which generates Lucene index
-     * by passing source code files through ctags, generating xrefs
+     * by passing source code files through {@code ctags}, generating xrefs
      * and storing data from the source files in the index (along with history, if any).
      *
-     * @param subFiles if not {@code null}, index just some subdirectories
+     * @param projects if not {@code null}, index just the projects specified
      * @param progress if not {@code null}, an object to receive notifications as indexer progress is made
+     * @param historyCacheResults per repository results of history cache update
      * @throws IOException if I/O exception occurred
+     * @throws IndexerException if the indexing has failed for any reason
      */
-    public void doIndexerExecution(@Nullable List<String> subFiles, @Nullable IndexChangedListener progress,
-                                   Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
+    public void doIndexerExecution(@Nullable Set<Project> projects, @Nullable IndexChangedListener progress,
+                                   Map<Repository, Optional<Exception>> historyCacheResults)
+            throws IOException, IndexerException {
 
         Statistics elapsed = new Statistics();
         LOGGER.info("Starting indexing");
@@ -1193,20 +1231,16 @@ public final class Indexer {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         try (IndexerParallelizer parallelizer = env.getIndexerParallelizer()) {
             final CountDownLatch latch;
-            if (subFiles == null || subFiles.isEmpty()) {
-                latch = IndexDatabase.updateAll(progress, historyCacheResults);
+            if (projects == null || projects.isEmpty()) {
+                IndexDatabase.updateAll(progress, historyCacheResults);
             } else {
+                // Setup with projects enabled is assumed here.
                 List<IndexDatabase> dbs = new ArrayList<>();
-
-                for (String path : subFiles) {
-                    Project project = Project.getProject(path);
-                    if (project == null && env.hasProjects()) {
-                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
-                    } else {
-                        addIndexDatabase(path, project, dbs, historyCacheResults);
-                    }
+                for (Project project : projects) {
+                    addIndexDatabase(project, dbs, historyCacheResults);
                 }
 
+                final IndexerException indexerException = new IndexerException();
                 latch = new CountDownLatch(dbs.size());
                 for (final IndexDatabase db : dbs) {
                     db.addIndexChangedListener(progress);
@@ -1214,51 +1248,43 @@ public final class Indexer {
                         try {
                             db.update();
                         } catch (Throwable e) {
+                            indexerException.addSuppressed(e);
                             LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                         } finally {
                             latch.countDown();
                         }
                     });
                 }
+
+                // Wait forever for the executors to finish.
+                try {
+                    LOGGER.info("Waiting for the executors to finish");
+                    latch.await();
+                } catch (InterruptedException exp) {
+                    LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
+                    indexerException.addSuppressed(exp);
+                }
+
+                if (indexerException.getSuppressed().length > 0) {
+                    throw indexerException;
+                }
             }
 
-            // Wait forever for the executors to finish.
-            try {
-                LOGGER.info("Waiting for the executors to finish");
-                latch.await();
-            } catch (InterruptedException exp) {
-                LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
-                        " for executor to finish", exp);
-            }
             elapsed.report(LOGGER, "Done indexing data of all repositories", "indexer.repository.indexing");
         } finally {
             CtagsUtil.deleteTempFiles();
         }
     }
 
-    private static void addIndexDatabase(String path, Project project, List<IndexDatabase> dbs,
+    private static void addIndexDatabase(Project project, List<IndexDatabase> dbs,
                                          Map<Repository, Optional<Exception>> historyCacheResults) throws IOException {
         IndexDatabase db;
         if (project == null) {
             db = new IndexDatabase();
+            IndexDatabase.addIndexDatabase(db, dbs, historyCacheResults);
         } else {
             db = new IndexDatabase(project);
-        }
-        int idx = dbs.indexOf(db);
-        if (idx != -1) {
-            db = dbs.get(idx);
-        }
-
-        if (db.addDirectory(path)) {
-            if (idx == -1) {
-                if (project == null) {
-                    IndexDatabase.addIndexDatabase(db, dbs, historyCacheResults);
-                } else {
-                    IndexDatabase.addIndexDatabaseForProject(db, project, dbs, historyCacheResults);
-                }
-            }
-        } else {
-            LOGGER.log(Level.WARNING, "Directory ''{0}'' does not exist", path);
+            IndexDatabase.addIndexDatabaseForProject(db, project, dbs, historyCacheResults);
         }
     }
 
@@ -1269,9 +1295,9 @@ public final class Indexer {
         } catch (IOException | IllegalArgumentException ex) {
             LOGGER.log(Level.SEVERE, String.format(
                     "Failed to send configuration to %s "
-                    + "(is web application server running with opengrok deployed?)", webAppURI), ex);
+                    + "(is web application server running with OpenGrok deployed?)", webAppURI), ex);
         } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "interrupted while sending configuration");
+            LOGGER.log(Level.WARNING, "interrupted while sending configuration to {0}", webAppURI);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }
