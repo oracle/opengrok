@@ -1727,7 +1727,7 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            LOGGER.log(Level.SEVERE, "Failed to get file listing for: ''{0}''", dir.getPath());
+            LOGGER.log(Level.SEVERE, "Failed to get file listing for ''{0}''", dir.getPath());
             return;
         }
         Arrays.sort(files, FILENAME_COMPARATOR);
