@@ -25,6 +25,7 @@ import logging
 import os
 import signal
 import subprocess
+import textwrap
 import threading
 import time
 
@@ -211,7 +212,7 @@ class Command:
 
                     # Assuming that self.max_line_length is bigger than 3.
                     if self.max_line_length > 0 and len(line) > self.max_line_length:
-                        line = line[:self.max_line_length] + "..."
+                        line = textwrap.shorten(line, width=self.max_line_length, placeholder="...")
 
                     # Shorten the list to be one less than the maximum because a line is going to be added.
                     if self.max_lines > 0 and len(self.out) >= self.max_lines:
