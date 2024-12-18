@@ -338,10 +338,11 @@ public final class Indexer {
                                     stream().map(RepositoryInfo::getDirectoryNameRelative).collect(Collectors.toSet()));
                         }
                     } else {
-                        System.err.println("The path " + path
-                                + " does not correspond to a project");
+                        System.err.println(String.format("The path '%s' does not correspond to a project", path));
+                        System.exit(1);
                     }
                 } else {
+                    // TODO: does this assume projects are enabled ?
                     subFiles.add(path);
                 }
             }
@@ -1257,7 +1258,7 @@ public final class Indexer {
                 }
             }
         } else {
-            LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+            LOGGER.log(Level.WARNING, "Directory ''{0}'' does not exist", path);
         }
     }
 
