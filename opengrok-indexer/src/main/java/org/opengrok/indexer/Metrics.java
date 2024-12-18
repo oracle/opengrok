@@ -35,12 +35,12 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.micrometer.statsd.StatsdConfig;
 import io.micrometer.statsd.StatsdMeterRegistry;
 import io.micrometer.statsd.StatsdFlavor;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -108,13 +108,12 @@ public final class Metrics {
     private Metrics() {
     }
 
-    public static void updateSubFiles(List<String> subFiles) {
+    public static void updateProjects(Set<Project> projects) {
         // Add tag for per-project reindex.
-        if (statsdRegistry != null && !subFiles.isEmpty()) {
-            String projects = subFiles.stream().
-                    map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
+        if (statsdRegistry != null && !projects.isEmpty()) {
+            String projectNames = projects.stream().map(Project::getName).
                     collect(Collectors.joining(","));
-            Tag commonTag = Tag.of("projects", projects);
+            Tag commonTag = Tag.of("projects", projectNames);
             LOGGER.log(Level.FINE, "updating statsdRegistry with common tag: {}", commonTag);
             statsdRegistry.config().commonTags(Collections.singleton(commonTag));
         }

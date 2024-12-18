@@ -143,12 +143,6 @@ public final class RuntimeEnvironment {
 
     private final Set<ConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
 
-    public List<String> getSubFiles() {
-        return subFiles;
-    }
-
-    private final List<String> subFiles = new ArrayList<>();
-
     /**
      * Maps project name to FileCollector object. This is used to pass the list of files acquired when
      * generating history cache in the first phase of indexing to the second phase of indexing.
@@ -507,17 +501,15 @@ public final class RuntimeEnvironment {
             return maybeRelPath;
         }
 
-        throw new FileNotFoundException("Failed to resolve [" + file.getPath()
-                + "] relative to source root [" + sourceRoot + "]");
+        throw new FileNotFoundException(String.format("Failed to resolve '%s' relative to source root '%s'",
+                file.getPath(), sourceRoot));
     }
 
     /**
-     * Do we have any projects ?
-     *
-     * @return true if we have projects
+     * @return true if projects are enabled and there are some projects present
      */
     public boolean hasProjects() {
-        return (this.isProjectsEnabled() && getProjects().size() > 0);
+        return (this.isProjectsEnabled() && !getProjects().isEmpty());
     }
 
     /**

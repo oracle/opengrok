@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -1126,7 +1126,6 @@ class IndexDatabaseTest {
         final String barName = "bar.txt";
         final String repoName = "gitNoChange";
         Path repositoryRootPath = Path.of(env.getSourceRootPath(), repoName);
-        List<String> projectList = List.of(File.separator + repoName);
         try (Git gitParent = Git.init().setDirectory(parentRepositoryRoot).call()) {
             // Create initial commits for the files in the parent repository.
             final String fooName = "foo.txt";
@@ -1164,7 +1163,7 @@ class IndexDatabaseTest {
                 List<RepositoryInfo> repositoryInfos = env.getProjectRepositoriesMap().get(project);
                 assertEquals(1, repositoryInfos.size());
                 assertEquals("git", repositoryInfos.get(0).getType());
-                indexer.doIndexerExecution(projectList, null);
+                indexer.doIndexerExecution(Set.of(project), null);
 
                 // Change the parent repository so that it contains nullified change to the foo.txt file.
                 final String data = "change foo";

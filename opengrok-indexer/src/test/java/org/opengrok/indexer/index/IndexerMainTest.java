@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class IndexerMainTest {
     private TestRepository repository;
@@ -77,7 +78,7 @@ class IndexerMainTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-        Indexer.main(argv);
+        Indexer.runMain(argv);
         checkNumberOfThreads();
     }
 
@@ -90,7 +91,16 @@ class IndexerMainTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-        Indexer.main(argv);
+        Indexer.runMain(argv);
         checkNumberOfThreads();
+    }
+
+    @Test
+    void testSubFilesWithProjectsDisabled() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjectsEnabled(false);
+        String[] argv = {"-s", repository.getSourceRoot(),
+                "-d", repository.getDataRoot(), "-v", "-c", env.getCtags(), "foo"};
+        assertNotEquals(0, Indexer.runMain(argv));
     }
 }

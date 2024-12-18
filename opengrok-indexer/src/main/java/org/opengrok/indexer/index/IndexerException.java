@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -30,8 +30,15 @@ public class IndexerException extends Exception {
 
    private static final long serialVersionUID = -3009093549932264215L;
 
+   IndexerException() {
+      super();
+   }
+
    IndexerException(String string) {
       super(string);
    }
 
+   IndexerException(Exception e) {
+      super(e);
+   }
 }
