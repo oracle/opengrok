@@ -40,6 +40,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexCheck;
 import org.opengrok.indexer.index.IndexCheckException;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.RuntimeUtil;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.controller.ConfigurationController;
@@ -79,8 +80,9 @@ public final class WebappListener implements ServletContextListener, ServletRequ
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1}) on Java {2}",
-                    new Object[]{Info.getVersion(), Info.getRevision(), Runtime.version()});
+        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1}) on Java {2} with properties {3}",
+                    new Object[]{Info.getVersion(), Info.getRevision(), RuntimeUtil.getJavaVersion(),
+                    RuntimeUtil.getJavaProperties()});
 
         checkJavaVersion();
 

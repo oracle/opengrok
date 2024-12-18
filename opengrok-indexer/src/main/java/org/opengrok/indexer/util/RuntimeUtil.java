@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.util;
 
+
 public class RuntimeUtil {
     private RuntimeUtil() {
         // private for static
@@ -44,5 +45,44 @@ public class RuntimeUtil {
             throw new RuntimeException(String.format("unsupported Java version %d [%d,%d)",
                     majorVersion, JAVA_VERSION_MIN, JAVA_VERSION_MAX));
         }
+    }
+
+    /**
+     * @return string representing Java version and some properties
+     */
+    public static String getJavaVersion() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("version: ").append(Runtime.version());
+        stringBuilder.append(", name: ").append(System.getProperty("java.vm.name"));
+        stringBuilder.append(", vendor: ").append(System.getProperty("java.vendor"));
+        stringBuilder.append(", arch: ").append(System.getProperty("os.arch"));
+        return stringBuilder.toString();
+    }
+
+    private static String bytesToHumanReadable(long size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("Invalid size: " + size);
+        }
+        if (size < 1024) {
+            return size + " bytes";
+        }
+        String units = " KMGTPE";
+        int idx = 0;
+        float value = size;
+        while (value > 1024) {
+            value /= 1024;
+            idx++;
+        }
+        return String.format("%.1f %siB", value, units.substring(idx, idx + 1));
+    }
+
+    /**
+     * @return string representing Java properties of interest
+     */
+    public static String getJavaProperties() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("ncpu: ").append(Runtime.getRuntime().availableProcessors());
+        stringBuilder.append(", maxMemory: ").append(bytesToHumanReadable(Runtime.getRuntime().maxMemory()));
+        return stringBuilder.toString();
     }
 }
