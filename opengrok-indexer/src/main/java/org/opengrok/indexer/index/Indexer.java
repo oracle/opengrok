@@ -84,6 +84,7 @@ import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HostUtil;
 import org.opengrok.indexer.util.OptionParser;
+import org.opengrok.indexer.util.RuntimeUtil;
 import org.opengrok.indexer.util.Statistics;
 
 import static org.opengrok.indexer.util.RuntimeUtil.checkJavaVersion;
@@ -372,8 +373,9 @@ public final class Indexer {
                 }
             }
 
-            LOGGER.log(Level.INFO, "Indexer version {0} ({1}) running on Java {2}",
-                    new Object[]{Info.getVersion(), Info.getRevision(), Runtime.version()});
+            LOGGER.log(Level.INFO, "Indexer version {0} ({1}) running on Java {2} with properties: {3}",
+                    new Object[]{Info.getVersion(), Info.getRevision(), RuntimeUtil.getJavaVersion(),
+                            RuntimeUtil.getJavaProperties()});
 
             checkJavaVersion();
 
