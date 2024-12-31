@@ -29,6 +29,7 @@ public class WildCardMatcher extends LineMatcher {
 
     final String pattern;
 
+    @SuppressWarnings("this-escape")
     public WildCardMatcher(String pattern, boolean caseInsensitive) {
         super(caseInsensitive);
         this.pattern = normalizeString(pattern);

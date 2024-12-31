@@ -69,6 +69,7 @@ public final class IndexAnalysisSettings implements Serializable {
      * de-serialization circumvents normal construction.
      * @serial
      */
+    @SuppressWarnings("serial")
     private Map<String, Long> analyzersVersions = new HashMap<>();
 
     /**

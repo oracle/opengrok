@@ -2200,8 +2200,8 @@ public class IndexDatabase {
             TopDocs top = searcher.search(q, 1);
             stat.report(LOGGER, Level.FINEST, String.format("search via getDocument(%s) done", file),
                     "search.latency", new String[]{"category", "getdocument",
-                            "outcome", top.totalHits.value == 0 ? "empty" : "success"});
-            if (top.totalHits.value == 0) {
+                            "outcome", top.totalHits.value() == 0 ? "empty" : "success"});
+            if (top.totalHits.value() == 0) {
                 // No hits, no document...
                 return null;
             }
@@ -2294,7 +2294,7 @@ public class IndexDatabase {
                 new FileOutputStream(transientXref))));
     }
 
-    LockFactory pickLockFactory(RuntimeEnvironment env) {
+    private LockFactory pickLockFactory(RuntimeEnvironment env) {
         switch (env.getLuceneLocking()) {
             case ON:
             case SIMPLE:

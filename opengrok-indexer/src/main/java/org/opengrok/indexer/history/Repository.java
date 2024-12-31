@@ -78,14 +78,17 @@ public abstract class Repository extends RepositoryInfo {
      */
     protected String RepoCommand;
 
+    @SuppressWarnings("serial")
     protected final List<String> ignoredFiles;
 
+    @SuppressWarnings("serial")
     protected final List<String> ignoredDirs;
 
     /**
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
      */
+    @SuppressWarnings("serial")
     protected NavigableSet<TagEntry> tagList = null;
 
     abstract boolean fileHasHistory(File file);

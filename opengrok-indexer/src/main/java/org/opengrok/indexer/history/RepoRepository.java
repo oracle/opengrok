@@ -48,6 +48,7 @@ public class RepoRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "repo";
 
+    @SuppressWarnings("this-escape")
     public RepoRepository() {
         type = "repo";
         setWorking(Boolean.TRUE);

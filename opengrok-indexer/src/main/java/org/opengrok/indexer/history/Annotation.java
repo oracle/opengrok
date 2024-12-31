@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * Class representing file annotation, i.e., revision and author for the last
  * modification of each line in the file.
  */
-public class Annotation {
+public final class Annotation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Annotation.class);
 

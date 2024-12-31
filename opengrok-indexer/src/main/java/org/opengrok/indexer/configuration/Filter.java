@@ -37,10 +37,13 @@ public class Filter implements Serializable {
     private static final long serialVersionUID = 3L;
 
     /** The list of exact filenames. */
+    @SuppressWarnings("serial")
     private final Set<String> filenames;
     /** The list of filenames with wildcards. */
+    @SuppressWarnings("serial")
     private final List<Pattern> patterns;
     /** The list of paths. */
+    @SuppressWarnings("serial")
     private final List<String> paths;
     /**
      * The full list of all patterns. This list will be saved in the

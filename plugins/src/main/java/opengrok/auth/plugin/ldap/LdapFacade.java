@@ -176,6 +176,7 @@ public class LdapFacade extends AbstractLdapProvider {
         }
     }
 
+    @SuppressWarnings("this-escape")
     public LdapFacade(Configuration cfg) {
         setServers(cfg.getServers(), cfg.getConnectTimeout(), cfg.getReadTimeout());
         setInterval(cfg.getInterval());

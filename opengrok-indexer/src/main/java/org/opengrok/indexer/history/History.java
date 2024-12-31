@@ -46,19 +46,23 @@ public class History implements Serializable {
     static final String TAGS_SEPARATOR = ", ";
 
     /** Entries in the log. The first entry is the most recent one. */
+    @SuppressWarnings("serial")
     private List<HistoryEntry> entries;
     /**
      * Track renamed files, so they can be treated in special way (for some SCMs) during cache creation.
      * These are relative to repository root.
      */
+    @SuppressWarnings("serial")
     private final Set<String> renamedFiles;
 
     /**
      * Revision of the newest change. Used in history cache.
      */
+    @SuppressWarnings("serial")
     private String latestRev;
 
     // revision to tag list. Individual tags are joined via TAGS_SEPARATOR.
+    @SuppressWarnings("serial")
     private Map<String, String> tags = new HashMap<>();
 
     public History() {

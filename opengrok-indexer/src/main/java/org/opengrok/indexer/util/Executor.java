@@ -412,7 +412,7 @@ public class Executor {
             LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler((t, e) ->
                     LOGGER.log(Level.SEVERE, String.format("Uncaught exception in thread %s with ID %d: %s",
-                            t.getName(), t.getId(), e.getMessage()), e));
+                            t.getName(), t.threadId(), e.getMessage()), e));
         }
     }
 

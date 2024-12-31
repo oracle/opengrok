@@ -29,7 +29,6 @@ import org.apache.lucene.search.ConjunctionUtils;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
-import org.apache.lucene.search.Weight;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
@@ -66,16 +65,14 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
     // custom – constructor parameters
     /**
      * Creates custom exact phrase scorer which remembers the positions of the found matches.
-     * @param weight query weight
      * @param postings postings of the terms
      * @param offset the offset that is added to the found match position
      */
     CustomExactPhraseScorer(
-            final Weight weight,
             final CustomPhraseQuery.PostingsAndFreq[] postings,
             final int offset
     ) {
-        super(weight);
+        super();
 
         this.offset = offset; // custom
 
@@ -128,7 +125,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
 
     @Override
     public String toString() {
-        return "CustomExactPhraseScorer(" + weight + ")"; // custom – renamed class
+        return "CustomExactPhraseScorer(" + this.offset + ")"; // custom – renamed class
     }
 
     @Override
