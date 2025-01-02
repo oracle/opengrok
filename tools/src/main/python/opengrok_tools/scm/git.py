@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -44,7 +44,7 @@ class GitRepository(Repository):
         cmd = self.get_command(git_command, work_dir=self.path,
                                env_vars=self.env, logger=self.logger)
         cmd.execute()
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to configure git pull.ff")
 
     def reposync(self):

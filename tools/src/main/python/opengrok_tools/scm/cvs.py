@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -44,7 +44,7 @@ class CVSRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             self.logger.error("failed to perform update: command {}"
                               "in directory {} exited with {}".
                               format(hg_command, self.path, cmd.getretcode()))
