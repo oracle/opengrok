@@ -45,7 +45,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to get branch")
             return None
         else:
@@ -73,7 +73,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to perform pull")
             return 1
 
@@ -98,7 +98,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to perform pull and update")
             return 1
 
