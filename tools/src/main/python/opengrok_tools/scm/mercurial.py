@@ -157,7 +157,7 @@ class MercurialRepository(Repository):
         # If the 'hg out' command fails for some reason, it will return 255.
         # Hence, check for positive value as bail out indication.
         #
-        if status > 0:
+        if cmd.getstate() != Command.FINISHED or status > 0:
             return False
 
         revisions = list(filter(None, cmd.getoutputstr().split("\n")))
