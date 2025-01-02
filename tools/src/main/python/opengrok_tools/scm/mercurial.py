@@ -45,7 +45,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to get branch")
             return None
         else:
@@ -73,7 +73,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to perform pull")
             return 1
 
@@ -98,7 +98,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+        if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
             cmd.log_error("failed to perform pull and update")
             return 1
 
@@ -157,7 +157,7 @@ class MercurialRepository(Repository):
         # If the 'hg out' command fails for some reason, it will return 255.
         # Hence, check for positive value as bail out indication.
         #
-        if status > 0:
+        if cmd.getstate() != Command.FINISHED or status > 0:
             return False
 
         revisions = list(filter(None, cmd.getoutputstr().split("\n")))
