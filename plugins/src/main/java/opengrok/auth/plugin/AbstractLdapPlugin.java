@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2024, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -133,7 +133,8 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
             cfg = getConfiguration(configurationPath);
             ldapProvider = new LdapFacade(cfg);
         } catch (IOException ex) {
-            throw new IllegalArgumentException("Unable to read the configuration", ex);
+            throw new IllegalArgumentException(
+                    String.format("Unable to read the configuration from '%s'", configurationPath), ex);
         }
     }
 
