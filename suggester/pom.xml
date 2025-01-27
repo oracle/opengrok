@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -121,7 +121,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.20</version>
+            <version>1.4.21</version>
         </dependency>
 
         <dependency>
