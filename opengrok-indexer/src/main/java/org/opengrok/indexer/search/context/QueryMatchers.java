@@ -105,7 +105,7 @@ public final class QueryMatchers {
     private void getBooleans(BooleanQuery query) {
         for (BooleanClause clause : query) {
             if (!clause.isProhibited()) {
-                getTerms(clause.getQuery());
+                getTerms(clause.query());
             }
         }
     }

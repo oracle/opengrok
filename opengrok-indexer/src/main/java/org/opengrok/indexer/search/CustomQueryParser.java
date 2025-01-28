@@ -40,6 +40,7 @@ public class CustomQueryParser extends QueryParser {
      *
      * @param field default field for unqualified query terms
      */
+    @SuppressWarnings("this-escape")
     public CustomQueryParser(String field) {
         super(field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);

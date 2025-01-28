@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * The suggester specific configuration.
  */
-public class SuggesterConfig {
+public final class SuggesterConfig {
 
     public static final boolean ENABLED_DEFAULT = true;
     public static final int MAX_RESULTS_DEFAULT = 10;

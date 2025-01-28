@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
@@ -453,7 +453,7 @@ class UtilTest {
 
     @Test
     void testBuildLinkInvalidUrl1() {
-        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
+        assertThrows(URISyntaxException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
     @Test
@@ -553,21 +553,21 @@ class UtilTest {
     }
 
     @Test
-    void getQueryParamsEmptyTest() throws MalformedURLException {
-        URL url = new URL("http://test.com/test");
+    void getQueryParamsEmptyTest() throws URISyntaxException {
+        URI url = new URI("http://test.com/test");
         assertTrue(Util.getQueryParams(url).isEmpty());
     }
 
     @Test
-    void getQueryParamsEmptyTest2() throws MalformedURLException {
-        URL url = new URL("http://test.com/test?");
-        assertTrue(Util.getQueryParams(url).isEmpty());
+    void getQueryParamsEmptyTest2() throws URISyntaxException {
+        URI uri = new URI("http://test.com/test?");
+        assertTrue(Util.getQueryParams(uri).isEmpty());
     }
 
     @Test
-    void getQueryParamsSingleTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=value1");
-        Map<String, List<String>> params = Util.getQueryParams(url);
+    void getQueryParamsSingleTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=value1");
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertEquals(1, params.size());
 
@@ -575,9 +575,9 @@ class UtilTest {
     }
 
     @Test
-    void getQueryParamsMultipleTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=value1&param2=value2");
-        Map<String, List<String>> params = Util.getQueryParams(url);
+    void getQueryParamsMultipleTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=value1&param2=value2");
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertEquals(2, params.size());
 
@@ -586,9 +586,9 @@ class UtilTest {
     }
 
     @Test
-    void getQueryParamsMultipleSameTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=value1&param1=value2");
-        Map<String, List<String>> params = Util.getQueryParams(url);
+    void getQueryParamsMultipleSameTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=value1&param1=value2");
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertEquals(1, params.size());
 
@@ -596,9 +596,9 @@ class UtilTest {
     }
 
     @Test
-    void getQueryParamsEncodedTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=%3Fvalue%3F");
-        Map<String, List<String>> params = Util.getQueryParams(url);
+    void getQueryParamsEncodedTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=%3Fvalue%3F");
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertEquals(1, params.size());
 
@@ -606,19 +606,19 @@ class UtilTest {
     }
 
     @Test
-    void getQueryParamsEmptyValueTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=");
+    void getQueryParamsEmptyValueTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=");
 
-        Map<String, List<String>> params = Util.getQueryParams(url);
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertThat(params.get("param1"), contains(""));
     }
 
     @Test
-    void getQueryParamsEmptyAndNormalValuesCombinedTest() throws MalformedURLException {
-        URL url = new URL("http://test.com?param1=value1&param2=&param3&param4=value4");
+    void getQueryParamsEmptyAndNormalValuesCombinedTest() throws URISyntaxException {
+        URI uri = new URI("http://test.com?param1=value1&param2=&param3&param4=value4");
 
-        Map<String, List<String>> params = Util.getQueryParams(url);
+        Map<String, List<String>> params = Util.getQueryParams(uri);
 
         assertThat(params.get("param1"), contains("value1"));
         assertThat(params.get("param2"), contains(""));

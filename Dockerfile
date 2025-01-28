@@ -4,7 +4,7 @@
 FROM ubuntu:jammy AS build
 
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install --no-install-recommends -y openjdk-17-jdk python3 python3-venv && \
+RUN apt-get update && apt-get install --no-install-recommends -y openjdk-21-jdk python3 python3-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.30-jdk17
+FROM tomcat:10.1.31-jdk21
 LABEL maintainer="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.description="OpenGrok code search"

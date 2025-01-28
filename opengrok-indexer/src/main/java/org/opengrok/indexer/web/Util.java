@@ -677,13 +677,12 @@ public final class Util {
      * @param urlStr string URL
      * @return the encoded URL
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException URL malformed
      */
-    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
-        URL url = new URL(urlStr);
-        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
-                url.getHost(), url.getPort(),
-                url.getPath(), url.getQuery(), url.getRef());
+    public static String encodeURL(String urlStr) throws URISyntaxException {
+        // URL url = new URL(urlStr); - this call
+        //FIXME - above can encode url parts somehow, while if you change it to URI, it won't be able to convert e.g.
+        // http://www.example.com/"quotation"/else\ to http://www.example.com/"quotation"/else , see UtilTest:414
+        URI constructed = new URI(urlStr);
         return constructed.toString();
     }
 
@@ -1462,13 +1461,17 @@ public final class Util {
      * @return true if it is http URL, false otherwise
      */
     public static boolean isHttpUri(String string) {
-        URL url;
+        URI uri;
         try {
-            url = new URL(string);
-        } catch (MalformedURLException ex) {
+            uri = new URI(string);
+        } catch (URISyntaxException e) {
             return false;
         }
-        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            return false;
+        }
+        return scheme.equals("http") || scheme.equals("https");
     }
 
     protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
@@ -1481,8 +1484,8 @@ public final class Util {
     public static String redactUrl(String path) {
         URL url;
         try {
-            url = new URL(path);
-        } catch (MalformedURLException e) {
+            url = (new URI(path)).toURL();
+        } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             // not an URL
             return path;
         }
@@ -1527,7 +1530,7 @@ public final class Util {
                     attrs.put("rel", "noreferrer");
                 }
                 return buildLink(url, attrs);
-            } catch (URISyntaxException | MalformedURLException ex) {
+            } catch (URISyntaxException ex) {
                 return url;
             }
         }
@@ -1544,10 +1547,9 @@ public final class Util {
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException malformed URL
      */
     public static String buildLink(String name, Map<String, String> attrs)
-            throws URISyntaxException, MalformedURLException {
+            throws URISyntaxException {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<a");
         for (Entry<String, String> attr : attrs.entrySet()) {
@@ -1577,10 +1579,9 @@ public final class Util {
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException bad URL
      */
     public static String buildLink(String name, String url)
-            throws URISyntaxException, MalformedURLException {
+            throws URISyntaxException {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", url);
         return buildLink(name, attrs);
@@ -1674,20 +1675,20 @@ public final class Util {
 
     /**
      * Parses the specified URL and returns its query params.
-     * @param url URL to retrieve the query params from
+     * @param uri URI to retrieve the query params from
      * @return query params of {@code url}
      */
-    public static Map<String, List<String>> getQueryParams(final URL url) {
-        if (url == null) {
+    public static Map<String, List<String>> getQueryParams(final URI uri) {
+        if (uri == null) {
             throw new IllegalArgumentException("Cannot get query params from the null url");
         }
         Map<String, List<String>> returnValue = new HashMap<>();
 
-        if (url.getQuery() == null) {
+        if (uri.getQuery() == null) {
             return returnValue;
         }
 
-        Arrays.stream(url.getQuery().split("&"))
+        Arrays.stream(uri.getQuery().split("&"))
                 .filter(pair -> !pair.isEmpty())
                 .forEach(pair -> {
                     int idx = pair.indexOf('=');

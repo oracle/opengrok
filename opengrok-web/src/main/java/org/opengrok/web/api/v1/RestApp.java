@@ -31,6 +31,7 @@ public class RestApp extends ResourceConfig {
 
     public static final String API_PATH = "api/v1";
 
+    @SuppressWarnings("this-escape")
     public RestApp() {
         register(new SuggesterAppBinder());
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");

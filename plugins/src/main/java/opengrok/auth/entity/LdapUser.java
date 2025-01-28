@@ -36,6 +36,7 @@ import java.util.Set;
 public class LdapUser implements Serializable {
 
     private String dn; // Distinguished Name
+    @SuppressWarnings("serial")
     private final Map<String, Set<String>> attributes;
 
     private static final long serialVersionUID = 1L;

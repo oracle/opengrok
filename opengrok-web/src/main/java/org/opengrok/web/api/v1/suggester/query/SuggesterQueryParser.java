@@ -134,10 +134,10 @@ class SuggesterQueryParser extends CustomQueryParser {
             return super.getBooleanQuery(clauses);
         }
         var reducedList = clauses.stream()
-                .filter(booleanClause -> BooleanClause.Occur.SHOULD != booleanClause.getOccur())
+                .filter(booleanClause -> BooleanClause.Occur.SHOULD != booleanClause.occur())
                 .collect(Collectors.toList());
         inSuggesterClausesList.stream()
-                .filter(booleanClause -> BooleanClause.Occur.SHOULD == booleanClause.getOccur())
+                .filter(booleanClause -> BooleanClause.Occur.SHOULD == booleanClause.occur())
                 .forEach(reducedList::add);
         return super.getBooleanQuery(reducedList);
     }
@@ -145,7 +145,7 @@ class SuggesterQueryParser extends CustomQueryParser {
     private boolean isInSuggesterClauses(BooleanClause clause) {
         return suggesterClauses.stream()
                 .anyMatch(itemClause ->
-                        clause.getQuery().equals(itemClause.getQuery())
+                        clause.query().equals(itemClause.query())
                 );
     }
 

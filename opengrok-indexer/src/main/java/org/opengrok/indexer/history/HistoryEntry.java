@@ -57,6 +57,7 @@ public class HistoryEntry implements Serializable {
 
     private boolean active;
     @JsonIgnore
+    @SuppressWarnings("serial")
     private SortedSet<String> files;
 
     /** Creates a new instance of HistoryEntry. */

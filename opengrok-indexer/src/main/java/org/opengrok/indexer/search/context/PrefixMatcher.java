@@ -28,6 +28,7 @@ package org.opengrok.indexer.search.context;
 public class PrefixMatcher extends LineMatcher {
     private final String prefix;
 
+    @SuppressWarnings("this-escape")
     public PrefixMatcher(String prefix, boolean caseInsensitive) {
         super(caseInsensitive);
         this.prefix = normalizeString(prefix);

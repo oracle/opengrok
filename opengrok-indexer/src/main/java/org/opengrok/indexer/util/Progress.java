@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  * the higher log level ({@link Level} value) will be used. The default base level is {@code Level.INFO}.
  * Regardless of the base level, maximum 4 log levels will be used.
  */
-public class Progress implements AutoCloseable {
+public final class Progress implements AutoCloseable {
     private final Logger logger;
     private final Long totalCount;
     private final String suffix;

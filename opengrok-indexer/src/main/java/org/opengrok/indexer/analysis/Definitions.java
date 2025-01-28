@@ -65,7 +65,7 @@ public class Definitions implements Serializable {
     public static class LineTagMap implements Serializable {
 
         private static final long serialVersionUID = 1191703801007779481L;
-        @SuppressWarnings("java:S116")
+        @SuppressWarnings({"java:S116", "serial"})
         private final Map<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
@@ -73,16 +73,18 @@ public class Definitions implements Serializable {
         }
     }
     // line number -> tag map
-    @SuppressWarnings("java:S116")
+    @SuppressWarnings({"java:S116", "serial"})
     private final Map<Integer, LineTagMap> line_maps;
 
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
      */
+    @SuppressWarnings("serial")
     private final Map<String, Set<Integer>> symbols;
     /**
      * List of all the tags.
      */
+    @SuppressWarnings("serial")
     private final List<Tag> tags;
 
     public Definitions() {

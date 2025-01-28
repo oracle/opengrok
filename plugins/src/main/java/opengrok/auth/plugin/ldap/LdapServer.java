@@ -25,7 +25,6 @@ package opengrok.auth.plugin.ldap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -83,6 +82,8 @@ public class LdapServer implements Serializable {
     private int readTimeout;
 
     private int interval = 10 * 1000;
+
+    @SuppressWarnings("serial")
     private final Map<String, String> env;
     private transient LdapContext ctx;
     private long errorTimestamp = 0;
@@ -91,11 +92,13 @@ public class LdapServer implements Serializable {
         this(prepareEnv());
     }
 
+    @SuppressWarnings("this-escape")
     public LdapServer(String server) {
         this(prepareEnv());
         setName(server);
     }
 
+    @SuppressWarnings("this-escape")
     public LdapServer(String server, String username, String password) {
         this(prepareEnv());
         setName(server);
@@ -208,7 +211,6 @@ public class LdapServer implements Serializable {
      * Go through all IP addresses and find out if they are reachable.
      * @return true if all IP addresses are reachable, false otherwise
      */
-    @JsonIgnore
     public boolean isReachable() {
         try {
             InetAddress[] addresses = getAddresses(urlToHostname(getUrl()));
@@ -243,7 +245,6 @@ public class LdapServer implements Serializable {
      *
      * @return true if it is working
      */
-    @JsonIgnore
     public synchronized boolean isWorking() {
         if (ctx == null) {
             if (!isReachable()) {
@@ -260,7 +261,6 @@ public class LdapServer implements Serializable {
      *
      * @return the new connection or null
      */
-    @Nullable
     private synchronized LdapContext connect() {
         LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this);
 
@@ -292,8 +292,7 @@ public class LdapServer implements Serializable {
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this);
                 errorTimestamp = 0;
             } catch (NamingException ex) {
-                LOGGER.log(Level.WARNING,
-                        String.format("LDAP server %s is not responding", env.get(Context.PROVIDER_URL)), ex);
+                LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
                 errorTimestamp = System.currentTimeMillis();
                 close();
                 ctx = null;

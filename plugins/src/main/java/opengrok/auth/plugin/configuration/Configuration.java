@@ -55,6 +55,7 @@ public class Configuration implements Serializable {
     private static final long serialVersionUID = -1;
 
     @JsonProperty
+    @SuppressWarnings("serial")
     private List<LdapServer> servers = new ArrayList<>();
     @JsonProperty
     private int interval;

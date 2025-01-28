@@ -195,7 +195,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @return tab size if set, 0 otherwise
      * @see #hasTabSizeSetting()
      */
-    public int getTabSize() {
+    public final int getTabSize() {
         return tabSize;
     }
 
@@ -233,7 +233,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @param tabSize the size of tabs in this project
      */
-    public void setTabSize(int tabSize) {
+    public final void setTabSize(int tabSize) {
         this.tabSize = tabSize;
     }
 
@@ -262,7 +262,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @param navigateWindowEnabled new value of navigateWindowEnabled
      */
-    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+    public final void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
         this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
@@ -283,7 +283,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
-    public void setHandleRenamedFiles(boolean flag) {
+    public final void setHandleRenamedFiles(boolean flag) {
         this.handleRenamedFiles = flag;
     }
 
@@ -297,7 +297,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should have history cache, false otherwise.
      */
-    public void setHistoryEnabled(boolean flag) {
+    public final void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
     }
 
@@ -311,14 +311,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should have annotation cache, false otherwise.
      */
-    public void setAnnotationCacheEnabled(boolean flag) {
+    public final void setAnnotationCacheEnabled(boolean flag) {
         this.annotationCacheEnabled = flag;
     }
 
     /**
      * @param flag true if project's repositories should deal with merge commits.
      */
-    public void setMergeCommitsEnabled(boolean flag) {
+    public final void setMergeCommitsEnabled(boolean flag) {
         this.mergeCommitsEnabled = flag;
     }
 
@@ -332,7 +332,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
-    public void setHistoryBasedReindex(boolean flag) {
+    public final void setHistoryBasedReindex(boolean flag) {
         this.historyBasedReindex = flag;
     }
 
@@ -400,7 +400,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
     }
 
-    public void setBugPage(String bugPage) {
+    public final void setBugPage(String bugPage) {
         this.bugPage = bugPage;
     }
 
@@ -420,7 +420,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * does not contain at least one capture group and the group does not
      * contain a single character
      */
-    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+    public final void setBugPattern(String bugPattern) throws PatternSyntaxException {
         this.bugPattern = compilePattern(bugPattern);
     }
 
@@ -440,7 +440,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
     }
 
-    public void setReviewPage(String reviewPage) {
+    public final void setReviewPage(String reviewPage) {
         this.reviewPage = reviewPage;
     }
 
@@ -460,7 +460,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * does not contain at least one capture group and the group does not
      * contain a single character
      */
-    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+    public final void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
         this.reviewPattern = compilePattern(reviewPattern);
     }
 
@@ -469,7 +469,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * project property has a default value.
      */
     public final void completeWithDefaults() {
-        Configuration defaultCfg = new Configuration();
+        final Configuration defaultCfg = new Configuration();
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         /*

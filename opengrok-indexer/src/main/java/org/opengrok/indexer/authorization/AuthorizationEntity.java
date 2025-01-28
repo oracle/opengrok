@@ -119,13 +119,16 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     protected AuthControlFlag flag;
     protected String name;
+    @SuppressWarnings("serial")
     protected Map<String, Object> setup = new TreeMap<>();
     /**
      * Hold current setup - merged with all ancestor's stacks.
      */
     protected transient Map<String, Object> currentSetup = new TreeMap<>();
 
+    @SuppressWarnings("serial")
     private Set<String> forProjects = new TreeSet<>();
+    @SuppressWarnings("serial")
     private Set<String> forGroups = new TreeSet<>();
 
     protected transient boolean working = true;

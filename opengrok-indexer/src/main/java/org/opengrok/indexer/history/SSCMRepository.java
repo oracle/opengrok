@@ -70,6 +70,7 @@ public class SSCMRepository extends Repository {
     private static final String BRANCH_PROPERTY = "SCMBranch";
     private static final String REPOSITORY_PROPERTY = "SCMRepository";
 
+    @SuppressWarnings("this-escape")
     public SSCMRepository() {
         setType("SSCM");
         setRemote(true);

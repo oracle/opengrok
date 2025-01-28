@@ -51,6 +51,7 @@ public class AuthorizationStack extends AuthorizationEntity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationStack.class);
 
+    @SuppressWarnings("serial")
     private List<AuthorizationEntity> stack = new ArrayList<>();
 
     public AuthorizationStack() {
