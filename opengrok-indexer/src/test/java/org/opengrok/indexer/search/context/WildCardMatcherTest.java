@@ -35,26 +35,32 @@ class WildCardMatcherTest {
      * Test of match method.
      */
     @Test
-    void testMatch() {
+    void testMatchWildPatternQuestionMark() {
         WildCardMatcher m = new WildCardMatcher("wild?ard", true); // bug #15644
+
         assertEquals(LineMatcher.MATCHED, m.match("wildcard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildward"));
         assertEquals(LineMatcher.MATCHED, m.match("wilddard"));
         assertEquals(LineMatcher.MATCHED, m.match("wild?ard"));
+
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildcarde"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("awildcard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildddard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("mildcard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildc?rd"));
+    }
 
-        m = new WildCardMatcher("wild*ard", true);
+    @Test
+    void testMatchWildPatternAsterisk() {
+        WildCardMatcher m = new WildCardMatcher("wild*ard", true);
+
         assertEquals(LineMatcher.MATCHED, m.match("wildcard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildward"));
         assertEquals(LineMatcher.MATCHED, m.match("wilddard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildxyzard"));
-        assertEquals(LineMatcher.MATCHED, m.match("wildxyzard"));
+
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wild"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("ard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildcat"));
