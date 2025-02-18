@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -99,7 +99,7 @@ org.opengrok.indexer.web.SearchHelper"
                  */
                 Context sourceContext = new Context(tquery, qbuilder);
                 sourceContext.toggleAlt();
-                // SRCROOT is read with UTF-8 as a default.
+                // Files under source root are read with UTF-8 as a default.
                 try (Reader r = IOUtils.createBOMStrippedReader(
                         new FileInputStream(resourceFile),
                         StandardCharsets.UTF_8.name())) {

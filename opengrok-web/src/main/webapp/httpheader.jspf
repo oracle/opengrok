@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
@@ -38,6 +38,7 @@ to set the title of the document before the include directive for this fragment:
 org.opengrok.indexer.Info,
 org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.Util,
 org.opengrok.web.Scripts"
 %><%
 /* ---------------------- httpheader.jsp start --------------------- */
@@ -92,8 +93,8 @@ org.opengrok.web.Scripts"
 
 if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
-        "title=\"RSS feed for " + cfg.getPath() + "\" " +
-        "href=\"" + ctxPath + Prefix.RSS_P + cfg.getPath() + "\" />");
+        "title=\"RSS feed for " + Util.htmlize(cfg.getPath()) + "\" " +
+        "href=\"" + ctxPath + Prefix.RSS_P + Util.uriEncodePath(cfg.getPath()) + "\" />");
 }
 %>
 <link rel="search" href="<%=ctxPath%>/opensearch"
