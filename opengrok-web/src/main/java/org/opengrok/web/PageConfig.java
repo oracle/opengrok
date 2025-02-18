@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
@@ -1101,7 +1101,10 @@ public class PageConfig {
      * Get the canonical path of the related resource relative to the source
      * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
      * No check is made, whether the obtained path is really an accessible resource on disk.
-     *
+     * <p>
+     * Also, care needs to be taken when embedding the result in a page. Consider using {@link Util#htmlize(String)}
+     * or {@link Util#uriEncodePath(String)}.
+     * </p>
      * @return a possible empty String (denotes the source root directory) but not {@code null}.
      * @see HttpServletRequest#getPathInfo()
      */
@@ -1738,6 +1741,9 @@ public class PageConfig {
         return Util.htmlize(getShortPath(strPath) + " - OpenGrok history log for " + strPath);
     }
 
+    /**
+     * @return page title string with base name of the path and optionally revision ID, HTML encoded
+     */
     public String getPathTitle() {
         String strPath = getPath();
         String title = getShortPath(strPath);
