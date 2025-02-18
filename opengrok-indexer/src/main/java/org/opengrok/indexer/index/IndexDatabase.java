@@ -893,6 +893,7 @@ public class IndexDatabase {
         try {
             Document doc = IndexDatabase.getDocument(file);
             if (Objects.isNull(doc)) {
+                LOGGER.log(Level.WARNING, "cannot get document for ''{0}''", file);
                 return true;
             }
             IndexableField field = doc.getField(QueryBuilder.DATE);
@@ -900,14 +901,19 @@ public class IndexDatabase {
                 Date docDate = DateTools.stringToDate(field.stringValue());
                 // Assumes millisecond precision.
                 long lastModified = file.lastModified();
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINEST, String.format("checking date for '%s': %d %d",
+                            file, lastModified, docDate.getTime()));
+                }
                 if (lastModified <= docDate.getTime()) {
                     return false;
                 }
             } catch (java.text.ParseException e) {
+                LOGGER.log(Level.WARNING, String.format("cannot convert date for '%s'", file), e);
                 return true;
             }
         } catch (ParseException | IOException e) {
-            LOGGER.log(Level.FINEST, "cannot get document for ''{0}''", file);
+            LOGGER.log(Level.WARNING, String.format("cannot get document for '%s'", file), e);
         }
 
         return true;
