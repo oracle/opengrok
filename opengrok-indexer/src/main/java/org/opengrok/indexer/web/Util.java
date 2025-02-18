@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
@@ -401,17 +401,17 @@ public final class Util {
     /**
      * Create a breadcrumb path to allow navigation to each element of a path.
      * Consecutive separators (<var>sep</var>) in the given <var>path</var> are
-     * always collapsed into a single separator automatically. If
-     * <var>compact</var> is {@code true} path gets translated into a canonical
+     * always collapsed into a single separator automatically.
+     * If <var>compact</var> is {@code true} path gets translated into a canonical
      * path similar to {@link File#getCanonicalPath()}, however the current
      * working directory is assumed to be "/" and no checks are done (e.g.
      * neither whether the path [component] exists nor which type it is).
      *
-     * @param urlPrefix what should be prepend to the constructed URL
+     * @param urlPrefix what should be prepended to the constructed URL
      * @param path the full path from which the breadcrumb path is built.
      * @param sep the character that separates the path components in
      * <var>path</var>
-     * @param urlPostfix what should be append to the constructed URL
+     * @param urlPostfix what should be appended to the constructed URL
      * @param compact if {@code true}, a canonical path gets constructed before
      * processing.
      * @param isDir if {@code true} a "/" gets append to the last path
