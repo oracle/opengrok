@@ -66,7 +66,6 @@ org.opengrok.indexer.web.Util"%>
     }
 
     // set the default page title
-    String path = cfg.getPath();
     cfg.setTitle(cfg.getPathTitle());
 }
 %>
@@ -94,19 +93,18 @@ include file="/httpheader.jspf"
 
     String messages = "";
     if (cfg.getProject() != null) {
-        messages = MessagesUtils.messagesToJson(cfg.getProject(),
-                    MessagesContainer.MESSAGES_MAIN_PAGE_TAG);
+        messages = MessagesUtils.messagesToJson(cfg.getProject(), MessagesContainer.MESSAGES_MAIN_PAGE_TAG);
     }
     %>
     <a href="<%= context + Prefix.XREF_P %>/">xref</a>:
-    <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-    <% if (rev.length() != 0) { %>
+    <%= Util.breadcrumbPath(context + Prefix.XREF_P, path, '/', "", true, cfg.isDir()) %>
+    <% if (!rev.isEmpty()) { %>
         (revision <%= Util.htmlize(rev) %>)
     <% } %>
     <span id="dtag">
     <%
     String dtag = cfg.getDefineTagsIndex();
-    if (dtag.length() > 0) {
+    if (!dtag.isEmpty()) {
         %> (<%= dtag %>)<%
     }
     %></span>

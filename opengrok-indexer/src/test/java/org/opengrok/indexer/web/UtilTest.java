@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -112,8 +112,7 @@ class UtilTest {
         // parent directories have a trailing slash in href
         assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b\">b</a>",
                 Util.breadcrumbPath("/r/", "a/b"));
-        // if basename is a dir (ends with file seperator), href link also
-        // ends with a '/'
+        // if basename is a dir (ends with file separator), href link also ends with a '/'
         assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b/\">b</a>/",
                 Util.breadcrumbPath("/r/", "a/b/"));
         // should work the same way with a '.' as file separator
@@ -129,11 +128,15 @@ class UtilTest {
         // Prefix gets just prefixed as is and not mangled wrt. path -> "//"
         assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
                 Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
-        // relative pathes are resolved wrt. / , so path resolves to /a/c/d
+        // relative paths are resolved wrt. / , so path resolves to /a/c/d
         assertEquals("/<a href=\"/r//a/\">a</a>/"
                         + "<a href=\"/r//a/c/\">c</a>/"
                         + "<a href=\"/r//a/c/d\">d</a>",
                 Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
+        // path components should be URI encoded and htmlized
+        assertEquals("<a href=\"/root/foo/&project=y\">foo</a>/"
+                + "<a href=\"/root/foo/bar%3E&project=y\">bar&gt;</a>",
+                Util.breadcrumbPath("/root/", "foo/bar>", '/', "&project=y", true));
     }
 
     @Test

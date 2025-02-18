@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -47,6 +47,7 @@ org.opengrok.indexer.web.Util"
 %>
 <%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 <%@ page import="org.opengrok.indexer.web.SortOrder" %>
+<%@ page import="java.util.Optional" %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
     final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -59,7 +60,7 @@ org.opengrok.indexer.web.Util"
 
     String path = cfg.getPath();
 
-    if (path.length() > 0) {
+    if (!path.isEmpty()) {
         String primePath = path;
         Project project = cfg.getProject();
         if (project != null) {
@@ -75,8 +76,7 @@ org.opengrok.indexer.web.Util"
             try {
                 primePath = searchHelper.getPrimeRelativePath(project.getName(), path);
             } catch (IOException | ForbiddenSymlinkException ex) {
-                LOGGER.log(Level.WARNING, String.format(
-                        "Error getting prime relative for %s", path), ex);
+                LOGGER.log(Level.WARNING, String.format("Error getting prime relative for '%s'", path), ex);
             }
         }
 
@@ -148,7 +148,7 @@ include file="/httpheader.jspf"
         request.setAttribute("history.jsp-slider", Util.createSlider(startIndex, max, totalHits, request));
 %>
         <div id="Masthead">History log of 
-        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path, '/', "", true, cfg.isDir()) %>
         (Results <span class="bold"> <%= totalHits != 0 ? startIndex + 1 : 0 %> – <%= startIndex + thisPageIndex
             %></span> of <span class="bold"><%= totalHits %></span>)
         </div>
@@ -258,16 +258,17 @@ document.domReady.push(function() {domReadyHistory();});
             <%
             int count=0;
             for (HistoryEntry entry : hist.getHistoryEntries(maxItems, startIndex)) {
-                String dispRev = entry.getDisplayRevision();
-                if (dispRev == null || dispRev.length() == 0) {
-                    dispRev = "";
+                if (Objects.isNull(entry)) {
+                    continue;
                 }
-                String rev = entry.getRevision();
-                if (rev == null || rev.length() == 0) {
-                    rev = "";
-                }
-                String tags = hist.getTags().get(rev);
 
+                final String htmlEncodedDisplayRevision = Optional.ofNullable(entry.getDisplayRevision()).
+                        map(Util::htmlize).
+                        orElse("");
+                final String rev = Optional.ofNullable(entry.getRevision()).
+                        orElse("");
+
+                String tags = hist.getTags().get(rev);
                 if (tags != null) {
                     int colspan;
                     if (cfg.isDir())
@@ -285,7 +286,7 @@ document.domReady.push(function() {domReadyHistory();});
         <tr><%
                 if (cfg.isDir()) {
             %>
-            <td><%= dispRev %></td><%
+            <td><%= htmlEncodedDisplayRevision %></td><%
                 } else {
                     if (entry.isActive()) {
                         StringBuffer urlBuffer = request.getRequestURL();
@@ -297,7 +298,7 @@ document.domReady.push(function() {domReadyHistory();});
             <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?" +
-                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= dispRev %>
+                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= htmlEncodedDisplayRevision %>
                 </a></td>
             <td><%
                 %><input type="radio"
@@ -339,7 +340,7 @@ document.domReady.push(function() {domReadyHistory();});
                     } else {
                         striked = true;
                 %>
-            <td><del><%= dispRev %></del></td>
+            <td><del><%= htmlEncodedDisplayRevision %></del></td>
             <td></td><%
                     }
                 }
@@ -354,7 +355,7 @@ document.domReady.push(function() {domReadyHistory();});
                 String author = entry.getAuthor();
                 if (author == null) {
                 %>(no author)<%
-                } else if (userPage != null && userPage.length() > 0) {
+                } else if (userPage != null && !userPage.isEmpty()) {
                     String alink = Util.getEmail(author);
                 %><a href="<%= userPage + Util.htmlize(alink) + userPageSuffix
                 %>"><%= Util.htmlize(author)%></a><%
@@ -362,15 +363,15 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= Util.htmlize(author) %><%
                 }
                 %></td>
-            <td><a id="<%= dispRev %>"></a><%
+            <td><a id="<%= htmlEncodedDisplayRevision %>"></a><%
                 // revision message collapse threshold minimum of 10
                 int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
 
-                if (bugPage != null && bugPage.length() > 0 && bugPattern != null) {
+                if (bugPage != null && !bugPage.isEmpty() && bugPattern != null) {
                     cout = Util.linkifyPattern(cout, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
                 }
-                if (reviewPage != null && reviewPage.length() > 0 && reviewPattern != null) {
+                if (reviewPage != null && !reviewPage.isEmpty() && reviewPattern != null) {
                     cout = Util.linkifyPattern(cout, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
                 }
                 
@@ -380,10 +381,10 @@ document.domReady.push(function() {domReadyHistory();});
                     showSummary = true;
                     coutSummary = coutSummary.substring(0, summaryLength - 1);
                     coutSummary = Util.htmlize(coutSummary);
-                    if (bugPage != null && bugPage.length() > 0 && bugPattern != null) {
+                    if (bugPage != null && !bugPage.isEmpty() && bugPattern != null) {
                         coutSummary = Util.linkifyPattern(coutSummary, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
                     }
-                    if (reviewPage != null && reviewPage.length() > 0 && reviewPattern != null) {
+                    if (reviewPage != null && !reviewPage.isEmpty() && reviewPattern != null) {
                         coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
                     }
                 }
@@ -406,11 +407,11 @@ document.domReady.push(function() {domReadyHistory();});
                         String jfile = Util.stripPathPrefix(path, ifile);
                         if (Objects.equals(rev, "")) {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + ifile %>"><%= jfile %></a><br/><%
+<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>"><%= Util.htmlize(jfile) %></a><br/><%
                         } else {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + ifile %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= rev %>"><%= jfile %></a><br/><%
+<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+<%= Util.uriEncode(rev) %>"><%= Util.htmlize(jfile) %></a><br/><%
                         }
                     }
                 %></div><%

@@ -350,7 +350,7 @@ public final class Util {
      * Convenience method for {@code breadcrumbPath(urlPrefix, path, PATH_SEPARATOR)}.
      *
      * @param urlPrefix prefix to add to each url
-     * @param path path to crack
+     * @param path the full path from which the breadcrumb path is built
      * @return HTML markup for the breadcrumb or the path itself.
      *
      * @see #breadcrumbPath(String, String, char)
@@ -364,7 +364,7 @@ public final class Util {
      * {@code breadcrumbPath(urlPrefix, path, sep, "", false)}.
      *
      * @param urlPrefix prefix to add to each url
-     * @param path path to crack
+     * @param path the full path from which the breadcrumb path is built
      * @param sep separator to use to crack the given path
      *
      * @return HTML markup fro the breadcrumb or the path itself.
@@ -379,13 +379,13 @@ public final class Util {
      * {@code breadcrumbPath(urlPrefix, path, sep, "", false, path.endsWith(sep)}.
      *
      * @param urlPrefix prefix to add to each url
-     * @param path path to crack
+     * @param path the full path from which the breadcrumb path is built
      * @param sep separator to use to crack the given path
      * @param urlPostfix suffix to add to each url
      * @param compact if {@code true} the given path gets transformed into its
-     * canonical form (.i.e. all '.' and '..' and double separators removed, but
+     * canonical form (.i.e. all <code>'.'</code> and <code>'..'</code> and double separators removed, but
      * not always resolves to an absolute path) before processing starts.
-     * @return HTML markup fro the breadcrumb or the path itself.
+     * @return HTML markup for the breadcrumb or the path itself
      * @see #breadcrumbPath(String, String, char, String, boolean, boolean)
      * @see #getCanonicalPath(String, char)
      */
@@ -408,12 +408,10 @@ public final class Util {
      * neither whether the path [component] exists nor which type it is).
      *
      * @param urlPrefix what should be prepended to the constructed URL
-     * @param path the full path from which the breadcrumb path is built.
-     * @param sep the character that separates the path components in
-     * <var>path</var>
+     * @param path the full path from which the breadcrumb path is built
+     * @param sep the character that separates the path components in <var>path</var>
      * @param urlPostfix what should be appended to the constructed URL
-     * @param compact if {@code true}, a canonical path gets constructed before
-     * processing.
+     * @param compact if {@code true}, a canonical path gets constructed before processing.
      * @param isDir if {@code true} a "/" gets append to the last path
      * component's link and <var>sep</var> to its name
      * @return <var>path</var> if it resolves to an empty or "/" or {@code null}
@@ -431,8 +429,7 @@ public final class Util {
         String prefix = urlPrefix == null ? "" : urlPrefix;
         String postfix = urlPostfix == null ? "" : urlPostfix;
         StringBuilder pwd = new StringBuilder(path.length() + pnames.length);
-        StringBuilder markup
-                = new StringBuilder((pnames.length + 3 >> 1) * path.length()
+        StringBuilder markup = new StringBuilder((pnames.length + 3 >> 1) * path.length()
                         + pnames.length
                         * (17 + prefix.length() + postfix.length()));
         int k = path.indexOf(pnames[0]);
@@ -445,9 +442,13 @@ public final class Util {
             if (isDir || i < pnames.length - 1) {
                 pwd.append(PATH_SEPARATOR);
             }
-            markup.append(ANCHOR_LINK_START).append(prefix).append(pwd)
-                    .append(postfix).append(CLOSE_QUOTED_TAG).append(pnames[i])
-                    .append(ANCHOR_END);
+            markup.append(ANCHOR_LINK_START).
+                    append(prefix).
+                    append(pwd).
+                    append(postfix).
+                    append(CLOSE_QUOTED_TAG).
+                    append(Util.htmlize(pnames[i])).
+                    append(ANCHOR_END);
             if (isDir || i < pnames.length - 1) {
                 markup.append(sep);
             }
@@ -520,8 +521,7 @@ public final class Util {
 
     /**
      * Remove all empty and {@code null} string elements from the given
-     * <var>names</var> and optionally all redundant information like "." and
-     * "..".
+     * <var>names</var> and optionally all redundant information like <code>"."</code> and <code>".."</code>.
      *
      * @param names names to check
      * @param canonical if {@code true}, remove redundant elements as well.
