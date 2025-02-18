@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="
@@ -41,7 +41,7 @@ org.opengrok.web.PageConfig"
     cfg.checkSourceRootExistence();
 
     String redir = cfg.canProcess();
-    if (redir == null || redir.length() > 0) {
+    if (redir == null || !redir.isEmpty()) {
         if (redir != null) {
             response.sendRedirect(redir);
         } else {
@@ -57,15 +57,14 @@ org.opengrok.web.PageConfig"
     %>/rss.xsl.xml"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
-    <title>Changes in <%= path.length() == 0
+    <title>Changes in <%= path.isEmpty()
         ? "Cross Reference"
         : Util.htmlize(cfg.getResourceFile().getName()) %></title>
     <description><%= Util.htmlize(dtag) %></description>
     <language>en</language>
-    <copyright>Copyright 2015</copyright>
+    <copyright>Copyright 2025</copyright>
     <generator>Java</generator><%
-    History hist = null;
-    String newline = System.getProperty("line.separator");
+    History hist;
     if(cfg.isDir()) {
         hist = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
     } else {
@@ -123,8 +122,7 @@ org.opengrok.web.PageConfig"
         %>
         </description>
         <pubDate><%
-            SimpleDateFormat df =
-                new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+            SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
         %><%= Util.htmlize(df.format(entry.getDate())) %></pubDate>
         <dc:creator><%= Util.htmlize(entry.getAuthor()) %></dc:creator>
     </item>
