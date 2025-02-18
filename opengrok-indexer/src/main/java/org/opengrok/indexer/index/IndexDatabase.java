@@ -2124,7 +2124,8 @@ public class IndexDatabase {
 
             // Only use the document if we found an exact match.
             if (!path.equals(foundPath)) {
-                LOGGER.log(Level.FINEST, "not matching path: ''{0}''", foundPath);
+                LOGGER.log(Level.FINEST, "not matching path: ''{0}'' for ''{1}''",
+                        new Object[]{foundPath, path});
                 return null;
             }
         } finally {
