@@ -2111,7 +2111,8 @@ public class IndexDatabase {
         try {
             Statistics stat = new Statistics();
             TopDocs top = searcher.search(q, 1);
-            stat.report(LOGGER, Level.FINEST, String.format("search via getDocument(%s) done", file),
+            stat.report(LOGGER, Level.FINEST,
+                    String.format("search via getDocument(%s) done (%d hits)", file, top.totalHits.value),
                     "search.latency", new String[]{"category", "getdocument",
                             "outcome", top.totalHits.value == 0 ? "empty" : "success"});
             if (top.totalHits.value == 0) {
@@ -2123,6 +2124,7 @@ public class IndexDatabase {
 
             // Only use the document if we found an exact match.
             if (!path.equals(foundPath)) {
+                LOGGER.log(Level.FINEST, "not matching path: ''{0}''", foundPath);
                 return null;
             }
         } finally {
