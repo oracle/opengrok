@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -93,7 +93,7 @@ public class IncludeFiles {
         return body;
     }
 
-    private transient String eforbidden_content = null;
+    private transient String eforbiddenContent = null;
 
     /**
      * Get the contents of the page for forbidden error page (403 Forbidden)
@@ -105,14 +105,14 @@ public class IncludeFiles {
      * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
      */
     public String getForbiddenIncludeFileContent(boolean force) {
-        if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+        if (eforbiddenContent == null || force) {
+            eforbiddenContent = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
                     Configuration.E_FORBIDDEN_INCLUDE_FILE));
         }
-        return eforbidden_content;
+        return eforbiddenContent;
     }
 
-    private transient String http_header = null;
+    private transient String httpHeader = null;
 
     /**
      * Get the contents of the HTTP header include file.
@@ -123,10 +123,10 @@ public class IncludeFiles {
      * @see Configuration#HTTP_HEADER_INCLUDE_FILE
      */
     public String getHttpHeaderIncludeFileContent(boolean force) {
-        if (http_header == null || force) {
-            http_header = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+        if (httpHeader == null || force) {
+            httpHeader = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
                     Configuration.HTTP_HEADER_INCLUDE_FILE));
         }
-        return http_header;
+        return httpHeader;
     }
 }
