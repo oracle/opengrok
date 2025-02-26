@@ -72,7 +72,7 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
   }
 %}
 
-Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
+Identifier = [a-zA-Z_\u007F-\uFFFF] [a-zA-Z0-9_\u007F-\uFFFF]*
 
 File = [a-zA-Z]{FNameChar}* "." ("php"|"php3"|"php4"|"phps"|"phtml"|"inc"|"diff"|"patch")
 
