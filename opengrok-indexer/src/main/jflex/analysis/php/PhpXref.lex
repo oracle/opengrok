@@ -136,7 +136,7 @@ import org.opengrok.indexer.web.HtmlConsts;
   }
 %}
 
-Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
+Identifier = [a-zA-Z_\u007F-\uFFFF] [a-zA-Z0-9_\u007F-\uFFFF]*
 
 File = [a-zA-Z]{FNameChar}* "." ("php"|"php3"|"php4"|"phps"|"phtml"|"inc"|"diff"|"patch")
 
@@ -172,7 +172,7 @@ DocParamWithName = "uses"
 DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
 //method needs special treatment
 
-HtmlNameStart = [a-zA-Z_\u00C0-\u10FFFFFF]
+HtmlNameStart = [a-zA-Z_\u00C0-\uFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 %state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE HTMLCOMMENT
