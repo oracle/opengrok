@@ -1,0 +1,13 @@
+diff --git a/How-to-setup-OpenGrok.md b/How-to-setup-OpenGrok.md
+index 442a258..3e14e3c 100644
+--- a/How-to-setup-OpenGrok.md
++++ b/How-to-setup-OpenGrok.md
+@@ -5,7 +5,7 @@ Note, that you need to create the index no matter what is your use case. Without
+ 
+ You need the following:
+ 
+-- Java from 11 to 22
++- Java from 11 to 21
+ - OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
+ - https://github.com/universal-ctags for analysis
+   - avoid Exuberant ctags, they are not maintained anymore and OpenGrok does not run with it
