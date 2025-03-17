@@ -499,8 +499,10 @@ public class MercurialRepositoryTest {
         // Branch the repo and add one changeset.
         runHgCommand(repositoryRoot, "unbundle",
                 Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+
         // Switch to the branch and add tag.
-        runHgCommand(repositoryRoot, "update", "mybranch");
+        final String myBranch = "mybranch";
+        runHgCommand(repositoryRoot, "update", myBranch);
         final String branchTagName = "branch_tag";
         runHgCommand(repositoryRoot, "tag", branchTagName);
 
@@ -509,7 +511,8 @@ public class MercurialRepositoryTest {
 
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
-        // Using double space on purpose to test the parsing of tags.
+
+        // Add tag. Using double space on purpose to test the parsing of tags.
         final String newTagName = "foo  bar";
         runHgCommand(repositoryRoot, "tag", newTagName);
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
@@ -522,6 +525,23 @@ public class MercurialRepositoryTest {
         assertEquals(List.of(7, 9), tags.stream().map(TagEntry::getRevision).collect(Collectors.toList()));
         List<String> expectedTags = List.of("start_of_novel", newTagName);
         assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+
+        // Add another tag to the default branch.
+        runHgCommand(repositoryRoot, "tag", "another_tag");
+
+        // Switch back to the non-default branch, check tags.
+        runHgCommand(repositoryRoot, "update", myBranch);
+        // The repository object has to be recreated to reflect the branch switch.
+        hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        tags = hgRepo.getTagList();
+        assertNotNull(tags);
+        assertEquals(3, tags.size());
+        expectedTags = List.of("start_of_novel", newTagName, branchTagName);
+        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+
+        // cleanup
         IOUtils.removeRecursive(repositoryRootPath);
     }
 }
