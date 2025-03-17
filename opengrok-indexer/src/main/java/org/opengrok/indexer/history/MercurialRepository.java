@@ -637,7 +637,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         argv.add("log");
         argv.add("-b");
         argv.add(getBranch());
-        argv.add("--rev=reverse(tag())");
+        argv.add("--rev=reverse(0::branch(" + this.getBranch() + ") and tag())");
         // Use '|' as a revision separator rather than ':' to avoid collision with the commonly used
         // separator within the revision string (which is not used in this output but better
         // safe than sorry).
