@@ -499,7 +499,7 @@ public class MercurialRepositoryTest {
         // Branch the repo and add one changeset.
         runHgCommand(repositoryRoot, "unbundle",
                 Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
-        // Switch to the branch.
+        // Switch to the branch and add tag.
         runHgCommand(repositoryRoot, "update", "mybranch");
         final String branchTagName = "branch_tag";
         runHgCommand(repositoryRoot, "tag", branchTagName);
