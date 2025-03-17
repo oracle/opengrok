@@ -516,6 +516,7 @@ public class MercurialRepositoryTest {
 
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
+        assertEquals("default", hgRepo.getBranch());
 
         // Add tag. Using double space on purpose to test the parsing of tags.
         final String newTagName = "foo  bar";
