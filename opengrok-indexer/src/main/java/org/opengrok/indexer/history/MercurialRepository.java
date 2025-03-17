@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -634,12 +634,15 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
-        argv.add("tags");
+        argv.add("log");
+        argv.add("-b");
+        argv.add(getBranch());
+        argv.add("--rev=reverse(tag())");
         argv.add("--template");
         // Use '|' as a revision separator rather than ':' to avoid collision with the commonly used
-        // separator within the revision string (which is not used in the 'hg tags' output but better
+        // separator within the revision string (which is not used in this output but better
         // safe than sorry).
-        argv.add("{rev}|{tag}\\n");
+        argv.add("{latesttag % \"{rev}|{tag}\\n\"}");
 
         Executor executor = new Executor(argv, directory,
                 RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
