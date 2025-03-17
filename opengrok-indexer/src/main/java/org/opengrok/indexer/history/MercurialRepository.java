@@ -641,7 +641,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         // Use '|' as a revision separator rather than ':' to avoid collision with the commonly used
         // separator within the revision string (which is not used in this output but better
         // safe than sorry).
-        argv.add("--template={latesttag % \\\"{rev}|{tag}\\n\\\"}");
+        argv.add("--template={latesttag % '{rev}|{tag}\\n'}");
 
         Executor executor = new Executor(argv, directory,
                 RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
