@@ -483,9 +483,14 @@ public class MercurialRepositoryTest {
     }
 
     /**
-     * Clone the original repository, create branch and add tag to the branch, switch back to the original branch,
-     * add new tag, check that the extracted tags contain the pre-existing and new one
-     * but not the non-default branch tag.
+     * 1. Clone the original repository
+     * 2. create branch and add tag to the branch
+     * 3. switch back to the original branch, add new tag
+     * 4. check that the extracted tags contain the pre-existing and new one but not the non-default branch tag.
+     * 5. add another tag
+     * 6. switch to the non-default branch
+     * 7. check that the extracted tags consist of the tags added to the default branch before the branch point
+     *    and also the tags added in that branch
      */
     @Test
     void testBuildTagListOneMore() throws Exception {
@@ -534,6 +539,7 @@ public class MercurialRepositoryTest {
         // The repository object has to be recreated to reflect the branch switch.
         hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
+        assertEquals(myBranch, hgRepo.getBranch());
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
         tags = hgRepo.getTagList();
         assertNotNull(tags);
