@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -36,6 +36,7 @@ import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -80,6 +81,12 @@ import static org.opengrok.indexer.index.IndexCheck.getLiveDocumentPaths;
  */
 class IndexerVsDeletedDocumentsTest {
     RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    @BeforeAll
+    static void setUpClass() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
+    }
 
     private static String getRandomString(int numChars) {
         Random random = new Random();

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -75,9 +75,12 @@ class PageConfigTest {
 
     @BeforeAll
     public static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
+
         repository = new TestRepository();
         repository.create(PageConfigTest.class.getResource("/repositories"));
-        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
+        env.setRepositories(repository.getSourceRoot());
     }
 
     @AfterAll

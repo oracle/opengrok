@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -113,7 +113,7 @@ public class ProjectsController {
         if (!env.getProjects().containsKey(projectName)) {
             Project project = new Project(projectName, "/" + projectName);
 
-            if (env.isHistoryEnabled()) {
+            if (project.isHistoryEnabled()) {
                 // Add repositories in this project.
                 List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
 
@@ -130,7 +130,7 @@ public class ProjectsController {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
 
-            if (env.isHistoryEnabled()) {
+            if (project.isHistoryEnabled()) {
                 // Refresh the list of repositories of this project.
                 // This is the goal of this action: if an existing project
                 // is re-added, this means its list of repositories has changed.
@@ -202,7 +202,7 @@ public class ProjectsController {
             group.getProjects().remove(project);
         }
 
-        if (env.isHistoryEnabled()) {
+        if (project.isHistoryEnabled()) {
             // Now remove the repositories associated with this project.
             List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
             if (repos != null) {
@@ -302,11 +302,11 @@ public class ProjectsController {
     public Response deleteHistoryCache(@Context HttpServletRequest request,
                                        @PathParam("project") String projectNameParam) {
 
-        if (!env.isHistoryEnabled()) {
+        Project project = getProjectFromName(projectNameParam);
+        if (!project.isHistoryEnabled()) {
             return Response.status(Response.Status.NO_CONTENT).build();
         }
 
-        Project project = getProjectFromName(projectNameParam);
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
             LOGGER.log(Level.INFO, NO_REPO_LOG_MSG, project.getName());

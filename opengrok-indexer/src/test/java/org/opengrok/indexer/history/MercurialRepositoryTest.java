@@ -25,6 +25,7 @@ package org.opengrok.indexer.history;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -106,6 +107,12 @@ public class MercurialRepositoryTest {
         repository = new TestRepository();
         repository.create(Objects.requireNonNull(getClass().getResource("/repositories")));
         repositoryRoot = new File(repository.getSourceRoot(), "mercurial");
+    }
+
+    @BeforeAll
+    static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
     }
 
     @BeforeEach

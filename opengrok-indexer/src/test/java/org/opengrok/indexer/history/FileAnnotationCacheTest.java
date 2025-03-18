@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -60,6 +60,8 @@ class FileAnnotationCacheTest {
     void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResource("/repositories"));
+
+        env.setHistoryEnabled(true);
 
         // This needs to be set before the call to env.setRepositories() below as it instantiates HistoryGuru.
         env.setAnnotationCacheEnabled(true);

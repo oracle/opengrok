@@ -209,8 +209,6 @@ public final class Indexer {
                 exitWithHelp();
             }
 
-            checkConfiguration();
-
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
             }
@@ -277,6 +275,8 @@ public final class Indexer {
                     entry.getValue().setName(entry.getKey());
                 }
             }
+
+            checkConfiguration(cfg);
 
             // Set updated configuration in RuntimeEnvironment. This is called so that the tunables set
             // via command line options are available.
@@ -495,10 +495,43 @@ public final class Indexer {
     }
 
     /**
+     * Check if configuration is populated and self-consistent.
+     * @throws Configuration.ConfigurationException on error
+     */
+    public static void checkConfigurationValues(Configuration cfg) throws Configuration.ConfigurationException {
+
+        if (cfg.getSourceRoot() == null) {
+            throw new Configuration.ConfigurationException("Source root is not specified.");
+        }
+
+        if (cfg.getDataRoot() == null) {
+            throw new Configuration.ConfigurationException("Data root is not specified.");
+        }
+
+        if (!new File(cfg.getSourceRoot()).canRead()) {
+            throw new Configuration.ConfigurationException("Source root directory '" + cfg.getSourceRoot() + "' must be readable.");
+        }
+
+        if (!new File(cfg.getDataRoot()).canWrite()) {
+            throw new Configuration.ConfigurationException("Data root directory '" + cfg.getDataRoot() + "' must be writable.");
+        }
+
+        if (!cfg.isHistoryEnabled() && cfg.isHistoryBasedReindex()) {
+            LOGGER.log(Level.INFO, "History based reindex is on, however history is off. " +
+                    "History has to be enabled for history based reindex.");
+        }
+
+        if (!cfg.isHistoryCache() && cfg.isHistoryBasedReindex()) {
+            LOGGER.log(Level.INFO, "History based reindex is on, however history cache is off. " +
+                    "History cache has to be enabled for history based reindex.");
+        }
+    }
+
+    /**
      * This is supposed to be run after {@link #parseOptions(String[])}.
      * It will exit the program if there is some serious configuration (meaning {@link #cfg}) discrepancy.
      */
-    private static void checkConfiguration() {
+    private static void checkConfiguration(Configuration cfg) {
         if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
             die("Missing webappURI setting");
         }
@@ -513,7 +546,7 @@ public final class Indexer {
         }
 
         try {
-            cfg.checkConfiguration();
+            checkConfigurationValues(cfg);
         } catch (Configuration.ConfigurationException e) {
             die(e.getMessage());
         }
@@ -1025,8 +1058,6 @@ public final class Indexer {
         if (cfg == null) {
             cfg = new Configuration();
         }
-
-        cfg.setHistoryEnabled(false);  // force user to turn on history capture
 
         argv = optParser.parse(argv);
 

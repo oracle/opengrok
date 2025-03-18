@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -26,7 +26,6 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -52,11 +51,11 @@ public class LatestRevisionUtil {
 
     /**
      * @param file file object corresponding to a file under source root
-     * @return last revision string for {@code file} or null
+     * @return last revision string for {@code file} or {@code null}
      */
     @Nullable
     public static String getLatestRevision(File file) {
-        if (!RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+        if (!HistoryGuru.getInstance().repositorySupportsHistory(file)) {
             return null;
         }
 

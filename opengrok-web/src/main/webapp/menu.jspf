@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
@@ -177,9 +177,6 @@ document.domReady.push(function() { domReadyMenu(); });
             id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
-    <%
-        if (cfg.getEnv().isHistoryEnabled()) {
-    %>
     <tr>
         <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>"
               title="Search in project(s) repository log messages">History</label></td>
@@ -188,9 +185,6 @@ document.domReady.push(function() { domReadyMenu(); });
             id="<%= QueryParameters.HIST_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
-    <%
-        }
-    %>
     <tr>
         <td id="typeLabelTd"><label for="<%= QueryParameters.TYPE_SEARCH_PARAM %>">Type</label></td>
         <td><select class="q" tabindex="6" name="<%= QueryParameters.TYPE_SEARCH_PARAM %>"
