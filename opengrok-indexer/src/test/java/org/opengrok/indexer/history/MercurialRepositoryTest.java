@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -483,8 +483,14 @@ public class MercurialRepositoryTest {
     }
 
     /**
-     * Clone the original repository, add new tag, check that the extracted tags contain the pre-existing
-     * and new one.
+     * 1. Clone the original repository
+     * 2. create branch and add tag to the branch
+     * 3. switch back to the original branch, add new tag
+     * 4. check that the extracted tags contain the pre-existing and new one but not the non-default branch tag.
+     * 5. add another tag
+     * 6. switch to the non-default branch
+     * 7. check that the extracted tags consist of the tags added to the default branch before the branch point
+     *    and also the tags added in that branch
      */
     @Test
     void testBuildTagListOneMore() throws Exception {
@@ -494,9 +500,25 @@ public class MercurialRepositoryTest {
         // Clone the internal repository because it will be modified.
         // This avoids interference with other tests in this class.
         runHgCommand(this.repositoryRoot, "clone", this.repositoryRoot.toString(), repositoryRootPath.toString());
+
+        // Branch the repo and add one changeset.
+        runHgCommand(repositoryRoot, "unbundle",
+                Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+
+        // Switch to the branch and add tag.
+        final String myBranch = "mybranch";
+        runHgCommand(repositoryRoot, "update", myBranch);
+        final String branchTagName = "branch_tag";
+        runHgCommand(repositoryRoot, "tag", branchTagName);
+
+        // Switch back to the default branch.
+        runHgCommand(repositoryRoot, "update", "default");
+
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
-        // Using double space on purpose to test the parsing of tags.
+        assertEquals("default", hgRepo.getBranch());
+
+        // Add tag. Using double space on purpose to test the parsing of tags.
         final String newTagName = "foo  bar";
         runHgCommand(repositoryRoot, "tag", newTagName);
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
@@ -509,6 +531,24 @@ public class MercurialRepositoryTest {
         assertEquals(List.of(7, 9), tags.stream().map(TagEntry::getRevision).collect(Collectors.toList()));
         List<String> expectedTags = List.of("start_of_novel", newTagName);
         assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+
+        // Add another tag to the default branch.
+        runHgCommand(repositoryRoot, "tag", "another_tag");
+
+        // Switch back to the non-default branch, check tags.
+        runHgCommand(repositoryRoot, "update", myBranch);
+        // The repository object has to be recreated to reflect the branch switch.
+        hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(hgRepo);
+        assertEquals(myBranch, hgRepo.getBranch());
+        hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        tags = hgRepo.getTagList();
+        assertNotNull(tags);
+        assertEquals(3, tags.size());
+        expectedTags = List.of("start_of_novel", newTagName, branchTagName);
+        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+
+        // cleanup
         IOUtils.removeRecursive(repositoryRootPath);
     }
 }
