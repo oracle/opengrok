@@ -46,7 +46,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,33 +56,33 @@ import static org.mockito.Mockito.verify;
 class AnalyzerGuruDocumentTest {
     private RuntimeEnvironment env;
 
-    private static TestRepository repository;
+    private static TestRepository testRepository;
 
     @BeforeEach
     void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
-        repository = new TestRepository();
+        testRepository = new TestRepository();
         URL resourceURL = HistoryGuru.class.getResource("/repositories");
         assertNotNull(resourceURL);
-        repository.create(resourceURL);
+        testRepository.create(resourceURL);
 
-        env.setSourceRoot(repository.getSourceRoot());
-        env.setDataRoot(repository.getDataRoot());
+        env.setSourceRoot(testRepository.getSourceRoot());
+        env.setDataRoot(testRepository.getDataRoot());
         env.setHistoryEnabled(true);
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
 
         // Restore the project and repository information.
         env.setProjects(new HashMap<>());
-        env.setRepositories(repository.getSourceRoot());
+        env.setRepositories(testRepository.getSourceRoot());
         HistoryGuru.getInstance().invalidateRepositories(env.getRepositories(), CommandTimeoutType.INDEXER);
         env.generateProjectRepositoriesMap();
     }
 
     @AfterEach
     void tearDownClass() throws Exception {
-        repository.destroy();
+        testRepository.destroy();
     }
 
     /**
@@ -99,9 +98,9 @@ class AnalyzerGuruDocumentTest {
         File file = filePath.toFile();
         assertTrue(file.exists());
         HistoryGuru histGuru = HistoryGuru.getInstance();
-        Repository fileRepository = histGuru.getRepository(file);
-        assertNotNull(fileRepository);
-        fileRepository.setHistoryEnabled(historyEnabled);
+        Repository repository = histGuru.getRepository(file);
+        assertNotNull(repository);
+        repository.setHistoryEnabled(historyEnabled);
         String relativePath = env.getPathRelativeToSourceRoot(file);
         analyzerGuru.populateDocument(doc, file, relativePath,
                 IndexDatabase.getAnalyzerFor(file, relativePath), new NullWriter());
