@@ -76,7 +76,6 @@ class AnalyzerGuruDocumentTest {
 
         // Restore the project and repository information.
         env.setProjects(new HashMap<>());
-        HistoryGuru.getInstance().removeRepositories(List.of("/git"));
         env.setRepositories(repository.getSourceRoot());
         HistoryGuru.getInstance().invalidateRepositories(env.getRepositories(), CommandTimeoutType.INDEXER);
         env.generateProjectRepositoriesMap();
@@ -84,7 +83,6 @@ class AnalyzerGuruDocumentTest {
 
     @AfterEach
     void tearDownClass() throws Exception {
-        env.releaseIndexSearchers();
         repository.destroy();
     }
 
