@@ -633,7 +633,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * @param file file object
+     * @param file {@link File} object for a file under source root
      * @return whether related {@link Repository} and settings allow for history retrieval
      */
     public boolean repositorySupportsHistory(File file) {
