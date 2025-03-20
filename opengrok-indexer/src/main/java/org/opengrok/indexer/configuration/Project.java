@@ -84,9 +84,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private Boolean handleRenamedFiles = null;
 
     /**
-     * This flag enables/disables per-project history cache.
+     * This flag enables/disables per-project history queries.
      */
     private Boolean historyEnabled = null;
+
+    /**
+     * This flag enables/disables per-project history cache.
+     */
+    private Boolean historyCacheEnabled = null;
 
     /**
      * This flag enables/disables per-project annotation cache.
@@ -302,6 +307,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project should have history cache.
+     */
+    public boolean isHistoryCacheEnabled() {
+        return historyCacheEnabled != null && historyCacheEnabled;
+    }
+
+    /**
+     * @param flag true if project should have history cache, false otherwise.
+     */
+    public void setHistoryCacheEnabled(boolean flag) {
+        this.historyCacheEnabled = flag;
+    }
+
+    /**
      * @return true if this project should have annotation cache.
      */
     public boolean isAnnotationCacheEnabled() {
@@ -494,9 +513,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
         }
 
-        // Allow project to override global setting of history cache generation.
+        // Allow project to override global setting of history queries.
         if (historyEnabled == null) {
             setHistoryEnabled(env.isHistoryEnabled());
+        }
+
+        // Allow project to override global setting of history cache generation.
+        if (historyCacheEnabled == null) {
+            setHistoryCacheEnabled(env.useHistoryCache());
         }
 
         // Allow project to override global setting of annotation cache generation.

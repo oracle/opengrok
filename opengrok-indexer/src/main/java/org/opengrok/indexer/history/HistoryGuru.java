@@ -164,18 +164,16 @@ public final class HistoryGuru {
      * @return {@link HistoryCache} instance
      */
     private HistoryCache initializeHistoryCache() {
-        HistoryCache historyCacheResult = null;
-        if (env.useHistoryCache()) {
-            historyCacheResult = new FileHistoryCache();
+        HistoryCache historyCacheResult = new FileHistoryCache();
 
-            try {
-                historyCacheResult.initialize();
-            } catch (CacheException he) {
-                LOGGER.log(Level.WARNING, "Failed to initialize the history cache", he);
-                // Failed to initialize, run without a history cache.
-                historyCacheResult = null;
-            }
+        try {
+            historyCacheResult.initialize();
+        } catch (CacheException he) {
+            LOGGER.log(Level.WARNING, "Failed to initialize the history cache", he);
+            // Failed to initialize, run without a history cache.
+            historyCacheResult = null;
         }
+
         return historyCacheResult;
     }
 
@@ -188,13 +186,26 @@ public final class HistoryGuru {
         return INSTANCE;
     }
 
-    /**
-     * Return whether cache should be used for the history log.
-     *
-     * @return {@code true} if the history cache has been enabled and initialized, {@code false} otherwise
-     */
-    private boolean useHistoryCache() {
-        return historyCache != null;
+    private boolean useHistoryCache(File file) {
+        if (historyCache == null) {
+            return false;
+        }
+
+        // file = new File(env.getSourceRootPath(), file.getPath());
+
+        return useHistoryCache(getRepository(file));
+    }
+
+    private boolean useHistoryCache(@Nullable Repository repository) {
+        if (historyCache == null || repository == null) {
+            return false;
+        }
+
+        if (!historyCache.supportsRepository(repository)) {
+            return false;
+        }
+
+        return repository.isHistoryCacheEnabled();
     }
 
     /**
@@ -418,7 +429,7 @@ public final class HistoryGuru {
     private History getHistoryFromCache(File file, Repository repository, boolean withFiles)
             throws CacheException {
 
-        if (useHistoryCache() && historyCache.supportsRepository(repository)) {
+        if (useHistoryCache(repository)) {
             return historyCache.get(file, repository, withFiles);
         }
 
@@ -428,7 +439,7 @@ public final class HistoryGuru {
     @Nullable
     private HistoryEntry getLastHistoryEntryFromCache(File file, Repository repository) throws CacheException {
 
-        if (useHistoryCache() && historyCache.supportsRepository(repository)) {
+        if (useHistoryCache(repository)) {
             return historyCache.getLastHistoryEntry(file);
         }
 
@@ -451,6 +462,9 @@ public final class HistoryGuru {
                 launderLog(file.toString())));
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repository = getRepository(dir);
+        if (repository == null) {
+            return null;
+        }
         final String meterName = "history.entry.latest";
 
         try {
@@ -479,7 +493,7 @@ public final class HistoryGuru {
         if (!isRepoHistoryEligible(repository, file, ui)) {
             statistics.report(LOGGER, Level.FINEST,
                     String.format("cannot retrieve the last history entry for ''%s'' in %s because of settings",
-                    launderLog(file.toString()), repository), meterName);
+                            launderLog(file.toString()), repository), meterName);
             return null;
         }
 
@@ -691,7 +705,7 @@ public final class HistoryGuru {
      * @return if there is history cache entry for the file
      */
     public boolean hasHistoryCacheForFile(File file) {
-        if (!useHistoryCache()) {
+        if (!useHistoryCache(file)) {
             LOGGER.finest(() -> String.format("history cache is off for '%s' to check history cache presence",
                     launderLog(file.toString())));
             return false;
@@ -823,15 +837,15 @@ public final class HistoryGuru {
             return true;
         }
 
-        if (!useHistoryCache()) {
-            LOGGER.finest(() -> String.format("history cache is disabled for '%s' to retrieve last modified times",
+        Repository repository = getRepository(directory);
+        if (repository == null) {
+            LOGGER.finest(() -> String.format("cannot find repository for '%s' to retrieve last modified times",
                     launderLog(directory.toString())));
             return true;
         }
 
-        Repository repository = getRepository(directory);
-        if (repository == null) {
-            LOGGER.finest(() -> String.format("cannot find repository for '%s' to retrieve last modified times",
+        if (!useHistoryCache(repository)) {
+            LOGGER.finest(() -> String.format("history cache is disabled for '%s' to retrieve last modified times",
                     launderLog(directory.toString())));
             return true;
         }
@@ -1139,9 +1153,14 @@ public final class HistoryGuru {
      * @return map of repository to optional exception
      */
     public Map<Repository, Optional<Exception>> createHistoryCache(Collection<String> repositories) {
-        if (!useHistoryCache()) {
+        if (repositories.stream().
+                map(e -> new File(env.getSourceRootPath(), e)).
+                map(this::getRepository).
+                filter(Objects::nonNull).
+                noneMatch(RepositoryInfo::isHistoryCacheEnabled)) {
             return Collections.emptyMap();
         }
+
         return createHistoryCacheReal(getReposFromString(repositories));
     }
 
@@ -1151,12 +1170,12 @@ public final class HistoryGuru {
      * @param removeHistory whether to remove history cache entry for the path
      */
     public void clearHistoryCacheFile(String path, boolean removeHistory) {
-        if (!useHistoryCache()) {
+        Repository repository = getRepository(new File(env.getSourceRootFile(), path));
+        if (repository == null) {
             return;
         }
 
-        Repository repository = getRepository(new File(env.getSourceRootFile(), path));
-        if (repository == null) {
+        if (!useHistoryCache(repository)) {
             return;
         }
 
@@ -1230,7 +1249,7 @@ public final class HistoryGuru {
      * @return list of repository names
      */
     public List<String> removeHistoryCache(Collection<RepositoryInfo> repositories) {
-        if (!useHistoryCache()) {
+        if (repositories.stream().noneMatch(RepositoryInfo::isHistoryCacheEnabled)) {
             return List.of();
         }
 
@@ -1258,7 +1277,7 @@ public final class HistoryGuru {
      * @return map of repository to optional exception
      */
     public Map<Repository, Optional<Exception>> createHistoryCache() {
-        if (!useHistoryCache()) {
+        if (repositories.values().stream().noneMatch(RepositoryInfo::isHistoryCacheEnabled)) {
             return Collections.emptyMap();
         }
 

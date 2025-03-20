@@ -215,7 +215,7 @@ class IndexDatabaseTest {
      *     <li>the directory names used</li>
      *     <li>the way file paths are constructed ({@link TandemPath})</li>
      * </ul>
-     * @param fileName file name to check
+     * @param fileName path relative to source root
      * @param shouldExist whether the data file should exist
      */
     private void checkDataExistence(String fileName, boolean shouldExist) {
@@ -224,20 +224,12 @@ class IndexDatabaseTest {
 
         for (String dirName : new String[] {"historycache", "annotationcache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
-            File file = new File(env.getServerName(), fileName);
+            File file = new File(env.getSourceRootFile(), fileName);
             String cacheFile;
             if (dirName.equals("annotationcache")) {
-                if (shouldExist) {
-                    assertTrue(historyGuru.hasAnnotationCacheForFile(file));
-                } else {
-                    assertFalse(historyGuru.hasAnnotationCacheForFile(file));
-                }
+                assertEquals(shouldExist, historyGuru.hasAnnotationCacheForFile(file));
             } else if (dirName.equals("historycache")) {
-                if (shouldExist) {
-                    assertTrue(historyGuru.hasHistoryCacheForFile(file));
-                } else {
-                    assertFalse(historyGuru.hasHistoryCacheForFile(file));
-                }
+                assertEquals(shouldExist, historyGuru.hasHistoryCacheForFile(file));
             } else {
                 cacheFile = TandemPath.join(fileName, ".gz");
                 File dataFile = new File(dataDir, cacheFile);

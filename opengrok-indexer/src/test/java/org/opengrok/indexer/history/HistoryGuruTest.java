@@ -38,6 +38,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,9 @@ class HistoryGuruTest {
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        URL resourceURL = HistoryGuru.class.getResource("/repositories");
+        assertNotNull(resourceURL);
+        repository.create(resourceURL);
         RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), FILES, true);
         assertNotEquals(0, FILES.size());
