@@ -135,6 +135,11 @@ public final class HistoryGuru {
         repositoryLookup = RepositoryLookup.cached();
     }
 
+    @VisibleForTesting
+    HistoryCache getHistoryCache() {
+        return historyCache;
+    }
+
     /**
      * Set annotation cache to its default implementation.
      * @return {@link AnnotationCache} instance or {@code null} on error
@@ -1048,7 +1053,6 @@ public final class HistoryGuru {
     }
 
     private void createHistoryCache(Repository repository, String sinceRevision) throws CacheException, HistoryException {
-        // TODO: add test for this
         if (!repository.isHistoryCacheEnabled()) {
             LOGGER.log(Level.INFO,
                     "Skipping history cache creation for {0} and its subdirectories: history cache disabled",
