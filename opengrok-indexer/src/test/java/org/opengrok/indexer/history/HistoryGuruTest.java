@@ -505,6 +505,23 @@ class HistoryGuruTest {
         Files.move(tmpHistPath, histPath);
     }
 
+    @Test
+    void testGetHistoryVsHistoryCacheEnabled() throws Exception {
+        File file = Path.of(repository.getSourceRoot(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
+
+        assertTrue(repository.isHistoryCacheEnabled());
+        assertNotNull(instance.getHistory(file, false, false, false));
+        repository.setHistoryCacheEnabled(false);
+        assertNull(instance.getHistory(file, false, false, false));
+
+        // cleanup
+        repository.setHistoryCacheEnabled(true);
+    }
+
     /**
      * Test that it is not possible to get last history entries for repository
      * that does not have the merge changesets enabled.
