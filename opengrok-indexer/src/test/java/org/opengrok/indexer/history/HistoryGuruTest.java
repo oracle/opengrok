@@ -497,7 +497,6 @@ class HistoryGuruTest {
         Files.move(histPath, tmpHistPath);
         assertFalse(histPath.toFile().exists());
 
-        assertNotNull(repository);
         repository.setHistoryEnabled(false);
         assertNull(instance.getLastHistoryEntry(file, false, true));
 
