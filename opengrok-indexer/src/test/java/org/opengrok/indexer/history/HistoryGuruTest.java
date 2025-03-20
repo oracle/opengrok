@@ -486,9 +486,10 @@ class HistoryGuruTest {
         assertTrue(file.exists());
         HistoryGuru instance = HistoryGuru.getInstance();
         Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
 
         // HistoryGuru is final class so cannot be reasonably mocked with Mockito.
-        // In order to avoid getting the history from the cache, move the cache away for a bit.
+        // In order to avoid getting the history from the cache, move the history cache directory aside for a bit.
         String dirName = CacheUtil.getRepositoryCacheDataDirname(repository, new FileHistoryCache());
         assertNotNull(dirName);
         Path histPath = Path.of(dirName);
