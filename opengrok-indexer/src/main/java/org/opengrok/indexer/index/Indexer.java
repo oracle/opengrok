@@ -1123,13 +1123,12 @@ public final class Indexer {
      * @param repositories       list of repository paths relative to source root
      * @return map of repository to exception
      * @throws IndexerException indexer exception
-     * @throws IOException      I/O exception
      */
     public Map<Repository, Optional<Exception>> prepareIndexer(RuntimeEnvironment env,
                                                                Set<String> searchPaths,
                                                                boolean addProjects,
                                                                boolean createHistoryCache,
-                                                               List<String> repositories) throws IndexerException, IOException {
+                                                               List<String> repositories) throws IndexerException {
 
         if (!env.validateUniversalCtags()) {
             throw new IndexerException("Could not find working Universal ctags. " +

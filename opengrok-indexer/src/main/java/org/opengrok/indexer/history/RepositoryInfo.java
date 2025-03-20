@@ -78,6 +78,8 @@ public class RepositoryInfo implements Serializable {
     @DTOElement
     private boolean historyEnabled;
     @DTOElement
+    private boolean historyCacheEnabled;
+    @DTOElement
     private boolean annotationCacheEnabled;
     @DTOElement
     private boolean mergeCommitsEnabled;
@@ -105,6 +107,7 @@ public class RepositoryInfo implements Serializable {
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
         this.historyEnabled = orig.historyEnabled;
+        this.historyCacheEnabled = orig.historyCacheEnabled;
         this.annotationCacheEnabled = orig.annotationCacheEnabled;
         this.handleRenamedFiles = orig.handleRenamedFiles;
         this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
@@ -164,7 +167,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * @return true if the repository should have history cache.
+     * @return true if the repository should support history queries.
      */
     public boolean isHistoryEnabled() {
         return this.historyEnabled;
@@ -172,6 +175,17 @@ public class RepositoryInfo implements Serializable {
 
     public void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
+    }
+
+    /**
+     * @return true if the history for this repository should be stored in history cache.
+     */
+    public boolean isHistoryCacheEnabled() {
+        return this.historyCacheEnabled;
+    }
+
+    public void setHistoryCacheEnabled(boolean flag) {
+        this.historyCacheEnabled = flag;
     }
 
     public boolean isAnnotationCacheEnabled() {
@@ -381,6 +395,7 @@ public class RepositoryInfo implements Serializable {
         Project proj = Project.getProject(getDirectoryNameRelative());
         if (proj != null) {
             setHistoryEnabled(proj.isHistoryEnabled());
+            setHistoryCacheEnabled(proj.isHistoryCacheEnabled());
             setAnnotationCacheEnabled(proj.isAnnotationCacheEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
@@ -391,6 +406,7 @@ public class RepositoryInfo implements Serializable {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             setHistoryEnabled(env.isHistoryEnabled());
+            setHistoryCacheEnabled(env.useHistoryCache());
             setAnnotationCacheEnabled(env.isAnnotationCacheEnabled());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
@@ -433,9 +449,20 @@ public class RepositoryInfo implements Serializable {
         stringBuilder.append(",");
 
         if (!isHistoryEnabled()) {
+            stringBuilder.append("history=off");
+        } else {
+            stringBuilder.append("history=on");
+        }
+
+        stringBuilder.append(",");
+        if (!isHistoryCacheEnabled()) {
             stringBuilder.append("historyCache=off");
         } else {
             stringBuilder.append("historyCache=on,");
+        }
+
+        if (isHandleRenamedFiles()) {
+            stringBuilder.append(",");
             stringBuilder.append("renamed=");
             stringBuilder.append(this.isHandleRenamedFiles());
         }

@@ -38,6 +38,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,9 @@ class HistoryGuruTest {
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        URL resourceURL = HistoryGuru.class.getResource("/repositories");
+        assertNotNull(resourceURL);
+        repository.create(resourceURL);
         RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), FILES, true);
         assertNotEquals(0, FILES.size());
@@ -483,9 +486,10 @@ class HistoryGuruTest {
         assertTrue(file.exists());
         HistoryGuru instance = HistoryGuru.getInstance();
         Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
 
         // HistoryGuru is final class so cannot be reasonably mocked with Mockito.
-        // In order to avoid getting the history from the cache, move the cache away for a bit.
+        // In order to avoid getting the history from the cache, move the history cache directory aside for a bit.
         String dirName = CacheUtil.getRepositoryCacheDataDirname(repository, new FileHistoryCache());
         assertNotNull(dirName);
         Path histPath = Path.of(dirName);
@@ -493,13 +497,29 @@ class HistoryGuruTest {
         Files.move(histPath, tmpHistPath);
         assertFalse(histPath.toFile().exists());
 
-        assertNotNull(repository);
         repository.setHistoryEnabled(false);
         assertNull(instance.getLastHistoryEntry(file, false, true));
 
         // cleanup
         repository.setHistoryEnabled(true);
         Files.move(tmpHistPath, histPath);
+    }
+
+    @Test
+    void testGetHistoryVsHistoryCacheEnabled() throws Exception {
+        File file = Path.of(repository.getSourceRoot(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
+
+        assertTrue(repository.isHistoryCacheEnabled());
+        assertNotNull(instance.getHistory(file, false, false, false));
+        repository.setHistoryCacheEnabled(false);
+        assertNull(instance.getHistory(file, false, false, false));
+
+        // cleanup
+        repository.setHistoryCacheEnabled(true);
     }
 
     /**
