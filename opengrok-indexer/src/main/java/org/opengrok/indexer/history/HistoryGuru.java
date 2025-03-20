@@ -191,8 +191,6 @@ public final class HistoryGuru {
             return false;
         }
 
-        // file = new File(env.getSourceRootPath(), file.getPath());
-
         return useHistoryCache(getRepository(file));
     }
 
