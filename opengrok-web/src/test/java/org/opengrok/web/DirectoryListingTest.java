@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -43,6 +43,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -203,6 +204,12 @@ class DirectoryListingTest {
 
             return ret;
         }
+    }
+
+    @BeforeAll
+    static void setUpClass() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
     }
 
     /**

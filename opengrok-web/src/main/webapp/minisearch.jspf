@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
@@ -35,13 +35,11 @@ org.opengrok.indexer.web.Util"%><%
 <div id="bar">
     <ul>
         <li><a href="<%= context %>/"><span id="home"></span>Home</a></li><%
-    if (cfg.getEnv().isHistoryEnabled()) {
-        if (!cfg.hasHistory()) {
-            %><li><span id="history"></span><span class="c">History</span></li><%
-        } else {
-            %><li><a href="<%= context + Prefix.HIST_L + cfg.getUriEncodedPath()
-                %>"><span id="history"></span>History</a></li><%
-        }
+    if (!cfg.hasHistory()) {
+        %><li><span id="history"></span><span class="c">History</span></li><%
+    } else {
+        %><li><a href="<%= context + Prefix.HIST_L + cfg.getUriEncodedPath()
+            %>"><span id="history"></span>History</a></li><%
     }
     if (!cfg.hasAnnotations() /* || cfg.getPrefix() == Prefix.HIST_S */ ) {
         %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%
@@ -87,11 +85,11 @@ org.opengrok.indexer.web.Util"%><%
         }
         %>
 	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath() +
-            (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
+            (cfg.getRequestedRevision().isEmpty() ? "" : "?" +
             QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="raw"></span>Raw</a></li>
 	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath() +
-            (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
+            (cfg.getRequestedRevision().isEmpty() ? "" : "?" +
             QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="download"></span>Download</a></li>
 	<%

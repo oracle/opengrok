@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -54,7 +54,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.OpenGrokThreadFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -630,6 +629,14 @@ public final class HistoryGuru {
             }
         }
 
+        return repositorySupportsHistory(file);
+    }
+
+    /**
+     * @param file {@link File} object for a file under source root
+     * @return whether related {@link Repository} and settings allow for history retrieval
+     */
+    public boolean repositorySupportsHistory(File file) {
         Repository repo = getRepository(file);
         if (repo == null) {
             LOGGER.finest(() -> String.format("cannot find repository for '%s' to check history presence",
@@ -642,7 +649,7 @@ public final class HistoryGuru {
         }
 
         // This should return true for Annotate view.
-        Configuration.RemoteSCM globalRemoteSupport = env.getRemoteScmSupported();
+        RemoteSCM globalRemoteSupport = env.getRemoteScmSupported();
         boolean remoteSupported = ((globalRemoteSupport == RemoteSCM.ON)
                 || (globalRemoteSupport == RemoteSCM.UIONLY)
                 || (globalRemoteSupport == RemoteSCM.DIRBASED)

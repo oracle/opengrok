@@ -90,6 +90,7 @@ class HistoryGuruTest {
     @BeforeAll
     static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
         env.setAnnotationCacheEnabled(true);
         savedNestingMaximum = env.getNestingMaximum();
 

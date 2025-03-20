@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -596,7 +596,7 @@ public class AnalyzerGuru {
         doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH,
                 new BytesRef(file.getAbsolutePath())));
 
-        if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+        if (HistoryGuru.getInstance().repositorySupportsHistory(file)) {
             populateDocumentHistory(doc, file);
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));

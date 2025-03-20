@@ -1026,8 +1026,6 @@ public final class Indexer {
             cfg = new Configuration();
         }
 
-        cfg.setHistoryEnabled(false);  // force user to turn on history capture
-
         argv = optParser.parse(argv);
 
         return argv;

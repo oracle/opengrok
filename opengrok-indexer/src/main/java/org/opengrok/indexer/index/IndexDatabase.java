@@ -1283,10 +1283,9 @@ public class IndexDatabase {
         }
     }
 
-    private AbstractAnalyzer getAnalyzerFor(File file, String path)
-            throws IOException {
-        try (InputStream in = new BufferedInputStream(
-                new FileInputStream(file))) {
+    @VisibleForTesting
+    static AbstractAnalyzer getAnalyzerFor(File file, String path) throws IOException {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             return AnalyzerGuru.getAnalyzer(in, path);
         }
     }

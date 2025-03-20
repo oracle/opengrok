@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -580,7 +580,7 @@ public final class Configuration {
         setHandleHistoryOfRenamedFiles(false);
         setHistoryBasedReindex(true);
         setHistoryCache(true);
-        setHistoryEnabled(true);
+        setHistoryEnabled(false);
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -89,6 +90,12 @@ class FileHistoryCacheTest {
     private boolean savedFetchHistoryWhenNotInCache;
     private boolean savedIsHandleHistoryOfRenamedFiles;
     private boolean savedIsTagsEnabled;
+
+    @BeforeAll
+    static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
+    }
 
     /**
      * Set up the test environment with repositories and a cache instance.

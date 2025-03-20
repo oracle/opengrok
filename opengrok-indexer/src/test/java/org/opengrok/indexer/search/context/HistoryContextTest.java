@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -64,9 +64,12 @@ class HistoryContextTest {
 
     @BeforeAll
     static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryEnabled(true);
+
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResource("/repositories"));
-        RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
+        env.setRepositories(repositories.getSourceRoot());
     }
 
     @AfterAll

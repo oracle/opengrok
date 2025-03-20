@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
@@ -45,7 +45,7 @@ org.opengrok.indexer.web.messages.MessagesUtils"
     String messages;
     Set<Project> projects = ph.getAllProjects();
     int projectsSize = ph.getAllUngrouped().size();
-    if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0)
+    if (!ph.getGroups().isEmpty() && !ph.getAllUngrouped().isEmpty())
         projectsSize++;
     for (Group group : ph.getGroups()) {
         projectsSize++;
@@ -61,7 +61,7 @@ document.domReady.push(function() { domReadyMenu(); });
 <div id="qtbl">
     <table aria-label="query table">
     <%
-    if (projects.size() != 0) {
+    if (!projects.isEmpty()) {
     %>
     <tbody id="ptbl">
     <tr>
@@ -75,7 +75,7 @@ document.domReady.push(function() { domReadyMenu(); });
         SortedSet<String> pRequested = new TreeSet<>(cfg.getRequestedProjects());
         for (Group group : ph.getGroups()) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
-            if (groupProjects.size() > 0) {
+            if (!groupProjects.isEmpty()) {
                 %><optgroup label="<%= group.getName() %>"><%
                 for (Project p : groupProjects) {
                     if (!p.isIndexed()) {
@@ -100,7 +100,7 @@ document.domReady.push(function() { domReadyMenu(); });
         }
 
         // Handle projects not listed in any group.
-        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+        if (!ph.getGroups().isEmpty() && !ph.getAllUngrouped().isEmpty()) {
             %><optgroup label="Other"><%
         }
         for (Project p : ph.getAllUngrouped()) {
@@ -118,7 +118,7 @@ document.domReady.push(function() { domReadyMenu(); });
             }
             %>><%= Util.formQuoteEscape(p.getName()) %></option><%
         }
-        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+        if (!ph.getGroups().isEmpty() && !ph.getAllUngrouped().isEmpty()) {
             %></optgroup><%
         }
     %></select>
@@ -177,9 +177,6 @@ document.domReady.push(function() { domReadyMenu(); });
             id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
-    <%
-        if (cfg.getEnv().isHistoryEnabled()) {
-    %>
     <tr>
         <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>"
               title="Search in project(s) repository log messages">History</label></td>
@@ -188,9 +185,6 @@ document.domReady.push(function() { domReadyMenu(); });
             id="<%= QueryParameters.HIST_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
-    <%
-        }
-    %>
     <tr>
         <td id="typeLabelTd"><label for="<%= QueryParameters.TYPE_SEARCH_PARAM %>">Type</label></td>
         <td><select class="q" tabindex="6" name="<%= QueryParameters.TYPE_SEARCH_PARAM %>"
