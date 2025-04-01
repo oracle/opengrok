@@ -1436,7 +1436,6 @@ public final class Util {
 
     }
 
-
     /**
      * Check if the string is an HTTP URI (i.e. allows for relative identifiers).
      *
