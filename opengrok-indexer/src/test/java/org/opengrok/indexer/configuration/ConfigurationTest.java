@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -33,17 +33,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.util.ClassUtil;
 
+import org.opengrok.indexer.util.IOUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ext.DefaultHandler2;
 
@@ -234,4 +240,34 @@ class ConfigurationTest {
         }
     }
 
+    private static Stream<Arguments> getArgsForTestCheckConfigurationBugPage() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(true, false),
+                Arguments.of(false, true),
+                Arguments.of(false, false)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getArgsForTestCheckConfigurationBugPage")
+    void testCheckConfigurationBugPage(boolean valid, boolean bugPage) throws IOException {
+        Configuration cfg = new Configuration();
+        Path tmpSourceRoot = Files.createTempDirectory("sourceRoot");
+        cfg.setSourceRoot(tmpSourceRoot.toString());
+        Path tmpDataRoot = Files.createTempDirectory("dataRoot");
+        cfg.setDataRoot(tmpDataRoot.toString());
+        if (bugPage) {
+            cfg.setBugPage("http://example.org/bug?" + (valid ? "" : "\""));
+        } else {
+            cfg.setReviewPage("http://example.org/review?" + (valid ? "" : "\""));
+        }
+        if (!valid) {
+            assertThrows(Configuration.ConfigurationException.class, cfg::checkConfiguration);
+        } else {
+            assertDoesNotThrow(cfg::checkConfiguration);
+        }
+        IOUtils.removeRecursive(tmpSourceRoot);
+        IOUtils.removeRecursive(tmpDataRoot);
+    }
 }
