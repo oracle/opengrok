@@ -46,8 +46,17 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1595,7 +1604,7 @@ public final class Util {
             stringBuilder.append(buildLink(group1, appendedUrl, true));
             stringBuilder.append(text.substring(result.end(1), result.end(0)));
             return stringBuilder.toString();
-        } catch (URISyntaxException|MalformedURLException e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", appendedUrl);
             return result.group(0);
         }
