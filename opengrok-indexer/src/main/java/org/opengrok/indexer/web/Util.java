@@ -1457,7 +1457,7 @@ public final class Util {
         return uri.getScheme().equals("http") || uri.getScheme().equals("https");
     }
 
-    protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
+    static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
 
     /**
      * If given path is a URL, return the string representation with the user-info part filtered out.
