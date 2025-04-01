@@ -485,12 +485,13 @@ class UtilTest {
      */
     @Test
     void testLinkifyPatternEscape() {
-        final String text = "foo bug <123456> bar";
+        final String text = "foo bug <123456> bar bug 777";
         final String expected = "foo bug <a href=\"http://www.example.com?bug=%3C123456%3E\" " +
-                "rel=\"noreferrer\" target=\"_blank\">&lt;123456&gt;</a> bar";
+                "rel=\"noreferrer\" target=\"_blank\">&lt;123456&gt;</a> bar " +
+                "bug <a href=\"http://www.example.com?bug=777\" rel=\"noreferrer\" target=\"_blank\">777</a>";
 
         assertEquals(expected,
-                Util.linkifyPattern(text, Pattern.compile("[ \\t]+([0-9<>]{3,})[ \\t]+"), "http://www.example.com?bug="));
+                Util.linkifyPattern(text, Pattern.compile("[ \\t]+([0-9<>]{3,})[ \\t]*"), "http://www.example.com?bug="));
     }
 
     @Test
