@@ -1493,7 +1493,7 @@ public final class Util {
     }
 
     /**
-     * Build an HTML link to the given http URL. If the URL is not an HTTP URL
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
      * then it is returned as it was received.
      *
      * @param url the HTTP URL
