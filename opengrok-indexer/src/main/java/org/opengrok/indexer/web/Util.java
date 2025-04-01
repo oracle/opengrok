@@ -1437,10 +1437,10 @@ public final class Util {
     }
 
     /**
-     * Check if the string is an HTTP URI (i.e. allows for relative identifiers).
+     * Check if the string is an HTTP(S) URI (i.e. allows for relative identifiers).
      *
      * @param string the string to check
-     * @return true if it is HTTP URI, false otherwise
+     * @return true if it is HTTP(S) URI, false otherwise
      */
     public static boolean isHttpUri(String string) {
         URI uri;
