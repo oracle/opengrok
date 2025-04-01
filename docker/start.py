@@ -115,7 +115,7 @@ def index():
     API endpoint for triggering reindex.
     :return: message describing the outcome
     """
-    global periodic_timer   # noqa: F824
+    global periodic_timer  # noqa: F824
 
     if periodic_timer:
         logger = logging.getLogger(__name__)
@@ -360,7 +360,7 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
         indexer.execute()
 
         logger.info("Waiting for reindex to be triggered")
-        global periodic_timer   # noqa: F824
+        global periodic_timer  # noqa: F824
         periodic_timer.wait_for_event()
 
 
@@ -420,7 +420,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
             save_config(logger, uri, config_path, api_timeout)
 
         logger.info("Waiting for reindex to be triggered")
-        global periodic_timer   # noqa: F824
+        global periodic_timer  # noqa: F824
         periodic_timer.wait_for_event()
 
 
