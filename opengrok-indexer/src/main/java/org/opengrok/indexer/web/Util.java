@@ -1479,7 +1479,7 @@ public final class Util {
     }
 
     /**
-     * Build an HTML link to the given HTTP URL. If the URL is not a HTTP URL
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *
@@ -1493,7 +1493,7 @@ public final class Util {
     }
 
     /**
-     * Build an HTML link to the given http URL. If the URL is not a HTTP URL
+     * Build an HTML link to the given http URL. If the URL is not an HTTP URL
      * then it is returned as it was received.
      *
      * @param url the HTTP URL
@@ -1631,8 +1631,7 @@ public final class Util {
     }
 
     /**
-     * Try to complete the given URL part into full URL with server name, port,
-     * scheme, ...
+     * Try to complete the given URL part into full URL with server name, port, scheme, ...
      * <dl>
      * <dt>for request http://localhost:8080/source/xref/xxx and part
      * /cgi-bin/user=</dt>
@@ -1654,7 +1653,8 @@ public final class Util {
         try {
             if (!isHttpUri(url)) {
                 if (url.startsWith("/")) {
-                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
+                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url,
+                            null, null).toString();
                 }
                 var prepUrl = req.getRequestURL();
                 if (!url.isEmpty()) {
