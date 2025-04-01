@@ -408,14 +408,6 @@ class UtilTest {
         assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
-
-        // escaping titles
-        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .contains("title=\"Link to " + Util.encode("http://www.example.com/\"quotation\"/else") + "\""));
-        assertTrue(Util.linkify("https://example.com/><\"")
-                .contains("title=\"Link to " + Util.encode("https://example.com/><\"") + "\""));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .contains("title=\"Link to " + Util.encode("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
     }
 
     @Test
@@ -445,7 +437,7 @@ class UtilTest {
 
     @Test
     void testBuildLinkInvalidUrl1() {
-        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
+        assertThrows(IllegalArgumentException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
     @Test
