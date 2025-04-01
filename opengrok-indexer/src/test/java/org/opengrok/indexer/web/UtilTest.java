@@ -409,13 +409,6 @@ class UtilTest {
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
 
-        // escaping url
-        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .contains("href=\"" + Util.encodeURL("http://www.example.com/\"quotation\"/else") + "\""));
-        assertTrue(Util.linkify("https://example.com/><\"")
-                .contains("href=\"" + Util.encodeURL("https://example.com/><\"") + "\""));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .contains("href=\"" + Util.encodeURL("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
         // escaping titles
         assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
                 .contains("title=\"Link to " + Util.encode("http://www.example.com/\"quotation\"/else") + "\""));

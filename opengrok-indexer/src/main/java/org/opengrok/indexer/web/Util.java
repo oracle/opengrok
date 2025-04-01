@@ -659,7 +659,7 @@ public final class Util {
                 // special html characters
                 dest.append("&#").append("" + (int) c).append(";");
             } else if (c == ' ') {
-                // non breaking space
+                // non-breaking space
                 dest.append("&nbsp;");
             } else if (c == '\t') {
                 dest.append("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -670,22 +670,6 @@ public final class Util {
                 dest.append(c);
             }
         }
-    }
-
-    /**
-     * Encode URL.
-     *
-     * @param urlStr string URL
-     * @return the encoded URL
-     * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException URL malformed
-     */
-    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
-        URL url = new URL(urlStr);
-        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
-                url.getHost(), url.getPort(),
-                url.getPath(), url.getQuery(), url.getRef());
-        return constructed.toString();
     }
 
     /**
@@ -951,8 +935,7 @@ public final class Util {
      *
      * @param buf where to append the query string
      * @param key the name of the parameter to add. Append as is!
-     * @param value the value for the given parameter. Gets automatically UTF-8
-     * URL encoded.
+     * @param value the value for the given parameter. Gets automatically UTF-8 URL encoded.
      * @throws NullPointerException if the given buffer is {@code null}.
      * @see #uriEncode(String)
      */
@@ -1454,16 +1437,16 @@ public final class Util {
 
 
     /**
-     * Check if the string is a HTTP URL.
+     * Check if the string is an HTTP URL.
      *
      * @param string the string to check
-     * @return true if it is http URL, false otherwise
+     * @return true if it is HTTP URL, false otherwise
      */
     public static boolean isHttpUri(String string) {
         URL url;
         try {
-            url = new URL(string);
-        } catch (MalformedURLException ex) {
+            url = new URI(string).toURL();
+        } catch (MalformedURLException | URISyntaxException ex) {
             return false;
         }
         return url.getProtocol().equals("http") || url.getProtocol().equals("https");
@@ -1474,26 +1457,25 @@ public final class Util {
     /**
      * If given path is a URL, return the string representation with the user-info part filtered out.
      * @param path path to object
-     * @return either the original string or string representation of URL with the user-info part removed
+     * @return either the original string (if the URL is not valid)
+     * or string representation of the URL with the user-info part removed
      */
     public static String redactUrl(String path) {
         URL url;
         try {
-            url = new URL(path);
-        } catch (MalformedURLException e) {
-            // not an URL
+            url = new URI(path).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             return path;
         }
         if (url.getUserInfo() != null) {
-            return url.toString().replace(url.getUserInfo(),
-                    REDACTED_USER_INFO);
+            return url.toString().replace(url.getUserInfo(), REDACTED_USER_INFO);
         } else {
             return path;
         }
     }
 
     /**
-     * Build a HTML link to the given HTTP URL. If the URL is not an http URL
+     * Build an HTML link to the given HTTP URL. If the URL is not a HTTP URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *
@@ -1507,7 +1489,7 @@ public final class Util {
     }
 
     /**
-     * Build a html link to the given http URL. If the URL is not an http URL
+     * Build an HTML link to the given http URL. If the URL is not a HTTP URL
      * then it is returned as it was received.
      *
      * @param url the HTTP URL
@@ -1554,7 +1536,7 @@ public final class Util {
             buffer.append("=\"");
             String value = attr.getValue();
             if (attr.getKey().equals("href")) {
-                value = Util.encodeURL(value);
+                value = new URI(value).toString();
             }
             buffer.append(value);
             buffer.append("\"");
@@ -1609,11 +1591,12 @@ public final class Util {
     }
 
     private static String buildLinkReplacer(MatchResult result, String text, String url) {
-        final String appendedUrl = url + result.group(1);
+        final String group1 = result.group(1);
+        final String appendedUrl = url + uriEncode(group1);
         try {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(text.substring(result.start(0), result.start(1)));
-            stringBuilder.append(buildLink(appendedUrl, appendedUrl, true));
+            stringBuilder.append(buildLink(group1, appendedUrl, true));
             stringBuilder.append(text.substring(result.end(1), result.end(0)));
             return stringBuilder.toString();
         } catch (URISyntaxException|MalformedURLException e) {
@@ -1670,7 +1653,7 @@ public final class Util {
             }
             return url;
         } catch (URISyntaxException ex) {
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.WARNING,
                     String.format("Unable to convert given URL part '%s' to complete URL", url),
                     ex);
             return url;
