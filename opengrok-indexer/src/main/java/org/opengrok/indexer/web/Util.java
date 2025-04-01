@@ -1607,9 +1607,13 @@ public final class Util {
         final String appendedUrl = url + uriEncode(group1);
         try {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(text.substring(result.start(0), result.start(1)));
+            if (result.start(0) < result.start(1)) {
+                stringBuilder.append(text.substring(result.start(0), result.start(1)));
+            }
             stringBuilder.append(buildLink(group1, appendedUrl, true));
-            stringBuilder.append(text.substring(result.end(1), result.end(0)));
+            if (result.end(1) < result.end(0)) {
+                stringBuilder.append(text.substring(result.end(1), result.end(0)));
+            }
             return stringBuilder.toString();
         } catch (URISyntaxException | MalformedURLException e) {
             LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", appendedUrl);
