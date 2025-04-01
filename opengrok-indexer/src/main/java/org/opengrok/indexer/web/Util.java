@@ -1462,7 +1462,7 @@ public final class Util {
      * If given path is a URI, return the string representation with the user-info part filtered out.
      * @param path path to object
      * @return either the original string (if the URI is not valid)
-     * or string representation of the URL with the user-info part removed
+     * or string representation of the URI with the user-info part removed
      */
     public static String redactUri(String path) {
         URI uri;
