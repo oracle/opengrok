@@ -59,6 +59,7 @@ import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -367,7 +368,7 @@ public final class Util {
      * @param path the full path from which the breadcrumb path is built
      * @param sep separator to use to crack the given path
      *
-     * @return HTML markup fro the breadcrumb or the path itself.
+     * @return HTML markup for the breadcrumb or the path itself.
      * @see #breadcrumbPath(String, String, char, String, boolean, boolean)
      */
     public static String breadcrumbPath(String urlPrefix, String path, char sep) {
@@ -939,16 +940,14 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O
      */
-    public static void uriEncode(String str, Appendable dest)
-            throws IOException {
+    public static void uriEncode(String str, Appendable dest) throws IOException {
         String uenc = uriEncode(str);
         dest.append(uenc);
     }
 
     /**
-     * Append '&amp;name=value" to the given buffer. If the given
-     * <var>value</var>
-     * is {@code null}, this method does nothing.
+     * Append "&amp;name=value" to the given buffer. If the given <var>value</var> is {@code null},
+     * this method does nothing.
      *
      * @param buf where to append the query string
      * @param key the name of the parameter to add. Append as is!
@@ -957,8 +956,7 @@ public final class Util {
      * @throws NullPointerException if the given buffer is {@code null}.
      * @see #uriEncode(String)
      */
-    public static void appendQuery(StringBuilder buf, String key,
-            String value) {
+    public static void appendQuery(StringBuilder buf, String key, String value) {
 
         if (value != null) {
             buf.append(AMP).append(key).append('=').append(uriEncode(value));
@@ -1610,25 +1608,32 @@ public final class Util {
         return buildLink(name, attrs);
     }
 
+    private static String buildLinkReplacer(MatchResult result, String text, String url) {
+        final String appendedUrl = url + result.group(1);
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(text.substring(result.start(0), result.start(1)));
+            stringBuilder.append(buildLink(appendedUrl, appendedUrl, true));
+            stringBuilder.append(text.substring(result.end(1), result.end(0)));
+            return stringBuilder.toString();
+        } catch (URISyntaxException|MalformedURLException e) {
+            LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", appendedUrl);
+            return result.group(0);
+        }
+    }
+
     /**
      * Replace all occurrences of pattern in the incoming text with the link
-     * named name pointing to an URL. It is possible to use the regexp pattern
+     * named name pointing to a URL. It is possible to use the regexp pattern
      * groups in name and URL when they are specified in the pattern.
      *
-     * @param text text to replace all patterns
+     * @param text    text to replace all patterns
      * @param pattern the pattern to match
-     * @param name link display name
-     * @param url link URL
+     * @param url     link URL
      * @return the text with replaced links
      */
-    public static String linkifyPattern(String text, Pattern pattern, String name, String url) {
-        try {
-            String buildLink = buildLink(name, url, true);
-            return pattern.matcher(text).replaceAll(buildLink);
-        } catch (URISyntaxException | MalformedURLException ex) {
-            LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", url);
-            return text;
-        }
+    public static String linkifyPattern(String text, Pattern pattern, String url) {
+        return pattern.matcher(text).replaceAll(match -> buildLinkReplacer(match, text, url));
     }
 
     /**
