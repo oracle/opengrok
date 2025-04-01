@@ -376,13 +376,13 @@ class UtilTest {
     }
 
     @Test
-    void testRedactUrl() {
-        assertEquals("/foo/bar", Util.redactUrl("/foo/bar"));
-        assertEquals("http://foo/bar?r=xxx", Util.redactUrl("http://foo/bar?r=xxx"));
+    void testRedactUri() {
+        assertEquals("/foo/bar", Util.redactUri("/foo/bar"));
+        assertEquals("http://foo/bar?r=xxx", Util.redactUri("http://foo/bar?r=xxx"));
         assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUrl("http://user@foo/bar?r=xxx"));
+                Util.redactUri("http://user@foo/bar?r=xxx"));
         assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUrl("http://user:pass@foo/bar?r=xxx"));
+                Util.redactUri("http://user:pass@foo/bar?r=xxx"));
     }
 
     @Test

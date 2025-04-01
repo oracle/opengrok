@@ -1438,10 +1438,10 @@ public final class Util {
 
 
     /**
-     * Check if the string is an HTTP URL.
+     * Check if the string is an HTTP URI (i.e. allows for relative identifiers).
      *
      * @param string the string to check
-     * @return true if it is HTTP URL, false otherwise
+     * @return true if it is HTTP URI, false otherwise
      */
     public static boolean isHttpUri(String string) {
         URI uri;
@@ -1460,12 +1460,12 @@ public final class Util {
     static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
 
     /**
-     * If given path is a URL, return the string representation with the user-info part filtered out.
+     * If given path is a URI, return the string representation with the user-info part filtered out.
      * @param path path to object
-     * @return either the original string (if the URL is not valid)
+     * @return either the original string (if the URI is not valid)
      * or string representation of the URL with the user-info part removed
      */
-    public static String redactUrl(String path) {
+    public static String redactUri(String path) {
         URI uri;
         try {
             uri = new URI(path);
@@ -1520,9 +1520,9 @@ public final class Util {
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param attrs map of attributes for the html element
@@ -1553,9 +1553,9 @@ public final class Util {
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param url anchor's URL
@@ -1564,17 +1564,16 @@ public final class Util {
      * @throws URISyntaxException URI syntax
      * @throws MalformedURLException bad URL
      */
-    public static String buildLink(String name, String url)
-            throws URISyntaxException, MalformedURLException {
+    public static String buildLink(String name, String url) throws URISyntaxException, MalformedURLException {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", url);
         return buildLink(name, attrs);
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param url anchor's URL
@@ -1595,6 +1594,15 @@ public final class Util {
         return buildLink(name, attrs);
     }
 
+    /**
+     * Callback function to provide replacement value for pattern match.
+     * It replaces the first group of the pattern and retains the rest of the pattern.
+     *
+     * @param result {@link MatchResult} object representing pattern match
+     * @param text original text containing the match
+     * @param url URL to be used for the replacement
+     * @return replacement for the first group in the pattern
+     */
     private static String buildLinkReplacer(MatchResult result, String text, String url) {
         final String group1 = result.group(1);
         final String appendedUrl = url + uriEncode(group1);
@@ -1612,8 +1620,7 @@ public final class Util {
 
     /**
      * Replace all occurrences of pattern in the incoming text with the link
-     * named name pointing to a URL. It is possible to use the regexp pattern
-     * groups in name and URL when they are specified in the pattern.
+     * named name pointing to a URL.
      *
      * @param text    text to replace all patterns
      * @param pattern the pattern to match
