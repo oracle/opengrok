@@ -495,6 +495,14 @@ class UtilTest {
     }
 
     @Test
+    void testLinkifyPatternNoGroup() {
+        final String text = "foo bug <123456> bar bug 777";
+
+        assertEquals(text,
+                Util.linkifyPattern(text, Pattern.compile("[0-9]{3,}"), "http://www.example.com?bug="));
+    }
+
+    @Test
     void testCompleteUrl() {
         HttpServletRequest req = new DummyHttpServletRequest() {
             @Override

@@ -1603,6 +1603,9 @@ public final class Util {
      * @return replacement for the first group in the pattern
      */
     private static String buildLinkReplacer(MatchResult result, String text, String url) {
+        if (result.groupCount() < 1) {
+            return result.group(0);
+        }
         final String group1 = result.group(1);
         final String appendedUrl = url + uriEncode(group1);
         try {
