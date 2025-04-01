@@ -46,16 +46,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1443,13 +1435,17 @@ public final class Util {
      * @return true if it is HTTP URL, false otherwise
      */
     public static boolean isHttpUri(String string) {
-        URL url;
+        URI uri;
         try {
-            url = new URI(string).toURL();
-        } catch (MalformedURLException | URISyntaxException ex) {
+            uri = new URI(string);
+        } catch (URISyntaxException ex) {
             return false;
         }
-        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+        String scheme = uri.getScheme();
+        if (Objects.isNull(scheme)) {
+            return false;
+        }
+        return uri.getScheme().equals("http") || uri.getScheme().equals("https");
     }
 
     protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
@@ -1461,14 +1457,14 @@ public final class Util {
      * or string representation of the URL with the user-info part removed
      */
     public static String redactUrl(String path) {
-        URL url;
+        URI uri;
         try {
-            url = new URI(path).toURL();
-        } catch (MalformedURLException | URISyntaxException e) {
+            uri = new URI(path);
+        } catch (URISyntaxException e) {
             return path;
         }
-        if (url.getUserInfo() != null) {
-            return url.toString().replace(url.getUserInfo(), REDACTED_USER_INFO);
+        if (uri.getUserInfo() != null) {
+            return uri.toString().replace(uri.getUserInfo(), REDACTED_USER_INFO);
         } else {
             return path;
         }
@@ -1536,7 +1532,7 @@ public final class Util {
             buffer.append("=\"");
             String value = attr.getValue();
             if (attr.getKey().equals("href")) {
-                value = new URI(value).toString();
+                value = new URI(value).toURL().toString();
             }
             buffer.append(value);
             buffer.append("\"");
