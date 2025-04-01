@@ -1,5 +1,5 @@
 
-Copyright (c) 2006, 2024 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2025 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
@@ -68,4 +68,8 @@ Please consult the [security guide](./SECURITY.md) for our responsible security 
 
 ## License
 
-Copyright (c) 2006, 2024 Oracle and/or its affiliates.
+Copyright (c) 2006, 2025 Oracle and/or its affiliates.
+
+## Powered by
+
+[![IntelliJ IDEA logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA.svg)](https://jb.gg/OpenSourceSupport)
