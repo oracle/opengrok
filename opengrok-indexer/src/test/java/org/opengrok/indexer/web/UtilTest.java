@@ -53,11 +53,7 @@ import org.opengrok.indexer.util.TestRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
@@ -490,23 +486,21 @@ class UtilTest {
                 + " fugiat nulla pariatur. Excepteur sint "
                 + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
-        String expected2
-                = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-                + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
-                + "aliqua. "
-                + "<a href=\"http://www.other-example.com?bug=3333\" rel=\"noreferrer\" target=\"_blank\">bug3333fff</a>"
-                + " Ut enim ad minim veniam, quis nostrud exercitation "
-                + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
-                + "Duis aute irure dolor in reprehenderit in voluptate velit "
-                + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
-                + "occaecat "
-                + "<a href=\"http://www.other-example.com?bug=6478\" rel=\"noreferrer\" target=\"_blank\">bug6478abc</a>"
-                + " cupidatat non proident, sunt in culpa qui officia "
-                + "deserunt mollit anim id est laborum.";
 
-        assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "$1", "http://www.example.com?bug=$1"));
-        assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1",
-                "http://www.other-example.com?bug=$2"));
+        assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "http://www.example.com?bug="));
+    }
+
+    /**
+     * Matched pattern should be properly encoded in the resulting HTML.
+     */
+    @Test
+    void testLinkifyPatternEscape() {
+        final String text = "foo bug <123456> bar";
+        final String expected = "foo bug <a href=\"http://www.example.com?bug=%3C123456%3E\" " +
+                "rel=\"noreferrer\" target=\"_blank\">&lt;123456&gt;</a> bar";
+
+        assertEquals(expected,
+                Util.linkifyPattern(text, Pattern.compile("[ \\t]+([0-9<>]{3,})[ \\t]+"), "http://www.example.com?bug="));
     }
 
     @Test
@@ -652,7 +646,9 @@ class UtilTest {
     @Test
     void testWriteHAD() throws Exception {
         TestRepository repository = new TestRepository();
-        repository.create(UtilTest.class.getResource("/repositories"));
+        URL repositoryURL = UtilTest.class.getResource("/repositories");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
