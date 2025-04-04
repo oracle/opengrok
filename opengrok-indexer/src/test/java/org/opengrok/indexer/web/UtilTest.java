@@ -55,6 +55,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -375,13 +376,13 @@ class UtilTest {
     }
 
     @Test
-    void testRedactUrl() {
-        assertEquals("/foo/bar", Util.redactUrl("/foo/bar"));
-        assertEquals("http://foo/bar?r=xxx", Util.redactUrl("http://foo/bar?r=xxx"));
+    void testRedactUri() {
+        assertEquals("/foo/bar", Util.redactUri("/foo/bar"));
+        assertEquals("http://foo/bar?r=xxx", Util.redactUri("http://foo/bar?r=xxx"));
         assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUrl("http://user@foo/bar?r=xxx"));
+                Util.redactUri("http://user@foo/bar?r=xxx"));
         assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUrl("http://user:pass@foo/bar?r=xxx"));
+                Util.redactUri("http://user:pass@foo/bar?r=xxx"));
     }
 
     @Test
@@ -412,21 +413,6 @@ class UtilTest {
         assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
-
-        // escaping url
-        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .contains("href=\"" + Util.encodeURL("http://www.example.com/\"quotation\"/else") + "\""));
-        assertTrue(Util.linkify("https://example.com/><\"")
-                .contains("href=\"" + Util.encodeURL("https://example.com/><\"") + "\""));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .contains("href=\"" + Util.encodeURL("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
-        // escaping titles
-        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .contains("title=\"Link to " + Util.encode("http://www.example.com/\"quotation\"/else") + "\""));
-        assertTrue(Util.linkify("https://example.com/><\"")
-                .contains("title=\"Link to " + Util.encode("https://example.com/><\"") + "\""));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .contains("title=\"Link to " + Util.encode("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
     }
 
     @Test
@@ -456,7 +442,7 @@ class UtilTest {
 
     @Test
     void testBuildLinkInvalidUrl1() {
-        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
+        assertThrows(IllegalArgumentException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
     @Test
@@ -490,23 +476,30 @@ class UtilTest {
                 + " fugiat nulla pariatur. Excepteur sint "
                 + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
-        String expected2
-                = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-                + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
-                + "aliqua. "
-                + "<a href=\"http://www.other-example.com?bug=3333\" rel=\"noreferrer\" target=\"_blank\">bug3333fff</a>"
-                + " Ut enim ad minim veniam, quis nostrud exercitation "
-                + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
-                + "Duis aute irure dolor in reprehenderit in voluptate velit "
-                + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
-                + "occaecat "
-                + "<a href=\"http://www.other-example.com?bug=6478\" rel=\"noreferrer\" target=\"_blank\">bug6478abc</a>"
-                + " cupidatat non proident, sunt in culpa qui officia "
-                + "deserunt mollit anim id est laborum.";
 
-        assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "$1", "http://www.example.com?bug=$1"));
-        assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1",
-                "http://www.other-example.com?bug=$2"));
+        assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "http://www.example.com?bug="));
+    }
+
+    /**
+     * Matched pattern should be properly encoded in the resulting HTML.
+     */
+    @Test
+    void testLinkifyPatternEscape() {
+        final String text = "foo bug <123456> bar bug 777";
+        final String expected = "foo bug <a href=\"http://www.example.com?bug=%3C123456%3E\" " +
+                "rel=\"noreferrer\" target=\"_blank\">&lt;123456&gt;</a> bar " +
+                "bug <a href=\"http://www.example.com?bug=777\" rel=\"noreferrer\" target=\"_blank\">777</a>";
+
+        assertEquals(expected,
+                Util.linkifyPattern(text, Pattern.compile("[ \\t]+([0-9<>]{3,})[ \\t]*"), "http://www.example.com?bug="));
+    }
+
+    @Test
+    void testLinkifyPatternNoGroup() {
+        final String text = "foo bug <123456> bar bug 777";
+
+        assertEquals(text,
+                Util.linkifyPattern(text, Pattern.compile("[0-9]{3,}"), "http://www.example.com?bug="));
     }
 
     @Test
@@ -652,7 +645,9 @@ class UtilTest {
     @Test
     void testWriteHAD() throws Exception {
         TestRepository repository = new TestRepository();
-        repository.create(UtilTest.class.getResource("/repositories"));
+        URL repositoryURL = UtilTest.class.getResource("/repositories");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

@@ -54,11 +54,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -367,7 +369,7 @@ public final class Util {
      * @param path the full path from which the breadcrumb path is built
      * @param sep separator to use to crack the given path
      *
-     * @return HTML markup fro the breadcrumb or the path itself.
+     * @return HTML markup for the breadcrumb or the path itself.
      * @see #breadcrumbPath(String, String, char, String, boolean, boolean)
      */
     public static String breadcrumbPath(String urlPrefix, String path, char sep) {
@@ -658,7 +660,7 @@ public final class Util {
                 // special html characters
                 dest.append("&#").append("" + (int) c).append(";");
             } else if (c == ' ') {
-                // non breaking space
+                // non-breaking space
                 dest.append("&nbsp;");
             } else if (c == '\t') {
                 dest.append("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -669,22 +671,6 @@ public final class Util {
                 dest.append(c);
             }
         }
-    }
-
-    /**
-     * Encode URL.
-     *
-     * @param urlStr string URL
-     * @return the encoded URL
-     * @throws URISyntaxException URI syntax
-     * @throws MalformedURLException URL malformed
-     */
-    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
-        URL url = new URL(urlStr);
-        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
-                url.getHost(), url.getPort(),
-                url.getPath(), url.getQuery(), url.getRef());
-        return constructed.toString();
     }
 
     /**
@@ -939,26 +925,22 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O
      */
-    public static void uriEncode(String str, Appendable dest)
-            throws IOException {
+    public static void uriEncode(String str, Appendable dest) throws IOException {
         String uenc = uriEncode(str);
         dest.append(uenc);
     }
 
     /**
-     * Append '&amp;name=value" to the given buffer. If the given
-     * <var>value</var>
-     * is {@code null}, this method does nothing.
+     * Append "&amp;name=value" to the given buffer. If the given <var>value</var> is {@code null},
+     * this method does nothing.
      *
      * @param buf where to append the query string
      * @param key the name of the parameter to add. Append as is!
-     * @param value the value for the given parameter. Gets automatically UTF-8
-     * URL encoded.
+     * @param value the value for the given parameter. Gets automatically UTF-8 URL encoded.
      * @throws NullPointerException if the given buffer is {@code null}.
      * @see #uriEncode(String)
      */
-    public static void appendQuery(StringBuilder buf, String key,
-            String value) {
+    public static void appendQuery(StringBuilder buf, String key, String value) {
 
         if (value != null) {
             buf.append(AMP).append(key).append('=').append(uriEncode(value));
@@ -1454,48 +1436,50 @@ public final class Util {
 
     }
 
-
     /**
-     * Check if the string is a HTTP URL.
+     * Check if the string is an HTTP(S) URI (i.e. allows for relative identifiers).
      *
      * @param string the string to check
-     * @return true if it is http URL, false otherwise
+     * @return true if it is HTTP(S) URI, false otherwise
      */
     public static boolean isHttpUri(String string) {
-        URL url;
+        URI uri;
         try {
-            url = new URL(string);
-        } catch (MalformedURLException ex) {
+            uri = new URI(string);
+        } catch (URISyntaxException ex) {
             return false;
         }
-        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+        String scheme = uri.getScheme();
+        if (Objects.isNull(scheme)) {
+            return false;
+        }
+        return uri.getScheme().equals("http") || uri.getScheme().equals("https");
     }
 
-    protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
+    static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
 
     /**
-     * If given path is a URL, return the string representation with the user-info part filtered out.
+     * If given path is a URI, return the string representation with the user-info part filtered out.
      * @param path path to object
-     * @return either the original string or string representation of URL with the user-info part removed
+     * @return either the original string (if the URI is not valid)
+     * or string representation of the URI with the user-info part removed
      */
-    public static String redactUrl(String path) {
-        URL url;
+    public static String redactUri(String path) {
+        URI uri;
         try {
-            url = new URL(path);
-        } catch (MalformedURLException e) {
-            // not an URL
+            uri = new URI(path);
+        } catch (URISyntaxException e) {
             return path;
         }
-        if (url.getUserInfo() != null) {
-            return url.toString().replace(url.getUserInfo(),
-                    REDACTED_USER_INFO);
+        if (uri.getUserInfo() != null) {
+            return uri.toString().replace(uri.getUserInfo(), REDACTED_USER_INFO);
         } else {
             return path;
         }
     }
 
     /**
-     * Build a HTML link to the given HTTP URL. If the URL is not an http URL
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *
@@ -1509,7 +1493,7 @@ public final class Util {
     }
 
     /**
-     * Build a html link to the given http URL. If the URL is not an http URL
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
      * then it is returned as it was received.
      *
      * @param url the HTTP URL
@@ -1535,9 +1519,9 @@ public final class Util {
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param attrs map of attributes for the html element
@@ -1556,7 +1540,7 @@ public final class Util {
             buffer.append("=\"");
             String value = attr.getValue();
             if (attr.getKey().equals("href")) {
-                value = Util.encodeURL(value);
+                value = new URI(value).toURL().toString();
             }
             buffer.append(value);
             buffer.append("\"");
@@ -1568,9 +1552,9 @@ public final class Util {
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param url anchor's URL
@@ -1579,17 +1563,16 @@ public final class Util {
      * @throws URISyntaxException URI syntax
      * @throws MalformedURLException bad URL
      */
-    public static String buildLink(String name, String url)
-            throws URISyntaxException, MalformedURLException {
+    public static String buildLink(String name, String url) throws URISyntaxException, MalformedURLException {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", url);
         return buildLink(name, attrs);
     }
 
     /**
-     * Build an anchor with given name and a pack of attributes. Automatically
-     * escapes href attributes and automatically escapes the name into HTML
-     * entities.
+     * Build an anchor with given name and a pack of attributes.
+     * Assumes the <code>href</code> attribute value is URI encoded.
+     * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
      * @param url anchor's URL
@@ -1611,29 +1594,51 @@ public final class Util {
     }
 
     /**
-     * Replace all occurrences of pattern in the incoming text with the link
-     * named name pointing to an URL. It is possible to use the regexp pattern
-     * groups in name and URL when they are specified in the pattern.
+     * Callback function to provide replacement value for pattern match.
+     * It replaces the first group of the pattern and retains the rest of the pattern.
      *
-     * @param text text to replace all patterns
-     * @param pattern the pattern to match
-     * @param name link display name
-     * @param url link URL
-     * @return the text with replaced links
+     * @param result {@link MatchResult} object representing pattern match
+     * @param text original text containing the match
+     * @param url URL to be used for the replacement
+     * @return replacement for the first group in the pattern
      */
-    public static String linkifyPattern(String text, Pattern pattern, String name, String url) {
+    private static String buildLinkReplacer(MatchResult result, String text, String url) {
+        if (result.groupCount() < 1) {
+            return result.group(0);
+        }
+        final String group1 = result.group(1);
+        final String appendedUrl = url + uriEncode(group1);
         try {
-            String buildLink = buildLink(name, url, true);
-            return pattern.matcher(text).replaceAll(buildLink);
-        } catch (URISyntaxException | MalformedURLException ex) {
-            LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", url);
-            return text;
+            StringBuilder stringBuilder = new StringBuilder();
+            if (result.start(0) < result.start(1)) {
+                stringBuilder.append(text.substring(result.start(0), result.start(1)));
+            }
+            stringBuilder.append(buildLink(group1, appendedUrl, true));
+            if (result.end(1) < result.end(0)) {
+                stringBuilder.append(text.substring(result.end(1), result.end(0)));
+            }
+            return stringBuilder.toString();
+        } catch (URISyntaxException | MalformedURLException e) {
+            LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", appendedUrl);
+            return result.group(0);
         }
     }
 
     /**
-     * Try to complete the given URL part into full URL with server name, port,
-     * scheme, ...
+     * Replace all occurrences of pattern in the incoming text with the link
+     * named name pointing to a URL.
+     *
+     * @param text    text to replace all patterns
+     * @param pattern the pattern to match
+     * @param url     link URL
+     * @return the text with replaced links
+     */
+    public static String linkifyPattern(String text, Pattern pattern, String url) {
+        return pattern.matcher(text).replaceAll(match -> buildLinkReplacer(match, text, url));
+    }
+
+    /**
+     * Try to complete the given URL part into full URL with server name, port, scheme, ...
      * <dl>
      * <dt>for request http://localhost:8080/source/xref/xxx and part
      * /cgi-bin/user=</dt>
@@ -1655,7 +1660,8 @@ public final class Util {
         try {
             if (!isHttpUri(url)) {
                 if (url.startsWith("/")) {
-                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
+                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url,
+                            null, null).toString();
                 }
                 var prepUrl = req.getRequestURL();
                 if (!url.isEmpty()) {
@@ -1665,7 +1671,7 @@ public final class Util {
             }
             return url;
         } catch (URISyntaxException ex) {
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.WARNING,
                     String.format("Unable to convert given URL part '%s' to complete URL", url),
                     ex);
             return url;

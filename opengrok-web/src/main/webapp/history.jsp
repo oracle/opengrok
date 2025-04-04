@@ -369,10 +369,10 @@ document.domReady.push(function() {domReadyHistory();});
                 String cout = Util.htmlize(entry.getMessage());
 
                 if (bugPage != null && !bugPage.isEmpty() && bugPattern != null) {
-                    cout = Util.linkifyPattern(cout, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
+                    cout = Util.linkifyPattern(cout, bugPattern, Util.completeUrl(bugPage, request));
                 }
                 if (reviewPage != null && !reviewPage.isEmpty() && reviewPattern != null) {
-                    cout = Util.linkifyPattern(cout, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
+                    cout = Util.linkifyPattern(cout, reviewPattern, Util.completeUrl(reviewPage, request));
                 }
                 
                 boolean showSummary = false;
@@ -382,10 +382,10 @@ document.domReady.push(function() {domReadyHistory();});
                     coutSummary = coutSummary.substring(0, summaryLength - 1);
                     coutSummary = Util.htmlize(coutSummary);
                     if (bugPage != null && !bugPage.isEmpty() && bugPattern != null) {
-                        coutSummary = Util.linkifyPattern(coutSummary, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
+                        coutSummary = Util.linkifyPattern(coutSummary, bugPattern, Util.completeUrl(bugPage, request));
                     }
                     if (reviewPage != null && !reviewPage.isEmpty() && reviewPattern != null) {
-                        coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
+                        coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, Util.completeUrl(reviewPage, request));
                     }
                 }
 
