@@ -69,7 +69,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
         </c:if>
     </td>
     <td>${Util.htmlize(ObjectUtils.defaultIfNull(repositoryInfo.type, "N/A"))}:
-        ${Util.linkify(ObjectUtils.defaultIfNull(Util.redactUrl(repositoryInfo.parent), "N/A"))}
+        ${Util.linkify(ObjectUtils.defaultIfNull(Util.redactUri(repositoryInfo.parent), "N/A"))}
         (${Util.htmlize(ObjectUtils.defaultIfNull(repositoryInfo.branch, "N/A"))})
     </td>
     <td>
