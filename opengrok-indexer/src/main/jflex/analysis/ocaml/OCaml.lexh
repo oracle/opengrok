@@ -1,0 +1,95 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ *
+ * Copyright (c) Simon Peyton Jones. 
+ * Copyright (c) Simon Marlow.
+ * The authors and publisher intend this Report to belong to the entire Haskell
+ * community, and grant permission to copy and distribute it for any purpose,
+ * provided that it is reproduced in its entirety, including this Notice.
+ * Modified versions of this Report may also be copied and distributed for any
+ * purpose, provided that the modified version is clearly presented as such,
+ * and that it does not claim to be a definition of the language Haskell 2010.
+ */
+
+Identifier = ({varid} | {conid} | {pvconid})
+/*
+ * varid	→	(small {small | large | digit | ' })⟨reservedid⟩
+ * ; N.b. "except {reservedid} is excluded from OpenGrok's varid definition
+ */
+varid = {small} ({small} | {large} | {digit} | [\'])*
+/*
+ * conid	→	large {small | large | digit | ' }
+ */
+conid = {large} ({small} | {large} | {digit} | [\'])*
+/*
+ * polymorphic variant
+ * pvconid	→	`large {small | large | digit | ' }
+ */
+pvconid = [\`] {large} ({small} | {large} | {digit} | [\'])*
+/*
+ * small	→	ascSmall | uniSmall | _
+ * ascSmall	→	a | b | … | z
+ */
+small = [a-z_]
+/*
+ * large	→	ascLarge | uniLarge
+ * ascLarge	→	A | B | … | Z
+ */
+large = [A-Z]
+/*
+ * digit	→	ascDigit | uniDigit
+ * ascDigit	→	0 | 1 | … | 9
+ * uniDigit	→	any Unicode decimal digit
+ * octit	→	0 | 1 | … | 7
+ * hexit	→	digit | A | … | F | a | … | f
+ */
+digit = [0-9]
+octit = [0-7]
+hexit = [0-9A-Fa-f]
+
+Number = ({integer} | {float})
+/*
+ * decimal	→	digit{digit}
+ * octal	→	octit{octit}
+ * hexadecimal	→	hexit{hexit}
+ */
+decimal         = {digit}({digit} | _)*
+octal           = {octit}({octit} | _)*
+hexadecimal     = {hexit}({hexit} | _)*
+/*
+ *
+ * integer	→	decimal
+ *		|	0o octal | 0O octal
+ *		|	0x hexadecimal | 0X hexadecimal
+ */
+integer = ({decimal} | [0][oO]{octal} | [0][xX]{hexadecimal})
+/*
+ * float	→	decimal . decimal [exponent]
+ *		|	decimal exponent
+ */
+float = ({decimal} [\.] {decimal} {exponent}? |
+    {decimal} {exponent})
+/*
+ * exponent	→	(e | E) [+ | -] decimal
+ */
+exponent = [eE] [\+\-]? {decimal}
