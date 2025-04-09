@@ -1437,6 +1437,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(displayRepositories, Configuration::setDisplayRepositories);
     }
 
+    public boolean isRedirectOnSingleSearchResult() {
+        return syncReadConfiguration(Configuration::isRedirectOnSingleSearchResult);
+    }
+
+    public void setRedirectOnSingleSearchResult(boolean redirectOnSingleSearchResult) {
+        syncWriteConfiguration(redirectOnSingleSearchResult, Configuration::setRedirectOnSingleSearchResult);
+    }
+
     public boolean getListDirsFirst() {
         return syncReadConfiguration(Configuration::getListDirsFirst);
     }
