@@ -59,6 +59,7 @@ import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.Util;
 
 import static org.opengrok.indexer.configuration.PatternUtil.compilePattern;
 
@@ -1641,6 +1642,13 @@ public final class Configuration {
         if (!isHistoryCache() && isHistoryBasedReindex()) {
             LOGGER.log(Level.INFO, "History based reindex is on, however history cache is off. " +
                     "History cache has to be enabled for history based reindex.");
+        }
+
+        if (!Objects.isNull(getBugPage()) && !Util.isHttpUri(getBugPage())) {
+            throw new ConfigurationException("Bug page must be valid HTTP(S) URI");
+        }
+        if (!Objects.isNull(getReviewPage()) && !Util.isHttpUri(getReviewPage())) {
+            throw new ConfigurationException("Review page must be valid HTTP(S) URI");
         }
     }
 }
