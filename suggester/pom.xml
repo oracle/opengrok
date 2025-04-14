@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -101,7 +101,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.22.9</version>
+            <version>3.27ea0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>

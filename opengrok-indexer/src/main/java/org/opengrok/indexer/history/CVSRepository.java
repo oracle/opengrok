@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -58,6 +58,7 @@ public class CVSRepository extends RCSRepository {
      */
     public static final String CMD_FALLBACK = "cvs";
 
+    @SuppressWarnings("this-escape")
     public CVSRepository() {
         /*
          * This variable is set in the ancestor to TRUE which has a side effect

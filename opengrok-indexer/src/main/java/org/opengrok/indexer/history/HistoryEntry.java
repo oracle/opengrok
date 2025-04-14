@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -57,7 +57,7 @@ public class HistoryEntry implements Serializable {
 
     private boolean active;
     @JsonIgnore
-    private SortedSet<String> files;
+    private transient SortedSet<String> files;
 
     /** Creates a new instance of HistoryEntry. */
     public HistoryEntry() {

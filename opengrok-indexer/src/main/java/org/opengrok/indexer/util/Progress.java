@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -189,7 +189,7 @@ public class Progress implements AutoCloseable {
     }
 
     @VisibleForTesting
-    Level getLevel(Map<Level, Long> lastLoggedChunk, long currentCount, Level currentLevel) {
+    final Level getLevel(Map<Level, Long> lastLoggedChunk, long currentCount, Level currentLevel) {
         // The intention is to log the initial and final count at the base log level.
         if (currentCount <= 1 || (totalCount != null && currentCount == totalCount)) {
             currentLevel = baseLogLevel;

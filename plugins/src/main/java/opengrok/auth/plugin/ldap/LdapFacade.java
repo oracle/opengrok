@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -182,7 +182,7 @@ public class LdapFacade extends AbstractLdapProvider {
         setSearchBase(cfg.getSearchBase());
         setWebHooks(cfg.getWebHooks());
 
-        // Anti-pattern: do some non trivial stuff in the constructor.
+        // Anti-pattern: do some non-trivial stuff in the constructor.
         prepareSearchControls(cfg.getSearchTimeout(), cfg.getCountLimit());
         prepareServers();
     }
@@ -194,8 +194,8 @@ public class LdapFacade extends AbstractLdapProvider {
     /**
      * Go through all servers in the pool and record the first working.
      */
-    void prepareServers() {
-        LOGGER.log(Level.FINER, "checking servers for {0}", this);
+    final void prepareServers() {
+        LOGGER.log(Level.FINER, "checking servers {0}", servers);
         for (int i = 0; i < servers.size(); i++) {
             LdapServer server = servers.get(i);
             if (server.isWorking() && actualServer == -1) {
@@ -231,7 +231,7 @@ public class LdapFacade extends AbstractLdapProvider {
         return servers;
     }
 
-    public LdapFacade setServers(List<LdapServer> servers, int connectTimeout, int readTimeout) {
+    public final LdapFacade setServers(List<LdapServer> servers, int connectTimeout, int readTimeout) {
         this.servers = servers;
         // Inherit timeout values from server pool configuration.
         for (LdapServer server : servers) {
@@ -249,7 +249,7 @@ public class LdapFacade extends AbstractLdapProvider {
         return interval;
     }
 
-    public void setInterval(int interval) {
+    public final void setInterval(int interval) {
         this.interval = interval;
         for (LdapServer server : servers) {
             server.setInterval(interval);
@@ -260,7 +260,7 @@ public class LdapFacade extends AbstractLdapProvider {
         return searchBase;
     }
 
-    public void setSearchBase(String base) {
+    public final void setSearchBase(String base) {
         this.searchBase = base;
     }
 

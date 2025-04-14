@@ -1,4 +1,4 @@
-# Copyright (c) 2018, 2024 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2025 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 FROM ubuntu:jammy AS build
@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.40-jdk17
+FROM tomcat:10.1.40-jdk21
 LABEL maintainer="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.description="OpenGrok code search"

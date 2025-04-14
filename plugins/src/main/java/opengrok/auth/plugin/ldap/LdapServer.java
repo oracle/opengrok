@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -83,7 +83,7 @@ public class LdapServer implements Serializable {
     private int readTimeout;
 
     private int interval = 10 * 1000;
-    private final Map<String, String> env;
+    private final transient Map<String, String> env;
     private transient LdapContext ctx;
     private long errorTimestamp = 0;
 
@@ -111,7 +111,7 @@ public class LdapServer implements Serializable {
         return url;
     }
 
-    public LdapServer setName(String name) {
+    public final LdapServer setName(String name) {
         this.url = name;
         return this;
     }

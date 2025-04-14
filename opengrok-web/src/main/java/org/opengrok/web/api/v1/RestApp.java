@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1;
 
@@ -31,10 +31,10 @@ public class RestApp extends ResourceConfig {
 
     public static final String API_PATH = "api/v1";
 
+    @SuppressWarnings("this-escape")
     public RestApp() {
         register(new SuggesterAppBinder());
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");
         packages(true, "org.opengrok.web.api.v1");
     }
-
 }

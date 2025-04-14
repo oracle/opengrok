@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.entity;
 
@@ -36,7 +36,7 @@ import java.util.Set;
 public class LdapUser implements Serializable {
 
     private String dn; // Distinguished Name
-    private final Map<String, Set<String>> attributes;
+    private final transient Map<String, Set<String>> attributes;
 
     private static final long serialVersionUID = 1L;
 

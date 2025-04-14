@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -40,6 +40,7 @@ public class CustomQueryParser extends QueryParser {
      *
      * @param field default field for unqualified query terms
      */
+    @SuppressWarnings("this-escape")
     public CustomQueryParser(String field) {
         super(field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);

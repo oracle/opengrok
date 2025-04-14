@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 public class IndexCheckException extends Exception {
     private static final long serialVersionUID = 5693446916108385595L;
 
-    private final Set<Path> failedPaths = new HashSet<>();
+    private final transient Set<Path> failedPaths = new HashSet<>();
 
     public IndexCheckException(String message, Path path) {
         super(message);

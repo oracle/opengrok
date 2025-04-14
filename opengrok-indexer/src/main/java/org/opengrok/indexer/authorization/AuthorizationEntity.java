@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -119,14 +119,14 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     protected AuthControlFlag flag;
     protected String name;
-    protected Map<String, Object> setup = new TreeMap<>();
+    protected transient Map<String, Object> setup = new TreeMap<>();
     /**
      * Hold current setup - merged with all ancestor's stacks.
      */
     protected transient Map<String, Object> currentSetup = new TreeMap<>();
 
-    private Set<String> forProjects = new TreeSet<>();
-    private Set<String> forGroups = new TreeSet<>();
+    private transient Set<String> forProjects = new TreeSet<>();
+    private transient Set<String> forGroups = new TreeSet<>();
 
     protected transient boolean working = true;
 

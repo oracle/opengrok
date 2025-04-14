@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search.context;
 
@@ -28,6 +28,7 @@ import java.util.TreeSet;
 public class TokenSetMatcher extends LineMatcher {
     private final Set<String> tokenSet;
 
+    @SuppressWarnings("this-escape")
     public TokenSetMatcher(Set<String> tokenSet, boolean caseInsensitive) {
         super(caseInsensitive);
 

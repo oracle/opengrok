@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -37,11 +37,11 @@ public class Filter implements Serializable {
     private static final long serialVersionUID = 3L;
 
     /** The list of exact filenames. */
-    private final Set<String> filenames;
+    private final transient Set<String> filenames;
     /** The list of filenames with wildcards. */
-    private final List<Pattern> patterns;
+    private final transient List<Pattern> patterns;
     /** The list of paths. */
-    private final List<String> paths;
+    private final transient List<String> paths;
     /**
      * The full list of all patterns. This list will be saved in the
      * configuration file (if used).

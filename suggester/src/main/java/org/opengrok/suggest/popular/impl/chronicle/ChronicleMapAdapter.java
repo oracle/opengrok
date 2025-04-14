@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.popular.impl.chronicle;
 
@@ -52,7 +52,7 @@ public class ChronicleMapAdapter implements PopularityMap {
                 .averageKeySize(averageKeySize)
                 .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                 .entries(entries)
-                .createOrRecoverPersistedTo(file);
+                .createPersistedTo(file);
         this.chronicleMapFile = file;
     }
 
@@ -135,7 +135,7 @@ public class ChronicleMapAdapter implements PopularityMap {
                     .averageKeySize(newMapAvgKey)
                     .entries(newMapSize)
                     .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
-                    .createOrRecoverPersistedTo(chronicleMapFile);
+                    .createPersistedTo(chronicleMapFile);
             m.putAll(tempFile.toFile());
             map = m;
         } finally {

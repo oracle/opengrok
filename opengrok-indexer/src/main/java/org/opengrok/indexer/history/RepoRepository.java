@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
@@ -48,6 +48,7 @@ public class RepoRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "repo";
 
+    @SuppressWarnings("this-escape")
     public RepoRepository() {
         type = "repo";
         setWorking(Boolean.TRUE);

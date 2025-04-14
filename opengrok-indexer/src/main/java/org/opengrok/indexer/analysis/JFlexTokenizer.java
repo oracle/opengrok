@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -49,6 +49,7 @@ public class JFlexTokenizer extends Tokenizer
      * will be owned by the {@link JFlexTokenizer}.
      * @param matcher a defined instance
      */
+    @SuppressWarnings("this-escape")
     public JFlexTokenizer(ScanningSymbolMatcher matcher) {
         if (matcher == null) {
             throw new IllegalArgumentException("`matcher' is null");
@@ -83,12 +84,9 @@ public class JFlexTokenizer extends Tokenizer
         matcher.yyclose();
     }
 
-    private final CharTermAttribute termAtt = addAttribute(
-        CharTermAttribute.class);
-    private final OffsetAttribute offsetAtt = addAttribute(
-        OffsetAttribute.class);
-    private final PositionIncrementAttribute posIncrAtt = addAttribute(
-        PositionIncrementAttribute.class);
+    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
+    private final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
 
     /**
      * Attempts to advance the stream to the next acceptable token, and updates
