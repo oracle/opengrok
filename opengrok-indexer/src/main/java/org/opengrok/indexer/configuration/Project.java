@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -148,6 +148,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public Project(String name) {
         this.name = name;
+        this.tabSize = 0;
     }
 
     /**
@@ -159,6 +160,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     public Project(String name, String path) {
         this.name = name;
         this.path = Util.fixPathIfWindows(path);
+        this.tabSize = 0;
         completeWithDefaults();
     }
 
@@ -238,7 +240,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @param tabSize the size of tabs in this project
      */
-    public void setTabSize(int tabSize) {
+    public final void setTabSize(int tabSize) {
         this.tabSize = tabSize;
     }
 
@@ -267,7 +269,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @param navigateWindowEnabled new value of navigateWindowEnabled
      */
-    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+    public final void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
         this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
@@ -288,7 +290,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
-    public void setHandleRenamedFiles(boolean flag) {
+    public final void setHandleRenamedFiles(boolean flag) {
         this.handleRenamedFiles = flag;
     }
 
@@ -302,7 +304,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should have history cache, false otherwise.
      */
-    public void setHistoryEnabled(boolean flag) {
+    public final void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
     }
 
@@ -316,7 +318,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should have history cache, false otherwise.
      */
-    public void setHistoryCacheEnabled(boolean flag) {
+    public final void setHistoryCacheEnabled(boolean flag) {
         this.historyCacheEnabled = flag;
     }
 
@@ -330,14 +332,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should have annotation cache, false otherwise.
      */
-    public void setAnnotationCacheEnabled(boolean flag) {
+    public final void setAnnotationCacheEnabled(boolean flag) {
         this.annotationCacheEnabled = flag;
     }
 
     /**
      * @param flag true if project's repositories should deal with merge commits.
      */
-    public void setMergeCommitsEnabled(boolean flag) {
+    public final void setMergeCommitsEnabled(boolean flag) {
         this.mergeCommitsEnabled = flag;
     }
 
@@ -351,7 +353,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
-    public void setHistoryBasedReindex(boolean flag) {
+    public final void setHistoryBasedReindex(boolean flag) {
         this.historyBasedReindex = flag;
     }
 
@@ -419,7 +421,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
     }
 
-    public void setBugPage(String bugPage) {
+    public final void setBugPage(String bugPage) {
         this.bugPage = bugPage;
     }
 
@@ -439,7 +441,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * does not contain at least one capture group and the group does not
      * contain a single character
      */
-    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+    public final void setBugPattern(String bugPattern) throws PatternSyntaxException {
         this.bugPattern = compilePattern(bugPattern);
     }
 
@@ -459,7 +461,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
     }
 
-    public void setReviewPage(String reviewPage) {
+    public final void setReviewPage(String reviewPage) {
         this.reviewPage = reviewPage;
     }
 
@@ -479,7 +481,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * does not contain at least one capture group and the group does not
      * contain a single character
      */
-    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+    public final void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
         this.reviewPattern = compilePattern(reviewPattern);
     }
 
@@ -504,7 +506,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
          * 1) if the project has some non-default value; use that
          * 2) if the project has a default value; use the provided configuration
          */
-        if (getTabSize() == defaultCfg.getTabSize()) {
+        if (tabSize == defaultCfg.getTabSize()) {
             setTabSize(env.getTabSize());
         }
 
