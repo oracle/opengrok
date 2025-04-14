@@ -2209,7 +2209,7 @@ public class IndexDatabase {
                 new FileOutputStream(transientXref))));
     }
 
-    LockFactory pickLockFactory(RuntimeEnvironment env) {
+    final LockFactory pickLockFactory(RuntimeEnvironment env) {
         switch (env.getLuceneLocking()) {
             case ON:
             case SIMPLE:
