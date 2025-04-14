@@ -148,7 +148,6 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public Project(String name) {
         this.name = name;
-        this.tabSize = 0;
     }
 
     /**
@@ -160,7 +159,6 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     public Project(String name, String path) {
         this.name = name;
         this.path = Util.fixPathIfWindows(path);
-        this.tabSize = 0;
         completeWithDefaults();
     }
 
