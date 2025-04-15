@@ -4,7 +4,7 @@
 FROM ubuntu:jammy AS build
 
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install --no-install-recommends -y openjdk-17-jdk python3 python3-venv && \
+RUN apt-get update && apt-get install --no-install-recommends -y openjdk-21-jdk python3 python3-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
