@@ -56,3 +56,8 @@ jobs:
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: distribution/target/opengrok-*.tar.gz
+        compression-level: 0
