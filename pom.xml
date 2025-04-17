@@ -434,7 +434,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.2.3</version>
+                <version>4.9.3.0</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
                     <includeFilterFile>dev/findbugs_filter.xml</includeFilterFile>
@@ -448,7 +448,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.21.2</version>
+                <version>3.26.0</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -467,7 +467,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-docck-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
