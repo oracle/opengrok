@@ -31,6 +31,8 @@ public class ThreadUtil {
     }
 
     /**
+     * Retrieve thread ID, preferring the non-deprecated <code>threadId</code> method.
+     * This can be replaced with direct call after target Java version is switched to Java 21 or higher.
      * @param thread thread object
      * @return thread id
      */
