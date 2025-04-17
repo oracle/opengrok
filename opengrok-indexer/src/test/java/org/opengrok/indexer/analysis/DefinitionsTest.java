@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -140,9 +140,9 @@ class DefinitionsTest {
         Definitions instance = new Definitions();
         instance.addTag(1, "one", "", "", 0, 0);
         byte[] serial = instance.serialize();
-        Definitions instance2 = Definitions.deserialize(serial);
-        assertEquals(instance.getTags().size(), instance2.getTags().size());
-        assertEquals(instance.getSymbols().size(), instance2.getSymbols().size());
+        Definitions deserializedInstance = Definitions.deserialize(serial);
+        assertEquals(instance.getTags().size(), deserializedInstance.getTags().size());
+        assertEquals(instance.getSymbols().size(), deserializedInstance.getSymbols().size());
     }
 
 }

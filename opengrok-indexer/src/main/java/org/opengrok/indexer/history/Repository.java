@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -78,15 +78,15 @@ public abstract class Repository extends RepositoryInfo {
      */
     protected String RepoCommand;
 
-    protected final List<String> ignoredFiles;
+    protected final transient List<String> ignoredFiles;
 
-    protected final List<String> ignoredDirs;
+    protected final transient List<String> ignoredDirs;
 
     /**
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
      */
-    protected NavigableSet<TagEntry> tagList = null;
+    protected transient NavigableSet<TagEntry> tagList = null;
 
     abstract boolean fileHasHistory(File file);
 

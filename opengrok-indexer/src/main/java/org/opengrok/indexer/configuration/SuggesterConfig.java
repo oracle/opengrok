@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -170,7 +170,7 @@ public class SuggesterConfig {
         return enabled;
     }
 
-    public void setEnabled(final boolean enabled) {
+    public final void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -178,7 +178,7 @@ public class SuggesterConfig {
         return maxResults;
     }
 
-    public void setMaxResults(final int maxResults) {
+    public final void setMaxResults(final int maxResults) {
         if (maxResults <= 0) {
             throw new IllegalArgumentException("Max results cannot be negative or zero");
         }
@@ -189,7 +189,7 @@ public class SuggesterConfig {
         return minChars;
     }
 
-    public void setMinChars(final int minChars) {
+    public final void setMinChars(final int minChars) {
         if (minChars < 0) {
             throw new IllegalArgumentException(
                     "Minimum number of characters needed for suggester to provide suggestions cannot be negative");
@@ -201,7 +201,7 @@ public class SuggesterConfig {
         return allowedProjects;
     }
 
-    public void setAllowedProjects(final Set<String> allowedProjects) {
+    public final void setAllowedProjects(final Set<String> allowedProjects) {
         this.allowedProjects = allowedProjects;
     }
 
@@ -209,7 +209,7 @@ public class SuggesterConfig {
         return maxProjects;
     }
 
-    public void setMaxProjects(final int maxProjects) {
+    public final void setMaxProjects(final int maxProjects) {
         if (maxProjects < 1) {
             throw new IllegalArgumentException("Maximum projects for suggestions cannot be less than 1");
         }
@@ -220,7 +220,7 @@ public class SuggesterConfig {
         return allowedFields;
     }
 
-    public void setAllowedFields(final Set<String> allowedFields) {
+    public final void setAllowedFields(final Set<String> allowedFields) {
         this.allowedFields = new HashSet<>(allowedFields);
     }
 
@@ -228,7 +228,7 @@ public class SuggesterConfig {
         return allowComplexQueries;
     }
 
-    public void setAllowComplexQueries(final boolean allowComplexQueries) {
+    public final void setAllowComplexQueries(final boolean allowComplexQueries) {
         this.allowComplexQueries = allowComplexQueries;
     }
 
@@ -236,7 +236,7 @@ public class SuggesterConfig {
         return allowMostPopular;
     }
 
-    public void setAllowMostPopular(final boolean allowMostPopular) {
+    public final void setAllowMostPopular(final boolean allowMostPopular) {
         this.allowMostPopular = allowMostPopular;
     }
 
@@ -244,7 +244,7 @@ public class SuggesterConfig {
         return showScores;
     }
 
-    public void setShowScores(final boolean showScores) {
+    public final void setShowScores(final boolean showScores) {
         this.showScores = showScores;
     }
 
@@ -252,7 +252,7 @@ public class SuggesterConfig {
         return showProjects;
     }
 
-    public void setShowProjects(final boolean showProjects) {
+    public final void setShowProjects(final boolean showProjects) {
         this.showProjects = showProjects;
     }
 
@@ -260,7 +260,7 @@ public class SuggesterConfig {
         return showTime;
     }
 
-    public void setShowTime(final boolean showTime) {
+    public final void setShowTime(final boolean showTime) {
         this.showTime = showTime;
     }
 
@@ -268,7 +268,7 @@ public class SuggesterConfig {
         return rebuildCronConfig;
     }
 
-    public void setRebuildCronConfig(final String rebuildCronConfig) {
+    public final void setRebuildCronConfig(final String rebuildCronConfig) {
         if (rebuildCronConfig != null) { // check cron format
             CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX));
             parser.parse(rebuildCronConfig); // throws IllegalArgumentException if invalid
@@ -280,7 +280,7 @@ public class SuggesterConfig {
         return buildTerminationTime;
     }
 
-    public void setBuildTerminationTime(final int buildTerminationTime) {
+    public final void setBuildTerminationTime(final int buildTerminationTime) {
         if (buildTerminationTime < 0) {
             throw new IllegalArgumentException("Suggester build termination time cannot be negative");
         }
@@ -291,14 +291,14 @@ public class SuggesterConfig {
         return timeThreshold;
     }
 
-    public void setTimeThreshold(final int timeThreshold) {
+    public final void setTimeThreshold(final int timeThreshold) {
         if (timeThreshold < 0) {
             throw new IllegalArgumentException("Time threshold for suggestions cannot be negative");
         }
         this.timeThreshold = timeThreshold;
     }
 
-    public void setRebuildThreadPoolSizeInNcpuPercent(final int percent) {
+    public final void setRebuildThreadPoolSizeInNcpuPercent(final int percent) {
         if (percent < 0 || percent > 100) {
             throw new IllegalArgumentException("Need percentage value");
         }
@@ -309,7 +309,7 @@ public class SuggesterConfig {
         return rebuildThreadPoolSizeInNcpuPercent;
     }
 
-    public void setSearchThreadPoolSizeInNcpuPercent(final int percent) {
+    public final void setSearchThreadPoolSizeInNcpuPercent(final int percent) {
         if (percent < 0 || percent > 100) {
             throw new IllegalArgumentException("Need percentage value");
         }

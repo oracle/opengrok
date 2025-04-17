@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, James Service <jas2701@googlemail.com>
- * Portions Copyright (c) 2017, 2021, Oracle and/or its affiliates.
+ * Portions Copyright (c) 2017, 2025, Oracle and/or its affiliates.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -88,7 +88,7 @@ public class BitKeeperRepository extends Repository {
     /**
      * The version of the BitKeeper executable. This affects the correct dspec to use for tags.
      */
-    private Version version = null;
+    private transient Version version = null;
 
     /**
      * Constructor to construct the thing to be constructed.

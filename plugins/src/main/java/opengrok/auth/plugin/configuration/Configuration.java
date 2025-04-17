@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -55,7 +56,7 @@ public class Configuration implements Serializable {
     private static final long serialVersionUID = -1;
 
     @JsonProperty
-    private List<LdapServer> servers = new ArrayList<>();
+    private ArrayList<LdapServer> servers = new ArrayList<>();
     @JsonProperty
     private int interval;
     @JsonProperty
@@ -71,8 +72,8 @@ public class Configuration implements Serializable {
     @JsonProperty
     private int countLimit;
 
-    public void setServers(List<LdapServer> servers) {
-        this.servers = servers;
+    public void setServers(Collection<LdapServer> servers) {
+        this.servers = new ArrayList<>(servers);
     }
 
     public List<LdapServer> getServers() {

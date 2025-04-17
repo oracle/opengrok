@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -96,6 +96,7 @@ public class AccuRevRepository extends Repository {
      */
     private static final String DEPOT_ROOT = String.format("%s.%s", File.separator, File.separator);
 
+    @SuppressWarnings("this-escape")
     public AccuRevRepository() {
         type = "AccuRev";
         datePatterns = new String[]{

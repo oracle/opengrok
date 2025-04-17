@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -48,12 +48,12 @@ public class DefinitionsTokenStream extends TokenStream {
      */
     private final List<PendingToken> events = new ArrayList<>();
 
-    private final CharTermAttribute termAtt = addAttribute(
-        CharTermAttribute.class);
-    private final OffsetAttribute offsetAtt = addAttribute(
-        OffsetAttribute.class);
-    private final PositionIncrementAttribute posIncrAtt = addAttribute(
-        PositionIncrementAttribute.class);
+    @SuppressWarnings("this-escape")
+    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    @SuppressWarnings("this-escape")
+    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
+    @SuppressWarnings("this-escape")
+    private final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
 
     private int offset;
 
@@ -65,8 +65,7 @@ public class DefinitionsTokenStream extends TokenStream {
      * @param wrapper an optional instance
      * @throws IOException if I/O error occurs
      */
-    public void initialize(Definitions defs, StreamSource src,
-            ReaderWrapper wrapper) throws IOException {
+    public void initialize(Definitions defs, StreamSource src, ReaderWrapper wrapper) throws IOException {
         if (defs == null) {
             throw new IllegalArgumentException("`defs' is null");
         }

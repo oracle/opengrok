@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -70,6 +70,7 @@ public class SSCMRepository extends Repository {
     private static final String BRANCH_PROPERTY = "SCMBranch";
     private static final String REPOSITORY_PROPERTY = "SCMRepository";
 
+    @SuppressWarnings("this-escape")
     public SSCMRepository() {
         setType("SSCM");
         setRemote(true);

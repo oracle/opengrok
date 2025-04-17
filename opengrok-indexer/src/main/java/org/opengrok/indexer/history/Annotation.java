@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
@@ -123,9 +123,9 @@ public class Annotation {
     /**
      * Gets all revisions that are in use, first is the lowest one (sorted using natural order).
      *
-     * @return list of all revisions the file has
+     * @return set of all revisions the file has
      */
-    public Set<String> getRevisions() {
+    public final Set<String> getRevisions() {
         return annotationData.getRevisions();
     }
 
@@ -180,7 +180,7 @@ public class Annotation {
      * @param revision revision number
      * @return file version number. 0 if unknown. 1 first version of file, etc.
      */
-    public int getFileVersion(String revision) {
+    public final int getFileVersion(String revision) {
         return fileVersions.getOrDefault(revision, 0);
     }
 

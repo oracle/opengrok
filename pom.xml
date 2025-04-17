@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -74,7 +74,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <maven-surefire.version>3.0.0-M5</maven-surefire.version>
         <apache-commons-lang3.version>3.13.0</apache-commons-lang3.version>
         <micrometer.version>1.14.1</micrometer.version>
-        <mockito.version>5.2.0</mockito.version>
+        <mockito.version>5.17.0</mockito.version>
         <commons-io.version>2.14.0</commons-io.version>
     </properties>
 

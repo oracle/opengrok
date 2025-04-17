@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -37,8 +37,7 @@ import org.opengrok.indexer.web.Util;
 /**
  * @author Lubos Kosco
  */
-public class JFlexXref implements Xrefer, SymbolMatchedListener,
-        NonSymbolMatchedListener {
+public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatchedListener {
 
     /**
      * Used to indicate pre-formatted output with
@@ -99,6 +98,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * will be owned by the {@link JFlexXref}.
      * @param matcher a defined instance
      */
+    @SuppressWarnings("this-escape")
     public JFlexXref(ScanningSymbolMatcher matcher) {
         if (matcher == null) {
             throw new IllegalArgumentException("`matcher' is null");
@@ -109,11 +109,11 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
         // The xrefer will own the matcher, so we won't have to unsubscribe.
 
         userPageLink = RuntimeEnvironment.getInstance().getUserPage();
-        if (userPageLink != null && userPageLink.length() == 0) {
+        if (userPageLink != null && userPageLink.isEmpty()) {
             userPageLink = null;
         }
         userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
-        if (userPageSuffix != null && userPageSuffix.length() == 0) {
+        if (userPageSuffix != null && userPageSuffix.isEmpty()) {
             userPageSuffix = null;
         }
     }

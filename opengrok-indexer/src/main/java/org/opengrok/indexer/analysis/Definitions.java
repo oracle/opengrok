@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -66,7 +66,7 @@ public class Definitions implements Serializable {
 
         private static final long serialVersionUID = 1191703801007779481L;
         @SuppressWarnings("java:S116")
-        private final Map<String, Set<Tag>> sym_tags; //NOPMD
+        private final HashMap<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
             this.sym_tags = new HashMap<>();
@@ -74,16 +74,16 @@ public class Definitions implements Serializable {
     }
     // line number -> tag map
     @SuppressWarnings("java:S116")
-    private final Map<Integer, LineTagMap> line_maps;
+    private final HashMap<Integer, LineTagMap> line_maps;
 
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
      */
-    private final Map<String, Set<Integer>> symbols;
+    private final HashMap<String, Set<Integer>> symbols;
     /**
      * List of all the tags.
      */
-    private final List<Tag> tags;
+    private final ArrayList<Tag> tags;
 
     public Definitions() {
         symbols = new HashMap<>();

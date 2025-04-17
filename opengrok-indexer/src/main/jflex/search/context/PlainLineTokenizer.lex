@@ -18,12 +18,9 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 
-/**
- * for plain text tokenizers
- */
 package org.opengrok.indexer.search.context;
 
 import java.io.CharArrayReader;
@@ -37,6 +34,9 @@ import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 
+/**
+ * for plain text tokenizers
+ */
 %%
 
 %public

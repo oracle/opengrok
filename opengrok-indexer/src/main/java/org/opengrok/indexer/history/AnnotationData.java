@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -52,7 +52,7 @@ public class AnnotationData implements Serializable {
         this.filename = filename;
     }
 
-    private List<AnnotationLine> annotationLines = new ArrayList<>();
+    private transient List<AnnotationLine> annotationLines = new ArrayList<>();
     private int widestRevision;
     private int widestAuthor;
     private String filename;

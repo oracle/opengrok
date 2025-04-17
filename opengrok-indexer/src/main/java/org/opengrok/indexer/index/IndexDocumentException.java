@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -32,8 +32,8 @@ import java.util.Set;
 public class IndexDocumentException extends IndexCheckException {
     private static final long serialVersionUID = -277429315137557112L;
 
-    private final Map<Path, Integer> duplicatePathMap;
-    private final Set<Path> missingPaths;
+    private final transient Map<Path, Integer> duplicatePathMap;
+    private final transient Set<Path> missingPaths;
 
     public IndexDocumentException(String s, Path path) {
         super(s, path);

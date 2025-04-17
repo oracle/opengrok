@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.framework;
 
@@ -97,7 +97,7 @@ public abstract class PluginFramework<P> {
      *
      * @param pluginDirectory the directory
      */
-    public synchronized void setPluginDirectory(File pluginDirectory) {
+    public final synchronized void setPluginDirectory(File pluginDirectory) {
         this.pluginDirectory = pluginDirectory;
     }
 
@@ -106,7 +106,7 @@ public abstract class PluginFramework<P> {
      *
      * @param directory the directory path
      */
-    public synchronized void setPluginDirectory(String directory) {
+    public final synchronized void setPluginDirectory(String directory) {
         setPluginDirectory(directory != null ? new File(directory) : null);
     }
 

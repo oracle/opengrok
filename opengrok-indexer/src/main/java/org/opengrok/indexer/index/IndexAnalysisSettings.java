@@ -18,6 +18,7 @@
  */
 
 /*
+ * Portions Copyright (c) 2025, Oracle and/or its affiliates.
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -69,7 +70,7 @@ public final class IndexAnalysisSettings implements Serializable {
      * de-serialization circumvents normal construction.
      * @serial
      */
-    private Map<String, Long> analyzersVersions = new HashMap<>();
+    private transient Map<String, Long> analyzersVersions = new HashMap<>();
 
     /**
      * Gets the project name to be used to distinguish different instances of
