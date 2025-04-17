@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -63,7 +63,8 @@ import org.opengrok.web.api.v1.suggester.provider.filter.Suggester;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
@@ -194,10 +195,10 @@ public final class SuggesterController {
     @POST
     @Path("/init/queries")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addSearchCountsQueries(final List<String> urls) {
+    public void addSearchCountsQueries(final List<String> urls) throws URISyntaxException {
         for (String urlStr : urls) {
             try {
-                var url = new URL(urlStr);
+                var url = new URI(urlStr).toURL();
                 var params = Util.getQueryParams(url);
 
                 var projects = params.get("project");
