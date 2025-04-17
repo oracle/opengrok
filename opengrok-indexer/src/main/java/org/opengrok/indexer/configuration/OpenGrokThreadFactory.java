@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
 import org.jetbrains.annotations.NotNull;
+import org.opengrok.indexer.util.ThreadUtil;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -47,7 +48,7 @@ public class OpenGrokThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(@NotNull Runnable runnable) {
         Thread thread = Executors.defaultThreadFactory().newThread(Objects.requireNonNull(runnable, "runnable"));
-        thread.setName(PREFIX + threadPrefix + thread.getId());
+        thread.setName(PREFIX + threadPrefix + ThreadUtil.getThreadId(thread));
         return thread;
     }
 }

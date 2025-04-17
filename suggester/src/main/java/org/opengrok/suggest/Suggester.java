@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -34,6 +34,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.opengrok.suggest.util.ThreadUtil;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.util.Progress;
@@ -161,7 +162,7 @@ public final class Suggester implements Closeable {
                 runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     // This should match the naming in OpenGrokThreadFactory class.
-                    thread.setName("OpenGrok-suggester-lookup-" + thread.getId());
+                    thread.setName("OpenGrok-suggester-lookup-" + ThreadUtil.getThreadId(thread));
                     return thread;
                 });
 
@@ -169,7 +170,7 @@ public final class Suggester implements Closeable {
                 runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     // This should match the naming in OpenGrokThreadFactory class.
-                    thread.setName("OpenGrok-suggester-rebuild-" + thread.getId());
+                    thread.setName("OpenGrok-suggester-rebuild-" + ThreadUtil.getThreadId(thread));
                     return thread;
                 });
 

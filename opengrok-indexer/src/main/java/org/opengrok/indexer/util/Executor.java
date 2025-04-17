@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -412,7 +412,7 @@ public class Executor {
             LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler((t, e) ->
                     LOGGER.log(Level.SEVERE, String.format("Uncaught exception in thread %s with ID %d: %s",
-                            t.getName(), t.getId(), e.getMessage()), e));
+                            t.getName(), ThreadUtil.getThreadId(t), e.getMessage()), e));
         }
     }
 
