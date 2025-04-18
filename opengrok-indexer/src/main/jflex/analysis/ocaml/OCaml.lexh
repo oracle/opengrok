@@ -1,0 +1,131 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2025, Yelisey Romanov <progoramur@gmail.com>.
+ */
+
+Identifier = ({varid} | {conid} | {pvconid} | {typevarid})
+/*
+ * varid	→	(small {small | large | digit | ' })⟨reservedid⟩
+ * ; N.b. "except {reservedid} is excluded from OpenGrok's varid definition
+ */
+varid = {small} ({small} | {large} | {digit} | [\'])*
+/*
+ * conid	→	large {small | large | digit | ' }
+ */
+conid = {large} ({small} | {large} | {digit} | [\'])*
+/*
+ * polymorphic variant
+ * pvconid	→	`large {small | large | digit | ' }
+ */
+pvconid = [\`] {large} ({small} | {large} | {digit} | [\'])*
+/*
+ * type variable
+ * typevarid	→	'small {small | large | digit }
+ */
+typevarid = [\'] {small} ({small} | {large} | {digit})*
+/*
+ * small	→	ascSmall | uniSmall | _
+ * ascSmall	→	a | b | … | z
+ */
+small = [a-z_]
+/*
+ * large	→	ascLarge | uniLarge
+ * ascLarge	→	A | B | … | Z
+ */
+large = [A-Z]
+/*
+ * digit	→	ascDigit | uniDigit
+ * ascDigit	→	0 | 1 | … | 9
+ * uniDigit	→	any Unicode decimal digit
+ * octit	→	0 | 1 | … | 7
+ * hexit	→	digit | A | … | F | a | … | f
+ */
+digit = [0-9]
+octit = [0-7]
+hexit = [0-9A-Fa-f]
+binit = [0-1]
+
+Number = ({integer} | {float})
+/*
+ * decimal      → digit{digit}
+ * octal        → octit{octit}
+ * hexadecimal	→ hexit{hexit}
+ */
+decimal         = {digit}({digit} | _)*
+octal           = {octit}({octit} | _)*
+hexadecimal     = {hexit}({hexit} | _)*
+binary          = {binit}({binit} | _)*
+
+/*
+ * integer	→	decimal
+ *		|	0o octal | 0O octal
+ *		|	0x hexadecimal | 0X hexadecimal
+ *		|	0b binary | 0B binary
+ */
+integer = ({decimal} | [0][oO]{octal} | [0][xX]{hexadecimal} | [0][bB]{binary} ) ( l | L | n)?
+
+/*
+ * float	→	decimal . decimal [exponent]
+ *		|	decimal exponent
+ */
+float = ({decimal} [\.] {decimal} {exponent}? |
+    {decimal} {exponent})
+
+/*
+ * exponent	→	(e | E) [+ | -] decimal
+ */
+exponent = [eE] [\+\-]? {decimal}
+
+/*
+ * Special treatment of chars is due to type variables with quote
+ *
+ * char literal	→ '\n' | '[^ '\\' '\'' '\010' '\013']'
+           | escaped_char | dec_code | oct_code | hex_code
+ */
+Character = ( {newline_char} | {regular_char} | {escaped_char} |
+              {deccode_char} | {octcode_char} | {hexcode_char})
+
+newline_char = \' \n \'
+regular_char = \' [^ \\ \' '\010' '\013'] \'
+escaped_char = \' \\ [\\ \' \" n t b r ' '] \'
+deccode_char = \' \\ {digit}{digit}{digit} \'
+octcode_char = \' \\ o {octit}{octit}{octit} \'
+hexcode_char = \' \\ x {hexit}{hexit} \'
+
+/*
+ * Extension	→	%attrid | %%attrid | @attrid
+ */
+lowercase = {varid}
+uppercase = {conid}
+
+attrid = ({lowercase} | {uppercase}) ( [\.] | {lowercase} | {uppercase})*
+
+Extension = \[ [ ]* @{attrid} | \[ [ ]* @@ {attrid} | \[ [ ]* @@@ {attrid} |
+            \% {attrid} | \%\% {attrid}
+
+QuotedStringBegin = \{ {lowercase}* \|
+QuotedStringEnd   = \| {lowercase}* \}
+
+/*
+ * Syntax sugar for extension nodes with quoted strings.
+ */
+QuotedExtensionBegin = \{ (\% {attrid} | \%\% {attrid}) [ ]*
+QuotedExtensionKey = {lowercase}* \|
