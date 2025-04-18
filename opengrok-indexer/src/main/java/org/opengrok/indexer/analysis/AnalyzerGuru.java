@@ -89,6 +89,7 @@ import org.opengrok.indexer.analysis.json.JsonAnalyzerFactory;
 import org.opengrok.indexer.analysis.kotlin.KotlinAnalyzerFactory;
 import org.opengrok.indexer.analysis.lisp.LispAnalyzerFactory;
 import org.opengrok.indexer.analysis.lua.LuaAnalyzerFactory;
+import org.opengrok.indexer.analysis.ocaml.OCamlAnalyzerFactory;
 import org.opengrok.indexer.analysis.pascal.PascalAnalyzerFactory;
 import org.opengrok.indexer.analysis.perl.PerlAnalyzerFactory;
 import org.opengrok.indexer.analysis.php.PhpAnalyzerFactory;
@@ -298,6 +299,7 @@ public class AnalyzerGuru {
                 new HaskellAnalyzerFactory(),
                 new GolangAnalyzerFactory(),
                 new LuaAnalyzerFactory(),
+                new OCamlAnalyzerFactory(),
                 new PascalAnalyzerFactory(),
                 new AdaAnalyzerFactory(),
                 new RubyAnalyzerFactory(),
