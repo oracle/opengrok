@@ -361,7 +361,6 @@ public final class HistoryGuru {
         }
     }
 
-    // TODO: add test Mercurial
     @VisibleForTesting
     static void completeAnnotationWithHistory(Annotation annotation, @NotNull History history, Repository repo) {
         Set<String> revs = annotation.getRevisions();
