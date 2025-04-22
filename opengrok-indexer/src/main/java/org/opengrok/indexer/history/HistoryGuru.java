@@ -355,7 +355,9 @@ public final class HistoryGuru {
     private void completeAnnotationWithHistory(File file, Annotation annotation, Repository repo) {
         try {
             History history = getHistory(file);
-            completeAnnotationWithHistory(annotation, history, repo);
+            if (history != null) {
+                completeAnnotationWithHistory(annotation, history, repo);
+            }
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "Cannot get messages for tooltip: ", ex);
         }
