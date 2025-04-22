@@ -79,7 +79,6 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
                     // Use the history index hash map to get the author.
                     String author = Optional.ofNullable(revs.get(fullRev)).map(HistoryEntry::getAuthor).
                             orElse("N/A");
-                    // TODO: add check that history stored in the index uses the same format of the revision
                     annotation.addLine(fullRev, Util.getEmail(author.trim()), true, displayRev);
                 } else {
                     LOGGER.log(Level.WARNING,

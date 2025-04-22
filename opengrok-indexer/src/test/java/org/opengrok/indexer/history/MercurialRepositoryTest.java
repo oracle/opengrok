@@ -438,7 +438,7 @@ public class MercurialRepositoryTest {
     }
 
     private static Stream<Triple<String, List<String>, List<String>>> provideParametersForPositiveAnnotationTest() {
-        return Stream.of(Triple.of("8:6a8c423f5624", List.of("7", "8"), List.of("7:db1394c05268", "8:6a8c423f5624")),
+        return Stream.of(Triple.of("8:6a8c423f5624", List.of("7", "8"), List.of("8:6a8c423f5624", "7:db1394c05268")),
                 Triple.of("7:db1394c05268", List.of("7"), List.of("7:db1394c05268")));
     }
 
@@ -467,6 +467,7 @@ public class MercurialRepositoryTest {
                 collect(Collectors.toList());
         assertFalse(relevantEntries.isEmpty());
         for (HistoryEntry entry : relevantEntries) {
+            assertTrue(annotation.getRevisions().contains(entry.getRevision()));
             assertEquals(entry.getDescription(), annotation.getDesc(entry.getRevision()));
             assertTrue(annotation.getAuthors().contains(Util.getEmail(entry.getAuthor())));
         }
