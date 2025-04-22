@@ -38,6 +38,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -467,6 +468,7 @@ public class MercurialRepositoryTest {
         assertFalse(relevantEntries.isEmpty());
         for (HistoryEntry entry : relevantEntries) {
             assertEquals(entry.getDescription(), annotation.getDesc(entry.getRevision()));
+            assertTrue(annotation.getAuthors().contains(Util.getEmail(entry.getAuthor())));
         }
     }
 
