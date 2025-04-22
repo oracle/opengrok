@@ -322,8 +322,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
      * of a file in historical revision.
      *
      * @param fullpath file path
-     * @param fullRevToFind revision number (in the form of
-     * {rev}:{node|short})
+     * @param fullRevToFind revision number (in the form of <code>{rev}:{node|short}</code>)
      * @return original filename
      */
     private String findOriginalName(String fullpath, String fullRevToFind) throws IOException {
@@ -464,8 +463,11 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("annotate");
-        argv.add("-n");
-        argv.add("-c"); // TODO: use --template ?
+        argv.add("--template");
+        /*
+         * This has to be in concordance with TEMPLATE_REVS, in particular the format of the 'node'.
+         */
+        argv.add("{lines % '{rev}\t{node|short}:{line}'}");
         if (!this.isHandleRenamedFiles()) {
             argv.add("--no-follow");
         }

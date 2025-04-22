@@ -52,8 +52,10 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
 
     /**
      * Pattern used to extract author/revision from the {@code hg annotate} command.
+     * Obviously, this has to be in concordance with the output template used by
+     * {@link MercurialRepository#annotate(File, String)}.
      */
-    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^(\\d+)\\s+([0-9a-f]+):");
+    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^(\\d+)\\t([0-9a-f]+):");
 
     MercurialAnnotationParser(File file, @NotNull HashMap<String, HistoryEntry> revs) {
         this.file = file;
