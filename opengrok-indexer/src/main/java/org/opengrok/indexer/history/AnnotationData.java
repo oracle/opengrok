@@ -52,6 +52,10 @@ public class AnnotationData implements Serializable {
         this.filename = filename;
     }
 
+    /**
+     * The <code>transient</code> does not matter here since the object is serialized explicitly
+     * in {@link FileAnnotationCache#store(File, Annotation)}.
+     */
     private transient List<AnnotationLine> annotationLines = new ArrayList<>();
     private int widestRevision;
     private int widestAuthor;
@@ -220,6 +224,14 @@ public class AnnotationData implements Serializable {
         Set<String> ret = new HashSet<>();
         for (AnnotationLine ln : annotationLines) {
             ret.add(ln.getRevision());
+        }
+        return ret;
+    }
+
+    Set<String> getDisplayRevisions() {
+        Set<String> ret = new HashSet<>();
+        for (AnnotationLine ln : annotationLines) {
+            ret.add(ln.getDisplayRevision());
         }
         return ret;
     }

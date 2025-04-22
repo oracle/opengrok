@@ -129,6 +129,10 @@ public class Annotation {
         return annotationData.getRevisions();
     }
 
+    final Set<String> getDisplayRevisions() {
+        return annotationData.getDisplayRevisions();
+    }
+
     @TestOnly
     Set<String> getAuthors() {
         return annotationData.getAuthors();
@@ -138,8 +142,7 @@ public class Annotation {
      * Gets the author who last modified the specified line.
      *
      * @param line line number (counting from 1)
-     * @return author, or an empty string if there is no information about the
-     * specified line
+     * @return author, or an empty string if there is no information about the specified line
      */
     public String getAuthor(int line) {
         return annotationData.getAuthor(line);

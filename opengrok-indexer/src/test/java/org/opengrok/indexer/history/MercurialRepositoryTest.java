@@ -24,6 +24,7 @@
 package org.opengrok.indexer.history;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -435,14 +436,14 @@ public class MercurialRepositoryTest {
         assertNull(annotation);
     }
 
-    private static Stream<Pair<String, List<String>>> provideParametersForPositiveAnnotationTest() {
-        return Stream.of(Pair.of("8:6a8c423f5624", List.of("7", "8")),
-                Pair.of("7:db1394c05268", List.of("7")));
+    private static Stream<Triple<String, List<String>, List<String>>> provideParametersForPositiveAnnotationTest() {
+        return Stream.of(Triple.of("8:6a8c423f5624", List.of("7", "8"), List.of("7:db1394c05268", "8:6a8c423f5624")),
+                Triple.of("7:db1394c05268", List.of("7"), List.of("7:db1394c05268")));
     }
 
     @ParameterizedTest
     @MethodSource("provideParametersForPositiveAnnotationTest")
-    void testAnnotationPositive(Pair<String, List<String>> pair) throws Exception {
+    void testAnnotationPositive(Triple<String, List<String>, List<String>> triple) throws Exception {
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
         File file = new File(repositoryRoot, "novel.txt");
@@ -450,10 +451,23 @@ public class MercurialRepositoryTest {
         // The annotate() method calls uses HistoryGuru's getHistory() method which requires the RepositoryLookup
         // to be initialized. Do so via setRepositories().
         RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
-        Annotation annotation = hgRepo.annotate(file, pair.getKey());
+        Annotation annotation = hgRepo.annotate(file, triple.getLeft());
         assertNotNull(annotation);
+        List<String> displayRevisions = new ArrayList<>(annotation.getDisplayRevisions());
+        assertEquals(triple.getMiddle(), displayRevisions);
         List<String> revisions = new ArrayList<>(annotation.getRevisions());
-        assertEquals(pair.getValue(), revisions);
+        assertEquals(triple.getRight(), revisions);
+        History history = HistoryGuru.getInstance().getHistory(file);
+        assertNotNull(history);
+        assertFalse(history.getHistoryEntries().isEmpty());
+        HistoryGuru.completeAnnotationWithHistory(annotation, history, hgRepo);
+        List<HistoryEntry> relevantEntries = history.getHistoryEntries().stream().
+                filter(e -> annotation.getRevisions().contains(e.getRevision())).
+                collect(Collectors.toList());
+        assertFalse(relevantEntries.isEmpty());
+        for (HistoryEntry entry : relevantEntries) {
+            assertEquals(entry.getDescription(), annotation.getDesc(entry.getRevision()));
+        }
     }
 
     /**
