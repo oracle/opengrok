@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
@@ -352,32 +353,35 @@ public final class HistoryGuru {
     }
 
     private void completeAnnotationWithHistory(File file, Annotation annotation, Repository repo) {
-        History history = null;
         try {
-            history = getHistory(file);
+            History history = getHistory(file);
+            if (history != null) {
+                completeAnnotationWithHistory(annotation, history, repo);
+            }
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "Cannot get messages for tooltip: ", ex);
         }
+    }
 
-        if (history != null) {
-            Set<String> revs = annotation.getRevisions();
-            int revsMatched = 0;
-            // !!! cannot do this because of not matching rev ids (keys)
-            // first is the most recent one, so we need the position of "rev"
-            // until the end of the list
-            //if (hent.indexOf(rev)>0) {
-            //     hent = hent.subList(hent.indexOf(rev), hent.size());
-            //}
-            for (HistoryEntry he : history.getHistoryEntries()) {
-                String hist_rev = he.getRevision();
-                String short_rev = repo.getRevisionForAnnotate(hist_rev);
-                if (revs.contains(short_rev)) {
-                    annotation.addDesc(short_rev, he.getDescription());
-                    // History entries are coming from recent to older,
-                    // file version should be from oldest to newer.
-                    annotation.addFileVersion(short_rev, revs.size() - revsMatched);
-                    revsMatched++;
-                }
+    @VisibleForTesting
+    static void completeAnnotationWithHistory(Annotation annotation, @NotNull History history, Repository repo) {
+        Set<String> revs = annotation.getRevisions();
+        int revsMatched = 0;
+        // !!! cannot do this because of not matching rev ids (keys)
+        // first is the most recent one, so we need the position of "rev"
+        // until the end of the list
+        //if (hent.indexOf(rev)>0) {
+        //     hent = hent.subList(hent.indexOf(rev), hent.size());
+        //}
+        for (HistoryEntry historyEntry : history.getHistoryEntries()) {
+            String historyEntryRevision = historyEntry.getRevision();
+            String revisionForAnnotate = repo.getRevisionForAnnotate(historyEntryRevision);
+            if (revs.contains(revisionForAnnotate)) {
+                annotation.addDesc(revisionForAnnotate, historyEntry.getDescription());
+                // History entries are coming from recent to older,
+                // file version should be from oldest to newer.
+                annotation.addFileVersion(revisionForAnnotate, revs.size() - revsMatched);
+                revsMatched++;
             }
         }
     }

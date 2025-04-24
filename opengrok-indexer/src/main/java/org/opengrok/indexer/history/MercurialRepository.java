@@ -322,8 +322,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
      * of a file in historical revision.
      *
      * @param fullpath file path
-     * @param fullRevToFind revision number (in the form of
-     * {rev}:{node|short})
+     * @param fullRevToFind revision number (in the form of <code>{rev}:{node|short}</code>)
      * @return original filename
      */
     private String findOriginalName(String fullpath, String fullRevToFind) throws IOException {
@@ -464,7 +463,11 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("annotate");
-        argv.add("-n");
+        argv.add("--template");
+        /*
+         * This has to be in concordance with TEMPLATE_REVS, in particular the format of the 'node'.
+         */
+        argv.add("{lines % '{rev}\t{node|short}:{line}'}");
         if (!this.isHandleRenamedFiles()) {
             argv.add("--no-follow");
         }
@@ -486,20 +489,12 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         try {
             History hist = HistoryGuru.getInstance().getHistory(file, false);
             if (Objects.isNull(hist)) {
-                LOGGER.log(Level.SEVERE,
-                        "Error: cannot get history for file ''{0}''", file);
+                LOGGER.log(Level.SEVERE, "Error: cannot get history for file ''{0}''", file);
                 return null;
             }
-            for (HistoryEntry e : hist.getHistoryEntries()) {
-                // Chop out the colon and all hexadecimal what follows.
-                // This is because the whole changeset identification is
-                // stored in history index while annotate only needs the
-                // revision identifier.
-                revs.put(e.getRevision().replaceFirst(":[a-f0-9]+", ""), e);
-            }
+            hist.getHistoryEntries().forEach(rev -> revs.put(rev.getRevision(), rev));
         } catch (HistoryException he) {
-            LOGGER.log(Level.SEVERE,
-                    "Error: cannot get history for file ''{0}''", file);
+            LOGGER.log(Level.SEVERE, "Error: cannot get history for file ''{0}''", file);
             return null;
         }
 
@@ -507,13 +502,6 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         executor.exec(true, annotator);
 
         return annotator.getAnnotation();
-    }
-
-    @Override
-    protected String getRevisionForAnnotate(String historyRevision) {
-        String[] brev = historyRevision.split(":");
-
-        return brev[0];
     }
 
     @Override

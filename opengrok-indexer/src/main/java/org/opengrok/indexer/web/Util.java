@@ -717,41 +717,41 @@ public final class Util {
 
     private static void writeAnnotation(int num, Writer out, Annotation annotation, String userPageLink,
                                         String userPageSuffix, String project) throws IOException {
-        String r = annotation.getRevision(num);
+        String revision = annotation.getRevision(num);
         boolean enabled = annotation.isEnabled(num);
         out.write("<span class=\"blame\">");
         if (enabled) {
             out.write(ANCHOR_CLASS_START);
             out.write("r title-tooltip");
             out.write("\" style=\"background-color: ");
-            out.write(annotation.getColors().getOrDefault(r, "inherit"));
+            out.write(annotation.getColors().getOrDefault(revision, "inherit"));
             out.write("\" href=\"");
             out.write(uriEncode(annotation.getFilename()));
             out.write("?");
             out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
             out.write(AMP);
             out.write(QueryParameters.REVISION_PARAM_EQ);
-            out.write(uriEncode(r));
-            String msg = annotation.getDesc(r);
+            out.write(uriEncode(revision));
+            String msg = annotation.getDesc(revision);
             out.write("\" title=\"");
             if (msg != null) {
                 out.write(Util.encode(msg));
             }
-            if (annotation.getFileVersion(r) != 0) {
-                out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
+            if (annotation.getFileVersion(revision) != 0) {
+                out.write("&lt;br/&gt;version: " + annotation.getFileVersion(revision) + "/"
                         + annotation.getRevisions().size());
             }
             out.write(CLOSE_QUOTED_TAG);
         }
         StringBuilder buf = new StringBuilder();
-        final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
+        final boolean isMostRecentRevision = annotation.getFileVersion(revision) == annotation.getRevisions().size();
         // print an asterisk for the most recent revision
-        if (most_recent_revision) {
+        if (isMostRecentRevision) {
             buf.append("<span class=\"most_recent_revision\">");
             buf.append('*');
         }
         htmlize(annotation.getRevisionForDisplay(num), buf);
-        if (most_recent_revision) {
+        if (isMostRecentRevision) {
             buf.append(SPAN_END); // recent revision span
         }
         out.write(buf.toString());
@@ -773,7 +773,7 @@ public final class Util {
             out.write(AMP);
             out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
             out.write(QUOTE);
-            out.write(uriEncode(r));
+            out.write(uriEncode(revision));
             out.write("&quot;&amp;");
             out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
             out.write("\" title=\"Search history for this revision");

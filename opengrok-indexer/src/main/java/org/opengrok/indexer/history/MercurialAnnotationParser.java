@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -28,10 +28,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.web.Util;
@@ -49,10 +52,12 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
 
     /**
      * Pattern used to extract author/revision from the {@code hg annotate} command.
+     * Obviously, this has to be in concordance with the output template used by
+     * {@link MercurialRepository#annotate(File, String)}.
      */
-    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^\\s*(\\d+):");
+    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^(\\d+)\\t([0-9a-f]+):");
 
-    MercurialAnnotationParser(File file, HashMap<String, HistoryEntry> revs) {
+    MercurialAnnotationParser(File file, @NotNull HashMap<String, HistoryEntry> revs) {
         this.file = file;
         this.revs = revs;
     }
@@ -69,13 +74,12 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
                 ++lineno;
                 matcher.reset(line);
                 if (matcher.find()) {
-                    String rev = matcher.group(1);
-                    String author = "N/A";
+                    String displayRev = matcher.group(1);
+                    String fullRev = displayRev + ":" + matcher.group(2);
                     // Use the history index hash map to get the author.
-                    if (revs.get(rev) != null) {
-                        author = revs.get(rev).getAuthor();
-                    }
-                    annotation.addLine(rev, Util.getEmail(author.trim()), true);
+                    String author = Optional.ofNullable(revs.get(fullRev)).map(HistoryEntry::getAuthor).
+                            orElse("N/A");
+                    annotation.addLine(fullRev, Util.getEmail(author.trim()), true, displayRev);
                 } else {
                     LOGGER.log(Level.WARNING,
                             "Error: did not find annotation in line {0} for ''{1}'': [{2}]",
