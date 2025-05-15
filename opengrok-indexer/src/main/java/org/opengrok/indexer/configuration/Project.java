@@ -655,15 +655,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
         final Project other = (Project) obj;
 
-        int numNull = (name == null ? 1 : 0) + (other.name == null ? 1 : 0);
-        switch (numNull) {
-            case 0:
-                return name.equals(other.name);
-            case 1:
-                return false;
-            default:
-                return true;
-        }
+        return Objects.equals(name, other.name);
     }
 
     @Override
