@@ -28,6 +28,7 @@ org.opengrok.indexer.analysis.json
 org.opengrok.indexer.analysis.kotlin
 org.opengrok.indexer.analysis.lisp
 org.opengrok.indexer.analysis.lua
+org.opengrok.indexer.analysis.ocaml
 org.opengrok.indexer.analysis.pascal
 org.opengrok.indexer.analysis.perl
 org.opengrok.indexer.analysis.php
