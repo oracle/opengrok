@@ -1,7 +1,7 @@
 # Copyright (c) 2018, 2025 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
-FROM ubuntu:jammy AS build
+FROM ubuntu:noble AS build
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install --no-install-recommends -y openjdk-21-jdk python3 python3-venv && \
@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.40-jdk21
+FROM tomcat:10.1.40-jdk21-temurin-noble
 LABEL maintainer="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.description="OpenGrok code search"
@@ -54,7 +54,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3059
 RUN curl -sS https://package.perforce.com/perforce.pubkey | gpg --dearmor > /etc/apt/trusted.gpg.d/perforce.gpg
 # hadolint ignore=DL3059
-RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/sources.list.d/perforce.list
+RUN echo 'deb https://package.perforce.com/apt/ubuntu noble release' > /etc/apt/sources.list.d/perforce.list
 
 # install dependencies and Python tools
 # hadolint ignore=DL3008,DL3009
@@ -63,10 +63,13 @@ RUN apt-get update && \
     unzip python3 python3-pip \
     python3-venv python3-setuptools openssh-client libyaml-dev
 
+ARG TARGETARCH
 # hadolint ignore=DL3008,DL3059
-RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
-        echo "aarch64: do not install helix-p4d."; else \
-        apt-get install --no-install-recommends -y helix-p4d || echo "Failed to install Perforce"; fi
+RUN if [ "$TARGETARCH" = "amd64" ] || [ "$TARGETARCH" = "386" ]; then \
+        apt-get install --no-install-recommends -y helix-p4d || echo "Failed to install Perforce"; \
+    else \
+        echo "Architecture $TARGETARCH: skipping helix-p4d installation"; \
+    fi
 
 # compile and install universal-ctags
 # hadolint ignore=DL3003,DL3008
