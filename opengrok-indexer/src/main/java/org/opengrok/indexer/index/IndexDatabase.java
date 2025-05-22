@@ -500,19 +500,25 @@ public class IndexDatabase {
 
         // History needs to be enabled for the history cache to work (see the comment below).
         if (!project.isHistoryEnabled()) {
-            LOGGER.log(Level.FINEST, "history is disabled, will be indexed by directory traversal.");
+            LOGGER.log(Level.FINEST,
+                    "history is disabled for project {0}, will be indexed by directory traversal.",
+                    project);
             return false;
         }
 
         // History cache is necessary to get the last indexed revision for given repository.
         if (!env.isHistoryCache()) {
-            LOGGER.log(Level.FINEST, "history cache is disabled, will be indexed by directory traversal.");
+            LOGGER.log(Level.FINEST,
+                    "history cache is disabled for project {0}, will be indexed by directory traversal.",
+                    project);
             return false;
         }
 
         // Per project tunable can override the global tunable, therefore env.isHistoryBasedReindex() is not checked.
         if (!project.isHistoryBasedReindex()) {
-            LOGGER.log(Level.FINEST, "history-based reindex is disabled, will be indexed by directory traversal.");
+            LOGGER.log(Level.FINEST,
+                    "history-based reindex is disabled for project {0}, will be indexed by directory traversal.",
+                    project);
             return false;
         }
 
