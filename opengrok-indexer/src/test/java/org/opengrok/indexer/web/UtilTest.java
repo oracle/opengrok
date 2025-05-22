@@ -45,9 +45,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.AnnotationData;
+import org.opengrok.indexer.history.AnnotationLine;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
@@ -690,5 +695,27 @@ class UtilTest {
         assertEquals("<td class=\"q\"> <a href=\"/source/xref/mercurial/main.c?a=true\" title=\"Annotate\">A</a> " +
                         "<a href=\"/source/download/mercurial/main.c\" title=\"Download\">D</a></td>",
                 output);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testWriteAnnotation(boolean enabled) throws IOException {
+        StringWriter writer = new StringWriter();
+        AnnotationData annotationData = new AnnotationData();
+        annotationData.addLine("rev", "author", enabled, "dispRev");
+        Annotation annotation = new Annotation(annotationData);
+        Util.writeAnnotation(1, writer, annotation, null, null, "foo");
+        String output = writer.toString();
+        String expectedOutput;
+        if (enabled) {
+            expectedOutput = "<span class=\"blame\">" +
+                    "<a class=\"r title-tooltip\" style=\"background-color: rgb(255, 191, 195)\" " +
+                    "href=\"?a=true&amp;r=rev\" title=\"\">dispRev</a>" +
+                    "<a class=\"search\" href=\"/source/s?defs=&amp;refs=&amp;path=foo&amp;hist=&quot;rev&quot;&amp;type=\" " +
+                    "title=\"Search history for this revision\">S</a><span class=\"a\">author</span></span>";
+        } else {
+            expectedOutput = "<span class=\"blame\">dispRev<span class=\"a\">author</span></span>";
+        }
+        assertEquals(expectedOutput, output);
     }
 }
