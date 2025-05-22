@@ -26,6 +26,7 @@
 package org.opengrok.indexer.history;
 
 import org.jetbrains.annotations.TestOnly;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Color;
 import org.opengrok.indexer.util.LazilyInstantiate;
@@ -166,7 +167,8 @@ public class Annotation {
         return annotationData.isEnabled(line);
     }
 
-    void addDesc(String revision, String description) {
+    @VisibleForTesting
+    public void addDesc(String revision, String description) {
         desc.put(revision, description);
     }
 

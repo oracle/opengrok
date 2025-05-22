@@ -25,6 +25,7 @@ package org.opengrok.indexer.history;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.jetbrains.annotations.TestOnly;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.Serializable;
@@ -131,7 +132,6 @@ public class AnnotationData implements Serializable {
         }
     }
 
-
     /**
      * Gets the enabled state for the last change to the specified line.
      *
@@ -210,7 +210,8 @@ public class AnnotationData implements Serializable {
      * @param displayRevision a specialised revision number of display purposes. Can be null in which case the revision number will be used.
      * @see #addLine(AnnotationLine)
      */
-    void addLine(String revision, String author, boolean enabled, String displayRevision) {
+    @VisibleForTesting
+    public void addLine(String revision, String author, boolean enabled, String displayRevision) {
         final AnnotationLine annotationLine = new AnnotationLine(revision, author, enabled, displayRevision);
         addLine(annotationLine);
     }
