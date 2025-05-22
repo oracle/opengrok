@@ -28,7 +28,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <artifactId>opengrok-top</artifactId>
         <groupId>org.opengrok</groupId>
-        <version>1.13.30</version>
+        <version>1.13.31</version>
     </parent>
 
     <artifactId>suggester</artifactId>
