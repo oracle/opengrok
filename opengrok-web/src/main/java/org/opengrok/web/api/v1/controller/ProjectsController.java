@@ -95,7 +95,7 @@ public class ProjectsController {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
-        LOGGER.log(Level.INFO, "adding project {0}", projectName);
+        LOGGER.log(Level.INFO, "adding project ''{0}''", projectName);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
@@ -181,7 +181,7 @@ public class ProjectsController {
         final String projectName = Laundromat.launderInput(projectNameParam);
 
         Project project = disableProject(projectName);
-        LOGGER.log(Level.INFO, "deleting configuration for project {0}", projectName);
+        LOGGER.log(Level.INFO, "deleting configuration for project ''{0}''", projectName);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
@@ -405,7 +405,7 @@ public class ProjectsController {
                 }
             }
         } else {
-            LOGGER.log(Level.WARNING, "cannot find project {0} to set a property", projectName);
+            LOGGER.log(Level.WARNING, "cannot find project ''{0}'' to set a property", projectName);
         }
     }
 
@@ -421,7 +421,7 @@ public class ProjectsController {
         Project project = env.getProjects().get(projectName);
         if (project == null) {
             throw new WebApplicationException(
-                    "cannot find project " + projectName + " to get a property", Response.Status.BAD_REQUEST);
+                    "cannot find project '" + projectName + "' to get a property", Response.Status.BAD_REQUEST);
         }
         return ClassUtil.getFieldValue(project, field);
     }
