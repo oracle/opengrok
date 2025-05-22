@@ -52,7 +52,6 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.AnnotationData;
-import org.opengrok.indexer.history.AnnotationLine;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
