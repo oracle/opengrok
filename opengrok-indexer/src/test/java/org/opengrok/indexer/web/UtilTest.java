@@ -702,15 +702,17 @@ class UtilTest {
     void testWriteAnnotation(boolean enabled) throws IOException {
         StringWriter writer = new StringWriter();
         AnnotationData annotationData = new AnnotationData();
-        annotationData.addLine("rev", "author", enabled, "dispRev");
+        final String rev = "rev";
+        annotationData.addLine(rev, "author", enabled, "dispRev");
         Annotation annotation = new Annotation(annotationData);
+        annotation.addDesc(rev, "description");
         Util.writeAnnotation(1, writer, annotation, null, null, "foo");
         String output = writer.toString();
         String expectedOutput;
         if (enabled) {
             expectedOutput = "<span class=\"blame\">" +
                     "<a class=\"r title-tooltip\" style=\"background-color: rgb(255, 191, 195)\" " +
-                    "href=\"?a=true&amp;r=rev\" title=\"\">dispRev</a>" +
+                    "href=\"?a=true&amp;r=rev\" title=\"description\">dispRev</a>" +
                     "<a class=\"search\" href=\"/source/s?defs=&amp;refs=&amp;path=foo&amp;hist=&quot;rev&quot;&amp;type=\" " +
                     "title=\"Search history for this revision\">S</a><span class=\"a\">author</span></span>";
         } else {
