@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2023, Ric Harris <harrisric@users.noreply.github.com>.
@@ -533,7 +533,7 @@ public class GitRepository extends RepositoryWithHistoryTraversal {
             for (RevCommit commit : walk) {
                 CommitInfo commitInfo = new CommitInfo(commit.getId().name(),
                         commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                        commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
+                        Date.from(commit.getAuthorIdent().getWhenAsInstant()), commit.getAuthorIdent().getName(),
                         commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
 
                 for (ChangesetVisitor visitor : visitors) {
