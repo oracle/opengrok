@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -125,22 +126,9 @@ class IndexDatabaseTest {
         env.setAnnotationCacheEnabled(true);
 
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
-
-        // After copying the files from the archive, Git will consider the files to be changed,
-        // at least on Windows. This causes some tests, particularly testGetIndexDownArgs() to fail.
-        // To avoid this, clone the Git repository.
-        Path gitRepositoryRootPath = Path.of(repository.getSourceRoot(), "git");
-        Path gitCheckoutPath = Path.of(repository.getSourceRoot(), "gitcheckout");
-        Git git = Git.cloneRepository()
-                .setURI(gitRepositoryRootPath.toFile().toURI().toString())
-                .setDirectory(gitCheckoutPath.toFile())
-                .call();
-        // The Git object has to be closed, otherwise the move below would fail on Windows with
-        // AccessDeniedException due to the file handle still being open.
-        git.close();
-        IOUtils.removeRecursive(gitRepositoryRootPath);
-        Files.move(gitCheckoutPath, gitRepositoryRootPath);
+        URL repositoryURL = HistoryGuru.class.getResource("/repositories");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
