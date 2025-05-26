@@ -69,6 +69,8 @@ import java.util.zip.GZIPInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -715,10 +717,11 @@ public final class Util {
         }
     }
 
-    private static void writeAnnotation(int num, Writer out, Annotation annotation, String userPageLink,
-                                        String userPageSuffix, String project) throws IOException {
-        String revision = annotation.getRevision(num);
-        boolean enabled = annotation.isEnabled(num);
+    @VisibleForTesting
+    static void writeAnnotation(int lineNum, Writer out, Annotation annotation, @Nullable String userPageLink,
+                                @Nullable String userPageSuffix, String project) throws IOException {
+        String revision = annotation.getRevision(lineNum);
+        boolean enabled = annotation.isEnabled(lineNum);
         out.write("<span class=\"blame\">");
         if (enabled) {
             out.write(ANCHOR_CLASS_START);
@@ -750,38 +753,18 @@ public final class Util {
             buf.append("<span class=\"most_recent_revision\">");
             buf.append('*');
         }
-        htmlize(annotation.getRevisionForDisplay(num), buf);
+        htmlize(annotation.getRevisionForDisplay(lineNum), buf);
         if (isMostRecentRevision) {
             buf.append(SPAN_END); // recent revision span
         }
         out.write(buf.toString());
         buf.setLength(0);
         if (enabled) {
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
             out.write(ANCHOR_END);
 
-            // Write link to search the revision in current project.
-            out.write(ANCHOR_CLASS_START);
-            out.write("search\" href=\"" + env.getUrlPrefix());
-            out.write(QueryParameters.DEFS_SEARCH_PARAM_EQ);
-            out.write(AMP);
-            out.write(QueryParameters.REFS_SEARCH_PARAM_EQ);
-            out.write(AMP);
-            out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
-            out.write(project);
-            out.write(AMP);
-            out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
-            out.write(QUOTE);
-            out.write(uriEncode(revision));
-            out.write("&quot;&amp;");
-            out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
-            out.write("\" title=\"Search history for this revision");
-            out.write(CLOSE_QUOTED_TAG);
-            out.write("S");
-            out.write(ANCHOR_END);
+            writeAnnotationSearchLink(out, project, revision);
         }
-        String a = annotation.getAuthor(num);
+        String a = annotation.getAuthor(lineNum);
         if (userPageLink == null) {
             out.write(HtmlConsts.SPAN_A);
             htmlize(a, buf);
@@ -803,6 +786,30 @@ public final class Util {
             out.write(ANCHOR_END);
         }
         out.write(SPAN_END);
+    }
+
+    private static void writeAnnotationSearchLink(Writer out, String projectName, String revision) throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Write link to search the revision in current project.
+        out.write(ANCHOR_CLASS_START);
+        out.write("search\" href=\"" + env.getUrlPrefix());
+        out.write(QueryParameters.DEFS_SEARCH_PARAM_EQ);
+        out.write(AMP);
+        out.write(QueryParameters.REFS_SEARCH_PARAM_EQ);
+        out.write(AMP);
+        out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
+        out.write(projectName);
+        out.write(AMP);
+        out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
+        out.write(QUOTE);
+        out.write(uriEncode(revision));
+        out.write("&quot;&amp;");
+        out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
+        out.write("\" title=\"Search history for this revision");
+        out.write(CLOSE_QUOTED_TAG);
+        out.write("S");
+        out.write(ANCHOR_END);
     }
 
     /**
