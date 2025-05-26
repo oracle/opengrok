@@ -62,7 +62,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
     <properties>
         <lucene.version>9.9.2</lucene.version>
         <mavenjavadocplugin.version>3.6.0</mavenjavadocplugin.version>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>3.1.7</jersey.version>
         <!-- Jackson version needs to match the version of Jackson which Jersey
