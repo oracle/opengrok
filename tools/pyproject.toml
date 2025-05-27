@@ -8,9 +8,10 @@ description = "Tools for managing OpenGrok instance"
 readme = "README.txt"
 dynamic = ["version"]
 requires-python = ">=3.9"
+license = "CDDL-1.0"
+license-files = ["LICEN[CS]E*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: CDDL",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
