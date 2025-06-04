@@ -293,7 +293,7 @@ public class BitKeeperRepository extends Repository {
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
-        if (env.isTagsEnabled()) {
+        if (this.isTagsEnabled()) {
             assignTagsInHistory(history);
         }
 

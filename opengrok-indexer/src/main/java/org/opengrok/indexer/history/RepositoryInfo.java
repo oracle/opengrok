@@ -84,6 +84,8 @@ public class RepositoryInfo implements Serializable {
     @DTOElement
     private boolean mergeCommitsEnabled;
     @DTOElement
+    private boolean tagsEnabled;
+    @DTOElement
     private boolean historyBasedReindex;
     @DTOElement
     private String username;
@@ -112,6 +114,7 @@ public class RepositoryInfo implements Serializable {
         this.handleRenamedFiles = orig.handleRenamedFiles;
         this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
         this.historyBasedReindex = orig.historyBasedReindex;
+        this.tagsEnabled = orig.tagsEnabled;
         this.username = orig.username;
         this.password = orig.password;
     }
@@ -146,10 +149,24 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
+     * @return whether history entries should be tagged
+     */
+    public boolean isTagsEnabled() {
+        return this.tagsEnabled;
+    }
+
+    /**
      * @param flag true if the repository should handle merge commits, false otherwise.
      */
     public void setMergeCommitsEnabled(boolean flag) {
         this.mergeCommitsEnabled = flag;
+    }
+
+    /**
+     * @param flag whether to tag history entries
+     */
+    public void setTagsEnabled(boolean flag) {
+        this.tagsEnabled = flag;
     }
 
     /**
@@ -399,6 +416,7 @@ public class RepositoryInfo implements Serializable {
             setAnnotationCacheEnabled(proj.isAnnotationCacheEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
             setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
+            setTagsEnabled(proj.isTagsEnabled());
             setHistoryBasedReindex(proj.isHistoryBasedReindex());
             setUsername(proj.getUsername());
             setPassword(proj.getPassword());
@@ -410,6 +428,7 @@ public class RepositoryInfo implements Serializable {
             setAnnotationCacheEnabled(env.isAnnotationCacheEnabled());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
+            setTagsEnabled(env.isTagsEnabled());
             setHistoryBasedReindex(env.isHistoryBasedReindex());
         }
     }
@@ -478,6 +497,13 @@ public class RepositoryInfo implements Serializable {
             stringBuilder.append("annotationCache=on");
         } else {
             stringBuilder.append("annotationCache=off");
+        }
+
+        stringBuilder.append(",");
+        if (isTagsEnabled()) {
+            stringBuilder.append("tagsEnabled=on");
+        } else {
+            stringBuilder.append("tagsEnabled=off");
         }
 
         if (getUsername() != null) {

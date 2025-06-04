@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -215,11 +215,11 @@ public final class RepositoryFactory {
                             });
                 }
 
-                if (repo.getType() == null || repo.getType().length() == 0) {
+                if (repo.getType() == null || repo.getType().isEmpty()) {
                     repo.setType(repo.getClass().getSimpleName());
                 }
 
-                if (repo.getParent() == null || repo.getParent().length() == 0) {
+                if (repo.getParent() == null || repo.getParent().isEmpty()) {
                     try {
                         repo.setParent(repo.determineParent(cmdType));
                     } catch (IOException ex) {
@@ -229,7 +229,7 @@ public final class RepositoryFactory {
                     }
                 }
 
-                if (repo.getBranch() == null || repo.getBranch().length() == 0) {
+                if (repo.getBranch() == null || repo.getBranch().isEmpty()) {
                     try {
                         repo.setBranch(repo.determineBranch(cmdType));
                     } catch (IOException ex) {
@@ -239,7 +239,7 @@ public final class RepositoryFactory {
                     }
                 }
 
-                if (repo.getCurrentVersion() == null || repo.getCurrentVersion().length() == 0) {
+                if (repo.getCurrentVersion() == null || repo.getCurrentVersion().isEmpty()) {
                     try {
                         repo.setCurrentVersion(repo.determineCurrentVersion(cmdType));
                     } catch (IOException ex) {
@@ -249,13 +249,15 @@ public final class RepositoryFactory {
                     }
                 }
 
+                // This has to be called before building tag list below as it depends on the repository properties
+                // inherited from the project/configuration.
+                repo.fillFromProject();
+
                 // If this repository displays tags only for files changed by tagged
                 // revision, we need to prepare list of all tags in advance.
-                if (cmdType.equals(CommandTimeoutType.INDEXER) && env.isTagsEnabled() && repo.hasFileBasedTags()) {
+                if (cmdType.equals(CommandTimeoutType.INDEXER) && repo.isTagsEnabled() && repo.hasFileBasedTags()) {
                     repo.buildTagList(file, cmdType);
                 }
-
-                repo.fillFromProject();
 
                 break;
             }

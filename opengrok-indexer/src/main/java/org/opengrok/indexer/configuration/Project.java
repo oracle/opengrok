@@ -104,6 +104,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private Boolean mergeCommitsEnabled = null;
 
     /**
+     * This flag enables/disables per project tagging of history entries.
+     */
+    private Boolean tagsEnabled = null;
+
+    /**
      * Username to used for repository authentication. This is propagated to all repositories of this project.
      */
     private String username = null;
@@ -286,6 +291,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return whether tagging of history entries is on
+     */
+    public boolean isTagsEnabled() {
+        return tagsEnabled != null && tagsEnabled;
+    }
+
+    /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
     public final void setHandleRenamedFiles(boolean flag) {
@@ -339,6 +351,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public final void setMergeCommitsEnabled(boolean flag) {
         this.mergeCommitsEnabled = flag;
+    }
+
+    /**
+     * @param flag whether to tag history entries
+     */
+    public final void setTagsEnabled(boolean flag) {
+        this.tagsEnabled = flag;
     }
 
     /**
@@ -554,6 +573,10 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
 
         if (historyBasedReindex == null) {
             setHistoryBasedReindex(env.isHistoryBasedReindex());
+        }
+
+        if (tagsEnabled == null) {
+            setTagsEnabled(env.isTagsEnabled());
         }
     }
 

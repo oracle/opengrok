@@ -415,7 +415,7 @@ public abstract class Repository extends RepositoryInfo {
     void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws CacheException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.isTagsEnabled() && this.hasFileBasedTags()) {
+        if (this.isTagsEnabled() && this.hasFileBasedTags()) {
             this.buildTagList(new File(this.getDirectoryName()), CommandTimeoutType.INDEXER);
         }
 
