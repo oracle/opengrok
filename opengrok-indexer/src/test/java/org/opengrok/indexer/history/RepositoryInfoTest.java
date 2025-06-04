@@ -109,14 +109,22 @@ class RepositoryInfoTest {
 
     private static Stream<Arguments> provideArgumentsForTestHistoryAndAnnotationFields() {
         return Stream.of(
-                Arguments.of(true, true, true),
-                Arguments.of(true, true, false),
-                Arguments.of(true, false, true),
-                Arguments.of(false, true, true),
-                Arguments.of(true, false, false),
-                Arguments.of(false, false, true),
-                Arguments.of(false, true, false),
-                Arguments.of(false, false, false)
+                Arguments.of(true, true, true, true),
+                Arguments.of(true, true, true, false),
+                Arguments.of(true, true, false, true),
+                Arguments.of(true, true, false, false),
+                Arguments.of(true, false, true, true),
+                Arguments.of(true, false, true, false),
+                Arguments.of(false, true, true, true),
+                Arguments.of(false, true, true, false),
+                Arguments.of(true, false, false, true),
+                Arguments.of(true, false, false, false),
+                Arguments.of(false, false, true, true),
+                Arguments.of(false, false, true, false),
+                Arguments.of(false, true, false, true),
+                Arguments.of(false, true, false, false),
+                Arguments.of(false, false, false, true),
+                Arguments.of(false, false, false, false)
         );
     }
 
@@ -128,7 +136,8 @@ class RepositoryInfoTest {
      */
     @ParameterizedTest
     @MethodSource("provideArgumentsForTestHistoryAndAnnotationFields")
-    void testHistoryAndAnnotationFields(boolean isProjectPresent, boolean historyEnabled, boolean useAnnotationCache) {
+    void testHistoryAndAnnotationFields(boolean isProjectPresent, boolean historyEnabled, boolean useAnnotationCache,
+                                        boolean tagsEnabled) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjectsEnabled(true);
 
@@ -139,10 +148,12 @@ class RepositoryInfoTest {
             project.setPath(dirName);
             project.setAnnotationCacheEnabled(useAnnotationCache);
             project.setHistoryEnabled(historyEnabled);
+            project.setTagsEnabled(tagsEnabled);
             env.setProjects(Map.of(projectName, project));
         } else {
             env.setProjects(Collections.emptyMap());
             env.setHistoryEnabled(historyEnabled);
+            env.setTagsEnabled(tagsEnabled);
             env.setAnnotationCacheEnabled(useAnnotationCache);
         }
 
@@ -151,5 +162,6 @@ class RepositoryInfoTest {
         repositoryInfo.fillFromProject();
         assertEquals(historyEnabled, repositoryInfo.isHistoryEnabled());
         assertEquals(useAnnotationCache, repositoryInfo.isAnnotationCacheEnabled());
+        assertEquals(tagsEnabled, repositoryInfo.isTagsEnabled());
     }
 }

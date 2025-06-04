@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -206,7 +206,7 @@ public class BazaarRepository extends Repository {
         History result = new BazaarHistoryParser(this).parse(file, sinceRevision);
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags, because we know it:-)
-        if (env.isTagsEnabled()) {
+        if (this.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
         return result;

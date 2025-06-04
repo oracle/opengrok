@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -466,18 +466,18 @@ class HistoryGuruTest {
     void testGetLastHistoryEntryVsIndexer(boolean isIndexerParam) throws HistoryException {
         boolean isIndexer = env.isIndexer();
         env.setIndexer(isIndexerParam);
-        boolean isTagsEnabled = env.isTagsEnabled();
-        env.setTagsEnabled(true);
         HistoryGuru instance = HistoryGuru.getInstance();
         File file = new File(repository.getSourceRoot(), "git");
         assertTrue(file.exists());
+        Repository gitRepo = HistoryGuru.getInstance().getRepository(file);
+        assertNotNull(gitRepo);
+        gitRepo.setTagsEnabled(true);
         if (isIndexerParam) {
             assertThrows(IllegalStateException.class, () -> instance.getLastHistoryEntry(file, true, true));
         } else {
             assertNotNull(instance.getLastHistoryEntry(file, true, true));
         }
         env.setIndexer(isIndexer);
-        env.setTagsEnabled(isTagsEnabled);
     }
 
     @Test

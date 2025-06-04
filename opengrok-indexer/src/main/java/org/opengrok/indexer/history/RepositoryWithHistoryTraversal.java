@@ -116,7 +116,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                 historyCollector.latestRev);
 
         // Assign tags to changesets they represent.
-        if (RuntimeEnvironment.getInstance().isTagsEnabled() && hasFileBasedTags()) {
+        if (this.isTagsEnabled() && hasFileBasedTags()) {
             assignTagsInHistory(history);
         }
 
@@ -155,7 +155,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                     historyCollector.latestRev);
 
             // Assign tags to changesets they represent.
-            if (env.isTagsEnabled() && hasFileBasedTags()) {
+            if (this.isTagsEnabled() && hasFileBasedTags()) {
                 assignTagsInHistory(history);
             }
 
@@ -197,7 +197,7 @@ public abstract class RepositoryWithHistoryTraversal extends RepositoryWithPerPa
                     historyCollector.latestRev);
 
             // Assign tags to changesets they represent.
-            if (env.isTagsEnabled() && hasFileBasedTags()) {
+            if (this.isTagsEnabled() && hasFileBasedTags()) {
                 assignTagsInHistory(history);
             }
 

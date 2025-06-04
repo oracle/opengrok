@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -149,6 +149,7 @@ class ProjectTest {
         env.setBugPattern("([1-9][0-9]{6,7})");
         env.setReviewPage("http://example.com/reviewPage");
         env.setReviewPattern("([A-Z]{2}ARC[ \\\\/]\\\\d{4}/\\\\d{3})");
+        env.setTagsEnabled(!new Configuration().isTagsEnabled());
 
         Project p1 = new Project();
         assertNotNull(p1);
@@ -161,7 +162,8 @@ class ProjectTest {
                 () -> assertEquals(env.getBugPage(), p1.getBugPage()),
                 () -> assertEquals(env.getBugPattern(), p1.getBugPattern()),
                 () -> assertEquals(env.getReviewPage(), p1.getReviewPage()),
-                () -> assertEquals(env.getReviewPattern(), p1.getReviewPattern())
+                () -> assertEquals(env.getReviewPattern(), p1.getReviewPattern()),
+                () -> assertEquals(env.isTagsEnabled(), p1.isTagsEnabled())
         );
     }
 
@@ -205,6 +207,7 @@ class ProjectTest {
         p1.setTabSize(new Project().getTabSize() + 9737);
         p1.setNavigateWindowEnabled(true);
         p1.setHandleRenamedFiles(true);
+        p1.setTagsEnabled(true);
         final String customBugPage = "http://example.com/bugPage";
         p1.setBugPage(customBugPage);
         final String customBugPattern = "([1-9][0-1]{6,7})";
@@ -220,11 +223,12 @@ class ProjectTest {
                 () -> assertNotNull(p1),
                 () -> assertTrue(p1.isNavigateWindowEnabled(), "Navigate window should be turned on"),
                 () -> assertTrue(p1.isHandleRenamedFiles(), "Renamed file handling should be true"),
+                () -> assertTrue(p1.isTagsEnabled(), "Tags should be turned on"),
                 () -> assertEquals(new Project().getTabSize() + 9737, p1.getTabSize()),
-                () -> assertEquals(p1.getBugPage(), customBugPage),
-                () -> assertEquals(p1.getBugPattern(), customBugPattern),
-                () -> assertEquals(p1.getReviewPage(), customReviewPage),
-                () -> assertEquals(p1.getReviewPattern(), customReviewPattern)
+                () -> assertEquals(customBugPage, p1.getBugPage()),
+                () -> assertEquals(customBugPattern, p1.getBugPattern()),
+                () -> assertEquals(customReviewPage, p1.getReviewPage()),
+                () -> assertEquals(customReviewPattern, p1.getReviewPattern())
         );
     }
 
