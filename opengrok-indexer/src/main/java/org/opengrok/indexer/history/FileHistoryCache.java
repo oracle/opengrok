@@ -129,7 +129,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         }
 
         // Assign tags to changesets they represent.
-        if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+        if (repository.isTagsEnabled() && repository.hasFileBasedTags()) {
             repository.assignTagsInHistory(history);
         }
 
@@ -183,7 +183,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
         History history = new History(historyEntryList);
 
         // Read tags from separate file.
-        if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+        if (repository.isTagsEnabled() && repository.hasFileBasedTags()) {
             File tagFile = getTagsFile(cacheFile);
             try (SmileParser parser = factory.createParser(tagFile)) {
                 parser.setCodec(mapper);
@@ -290,11 +290,11 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
      *
      * @param histNew history object to store
      * @param file file to store the history object into
-     * @param repo repository for the file
+     * @param repository repository for the file
      * @param mergeHistory whether to merge the history with existing or store the histNew as is
      * @throws HistoryException if there was any problem with history cache generation
      */
-    private void storeFile(History histNew, File file, Repository repo, boolean mergeHistory) throws HistoryException {
+    private void storeFile(History histNew, File file, Repository repository, boolean mergeHistory) throws HistoryException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
@@ -321,7 +321,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             throw new HistoryException("Failed to write history", ioe);
         }
 
-        boolean assignTags = env.isTagsEnabled() && repo.hasFileBasedTags();
+        boolean assignTags = repository.isTagsEnabled() && repository.hasFileBasedTags();
 
         // Append the contents of the pre-existing cache file to the temporary file.
         if (mergeHistory && cacheFile.exists()) {
@@ -353,7 +353,7 @@ class FileHistoryCache extends AbstractCache implements HistoryCache {
             // to this somewhat crude solution of re-tagging from scratch.
             if (assignTags) {
                 histNew.strip();
-                repo.assignTagsInHistory(histNew);
+                repository.assignTagsInHistory(histNew);
             }
         }
 

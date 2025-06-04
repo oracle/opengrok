@@ -38,6 +38,7 @@ import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,6 +91,7 @@ class FileHistoryCacheTest {
     private boolean savedFetchHistoryWhenNotInCache;
     private boolean savedIsHandleHistoryOfRenamedFiles;
     private boolean savedIsTagsEnabled;
+    private boolean savedIsIndexer;
 
     @BeforeAll
     static void setUpClass() throws Exception {
@@ -103,7 +105,9 @@ class FileHistoryCacheTest {
     @BeforeEach
     void setUp() throws Exception {
         repositories = new TestRepository();
-        repositories.create(getClass().getResource("/repositories"));
+        URL url = getClass().getResource("/repositories");
+        assertNotNull(url);
+        repositories.create(url);
 
         // Needed for HistoryGuru to operate normally.
         env.setRepositories(repositories.getSourceRoot());
@@ -114,6 +118,9 @@ class FileHistoryCacheTest {
         savedFetchHistoryWhenNotInCache = env.isFetchHistoryWhenNotInCache();
         savedIsHandleHistoryOfRenamedFiles = env.isHandleHistoryOfRenamedFiles();
         savedIsTagsEnabled = env.isTagsEnabled();
+        savedIsIndexer = env.isIndexer();
+
+        env.setIndexer(true);
     }
 
     /**
@@ -131,6 +138,7 @@ class FileHistoryCacheTest {
         env.setIncludedNames(new Filter());
         env.setHandleHistoryOfRenamedFiles(savedIsHandleHistoryOfRenamedFiles);
         env.setTagsEnabled(savedIsTagsEnabled);
+        env.setIndexer(savedIsIndexer);
     }
 
     /**
@@ -241,19 +249,25 @@ class FileHistoryCacheTest {
 
     /**
      * Test tagging by creating history cache for repository with one tag and
-     * then importing couple of changesets which add both file changes and tags.
+     * then importing a couple of changesets which add both file changes and tags.
      * The last history entry before the import is important as it needs to be
-     * retagged when old history is merged with the new one.
+     * re-tagged when old history is merged with the new one.
      */
     @EnabledForRepository(MERCURIAL)
     @Test
     void testStoreAndGetIncrementalTags() throws Exception {
-        // Enable tagging of history entries.
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        assertTrue(reposRoot.exists());
+
         env.setTagsEnabled(true);
 
-        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        // It is necessary to call getRepository() only after tags were enabled
+        // to produce list of tags.
         Repository repo = RepositoryFactory.getRepository(reposRoot);
+        assertNotNull(repo);
+
         History historyToStore = repo.getHistory(reposRoot);
+        assertNotNull(historyToStore);
 
         // Store the history.
         cache.store(historyToStore, repo);
@@ -429,16 +443,19 @@ class FileHistoryCacheTest {
         // Use tags for better coverage.
         env.setTagsEnabled(true);
 
-        // Generate history index.
         // It is necessary to call getRepository() only after tags were enabled
         // to produce list of tags.
         Repository repo = RepositoryFactory.getRepository(reposRoot);
+        assertNotNull(repo);
+
+        // Generate history index.
         History historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
 
         // Import changesets which rename one of the files in the repository.
-        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
-            Paths.get(getClass().getResource("/history/hg-export-renamed.txt").toURI()).toString());
+        URL url = getClass().getResource("/history/hg-export-renamed.txt");
+        assertNotNull(url);
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import", Paths.get(url.toURI()).toString());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -539,42 +556,47 @@ class FileHistoryCacheTest {
     @Test
     void testRenamedFilePlusChangesBranched() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
-        History updatedHistory;
-
-        // The test expects support for renamed files.
-        env.setHandleHistoryOfRenamedFiles(true);
-
-        // Use tags for better coverage.
-        env.setTagsEnabled(true);
+        assertTrue(reposRoot.exists());
 
         // Branch the repo and add one changeset.
-        runHgCommand(reposRoot, "unbundle",
-            Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+        URL url = getClass().getResource("/history/hg-branch.bundle");
+        assertNotNull(url);
+        runHgCommand(reposRoot, "unbundle", Paths.get(url.toURI()).toString());
 
         // Import changesets which rename one of the files in the default branch.
-        runHgCommand(reposRoot, "import",
-            Paths.get(getClass().getResource("/history/hg-export-renamed.txt").toURI()).toString());
+        url = getClass().getResource("/history/hg-export-renamed.txt");
+        assertNotNull(url);
+        runHgCommand(reposRoot, "import", Paths.get(url.toURI()).toString());
 
         // Switch to the newly created branch.
         runHgCommand(reposRoot, "update", "mybranch");
 
-        // Generate history index.
+        // Use tags for better coverage.
+        env.setTagsEnabled(true);
+
         // It is necessary to call getRepository() only after tags were enabled
         // to produce list of tags.
         Repository repo = RepositoryFactory.getRepository(reposRoot);
+        assertNotNull(repo);
+
+        // The test expects support for renamed files.
+        repo.setHandleRenamedFiles(true);
+
+        // Generate history index.
         History historyToStore = repo.getHistory(reposRoot);
         cache.store(historyToStore, repo);
 
         // Import changesets which rename the file in the new branch.
-        runHgCommand(reposRoot, "import",
-            Paths.get(getClass().getResource("/history/hg-export-renamed-branched.txt").toURI()).toString());
+        url = getClass().getResource("/history/hg-export-renamed-branched.txt");
+        assertNotNull(url);
+        runHgCommand(reposRoot, "import", Paths.get(url.toURI()).toString());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
         // Check complete list of history entries for the renamed file.
         File testFile = new File(reposRoot.toString() + File.separatorChar + "blog.txt");
-        updatedHistory = cache.get(testFile, repo, false);
+        History updatedHistory = cache.get(testFile, repo, false);
 
         HistoryEntry e0 = new HistoryEntry(
                 "15:709c7a27f9fa",
@@ -969,7 +991,6 @@ class FileHistoryCacheTest {
         env.setFetchHistoryWhenNotInCache(false);
 
         // Pretend we are done with first phase of indexing.
-        env.setIndexer(true);
         HistoryGuru.getInstance().setHistoryIndexDone();
 
         // First try repo with ability to fetch history for directories.
