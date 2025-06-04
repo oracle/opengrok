@@ -477,7 +477,7 @@ public class RepositoryInfo implements Serializable {
         if (!isHistoryCacheEnabled()) {
             stringBuilder.append("historyCache=off");
         } else {
-            stringBuilder.append("historyCache=on,");
+            stringBuilder.append("historyCache=on");
         }
 
         if (isHandleRenamedFiles()) {
