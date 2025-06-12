@@ -55,16 +55,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -124,9 +120,6 @@ import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
-
-import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
-import static org.opengrok.indexer.web.ApiUtils.waitForAsyncApi;
 
 /**
  * This class is used to create / update the index databases. Currently, we use

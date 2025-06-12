@@ -156,7 +156,7 @@ public class IndexerUtil {
                     .path("projects")
                     .request(MediaType.APPLICATION_JSON)
                     .headers(getWebAppHeaders());
-            return request.get(new GenericType<List<String>>(){});
+            return request.get(new GenericType<List<String>>() { } );
         }
     }
 }
