@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -423,44 +424,21 @@ public class IndexDatabase {
             return;
         }
 
-        // Also need to store the correct value in configuration
-        // when indexer writes it to a file.
+        // Also need to store the correct value in configuration when indexer writes it to a file.
         project.setIndexed(true);
 
         if (env.getConfigURI() == null) {
             return;
         }
 
-        Response response;
-        try {
-            response = ClientBuilder.newBuilder().connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build()
-                    .target(env.getConfigURI())
-                    .path("api")
-                    .path("v1")
-                    .path("projects")
-                    .path(Util.uriEncode(project.getName()))
-                    .path("indexed")
-                    .request()
-                    .headers(getWebAppHeaders())
-                    .put(Entity.text(""));
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, String.format("Could not notify the webapp that project %s was indexed",
-                    project), e);
+        // If this project is not known to the webapp yet, there is no point in setting its indexed property.
+        Collection<String> webappProjects = IndexerUtil.getProjects(env.getConfigURI());
+        if (!webappProjects.contains(project.getName())) {
+            LOGGER.log(Level.FINEST, "Project {0} is not known to the webapp", project);
             return;
         }
 
-        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-            try {
-                response = waitForAsyncApi(response);
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
-            }
-        }
-
-        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            LOGGER.log(Level.WARNING, "Could not notify the webapp that project {0} was indexed: {1}",
-                    new Object[] {project, response});
-        }
+        IndexerUtil.markProjectIndexed(env.getConfigURI(), project);
     }
 
     private static List<Repository> getRepositoriesForProject(Project project) {

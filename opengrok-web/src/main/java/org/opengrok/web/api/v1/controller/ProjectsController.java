@@ -358,7 +358,7 @@ public class ProjectsController {
                                     Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
                                     if (repo != null && repo.getCurrentVersion() != null &&
-                                            repo.getCurrentVersion().length() > 0) {
+                                            !repo.getCurrentVersion().isEmpty()) {
                                         // getRepository() always creates fresh instance
                                         // of the Repository object so there is no need
                                         // to call setCurrentVersion() on it.
@@ -420,8 +420,7 @@ public class ProjectsController {
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
-            throw new WebApplicationException(
-                    "cannot find project '" + projectName + "' to get a property", Response.Status.BAD_REQUEST);
+            throw new NotFoundException(String.format("cannot find project '%s' to get a property", projectName));
         }
         return ClassUtil.getFieldValue(project, field);
     }
