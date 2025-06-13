@@ -134,17 +134,17 @@ public class ProjectsController {
                 // This is the goal of this action: if an existing project
                 // is re-added, this means its list of repositories has changed.
                 List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
-                List<RepositoryInfo> allrepos = env.getRepositories();
-                synchronized (allrepos) {
+                List<RepositoryInfo> allRepositories = env.getRepositories();
+                synchronized (allRepositories) {
                     // newly added repository
                     repos.stream()
-                            .filter(repo -> !allrepos.contains(repo))
-                            .forEach(allrepos::add);
+                            .filter(repo -> !allRepositories.contains(repo))
+                            .forEach(allRepositories::add);
                     // deleted repository
                     Optional.ofNullable(map.get(project))
                             .stream().flatMap(Collection::stream)
                             .filter(repo -> !repos.contains(repo))
-                            .forEach(allrepos::remove);
+                            .forEach(allRepositories::remove);
                 }
 
                 map.put(project, repos);
