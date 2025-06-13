@@ -162,10 +162,8 @@ public class ProjectsController {
     }
 
     private Project disableProject(String projectName) {
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new IllegalStateException("cannot get project \"" + projectName + "\"");
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
 
         // Remove the project from searches so no one can trip over incomplete index data.
         project.setIndexed(false);
@@ -287,12 +285,9 @@ public class ProjectsController {
     private Project getProjectFromName(String projectNameParam) {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new IllegalStateException("cannot get project \"" + projectName + "\"");
-        }
 
-        return project;
+        return Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
     }
 
     @DELETE
@@ -339,11 +334,8 @@ public class ProjectsController {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            LOGGER.log(Level.WARNING, "cannot find project ''{0}'' to mark as indexed", projectName);
-            throw new NotFoundException(String.format("project '%s' does not exist", projectName));
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
 
         project.setIndexed(true);
 
@@ -411,16 +403,14 @@ public class ProjectsController {
     @GET
     @Path("/{project}/property/{field}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@PathParam("project") String projectName, @PathParam("field") String field)
+    public Object get(@PathParam("project") String projectNameParam, @PathParam("field") String field)
             throws IOException {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
         field = Laundromat.launderInput(field);
 
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new NotFoundException(String.format("cannot find project '%s' to get a property", projectName));
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
         return ClassUtil.getFieldValue(project, field);
     }
 
