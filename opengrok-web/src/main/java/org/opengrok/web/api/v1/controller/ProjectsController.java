@@ -52,7 +52,6 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -135,17 +134,17 @@ public class ProjectsController {
                 // This is the goal of this action: if an existing project
                 // is re-added, this means its list of repositories has changed.
                 List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
-                List<RepositoryInfo> allrepos = env.getRepositories();
-                synchronized (allrepos) {
+                List<RepositoryInfo> allRepositories = env.getRepositories();
+                synchronized (allRepositories) {
                     // newly added repository
                     repos.stream()
-                            .filter(repo -> !allrepos.contains(repo))
-                            .forEach(allrepos::add);
+                            .filter(repo -> !allRepositories.contains(repo))
+                            .forEach(allRepositories::add);
                     // deleted repository
                     Optional.ofNullable(map.get(project))
                             .stream().flatMap(Collection::stream)
                             .filter(repo -> !repos.contains(repo))
-                            .forEach(allrepos::remove);
+                            .forEach(allRepositories::remove);
                 }
 
                 map.put(project, repos);
@@ -163,10 +162,8 @@ public class ProjectsController {
     }
 
     private Project disableProject(String projectName) {
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new IllegalStateException("cannot get project \"" + projectName + "\"");
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
 
         // Remove the project from searches so no one can trip over incomplete index data.
         project.setIndexed(false);
@@ -288,12 +285,9 @@ public class ProjectsController {
     private Project getProjectFromName(String projectNameParam) {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new IllegalStateException("cannot get project \"" + projectName + "\"");
-        }
 
-        return project;
+        return Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
     }
 
     @DELETE
@@ -340,11 +334,8 @@ public class ProjectsController {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            LOGGER.log(Level.WARNING, "cannot find project ''{0}'' to mark as indexed", projectName);
-            throw new NotFoundException(String.format("project '%s' does not exist", projectName));
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
 
         project.setIndexed(true);
 
@@ -358,7 +349,7 @@ public class ProjectsController {
                                     Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
                                     if (repo != null && repo.getCurrentVersion() != null &&
-                                            repo.getCurrentVersion().length() > 0) {
+                                            !repo.getCurrentVersion().isEmpty()) {
                                         // getRepository() always creates fresh instance
                                         // of the Repository object so there is no need
                                         // to call setCurrentVersion() on it.
@@ -412,17 +403,14 @@ public class ProjectsController {
     @GET
     @Path("/{project}/property/{field}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@PathParam("project") String projectName, @PathParam("field") String field)
+    public Object get(@PathParam("project") String projectNameParam, @PathParam("field") String field)
             throws IOException {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
         field = Laundromat.launderInput(field);
 
-        Project project = env.getProjects().get(projectName);
-        if (project == null) {
-            throw new WebApplicationException(
-                    "cannot find project '" + projectName + "' to get a property", Response.Status.BAD_REQUEST);
-        }
+        Project project = Optional.ofNullable(env.getProjects().get(projectName)).
+                orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
         return ClassUtil.getFieldValue(project, field);
     }
 
