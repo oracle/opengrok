@@ -22,31 +22,30 @@
  */
 package org.opengrok.indexer.util;
 
-import org.junit.jupiter.api.Test;
-
 import java.text.ParseException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class GetoptTest {
 
         @Test
     void testParseOptionA() throws Exception {
-        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
-        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f"};
+        Getopt instance = new Getopt(argv, "a:bcr:f");
         instance.parse();
 
         assertEquals('a', (char) instance.getOpt());
-        assertEquals(""foo"", instance.getOptarg());
+        assertEquals("foo", instance.getOptarg());
     }
 
     @Test
     void testParseOptionB() throws Exception {
-        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
-        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f"};
+        Getopt instance = new Getopt(argv, "a:bcr:f");
         instance.parse();
 
         assertEquals('b', (char) instance.getOpt());
@@ -55,8 +54,8 @@ class GetoptTest {
 
     @Test
     void testParseOptionC() throws Exception {
-        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
-        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f"};
+        Getopt instance = new Getopt(argv, "a:bcr:f");
         instance.parse();
 
         assertEquals('c', (char) instance.getOpt());
@@ -65,8 +64,8 @@ class GetoptTest {
 
     @Test
     void testParseEndOfOptions() throws Exception {
-        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
-        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f"};
+        Getopt instance = new Getopt(argv, "a:bcr:f");
         instance.parse();
 
         assertEquals(-1, instance.getOpt());
@@ -75,12 +74,12 @@ class GetoptTest {
 
     @Test
     void testGetNextArgument() throws Exception {
-        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
-        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f"};
+        Getopt instance = new Getopt(argv, "a:bcr:f");
         instance.parse();
 
         assertTrue(instance.getOptind() < argv.length);
-        assertEquals(""-f"", argv[instance.getOptind()]);
+        assertEquals("-f", argv[instance.getOptind()]);
     }
 
     @Test
