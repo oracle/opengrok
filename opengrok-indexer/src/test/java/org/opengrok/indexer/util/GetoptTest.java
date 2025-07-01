@@ -33,23 +33,54 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GetoptTest {
 
-    @Test
-    void testParseNormal() throws Exception {
-        String[] argv = new String[] {"-a", "foo", "-bc", "--", "-f"};
-        Getopt instance = new Getopt(argv, "a:bcr:f");
-
+        @Test
+    void testParseOptionA() throws Exception {
+        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
+        Getopt instance = new Getopt(argv, ""a:bcr:f"");
         instance.parse();
 
         assertEquals('a', (char) instance.getOpt());
-        assertEquals("foo", instance.getOptarg());
+        assertEquals(""foo"", instance.getOptarg());
+    }
+
+    @Test
+    void testParseOptionB() throws Exception {
+        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
+        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        instance.parse();
+
         assertEquals('b', (char) instance.getOpt());
         assertNull(instance.getOptarg());
+    }
+
+    @Test
+    void testParseOptionC() throws Exception {
+        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
+        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        instance.parse();
+
         assertEquals('c', (char) instance.getOpt());
         assertNull(instance.getOptarg());
+    }
+
+    @Test
+    void testParseEndOfOptions() throws Exception {
+        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
+        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        instance.parse();
+
         assertEquals(-1, instance.getOpt());
         assertEquals(4, instance.getOptind());
+    }
+
+    @Test
+    void testGetNextArgument() throws Exception {
+        String[] argv = new String[]{""-a"", ""foo"", ""-bc"", ""--"", ""-f""};
+        Getopt instance = new Getopt(argv, ""a:bcr:f"");
+        instance.parse();
+
         assertTrue(instance.getOptind() < argv.length);
-        assertEquals("-f", argv[instance.getOptind()]);
+        assertEquals(""-f"", argv[instance.getOptind()]);
     }
 
     @Test
