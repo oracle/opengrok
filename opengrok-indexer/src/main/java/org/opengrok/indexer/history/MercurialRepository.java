@@ -280,24 +280,18 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
      * Try to get file contents for given revision.
      *
      * @param sink a required target sink
-     * @param fullpath full pathname of the file
-     * @param rev revision
+     * @param fullPath full pathname of the file
+     * @param revision revision
      * @return a defined instance with {@code success} == {@code true} if no
      * error occurred and with non-zero {@code iterations} if some data was
      * transferred
      */
-    private HistoryRevResult getHistoryRev(BufferSink sink, String fullpath, String rev) {
-
+    private HistoryRevResult getHistoryRev(BufferSink sink, String fullPath, String revision) {
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
 
-        String revision = rev;
-        if (rev.indexOf(':') != -1) {
-            revision = rev.substring(0, rev.indexOf(':'));
-        }
-
         try {
-            String filename = fullpath.substring(getDirectoryName().length() + 1);
+            String filename = fullPath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {RepoCommand, "cat", "-r", revision, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
@@ -307,7 +301,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
 
             /*
              * If exit value of the process was not 0 then the file did
-             * not exist or internal hg error occured.
+             * not exist or internal hg error occurred.
              */
             result.success = (status == 0);
         } catch (Exception exp) {
@@ -321,13 +315,13 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
      * Get the name of file in given revision. This is used to get contents
      * of a file in historical revision.
      *
-     * @param fullpath file path
+     * @param fullPath file path
      * @param fullRevToFind revision number (in the form of <code>{rev}:{node|short}</code>)
      * @return original filename
      */
-    private String findOriginalName(String fullpath, String fullRevToFind) throws IOException {
+    private String findOriginalName(String fullPath, String fullRevToFind) throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
-        String file = fullpath.substring(getDirectoryName().length() + 1);
+        String file = fullPath.substring(getDirectoryName().length() + 1);
         ArrayList<String> argv = new ArrayList<>();
         File directory = new File(getDirectoryName());
 
@@ -359,7 +353,7 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         // argv.add("reverse(" + rev_to_find + ":)");
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");
-        argv.add(fullpath);
+        argv.add(fullPath);
 
         Executor executor = new Executor(argv, directory,
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
@@ -405,26 +399,25 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
         if (status != 0) {
             LOGGER.log(Level.WARNING,
                     "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status), fullRevToFind});
+                    new Object[]{fullPath, String.valueOf(status), fullRevToFind});
             return null;
         }
 
-        return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
+        return (fullPath.substring(0, getDirectoryName().length() + 1) + file);
     }
 
     @Override
     boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
-
-        String fullpath;
+        String fullPath;
         try {
-            fullpath = new File(parent, basename).getCanonicalPath();
+            fullPath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get canonical path: {0}", exp.getClass().toString());
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(out::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(out::write, fullPath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -433,14 +426,14 @@ public class MercurialRepository extends RepositoryWithHistoryTraversal {
              */
             String origpath;
             try {
-                origpath = findOriginalName(fullpath, rev);
+                origpath = findOriginalName(fullPath, rev);
             } catch (IOException exp) {
                 LOGGER.log(Level.SEVERE,
                         "Failed to get original revision: {0}",
                         exp.getClass().toString());
                 return false;
             }
-            if (origpath != null && !origpath.equals(fullpath)) {
+            if (origpath != null && !origpath.equals(fullPath)) {
                 result = getHistoryRev(out::write, origpath, rev);
             }
         }
