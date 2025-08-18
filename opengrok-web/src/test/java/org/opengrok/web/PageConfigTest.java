@@ -26,6 +26,7 @@ package org.opengrok.web;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,13 +35,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
@@ -79,7 +84,9 @@ class PageConfigTest {
         env.setHistoryEnabled(true);
 
         repository = new TestRepository();
-        repository.create(PageConfigTest.class.getResource("/repositories"));
+        URL repositoryURL = PageConfigTest.class.getResource("/repositories");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
         env.setRepositories(repository.getSourceRoot());
     }
 
@@ -425,30 +432,36 @@ class PageConfigTest {
         assertNull(rev);
     }
 
-    @Test
-    void testGetRequestedRevision() {
-        final String[] revisions = {"6c5588de", "", "6c5588de", "6c5588de", "6c5588de"};
-        for (int i = 0; i < revisions.length; i++) {
-            final int index = i;
-            DummyHttpServletRequest req = new DummyHttpServletRequest() {
-                @Override
-                public String getParameter(String name) {
-                    if (name.equals("r")) {
-                        return revisions[index];
-                    }
-                    return null;
+    private static Stream<Pair<String, String>> getParamsForTestGetRequestedRevision() {
+        return Stream.of(Pair.of("6c5588de", "6c5588de"),
+                Pair.of("10013:cb02e4e3d492", "10013:cb02e4e3d492"),
+                Pair.of("", ""),
+                Pair.of("(foo)\n", "foo"));
+    }
+
+    @MethodSource("getParamsForTestGetRequestedRevision")
+    @ParameterizedTest
+    void testGetRequestedRevision(Pair<String, String> revisionParam) {
+        final String actualRevision = revisionParam.getLeft();
+        final String expectedRevision = revisionParam.getRight();
+        DummyHttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getParameter(String name) {
+                if (name.equals("r")) {
+                    return actualRevision;
                 }
-            };
+                return null;
+            }
+        };
 
-            PageConfig cfg = PageConfig.get(req);
-            String rev = cfg.getRequestedRevision();
+        PageConfig cfg = PageConfig.get(req);
+        String rev = cfg.getRequestedRevision();
 
-            assertNotNull(rev);
-            assertEquals(revisions[i], rev);
-            assertFalse(rev.contains("r="));
+        assertNotNull(rev);
+        assertEquals(expectedRevision, rev);
+        assertFalse(rev.contains("r="));
 
-            PageConfig.cleanup(req);
-        }
+        PageConfig.cleanup(req);
     }
 
     @Test

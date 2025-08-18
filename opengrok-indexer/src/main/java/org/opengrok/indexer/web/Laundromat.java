@@ -52,6 +52,16 @@ public class Laundromat {
     }
 
     /**
+     * Sanitize {@code value} where it will be used in subsequent OpenGrok
+     * (non-logging) processing.
+     * @return {@code null} if null or else {@code value} with anything besides
+     * alphanumeric or {@code :} characters removed.
+     */
+    public static String launderRevision(String value) {
+        return replaceAll(value, "[^a-zA-Z0-9:]", "");
+    }
+
+    /**
      * Sanitize {@code value} where it will be used in a Lucene query.
      * @return {@code null} if null or else {@code value} with "pattern-breaking
      * characters" (tabs, CR, LF, FF) replaced as spaces. Contiguous matches are

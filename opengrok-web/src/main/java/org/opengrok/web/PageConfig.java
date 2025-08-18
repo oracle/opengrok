@@ -711,13 +711,17 @@ public class PageConfig {
 
     /**
      * Get the revision parameter {@code r} from the request.
+     * Anything besides alphanumeric and {@code :} is removed via {@link Laundromat#launderInput(String)}.
      *
      * @return revision if found, an empty string otherwise.
      */
     public String getRequestedRevision() {
         if (rev == null) {
-            String tmp = Laundromat.launderInput(req.getParameter(QueryParameters.REVISION_PARAM));
-            rev = (tmp != null && !tmp.isEmpty()) ? tmp : "";
+            String tmp = Laundromat.launderRevision(req.getParameter(QueryParameters.REVISION_PARAM));
+            rev = Optional.ofNullable(tmp)
+                    .filter(s -> !s.isEmpty())
+                    .orElse("");
+
         }
         return rev;
     }
