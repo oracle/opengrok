@@ -436,6 +436,7 @@ class PageConfigTest {
         return Stream.of(Pair.of("6c5588de", "6c5588de"),
                 Pair.of("10013:cb02e4e3d492", "10013:cb02e4e3d492"),
                 Pair.of("", ""),
+                Pair.of(null, ""),
                 Pair.of("(foo)\n", "foo"));
     }
 
