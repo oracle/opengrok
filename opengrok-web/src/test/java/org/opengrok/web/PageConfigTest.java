@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -182,7 +183,7 @@ class PageConfigTest {
         env.setProjectsEnabled(true);
 
         // Enable projects.
-        for (String file : new File(repository.getSourceRoot()).list()) {
+        for (String file : Objects.requireNonNull(new File(repository.getSourceRoot()).list())) {
             Project proj = new Project(file);
             proj.setIndexed(true);
             env.getProjects().put(file, proj);
@@ -245,7 +246,8 @@ class PageConfigTest {
 
         // Make sure the source root has just directories.
         File sourceRootFile = new File(repository.getSourceRoot());
-        assertTrue(Arrays.stream(sourceRootFile.listFiles()).filter(File::isFile).
+        assertTrue(Arrays.stream(Objects.requireNonNull(sourceRootFile.listFiles())).
+                filter(File::isFile).
                 collect(Collectors.toSet()).isEmpty());
 
         // Create regular file under source root.
