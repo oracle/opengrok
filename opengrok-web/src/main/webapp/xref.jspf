@@ -170,7 +170,7 @@ org.opengrok.indexer.web.QueryParameters"
 <h3 class="error">Error reading file</h3><%
             if (error != null) {
 %>
-<p class="error"><%= error %></p><%
+<p class="error"><%= Util.htmlize(error) %></p><%
             }
         }
     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
