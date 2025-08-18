@@ -146,8 +146,7 @@ document.pageReady.push(function() { pageReadyList();});
             if (!projects.contains(projectName)) {
                 projects.add(projectName);
                 // update cookie
-                cookieValue = cookieValue.length() == 0 ? projectName :
-                        projectName + ',' + cookieValue;
+                cookieValue = cookieValue.isEmpty() ? projectName : projectName + ',' + cookieValue;
                 Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, StandardCharsets.UTF_8));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
@@ -210,7 +209,7 @@ document.pageReady.push(function() { pageReadyList();});
         }
 
         statistics.report(LOGGER, Level.FINE, "directory listing done", "dir.list.latency");
-    } else if (rev.length() != 0) {
+    } else if (!rev.isEmpty()) {
         // requesting a revision
         File xrefFile;
         if (cfg.isLatestRevision(rev) && (xrefFile = cfg.findDataFile()) != null) {
