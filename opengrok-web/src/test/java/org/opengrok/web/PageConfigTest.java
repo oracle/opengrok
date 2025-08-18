@@ -91,7 +91,7 @@ class PageConfigTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         repository.destroy();
         repository = null;
     }
@@ -242,9 +242,6 @@ class PageConfigTest {
     void testGetSortedFilesDirsFirst() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setListDirsFirst(true);
-        // Cannot spy/mock final class.
-        HttpServletRequest req = createRequest("/source", "/xref", "");
-        PageConfig pageConfig = PageConfig.get(req);
 
         // Make sure the source root has just directories.
         File sourceRootFile = new File(repository.getSourceRoot());
@@ -352,15 +349,6 @@ class PageConfigTest {
         indexer.doIndexerExecution(null, null);
 
         final String filePath = "/git/main.c";
-
-        DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
-            @Override
-            public String getPathInfo() {
-                return filePath;
-            }
-        };
-
-        PageConfig cfg = PageConfig.get(req1);
         String rev = LatestRevisionUtil.getLastRevFromIndex(new File(repository.getSourceRoot(), filePath));
         assertNotNull(rev);
         assertEquals(HASH_AA35C258, rev);
@@ -568,7 +556,7 @@ class PageConfigTest {
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
-        assertThrows(IOException.class, () -> cfg.checkSourceRootExistence(),
+        assertThrows(IOException.class, cfg::checkSourceRootExistence,
                 "This should throw an exception when the file does not exist");
         RuntimeEnvironment.getInstance().setSourceRoot(path);
         PageConfig.cleanup(req);
@@ -590,7 +578,7 @@ class PageConfigTest {
         // skip the test if the implementation does not permit setting permissions
         assumeTrue(temp.setReadable(false));
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
-        assertThrows(IOException.class, () -> cfg.checkSourceRootExistence(),
+        assertThrows(IOException.class, cfg::checkSourceRootExistence,
                 "This should throw an exception when the file is not readable");
         RuntimeEnvironment.getInstance().setSourceRoot(path);
 
