@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.parser;
 
@@ -110,11 +110,11 @@ public class SuggesterQueryDataParser {
 
         logger.log(Level.FINEST, "Processing suggester query: {0} at {1}", new Object[] {text, caretPosition});
 
-        String randomIdentifier = RandomStringUtils.
-                randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
+        String randomIdentifier = RandomStringUtils.secure().
+                nextAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
         while (text.contains(randomIdentifier)) {
-            randomIdentifier = RandomStringUtils.
-                    randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
+            randomIdentifier = RandomStringUtils.secure().
+                    nextAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
         }
 
         String newText = new StringBuilder(text).insert(caretPosition, randomIdentifier).toString();
