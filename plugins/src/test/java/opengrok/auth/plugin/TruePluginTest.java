@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -62,13 +63,13 @@ class TruePluginTest {
     @Test
     void shouldAllowRandomUserForAnyProject() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.secure().nextAlphanumeric(8)));
 
-        Project randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        Project randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
         assertTrue(projectAllowed, "should allow rando for random project 1");
 
-        randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
         assertTrue(projectAllowed, "should allow rando for random project 2");
     }
@@ -76,13 +77,13 @@ class TruePluginTest {
     @Test
     void shouldAllowRandomUserForAnyGroup() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.secure().nextAlphanumeric(8)));
 
-        Group randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        Group randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
         assertTrue(projectAllowed, "should allow rando for random group 1");
 
-        randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
         assertTrue(projectAllowed, "should allow rando for random group 2");
     }
