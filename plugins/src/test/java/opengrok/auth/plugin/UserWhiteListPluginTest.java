@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -141,7 +141,7 @@ class UserWhiteListPluginTest {
         init(param);
         HashMap<String, Object> unreadablePluginParameters = new HashMap<>();
         unreadablePluginParameters.put(UserWhiteListPlugin.FILE_PARAM,
-                RandomStringUtils.randomAlphanumeric(24));
+                RandomStringUtils.secure().nextAlphanumeric(24));
 
         IllegalArgumentException caughtException = null;
         try {
@@ -188,8 +188,9 @@ class UserWhiteListPluginTest {
         }
 
         // Make sure there as some entries with trailing spaces in the file.
-        Stream<String> stream = Files.lines(tmpFile.toPath());
-        assertTrue(stream.anyMatch(s -> s.startsWith(" ") || s.endsWith(" ")));
+        try (Stream<String> stream = Files.lines(tmpFile.toPath())) {
+            assertTrue(stream.anyMatch(s -> s.startsWith(" ") || s.endsWith(" ")));
+        }
 
         pluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tmpFile.toString());
         plugin.load(pluginParameters);
@@ -221,11 +222,11 @@ class UserWhiteListPluginTest {
         }
         req.setAttribute(UserPlugin.REQUEST_ATTR, user);
 
-        Project randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        Project randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
         assertTrue(projectAllowed, "should allow OK entity for random project 1");
 
-        randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
         assertTrue(projectAllowed, "should allow OK entity for random project 2");
     }
@@ -237,13 +238,13 @@ class UserWhiteListPluginTest {
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.secure().nextAlphanumeric(8)));
 
-        Project randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        Project randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
         assertFalse(projectAllowed, "should not allow random user for random project 1");
 
-        randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
+        randomProject = new Project(RandomStringUtils.secure().nextAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
         assertFalse(projectAllowed, "should not allow random user for random project 2");
     }
@@ -263,11 +264,11 @@ class UserWhiteListPluginTest {
         }
         req.setAttribute(UserPlugin.REQUEST_ATTR, user);
 
-        Group randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        Group randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean groupAllowed = plugin.isAllowed(req, randomGroup);
         assertTrue(groupAllowed, "should allow OK entity for random group 1");
 
-        randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         groupAllowed = plugin.isAllowed(req, randomGroup);
         assertTrue(groupAllowed, "should allow OK entity for random group 2");
     }
@@ -279,13 +280,13 @@ class UserWhiteListPluginTest {
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.secure().nextAlphanumeric(8)));
 
-        Group randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        Group randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
         assertFalse(projectAllowed, "should not allow random group 1");
 
-        randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
+        randomGroup = new Group(RandomStringUtils.secure().nextAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
         assertFalse(projectAllowed, "should not allow random group 2");
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -69,7 +69,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
             if ((user = (User) getAttribute(UserPlugin.REQUEST_ATTR)) != null) {
                 return user.getUsername();
             }
-            return RandomStringUtils.randomAlphanumeric(5);
+            return RandomStringUtils.secure().nextAlphanumeric(5);
         }
 
         @Override

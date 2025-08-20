@@ -77,7 +77,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @Override
         public String getId() {
-            return RandomStringUtils.random(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.");
+            return RandomStringUtils.secure().next(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.");
         }
 
         @Override
