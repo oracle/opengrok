@@ -87,16 +87,16 @@ org.opengrok.web.PageConfig"
             String replaced = entry.getMessage().split("\n")[0];
         %><%= Util.htmlize(entry.getRevision()) %> - <%= Util.htmlize(replaced) %></title>
         <link><%
-            String requestURL = request.getScheme() + "://";
-            String serverName = cfg.getServerName();
-            requestURL += serverName;
-            String port = Integer.toString(request.getLocalPort());
-            if (!port.isEmpty()) {
-                requestURL += ":" + port;
-            }
-
-            requestURL += Util.uriEncodePath(request.getContextPath());
-            requestURL += Prefix.HIST_L + Util.uriEncodePath(cfg.getPath()) + "#" + Util.uriEncode(entry.getRevision());
+            String requestURL = request.getScheme() +
+                    "://" +
+                    cfg.getServerName() +
+                    ":" +
+                    request.getLocalPort() +
+                    Util.uriEncodePath(request.getContextPath()) +
+                    Prefix.HIST_L +
+                    Util.uriEncodePath(cfg.getPath()) +
+                    "#" +
+                    Util.uriEncode(entry.getRevision());
         %><%= requestURL %></link>
         <description><%
             for (String e : entry.getMessage().split("\n")) {
