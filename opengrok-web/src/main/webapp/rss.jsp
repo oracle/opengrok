@@ -64,7 +64,7 @@ org.opengrok.web.PageConfig"
     <copyright>Copyright 2025</copyright>
     <generator>Java</generator><%
     History history;
-    if(cfg.isDir()) {
+    if (cfg.isDir()) {
         history = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
     } else {
         history = HistoryGuru.getInstance().getHistory(cfg.getResourceFile());
