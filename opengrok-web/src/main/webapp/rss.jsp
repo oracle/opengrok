@@ -97,8 +97,8 @@ org.opengrok.web.PageConfig"
             }
 
             requestURL += request.getContextPath();
-            requestURL += Prefix.HIST_L + cfg.getPath() + "#" + entry.getRevision();
-        %><%= Util.htmlize(requestURL) %></link>
+            requestURL += Prefix.HIST_L + Util.uriEncodePath(cfg.getPath()) + "#" + Util.uriEncode(entry.getRevision());
+        %><%= requestURL %></link>
         <description><%
             for (String e : entry.getMessage().split("\n")) {
             %>
