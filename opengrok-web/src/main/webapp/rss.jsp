@@ -40,17 +40,16 @@ org.opengrok.web.PageConfig"
     PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
 
-    String redir = cfg.canProcess();
-    if (redir == null || !redir.isEmpty()) {
-        if (redir != null) {
-            response.sendRedirect(redir);
+    String redirectLocation = cfg.canProcess();
+    if (redirectLocation == null || !redirectLocation.isEmpty()) {
+        if (redirectLocation != null) {
+            response.sendRedirect(redirectLocation);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         return;
     }
     String path = cfg.getPath();
-    String dtag = cfg.getDefineTagsIndex();
     response.setContentType("text/xml");
 %><?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="<%= request.getContextPath()
@@ -60,19 +59,19 @@ org.opengrok.web.PageConfig"
     <title>Changes in <%= path.isEmpty()
         ? "Cross Reference"
         : Util.htmlize(cfg.getResourceFile().getName()) %></title>
-    <description><%= Util.htmlize(dtag) %></description>
+    <description><%= Util.htmlize(cfg.getDefineTagsIndex()) %></description>
     <language>en</language>
     <copyright>Copyright 2025</copyright>
     <generator>Java</generator><%
-    History hist;
-    if(cfg.isDir()) {
-        hist = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
+    History history;
+    if (cfg.isDir()) {
+        history = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
     } else {
-        hist = HistoryGuru.getInstance().getHistory(cfg.getResourceFile());
+        history = HistoryGuru.getInstance().getHistory(cfg.getResourceFile());
     }
-    if (hist != null) {
+    if (history != null) {
         int i = 20;
-        for (HistoryEntry entry : hist.getHistoryEntries()) {
+        for (HistoryEntry entry : history.getHistoryEntries()) {
             if (i-- <= 0) {
                 break;
             }
@@ -88,17 +87,17 @@ org.opengrok.web.PageConfig"
             String replaced = entry.getMessage().split("\n")[0];
         %><%= Util.htmlize(entry.getRevision()) %> - <%= Util.htmlize(replaced) %></title>
         <link><%
-            String requestURL = request.getScheme() + "://";
-            String serverName = cfg.getServerName();
-            requestURL += serverName;
-            String port = Integer.toString(request.getLocalPort());
-            if (!port.isEmpty()) {
-                requestURL += ":" + port;
-            }
-
-            requestURL += request.getContextPath();
-            requestURL += Prefix.HIST_L + cfg.getPath() + "#" + entry.getRevision();
-        %><%= Util.htmlize(requestURL) %></link>
+            String requestURL = request.getScheme() +
+                    "://" +
+                    cfg.getServerName() +
+                    ":" +
+                    request.getLocalPort() +
+                    Util.uriEncodePath(request.getContextPath()) +
+                    Prefix.HIST_L +
+                    Util.uriEncodePath(cfg.getPath()) +
+                    "#" +
+                    Util.uriEncode(entry.getRevision());
+        %><%= requestURL %></link>
         <description><%
             for (String e : entry.getMessage().split("\n")) {
             %>
@@ -111,9 +110,9 @@ org.opengrok.web.PageConfig"
             if (cfg.isDir()) {
                 Set<String> files = entry.getFiles();
                 if (files != null) {
-                    for (String ifile : files) {
+                    for (String entryFile : files) {
             %>
-            <%= Util.htmlize(ifile) %><%
+            <%= Util.htmlize(entryFile) %><%
                     }
                 }
             } else {

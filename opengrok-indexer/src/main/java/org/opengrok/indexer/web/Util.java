@@ -660,7 +660,7 @@ public final class Util {
             char c = s.charAt(i);
             if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&' || c == '\'') {
                 // special html characters
-                dest.append("&#").append("" + (int) c).append(";");
+                dest.append("&#").append(Integer.toString(c)).append(";");
             } else if (c == ' ') {
                 // non-breaking space
                 dest.append("&nbsp;");
@@ -917,24 +917,22 @@ public final class Util {
     /**
      * Wrapper around UTF-8 URL encoding of a string.
      *
-     * @param q query to be encoded. If {@code null}, an empty string will be used instead.
-     * @return null if failed, otherwise the encoded string
+     * @param string to be encoded. If {@code null}, an empty string will be used instead.
+     * @return {@code null} if failed, otherwise the encoded string
      * @see URLEncoder#encode(String, String)
      */
-    public static String uriEncode(String q) {
-        return q == null ? "" : URLEncoder.encode(q, StandardCharsets.UTF_8);
+    public static String uriEncode(String string) {
+        return string == null ? "" : URLEncoder.encode(string, StandardCharsets.UTF_8);
     }
 
     /**
-     * Append to {@code dest} the UTF-8 URL-encoded representation of
-     * {@code str}.
+     * Append to {@code dest} the UTF-8 URL-encoded representation of {@code str}.
      * @param str a defined instance
      * @param dest a defined target
      * @throws IOException I/O
      */
     public static void uriEncode(String str, Appendable dest) throws IOException {
-        String uenc = uriEncode(str);
-        dest.append(uenc);
+        dest.append(uriEncode(str));
     }
 
     /**
@@ -948,7 +946,6 @@ public final class Util {
      * @see #uriEncode(String)
      */
     public static void appendQuery(StringBuilder buf, String key, String value) {
-
         if (value != null) {
             buf.append(AMP).append(key).append('=').append(uriEncode(value));
         }
@@ -1647,15 +1644,13 @@ public final class Util {
     /**
      * Try to complete the given URL part into full URL with server name, port, scheme, ...
      * <dl>
-     * <dt>for request http://localhost:8080/source/xref/xxx and part
-     * /cgi-bin/user=</dt>
-     * <dd>http://localhost:8080/cgi-bin/user=</dd>
-     * <dt>for request http://localhost:8080/source/xref/xxx and part
-     * cgi-bin/user=</dt>
-     * <dd>http://localhost:8080/source/xref/xxx/cgi-bin/user=</dd>
-     * <dt>for request http://localhost:8080/source/xref/xxx and part
-     * http://users.com/user=</dt>
-     * <dd>http://users.com/user=</dd>
+     * <dt>for request {@code http://localhost:8080/source/xref/xxx} and part {@code /cgi-bin/user=}</dt>
+     * <dd>{@code http://localhost:8080/cgi-bin/user=}</dd>
+     * <dt>for request {@code http://localhost:8080/source/xref/xxx} and part {@code cgi-bin/user=}</dt>
+     * <dd>{@code http://localhost:8080/source/xref/xxx/cgi-bin/user=}</dd>
+     * <dt>for request {@code http://localhost:8080/source/xref/xxx} and part
+     * {@code http://users.com/user=}</dt>
+     * <dd>{@code http://users.com/user=}</dd>
      * </dl>
      *
      * @param url the given URL part, may be already full URL
