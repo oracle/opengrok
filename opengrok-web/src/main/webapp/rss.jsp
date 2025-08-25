@@ -110,9 +110,9 @@ org.opengrok.web.PageConfig"
             if (cfg.isDir()) {
                 Set<String> files = entry.getFiles();
                 if (files != null) {
-                    for (String ifile : files) {
+                    for (String entryFile : files) {
             %>
-            <%= Util.htmlize(ifile) %><%
+            <%= Util.htmlize(entryFile) %><%
                     }
                 }
             } else {
