@@ -95,7 +95,7 @@ org.opengrok.web.PageConfig"
                 requestURL += ":" + port;
             }
 
-            requestURL += request.getContextPath();
+            requestURL += Util.uriEncodePath(request.getContextPath());
             requestURL += Prefix.HIST_L + Util.uriEncodePath(cfg.getPath()) + "#" + Util.uriEncode(entry.getRevision());
         %><%= requestURL %></link>
         <description><%
