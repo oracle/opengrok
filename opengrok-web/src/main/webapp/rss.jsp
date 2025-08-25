@@ -40,10 +40,10 @@ org.opengrok.web.PageConfig"
     PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
 
-    String redir = cfg.canProcess();
-    if (redir == null || !redir.isEmpty()) {
-        if (redir != null) {
-            response.sendRedirect(redir);
+    String redirectLocation = cfg.canProcess();
+    if (redirectLocation == null || !redirectLocation.isEmpty()) {
+        if (redirectLocation != null) {
+            response.sendRedirect(redirectLocation);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
