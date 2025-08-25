@@ -50,7 +50,6 @@ org.opengrok.web.PageConfig"
         return;
     }
     String path = cfg.getPath();
-    String dtag = cfg.getDefineTagsIndex();
     response.setContentType("text/xml");
 %><?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="<%= request.getContextPath()
@@ -60,7 +59,7 @@ org.opengrok.web.PageConfig"
     <title>Changes in <%= path.isEmpty()
         ? "Cross Reference"
         : Util.htmlize(cfg.getResourceFile().getName()) %></title>
-    <description><%= Util.htmlize(dtag) %></description>
+    <description><%= Util.htmlize(cfg.getDefineTagsIndex()) %></description>
     <language>en</language>
     <copyright>Copyright 2025</copyright>
     <generator>Java</generator><%
