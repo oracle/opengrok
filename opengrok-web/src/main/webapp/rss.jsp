@@ -63,15 +63,15 @@ org.opengrok.web.PageConfig"
     <language>en</language>
     <copyright>Copyright 2025</copyright>
     <generator>Java</generator><%
-    History hist;
+    History history;
     if(cfg.isDir()) {
-        hist = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
+        history = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
     } else {
-        hist = HistoryGuru.getInstance().getHistory(cfg.getResourceFile());
+        history = HistoryGuru.getInstance().getHistory(cfg.getResourceFile());
     }
-    if (hist != null) {
+    if (history != null) {
         int i = 20;
-        for (HistoryEntry entry : hist.getHistoryEntries()) {
+        for (HistoryEntry entry : history.getHistoryEntries()) {
             if (i-- <= 0) {
                 break;
             }
