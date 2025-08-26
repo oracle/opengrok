@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     steps:
     - name: Checkout master branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
     - name: Set up JDK
@@ -34,7 +34,7 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Checkout Universal ctags
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: universal-ctags/ctags
         path: ctags
