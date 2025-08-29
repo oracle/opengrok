@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2009, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2009, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -45,20 +45,15 @@ include file="/projects.jspf"
 
     // Optimize for URLs up to 128 characters. 
     StringBuilder url = new StringBuilder(128);
-    String scheme = request.getScheme();
-    int port = request.getServerPort();
-
+    final String scheme = request.getScheme();
     url.append(scheme).append("://");
-
-    String serverName = cfg.getServerName();
-    url.append(serverName);
+    url.append(cfg.getServerName());
 
     // Append port if needed.
+    int port = request.getServerPort();
     if ((port != 80 && scheme.equals("http")) || (port != 443 && scheme.equals("https"))) {
         url.append(':').append(port);
     }
-
-    String imgUrl = url + cfg.getCssDir() + "/img/icon.png";
 
     /* TODO  Bug 11749 ??? */
     StringBuilder text = new StringBuilder();
@@ -68,15 +63,15 @@ include file="/projects.jspf"
         text.append(name).append(',');
         Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM, name);
     }
-    if (text.length() != 0) {
-        text.setLength(text.length()-1);
+    if (!text.isEmpty()) {
+        text.setLength(text.length() - 1);
     }
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
     <ShortName>OpenGrok <%= text.toString() %></ShortName>
     <Description>Search in OpenGrok <%= text.toString() %></Description>
     <InputEncoding>UTF-8</InputEncoding>
-    <Image height="16" width="16" type="image/png"><%= imgUrl %></Image>
+    <Image height="16" width="16" type="image/png"><%= url + cfg.getCssDir() + "/img/icon.png" %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
     <Url template="<%= url.toString() %>&amp;<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>{searchTerms}"
         type="text/html"/>
