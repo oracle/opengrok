@@ -73,12 +73,12 @@ public class Laundromat {
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
      * (non-logging) processing. The value is assumed to represent a file path,
-     * not necessarily existent.
-     * @return {@code null} if null or else {@code value} with anything besides
-     * alphanumeric or {@code :} characters removed.
+     * not necessarily existent on the file system.
+     * @return {@code null} if null or else {@code value} with path traversal
+     * path components {@code /../} removed.
      */
     public static String launderPath(String value) {
-        return replaceAll(value, ESC_N_R_T_F, "");
+        return replaceAll(value, "/../", "");
     }
 
     /**
