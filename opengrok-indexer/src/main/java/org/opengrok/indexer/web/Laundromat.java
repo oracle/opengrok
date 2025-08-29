@@ -77,7 +77,7 @@ public class Laundromat {
      * (non-logging) processing. The value is assumed to represent URI path,
      * not necessarily existent on the file system. Further, it assumes that the URI path
      * is already decoded, e.g. {@code %2e%2e} turned into {@code ..}.
-     * @return {@code value} with path traversal path components {@code /../}
+     * @return {@code value} with path traversal path components {@code /../} removed
      * and null characters replaced with {@code _}.
      */
     public static String launderUriPath(@NotNull String value) {
