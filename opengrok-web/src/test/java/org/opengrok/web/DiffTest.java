@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -31,6 +31,8 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.QueryParameters;
+
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +52,9 @@ class DiffTest {
     @BeforeAll
     static void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(DiffTest.class.getResource("/repositories"));
+        URL resource = DiffTest.class.getResource("/repositories");
+        assertNotNull(resource);
+        repository.create(resource);
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
