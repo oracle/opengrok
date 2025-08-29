@@ -19,14 +19,19 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -52,6 +57,17 @@ class LaundromatTest {
     void launderLog() {
         String laundry = Laundromat.launderLog(TEST_CONTENT);
         assertEquals(TEST_CONTENT_LOG_LAUNDRY, laundry);
+    }
+
+    private static Stream<Pair<String, String>> getParamsForTestLaunderServerName() {
+        return Stream.of(Pair.of("foo.example.com", Laundromat.launderServerName("--foo.example\n.com?=")),
+                Pair.of("[2001:db8::1]:8080", Laundromat.launderServerName("[2001:db8::1]:8080")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getParamsForTestLaunderServerName")
+    void testLaunderServerName(Pair<String, String> param) {
+        assertEquals(param.getLeft(), param.getRight());
     }
 
     @Test
