@@ -247,7 +247,7 @@ public class PageConfig {
             if (p != null) {
                 int j = p.lastIndexOf("@");
                 if (j != -1) {
-                    filepath[i - 1] = Laundromat.launderPath(p.substring(0, j));
+                    filepath[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
                     data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
                 }
             }

@@ -25,7 +25,6 @@ package org.opengrok.indexer.web;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,7 +39,7 @@ import java.util.stream.Stream;
  */
 public class Laundromat {
 
-    private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f]";
+    private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f\\u0000]";
     private static final String ESG_N_R_T_F_1_N = ESC_N_R_T_F + "+";
 
     /**
@@ -75,21 +74,22 @@ public class Laundromat {
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
-     * (non-logging) processing. The value is assumed to represent a file path,
-     * not necessarily existent on the file system.
-     * @return {@code null} if null or else {@code value} with path traversal
-     * path components {@code /../} removed.
+     * (non-logging) processing. The value is assumed to represent URI path,
+     * not necessarily existent on the file system. Further, it assumes that the URI path
+     * is already decoded, e.g. {@code %2e%2e} turned into {@code ..}.
+     * @return {@code value} with path traversal path components {@code /../}
+     * and null characters replaced with {@code _}.
      */
-    public static String launderPath(@NotNull String value) {
-        Path path = Path.of(Laundromat.launderInput(value));
+    public static String launderUriPath(@NotNull String value) {
         List<String> pathElements = new ArrayList<>();
-        for (int i = 0; i < path.getNameCount(); i++) {
-            if (path.getName(i).toString().equals("..")) {
+        String uriPath = Laundromat.launderInput(value);
+        for (String pathElement : uriPath.split("/")) {
+            if (pathElement.isEmpty() || pathElement.equals("..")) {
                 continue;
             }
-            pathElements.add(path.getName(i).toString());
+            pathElements.add(pathElement);
         }
-        return (path.isAbsolute() ? "/" : "") + String.join("/", pathElements);
+        return (uriPath.startsWith("/") ? "/" : "") + String.join("/", pathElements);
     }
 
     /**
