@@ -25,20 +25,21 @@ package org.opengrok.indexer.web;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Represents a container for sanitizing methods for avoiding classifications as
- * taint bugs.
+ * Represents a container for sanitizing methods for avoiding classifications as taint bugs.
  */
 public class Laundromat {
 
-    private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f]";
+    private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f\\u0000]";
     private static final String ESG_N_R_T_F_1_N = ESC_N_R_T_F + "+";
 
     /**
@@ -62,12 +63,33 @@ public class Laundromat {
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
-     * (non-logging) processing.
+     * (non-logging) processing. The value is assumed to represent a revision string,
+     * not including file path.
      * @return {@code null} if null or else {@code value} with anything besides
      * alphanumeric or {@code :} characters removed.
      */
     public static String launderRevision(String value) {
         return replaceAll(value, "[^a-zA-Z0-9:]", "");
+    }
+
+    /**
+     * Sanitize {@code value} where it will be used in subsequent OpenGrok
+     * (non-logging) processing. The value is assumed to represent URI path,
+     * not necessarily existent on the file system. Further, it assumes that the URI path
+     * is already decoded, e.g. {@code %2e%2e} turned into {@code ..}.
+     * @return {@code value} with path traversal path components {@code /../} removed
+     * and null characters replaced with {@code _}.
+     */
+    public static String launderUriPath(@NotNull String value) {
+        List<String> pathElements = new ArrayList<>();
+        String uriPath = Laundromat.launderInput(value);
+        for (String pathElement : uriPath.split("/")) {
+            if (pathElement.isEmpty() || pathElement.equals("..")) {
+                continue;
+            }
+            pathElements.add(pathElement);
+        }
+        return (uriPath.startsWith("/") ? "/" : "") + String.join("/", pathElements);
     }
 
     /**
