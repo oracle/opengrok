@@ -70,6 +70,20 @@ class LaundromatTest {
         assertEquals(param.getLeft(), param.getRight());
     }
 
+    private static Stream<Pair<String, String>> getParamsForTestLaunderPath() {
+        return Stream.of(Pair.of("foo", Laundromat.launderPath("../../../foo")),
+                Pair.of("/foo/bar", Laundromat.launderPath("/foo/../../bar")),
+                Pair.of("/foo/bar..", Laundromat.launderPath("/foo/bar..")),
+                Pair.of("..foo/bar", Laundromat.launderPath("..foo/bar")),
+                Pair.of("/foo/bar.txt", Laundromat.launderPath("/foo/bar.txt")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getParamsForTestLaunderPath")
+    void testLaunderPath(Pair<String, String> param) {
+        assertEquals(param.getLeft(), param.getRight());
+    }
+
     @Test
     void launderLogMap() {
         HashMap<String, String[]> testMap = new HashMap<>();

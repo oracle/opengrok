@@ -25,8 +25,11 @@ package org.opengrok.indexer.web;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,7 +81,15 @@ public class Laundromat {
      * path components {@code /../} removed.
      */
     public static String launderPath(String value) {
-        return replaceAll(value, "/../", "");
+        Path path = Path.of(value);
+        List<String> pathElements = new ArrayList<>();
+        for (int i = 0; i < path.getNameCount(); i++) {
+            if (path.getName(i).toString().equals("..")) {
+                continue;
+            }
+            pathElements.add(path.getName(i).toString());
+        }
+        return (path.isAbsolute() ? "/" : "") + String.join("/", pathElements);
     }
 
     /**
