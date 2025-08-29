@@ -33,8 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Represents a container for sanitizing methods for avoiding classifications as
- * taint bugs.
+ * Represents a container for sanitizing methods for avoiding classifications as taint bugs.
  */
 public class Laundromat {
 
@@ -62,12 +61,24 @@ public class Laundromat {
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
-     * (non-logging) processing.
+     * (non-logging) processing. The value is assumed to represent a revision string,
+     * not including file path.
      * @return {@code null} if null or else {@code value} with anything besides
      * alphanumeric or {@code :} characters removed.
      */
     public static String launderRevision(String value) {
         return replaceAll(value, "[^a-zA-Z0-9:]", "");
+    }
+
+    /**
+     * Sanitize {@code value} where it will be used in subsequent OpenGrok
+     * (non-logging) processing. The value is assumed to represent a file path,
+     * not necessarily existent.
+     * @return {@code null} if null or else {@code value} with anything besides
+     * alphanumeric or {@code :} characters removed.
+     */
+    public static String launderPath(String value) {
+        return replaceAll(value, ESC_N_R_T_F, "");
     }
 
     /**
