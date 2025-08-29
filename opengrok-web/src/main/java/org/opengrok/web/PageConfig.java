@@ -246,7 +246,7 @@ public class PageConfig {
          * The code below extracts file path and revision from the URI.
          */
         for (int i = 1; i <= 2; i++) {
-            String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
+            String p = Laundromat.launderRevision(req.getParameter(QueryParameters.REVISION_PARAM + i));
             if (p != null) {
                 int j = p.lastIndexOf("@");
                 if (j != -1) {
