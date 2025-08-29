@@ -66,6 +66,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
@@ -691,6 +692,7 @@ public class PageConfig {
      *
      * @return an empty string if not found, the tag otherwise.
      */
+    @NotNull
     public String getDefineTagsIndex() {
         if (dtag != null) {
             return dtag;
