@@ -1483,7 +1483,7 @@ public class PageConfig {
         if (env.getServerName() != null) {
             return env.getServerName();
         } else {
-            return req.getServerName();
+            return Laundromat.launderServerName(req.getServerName());
         }
     }
 

@@ -53,6 +53,15 @@ public class Laundromat {
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
+     * (non-logging) processing. Also allows for IPv6 address URIs with port number.
+     * @return {@code null} if null or else {@code value} with invalid characters removed and leading dashes stripped
+     */
+    public static String launderServerName(String value) {
+        return replaceAll(value, "(^\\-*)|[^A-Za-z0-9\\-\\.: \\[\\]]", "");
+    }
+
+    /**
+     * Sanitize {@code value} where it will be used in subsequent OpenGrok
      * (non-logging) processing.
      * @return {@code null} if null or else {@code value} with anything besides
      * alphanumeric or {@code :} characters removed.
