@@ -80,8 +80,8 @@ public class Laundromat {
      * @return {@code null} if null or else {@code value} with path traversal
      * path components {@code /../} removed.
      */
-    public static String launderPath(String value) {
-        Path path = Path.of(value);
+    public static String launderPath(@NotNull String value) {
+        Path path = Path.of(Laundromat.launderInput(value));
         List<String> pathElements = new ArrayList<>();
         for (int i = 0; i < path.getNameCount(); i++) {
             if (path.getName(i).toString().equals("..")) {
