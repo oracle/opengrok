@@ -219,14 +219,10 @@ action=download">download diff</a></span><%
             %>
             <thead><tr>
                 <th>
-                    <a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(0)) %>">
-                        <%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(0)) %>)
-                    </a>
+                    <a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(0)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(0)) %>)</a>
                 </th>
                 <th>
-                    <a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(1)) %>">
-                        <%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(1)) %>)
-                    </a>
+                    <a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(1)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(1)) %>)</a>
                 </th>
             </tr></thead><%
             }
