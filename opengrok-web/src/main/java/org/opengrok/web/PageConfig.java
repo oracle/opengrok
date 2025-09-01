@@ -368,6 +368,7 @@ public class PageConfig {
             }
         }
     }
+
     private void populateRevisionData(DiffData data) {
         try {
             data.revision = Diff.diff(data.file[0], data.file[1]);
