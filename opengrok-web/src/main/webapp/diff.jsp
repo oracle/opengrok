@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2023, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -48,10 +48,8 @@ private String getAnnotateRevision(DiffData data) {
     PageConfig cfg = PageConfig.get(request);
     cfg.addScript("diff");
     cfg.checkSourceRootExistence();
-    /**
-     * This block must be the first block before any other output in the
-     * response.
-     *
+    /*
+     * This block must be the first block before any other output in the response.
      * If there is already any output written into the response, and we
      * use the same response and reset the content and the headers then we have
      * a collision with the response streams and the "getOutputStream() has
@@ -64,8 +62,8 @@ private String getAnnotateRevision(DiffData data) {
             && request.getParameter("action").equals("download")) {
         try (OutputStream o = response.getOutputStream()) {
             for (int i = 0; i < data.getRevision().size(); i++) {
-                Delta d = data.getRevision().getDelta(i);
-                try (InputStream in = new ByteArrayInputStream(d.toString().getBytes(StandardCharsets.UTF_8))) {
+                Delta delta = data.getRevision().getDelta(i);
+                try (InputStream in = new ByteArrayInputStream(delta.toString().getBytes(StandardCharsets.UTF_8))) {
                     response.setHeader("content-disposition", "attachment; filename="
                             + cfg.getResourceFile().getName() + "@" + data.getRev(0)
                             + "-" + data.getRev(1) + ".diff");
@@ -98,24 +96,25 @@ include file="/mast.jsp"
 %>
 <div class="src">
     <h3 class="error">Error:</h3>
-    <p><%= data.getErrorMsg() %></p>
+    <p><%= Util.htmlize(data.getErrorMsg()) %></p>
 </div><%
     } else if (data.getGenre() == AbstractAnalyzer.Genre.IMAGE) {
 
-        String link = request.getContextPath() + Prefix.DOWNLOAD_P
-            + Util.htmlize(cfg.getPath());
+        String link = request.getContextPath() + Prefix.DOWNLOAD_P + Util.htmlize(cfg.getPath());
 %>
 <div id="difftable">
     <table class="image" aria-label="table with old and new image">
         <thead>
-        <tr><th><%= data.getFilename() %> (revision <%= data.getRev(0) %>)</th>
-            <th><%= data.getFilename() %> (revision <%= data.getRev(1) %>)</th>
+        <tr>
+            <th><%= Util.htmlize(data.getFilename()) %> (revision <%= Util.htmlize(data.getRev(0)) %>)</th>
+            <th><%= Util.htmlize(data.getFilename()) %> (revision <%= Util.htmlize(data.getRev(1)) %>)</th>
         </tr>
         </thead>
         <tbody>
-        <tr><td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>" alt="previous image"/>
+        <tr>
+            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>" alt="previous image"/>
             </td>
-            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>" alt="new image"/>
+            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>" alt="new image"/>
             </td>
         </tr>
         </tbody>
@@ -124,14 +123,15 @@ include file="/mast.jsp"
 
     } else if (data.getGenre() != AbstractAnalyzer.Genre.PLAIN && data.getGenre() != AbstractAnalyzer.Genre.HTML) {
 
-        String link = request.getContextPath() + Prefix.DOWNLOAD_P
-            + Util.htmlize(cfg.getPath());
+        String link = request.getContextPath() + Prefix.DOWNLOAD_P + Util.uriEncodePath(cfg.getPath());
 %>
-<div id="src">Diffs for binary files cannot be displayed! Files are <a
-    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>"><%=
-        data.getFilename() %>(revision <%= data.getRev(0) %>)</a> and <a
-    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>"><%=
-        data.getFilename() %>(revision <%= data.getRev(1) %>)</a>.
+<div id="src">Diffs for binary files cannot be displayed! Files are
+    <a href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>">
+        <%= Util.htmlize(data.getFilename()) %>(revision <%= Util.htmlize(data.getRev(0)) %>)
+    </a> and
+    <a href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>">
+        <%= Util.htmlize(data.getFilename()) %>(revision <%= Util.htmlize(data.getRev(1)) %>)
+    </a>.
 </div><%
 
     } else if (data.getRevision().size() == 0) {
@@ -163,9 +163,9 @@ include file="/mast.jsp"
             if (type == t) {
         %> <span class="active"><%= t.toString() %><%
                 if (t == DiffType.OLD) {
-            %>  (<%= data.getRev(0) %>)<%
+            %>  (<%= Util.htmlize(data.getRev(0)) %>)<%
                 } else if (t == DiffType.NEW) {
-            %>  (<%= data.getRev(1) %>)<%
+            %>  (<%= Util.htmlize(data.getRev(1)) %>)<%
                 }
             %></span><%
             } else {
@@ -175,9 +175,9 @@ include file="/mast.jsp"
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
             <%
                 if (t == DiffType.OLD) {
-            %>  (<%= data.getShortRev(0) %>)<%
+            %>  (<%= Util.htmlize(data.getShortRev(0)) %>)<%
                 } else if (t == DiffType.NEW) {
-            %>  (<%= data.getShortRev(1) %>)<%
+            %>  (<%= Util.htmlize(data.getShortRev(1)) %>)<%
                 }
             %></a></span><%
             }
@@ -186,22 +186,22 @@ include file="/mast.jsp"
     <div class="ctype"><%
         if (!full) {
         %>
-        <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+        <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1">full</a></span>
         <span class="active">compact</span><%
         } else {
         %>
         <span class="active">full</span>
-        <span> <a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+        <span> <a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>0">compact</a></span><%
         }
         %><span><a href="#" id="toggle-jumper">jumper</a></span>
-        <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+        <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= DiffType.TEXT %>&amp;
 action=download">download diff</a></span><%
     %></div>
@@ -212,25 +212,25 @@ action=download">download diff</a></span><%
         if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
         %><table class="plain" aria-label="table with old and new content"><%
             if (type == DiffType.SIDEBYSIDE) {
-                String linkPrefix = request.getContextPath() + Prefix.XREF_P + Util.htmlize(cfg.getPath()) +
+                String linkPrefix = request.getContextPath() + Prefix.XREF_P + Util.uriEncodePath(cfg.getPath()) +
                         "?" + QueryParameters.REVISION_PARAM_EQ;
             %>
             <thead><tr>
-                <th><a href="<%= linkPrefix %><%= data.getRev(0) %>"><%= data.getFilename() %> (<%= data.getRev(0) %>)</a></th>
-                <th><a href="<%= linkPrefix %><%= data.getRev(1) %>"><%= data.getFilename() %> (<%= data.getRev(1) %>)</a></th>
+                <th><a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(0)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(0)) %>)</a></th>
+                <th><a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(1)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(1)) %>)</a></th>
             </tr></thead><%
             }
             %>
             <tbody><%
         }
 
-        for (int i=0; i < data.getRevision().size(); i++) {
-            Delta d = data.getRevision().getDelta(i);
+        for (int i = 0; i < data.getRevision().size(); i++) {
+            Delta delta = data.getRevision().getDelta(i);
             if (type == DiffType.TEXT) {
-        %><%= Util.htmlize(d.toString()) %><%
+        %><%= Util.htmlize(delta.toString()) %><%
             } else {
-                Chunk c1 = d.getOriginal();
-                Chunk c2 = d.getRevised();
+                Chunk c1 = delta.getOriginal();
+                Chunk c2 = delta.getRevised();
                 int cn1 = c1.first();
                 int cl1 = c1.last();
                 int cn2 = c2.first();
@@ -273,7 +273,7 @@ action=download">download diff</a></span><%
                             }
                         } else {
                             for (int j = ln2; j < ln2 + 8; j++) {
-                %><span class="it"><%= j+1 %></span><%=
+                %><span class="it"><%= j + 1 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -295,7 +295,7 @@ action=download">download diff</a></span><%
                     if (cn1 <= cl1) {
             %>
             <tr class="chunk"><td><%
-                        for (int j = cn1; j  <= cl1 ; j++) {
+                        for (int j = cn1; j <= cl1 ; j++) {
                 %><del class="d"><%= ++ln1 %></del><%= file1[j]
                 %><br/><%
                         }
@@ -309,12 +309,12 @@ action=download">download diff</a></span><%
                         %> chunk<%
                     }
                 %>"><td><%
-                        for (int j = cn2; j  < cl2; j++) {
+                        for (int j = cn2; j < cl2; j++) {
                 %><span class="a it"><%= ++ln2 %></span><%= file2[j]
                 %><br/><%
                         }
                 %><span class="a it"><%= ++ln2 %></span><%= file2[cl2] %><%
-                        if(full) {
+                        if (full) {
                 %><a id="<%= ln2 %>" /><%
                         }
                 %></td>
@@ -331,13 +331,13 @@ action=download">download diff</a></span><%
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %></td><td><%
-                            for (int j = ln2; j  < cn2 ; j++) {
+                            for (int j = ln2; j < cn2 ; j++) {
                 %><span class="it"><%= ++ln2 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln1; j < ln1 + 8; j++) {
-                %><span class="it"><%= j+1 %></span><%=
+                %><span class="it"><%= j + 1 %></span><%=
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn1 - ln1 - 16
@@ -354,7 +354,7 @@ action=download">download diff</a></span><%
                             }
                 %></td><td><%
                             for (int j = ln2; j < ln2 + 8; j++) {
-                %><span class="it"><%= j+1 %></span><%=
+                %><span class="it"><%= j + 1 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -375,11 +375,11 @@ action=download">download diff</a></span><%
                     }
             %>
             <tr class="k chunk"><td><%
-                    for (int j = cn1; j  <= cl1; j++) {
+                    for (int j = cn1; j <= cl1; j++) {
                 %><span class="it"><%= ++ln1 %></span><%= file1[j] %><br/><%
                     }
                 %></td><td><%
-                    for (int j = cn2; j  <= cl2; j++) {
+                    for (int j = cn2; j <= cl2; j++) {
                 %><span class="it"><%= ++ln2 %></span><a id="<%= ln2 %>"></a><%=
                     file2[j] %><br/><%
                     }
@@ -396,7 +396,7 @@ action=download">download diff</a></span><%
                             }
                         } else {
                             for (int j = ln1; j < ln1 + 8; j++) {
-        %><span class="it"><%= j+1 %></span><%=
+        %><span class="it"><%= j + 1 %></span><%=
             Util.htmlize(file1[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn1 - ln1 - 16
@@ -412,7 +412,7 @@ action=download">download diff</a></span><%
                             }
                         }
                     }
-                    for (int j = cn1; j  <= cl1 ; j++) {
+                    for (int j = cn1; j <= cl1 ; j++) {
         %><span class="it"><%= ++ln1 %></span><%= file1[j] %><br/><%
                     }
                     if (full) {
@@ -422,13 +422,13 @@ action=download">download diff</a></span><%
                 } else if (type == DiffType.NEW) {
                     if (cn2 > ln2) {
                         if (full || cn2 - ln2 < 20) {
-                            for (int j = ln2; j  < cn2 ; j++) {
+                            for (int j = ln2; j < cn2 ; j++) {
         %><span class="it"><%= ++ln2 %></span><%=
             Util.htmlize(file2[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln2; j < ln2 + 8; j++) {
-        %><span class="it"><%= j+1 %></span><%=
+        %><span class="it"><%= j + 1 %></span><%=
             Util.htmlize(file2[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -444,7 +444,7 @@ action=download">download diff</a></span><%
                             }
                         }
                     }
-                    for (int j = cn2; j  <= cl2 ; j++) {
+                    for (int j = cn2; j <= cl2 ; j++) {
         %><span class="it"><%= ++ln2 %></span><%= file2[j] %><br/><%
                     }
                     if (full) {
@@ -459,12 +459,12 @@ action=download">download diff</a></span><%
                 if (full || file1.length - ln1 < 20) {
             %>
             <tr><td><%
-                    for (int j = ln1; j < file1.length ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
+                    for (int j = ln1; j < file1.length; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 %></td><td><%
-                    for (int j = ln2; j < file2.length ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
+                    for (int j = ln2; j < file2.length; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %></td>
             </tr>
@@ -473,13 +473,13 @@ action=download">download diff</a></span><%
                 } else {
             %>
             <tr><td><%
-                    for (int j = ln1; j < ln1 + 8 ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
+                    for (int j = ln1; j < ln1 + 8; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 %><br/> --- <strong><%= file1.length - ln1 - 8
                 %> unchanged lines hidden</strong> --- </td><td><%
-                    for (int j = ln2; j < ln2 + 8 ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
+                    for (int j = ln2; j < ln2 + 8; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %><br/>--- <strong><%= file1.length - ln1 - 8
                 %> unchanged lines hidden</strong> ---</td>
@@ -491,8 +491,8 @@ action=download">download diff</a></span><%
                 if (full || file2.length - ln2 < 20) {
             %>
             <tr><td><%
-                    for (int j = ln2; j < file2.length ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
+                    for (int j = ln2; j < file2.length; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %></td>
             </tr>
@@ -501,8 +501,8 @@ action=download">download diff</a></span><%
                 } else {
             %>
             <tr><td><%
-                    for (int j = ln2; j < ln2 + 8 ; j++) {
-                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
+                    for (int j = ln2; j < ln2 + 8; j++) {
+                %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %><br/>--- <strong><%= file2.length - ln2 - 8
                 %> unchanged lines hidden</strong> ---</td>
@@ -512,24 +512,24 @@ action=download">download diff</a></span><%
                 }
             } else if (type == DiffType.OLD) {
                 if (full || file1.length - ln1 < 20) {
-                    for (int j = ln1; j < file1.length ; j++) {
-        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
+                    for (int j = ln1; j < file1.length; j++) {
+        %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 } else {
-                    for (int j = ln1; j < ln1 + 8 ; j++) {
-        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
+                    for (int j = ln1; j < ln1 + 8; j++) {
+        %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
         %><br/> --- <strong><%= file1.length - ln1 - 8
         %> unchanged lines hidden</strong> ---<br/><%
                 }
             } else if (type == DiffType.NEW) {
                 if (full || file2.length - ln2 < 20) {
-                    for (int j = ln2; j < file2.length ; j++) {
-        %><span class="it"><%= j+1 %></span><%=Util.htmlize(file2[j])%><br/><%
+                    for (int j = ln2; j < file2.length; j++) {
+        %><span class="it"><%= j + 1 %></span><%=Util.htmlize(file2[j])%><br/><%
                     }
                 } else {
-                    for (int j = ln2; j < ln2 + 8 ; j++) {
-        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
+                    for (int j = ln2; j < ln2 + 8; j++) {
+        %><span class="it"><%= j + 1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
         %><br/> --- <strong><%= file2.length - ln2 - 8
         %> unchanged lines hidden</strong> ---<br/><%

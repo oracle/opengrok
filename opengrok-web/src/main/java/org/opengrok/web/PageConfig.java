@@ -276,7 +276,7 @@ public class PageConfig {
      */
     public DiffData getDiffData() {
         DiffData data = new DiffData(getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR)),
-                Util.htmlize(getResourceFile().getName()));
+                getResourceFile().getName());
 
         String context = req.getContextPath();
         String[] filepath = new String[2];
@@ -372,7 +372,7 @@ public class PageConfig {
         try {
             data.revision = Diff.diff(data.file[0], data.file[1]);
         } catch (DifferentiationFailedException e) {
-            data.errorMsg = "Unable to get diffs: " + Util.htmlize(e.getMessage());
+            data.errorMsg = "Unable to get diffs: " + e.getMessage();
         }
     }
 
@@ -384,7 +384,7 @@ public class PageConfig {
                                 filePath[i] + "@" + data.rev[i], null);
                         data.param[i] = u.getRawQuery();
                     } catch (URISyntaxException e) {
-                        LOGGER.log(Level.WARNING, "Failed to create URI: ", e);
+                        LOGGER.log(Level.WARNING, "Failed to create URI: ", Laundromat.launderLog(e.toString()));
                     }
                 });
     }
