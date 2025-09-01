@@ -60,41 +60,41 @@ class LaundromatTest {
     }
 
     private static Stream<Pair<String, String>> getParamsForTestLaunderServerName() {
-        return Stream.of(Pair.of("foo.example.com", Laundromat.launderServerName("--foo.example\n.com?=")),
-                Pair.of("[2001:db8::1]:8080", Laundromat.launderServerName("[2001:db8::1]:8080")));
+        return Stream.of(Pair.of("foo.example.com", "--foo.example\n.com?="),
+                Pair.of("[2001:db8::1]:8080", "[2001:db8::1]:8080"));
     }
 
     @ParameterizedTest
     @MethodSource("getParamsForTestLaunderServerName")
     void testLaunderServerName(Pair<String, String> param) {
-        assertEquals(param.getLeft(), param.getRight());
+        assertEquals(param.getLeft(), Laundromat.launderServerName(param.getRight()));
     }
 
     private static Stream<Pair<String, String>> getParamsForTestLaunderUriPath() {
-        return Stream.of(Pair.of("foo", Laundromat.launderUriPath("../../../foo")),
-                Pair.of("/foo/bar", Laundromat.launderUriPath("/foo/../../bar")),
-                Pair.of("/foo/bar..", Laundromat.launderUriPath("/foo/bar..")),
-                Pair.of("/foo/bar", Laundromat.launderUriPath("/foo//bar")),
-                Pair.of("..foo/bar", Laundromat.launderUriPath("..foo/bar")),
-                Pair.of("/foo/bar.txt", Laundromat.launderUriPath("/foo/bar.txt")),
-                Pair.of("/foo/bar_.txt", Laundromat.launderUriPath("/foo/bar\u0000.txt")));
+        return Stream.of(Pair.of("foo", "../../../foo"),
+                Pair.of("/foo/bar", "/foo/../../bar"),
+                Pair.of("/foo/bar..", "/foo/bar.."),
+                Pair.of("/foo/bar", "/foo//bar"),
+                Pair.of("..foo/bar", "..foo/bar"),
+                Pair.of("/foo/bar.txt", "/foo/bar.txt"),
+                Pair.of("/foo/bar_.txt", "/foo/bar\u0000.txt"));
     }
 
     @ParameterizedTest
     @MethodSource("getParamsForTestLaunderUriPath")
     void testLaunderUriPath(Pair<String, String> param) {
-        assertEquals(param.getLeft(), param.getRight());
+        assertEquals(param.getLeft(), Laundromat.launderUriPath(param.getRight()));
     }
 
     private static Stream<Pair<String, String>> getParamsForTestLaunderPaginationQuery() {
-        return Stream.of(Pair.of("foo=bar", Laundromat.launderPaginationQuery("?foo=/bar")),
-                Pair.of("foo=bar&1=2", Laundromat.launderPaginationQuery("foo=bar&1=2")));
+        return Stream.of(Pair.of("foo=bar", "?foo=/bar"),
+                Pair.of("foo=bar&1=2", "foo=bar&1=2"));
     }
 
     @ParameterizedTest
     @MethodSource("getParamsForTestLaunderPaginationQuery")
     void testLaunderPaginationQuery(Pair<String, String> param) {
-        assertEquals(param.getLeft(), param.getRight());
+        assertEquals(param.getLeft(), Laundromat.launderPaginationQuery(param.getRight()));
     }
 
     @Test
