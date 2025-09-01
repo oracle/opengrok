@@ -86,6 +86,17 @@ class LaundromatTest {
         assertEquals(param.getLeft(), param.getRight());
     }
 
+    private static Stream<Pair<String, String>> getParamsForTestLaunderPaginationQuery() {
+        return Stream.of(Pair.of("foo=bar", Laundromat.launderPaginationQuery("?foo=/bar")),
+                Pair.of("foo=bar&1=2", Laundromat.launderPaginationQuery("foo=bar&1=2")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getParamsForTestLaunderPaginationQuery")
+    void testLaunderPaginationQuery(Pair<String, String> param) {
+        assertEquals(param.getLeft(), param.getRight());
+    }
+
     @Test
     void launderLogMap() {
         HashMap<String, String[]> testMap = new HashMap<>();
