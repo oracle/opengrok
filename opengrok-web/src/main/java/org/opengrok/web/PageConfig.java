@@ -1220,7 +1220,7 @@ public class PageConfig {
     }
 
     private static String trailingSlash(String path) {
-        return path.length() == 0 || path.charAt(path.length() - 1) != PATH_SEPARATOR
+        return path.isEmpty() || path.charAt(path.length() - 1) != PATH_SEPARATOR
                 ? PATH_SEPARATOR_STRING
                 : "";
     }
