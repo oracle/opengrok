@@ -48,6 +48,7 @@ org.opengrok.indexer.web.Util"
 <%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 <%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="java.util.Optional" %>
+<%@ page import="org.opengrok.indexer.web.Laundromat" %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
     final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -291,7 +292,7 @@ document.domReady.push(function() {domReadyHistory();});
                     if (entry.isActive()) {
                         StringBuffer urlBuffer = new StringBuffer(context + Prefix.HIST_L + uriEncodedName);
                         if (request.getQueryString() != null) {
-                            urlBuffer.append('?').append(request.getQueryString());
+                            urlBuffer.append('?').append(Laundromat.launderPaginationQuery(request.getQueryString()));
                         }
                         urlBuffer.append('#').append(Util.uriEncode(rev));
             %>

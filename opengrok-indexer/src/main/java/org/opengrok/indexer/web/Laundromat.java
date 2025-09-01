@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -70,6 +71,17 @@ public class Laundromat {
      */
     public static String launderRevision(String value) {
         return replaceAll(value, "[^a-zA-Z0-9:]", "");
+    }
+
+    /**
+     * Sanitize {@code value} where it will be used in subsequent OpenGrok
+     * (non-logging) processing. The value is assumed to represent a pagination query string,
+     * e.g. {@code n=25&start=25}
+     * @return {@code null} if null or else {@code value} with anything besides
+     * alphanumeric or {@code &}, {@code =} characters removed.
+     */
+    public static String launderPaginationQuery(String value) {
+        return replaceAll(value, "[^a-zA-Z0-9=&]", "");
     }
 
     /**
