@@ -289,17 +289,16 @@ document.domReady.push(function() {domReadyHistory();});
             <td><%= htmlEncodedDisplayRevision %></td><%
                 } else {
                     if (entry.isActive()) {
-                        StringBuffer urlBuffer = request.getRequestURL();
+                        StringBuffer urlBuffer = new StringBuffer(context + Prefix.HIST_L + uriEncodedName);
                         if (request.getQueryString() != null) {
                             urlBuffer.append('?').append(request.getQueryString());
                         }
-                        urlBuffer.append('#').append(rev);
+                        urlBuffer.append('#').append(Util.uriEncode(rev));
             %>
-            <td><a href="<%= urlBuffer %>"
-                title="link to revision line">#</a>
+            <td><a href="<%= urlBuffer %>" title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?" +
-                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= htmlEncodedDisplayRevision %>
-                </a></td>
+                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= htmlEncodedDisplayRevision %></a>
+            </td>
             <td><%
                 %><input type="radio"
                         aria-label="From"
