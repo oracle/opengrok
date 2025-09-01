@@ -385,7 +385,7 @@ public class PageConfig {
                                 filePath[i] + "@" + data.rev[i], null);
                         data.param[i] = u.getRawQuery();
                     } catch (URISyntaxException e) {
-                        LOGGER.log(Level.WARNING, "Failed to create URI: ", Laundromat.launderLog(e.toString()));
+                        LOGGER.log(Level.WARNING, "Failed to create URI: {}", Laundromat.launderLog(e.toString()));
                     }
                 });
     }
