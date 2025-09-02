@@ -37,7 +37,7 @@ class PhraseMatcher extends LineMatcher {
 
     @Override
     public int match(String token) {
-        if (equal(token, phraseTerms[cur])) {
+        if (equalStrings(token, phraseTerms[cur])) {
             if (cur < phraseTerms.length - 1) {
                 cur++;
                 return WAIT; //matching.
@@ -46,7 +46,7 @@ class PhraseMatcher extends LineMatcher {
             return MATCHED; //matched!
         } else if (cur > 0) {
             cur = 0;
-            if (equal(token, phraseTerms[cur])) {
+            if (equalStrings(token, phraseTerms[cur])) {
                 cur++;
                 return WAIT; //matching.
             }
