@@ -80,7 +80,7 @@ class PageConfigTest {
     private static TestRepository repository = new TestRepository();
 
     @BeforeAll
-    public static void setUpClass() throws Exception {
+    static void setUpClass() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setHistoryEnabled(true);
 
