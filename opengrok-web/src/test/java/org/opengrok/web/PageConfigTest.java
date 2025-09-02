@@ -598,8 +598,8 @@ class PageConfigTest {
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
-        temp.delete();
-        temp.mkdirs();
+        assertTrue(temp.delete());
+        assertTrue(temp.mkdirs());
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         cfg.checkSourceRootExistence();
         RuntimeEnvironment.getInstance().setSourceRoot(path);
