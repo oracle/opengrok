@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -56,7 +56,7 @@ public abstract class LineMatcher {
      * the check will return true if the only difference between the strings
      * is difference in case.
      */
-    boolean equal(String s1, String s2) {
+    boolean equalStrings(String s1, String s2) {
         return compareStrings(s1, s2) == 0;
     }
 
