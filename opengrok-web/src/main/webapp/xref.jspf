@@ -131,7 +131,7 @@ org.opengrok.indexer.web.QueryParameters"
                             defs, annotation, project, resourceFile);
                     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="Image from Source Repository"/>
+    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="from Source Repository"/>
     <pre><%
                     } else if (g == AbstractAnalyzer.Genre.HTML) {
                         /*
@@ -177,7 +177,7 @@ org.opengrok.indexer.web.QueryParameters"
 %>
 <div id="src">
     <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>"
-         alt="Image from Source Repository"/>
+         alt="from Source Repository"/>
 </div><%
     } else {
 %>
