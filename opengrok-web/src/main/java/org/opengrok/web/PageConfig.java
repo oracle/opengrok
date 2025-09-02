@@ -213,7 +213,7 @@ public class PageConfig {
      * special characters ...
      */
     public void addHeaderData(String data) {
-        if (data == null || data.length() == 0) {
+        if (data == null || data.isEmpty()) {
             return;
         }
         if (headLines == null) {
@@ -976,7 +976,7 @@ public class PageConfig {
                 .stream()
                 .map(Group::getByName)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
         groupNames.stream()
                 .map(group -> getProjectHelper().getAllGrouped(group))
                 .flatMap(Collection::stream)
@@ -1458,7 +1458,7 @@ public class PageConfig {
     public File getDataRoot() {
         if (dataRoot == null) {
             String tmp = getEnv().getDataRootPath();
-            if (tmp == null || tmp.length() == 0) {
+            if (tmp == null || tmp.isEmpty()) {
                 throw new InvalidParameterException("dataRoot parameter is not "
                         + "set in configuration.xml!");
             }
