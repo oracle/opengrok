@@ -50,7 +50,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -193,7 +195,9 @@ public class MercurialRepositoryTest {
         cmdargs.add(repo.getRepoCommand());
         cmdargs.addAll(Arrays.asList(args));
 
-        Executor exec = new Executor(cmdargs, reposRoot);
+        Map<String, String> env = new HashMap<>();
+        env.put("HGUSER", "foo <foo@example.com>");
+        Executor exec = new Executor(cmdargs, reposRoot, env);
         int exitCode = exec.exec();
         assertEquals(0, exitCode, "hg command '" + cmdargs + "' failed."
                 + "\nexit code: " + exitCode
