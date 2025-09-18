@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -149,8 +150,9 @@ public class MercurialRepositoryTest {
     @Test
     void testGetHistorySubdir() throws Exception {
         // Add a subdirectory with some history.
-        runHgCommand(repositoryRoot, "import",
-                Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
+        URL exportURL = getClass().getResource("/history/hg-export-subdir.txt");
+        assertNotNull(exportURL);
+        runHgCommand(repositoryRoot, "import", Paths.get(exportURL.toURI()).toString());
 
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         History hist = mr.getHistory(new File(repositoryRoot, "subdir"));
@@ -206,8 +208,9 @@ public class MercurialRepositoryTest {
     @Test
     void testGetHistoryBranch() throws Exception {
         // Branch the repo and add one changeset.
-        runHgCommand(repositoryRoot, "unbundle",
-                Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+        URL bundleURL = getClass().getResource("/history/hg-branch.bundle");
+        assertNotNull(bundleURL);
+        runHgCommand(repositoryRoot, "unbundle", Paths.get(bundleURL.toURI()).toString());
         // Switch to the branch.
         runHgCommand(repositoryRoot, "update", "mybranch");
 
@@ -249,26 +252,28 @@ public class MercurialRepositoryTest {
     @Test
     void testGetHistoryGet() throws Exception {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
-        String exp_str = "This will be a first novel of mine.\n"
-                + "\n"
-                + "Chapter 1.\n"
-                + "\n"
-                + "Let's write some words. It began like this:\n"
-                + "\n"
-                + "...\n";
+        String exp_str = """
+                This will be a first novel of mine.
+
+                Chapter 1.
+
+                Let's write some words. It began like this:
+
+                ...
+                """;
         byte[] buffer = new byte[1024];
 
         InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                 "novel.txt", REVISIONS[0]);
         assertNotNull(input);
 
-        String str = "";
+        StringBuilder stringBuilder = new StringBuilder();
         int len;
         while ((len = input.read(buffer)) > 0) {
-            str += new String(buffer, 0, len);
+            stringBuilder.append(new String(buffer, 0, len));
         }
-        assertNotSame(0, str.length());
-        assertEquals(exp_str, str);
+        assertNotSame(0, stringBuilder.length());
+        assertEquals(exp_str, stringBuilder.toString());
     }
 
     /**
@@ -403,8 +408,9 @@ public class MercurialRepositoryTest {
     @ValueSource(booleans = {true, false})
     void testMergeCommits(boolean isMergeCommitsEnabled) throws Exception {
         // The bundle will add a branch and merge commit in the default branch.
-        runHgCommand(repositoryRoot, "unbundle",
-                Paths.get(getClass().getResource("/history/hg-merge.bundle").toURI()).toString());
+        URL mergeURL = getClass().getResource("/history/hg-merge.bundle");
+        assertNotNull(mergeURL);
+        runHgCommand(repositoryRoot, "unbundle", Paths.get(mergeURL.toURI()).toString());
         runHgCommand(repositoryRoot, "update");
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -463,7 +469,7 @@ public class MercurialRepositoryTest {
         HistoryGuru.completeAnnotationWithHistory(annotation, history, hgRepo);
         List<HistoryEntry> relevantEntries = history.getHistoryEntries().stream().
                 filter(e -> annotation.getRevisions().contains(e.getRevision())).
-                collect(Collectors.toList());
+                toList();
         assertFalse(relevantEntries.isEmpty());
         for (HistoryEntry entry : relevantEntries) {
             assertTrue(annotation.getRevisions().contains(entry.getRevision()));
@@ -485,7 +491,9 @@ public class MercurialRepositoryTest {
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         assertNotNull(hgRepo);
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
-        assertEquals(0, hgRepo.getTagList().size());
+        Set<TagEntry> tags = hgRepo.getTagList();
+        assertNotNull(tags);
+        assertEquals(0, tags.size());
         IOUtils.removeRecursive(repositoryRootPath);
     }
 
@@ -498,6 +506,7 @@ public class MercurialRepositoryTest {
         assertNotNull(hgRepo);
         hgRepo.buildTagList(new File(hgRepo.getDirectoryName()), CommandTimeoutType.INDEXER);
         var tags = hgRepo.getTagList();
+        assertNotNull(tags);
         assertEquals(1, tags.size());
         Set<TagEntry> expectedTags = new TreeSet<>();
         TagEntry tagEntry = new MercurialTagEntry(7, "start_of_novel");
@@ -525,8 +534,9 @@ public class MercurialRepositoryTest {
         runHgCommand(this.repositoryRoot, "clone", this.repositoryRoot.toString(), repositoryRootPath.toString());
 
         // Branch the repo and add one changeset.
-        runHgCommand(repositoryRoot, "unbundle",
-                Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
+        URL bundleURL = getClass().getResource("/history/hg-branch.bundle");
+        assertNotNull(bundleURL);
+        runHgCommand(repositoryRoot, "unbundle", Paths.get(bundleURL.toURI()).toString());
 
         // Switch to the branch and add tag.
         final String myBranch = "mybranch";
