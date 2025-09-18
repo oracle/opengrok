@@ -254,11 +254,11 @@ public class MercurialRepositoryTest {
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(repositoryRoot);
         String exp_str = """
                 This will be a first novel of mine.
-                
+
                 Chapter 1.
-                
+
                 Let's write some words. It began like this:
-                
+
                 ...
                 """;
         byte[] buffer = new byte[1024];
