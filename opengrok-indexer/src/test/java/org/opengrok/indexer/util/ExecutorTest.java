@@ -49,6 +49,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExecutorTest {
 
     @Test
+    void testConstructorWithTimeout() {
+        int timeout = 42;
+        Executor executor = new Executor(List.of("foo"), null, timeout);
+        assertEquals(timeout, executor.getTimeout());
+    }
+
+    @Test
     void testString() {
         List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");

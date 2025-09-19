@@ -92,7 +92,7 @@ public class Executor {
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the working directory
      */
-    public Executor(List<String> cmdList, File workingDirectory) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory) {
         this(cmdList, workingDirectory, new HashMap<>());
     }
 
@@ -104,7 +104,7 @@ public class Executor {
      *                it will be terminated. If the value is 0, no timer
      *                will be set up.
      */
-    public Executor(List<String> cmdList, File workingDirectory, int timeout) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, int timeout) {
         this(cmdList, workingDirectory, new HashMap<>());
 
         this.timeout = timeout * 1000;
@@ -116,7 +116,7 @@ public class Executor {
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the working directory
      */
-    public Executor(List<String> cmdList, File workingDirectory, Map<String, String> environ) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, Map<String, String> environ) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
         this.environ = environ;
@@ -142,6 +142,10 @@ public class Executor {
         int timeoutSec = env.isIndexer() ? env.getIndexerCommandTimeout() : env.getInteractiveCommandTimeout();
 
         this.timeout = timeoutSec * 1000;
+    }
+
+    int getTimeout() {
+        return timeout / 1000;
     }
 
     /**
@@ -239,7 +243,7 @@ public class Executor {
                     @Override public void run() {
                         LOGGER.log(Level.WARNING,
                             String.format("Terminating process of command [%s] in directory '%s' " +
-                            "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
+                            "due to timeout %d seconds", cmd_str, dir_str, getTimeout()));
                         proc.destroy();
                     }
                 }, timeout);
