@@ -189,17 +189,17 @@ public class MercurialRepositoryTest {
      * @param args {@code hg} command arguments
      */
     public static void runHgCommand(File reposRoot, String... args) {
-        List<String> cmdargs = new ArrayList<>();
+        List<String> commandWithArgs = new ArrayList<>();
         MercurialRepository repo = new MercurialRepository();
 
-        cmdargs.add(repo.getRepoCommand());
-        cmdargs.addAll(Arrays.asList(args));
+        commandWithArgs.add(repo.getRepoCommand());
+        commandWithArgs.addAll(Arrays.asList(args));
 
-        Map<String, String> env = new HashMap<>();
-        env.put("HGUSER", "foo <foo@example.com>");
-        Executor exec = new Executor(cmdargs, reposRoot, env);
+        final Map<String, String> env = new HashMap<>();
+        env.put("HGUSER", "Snufkin <snufkin@example.com>");
+        Executor exec = new Executor(commandWithArgs, reposRoot, env);
         int exitCode = exec.exec();
-        assertEquals(0, exitCode, "hg command '" + cmdargs + "' failed."
+        assertEquals(0, exitCode, "command '" + commandWithArgs + "' failed."
                 + "\nexit code: " + exitCode
                 + "\nstdout:\n" + exec.getOutputString()
                 + "\nstderr:\n" + exec.getErrorString());
@@ -303,10 +303,7 @@ public class MercurialRepositoryTest {
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
 
-        /*
-         * In our test repository the file was renamed twice since
-         * revision 3.
-         */
+        // In our test repository the file was renamed twice since revision 3.
         InputStream input = mr.getHistoryGet(repositoryRoot.getCanonicalPath(),
                 "novel.txt", "3");
         assertNotNull(input);
@@ -354,8 +351,7 @@ public class MercurialRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(6, history.getHistoryEntries().size());
-        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
-                collect(Collectors.toList());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).toList();
         assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 4, REVISIONS.length)), revisions);
     }
 
@@ -366,8 +362,7 @@ public class MercurialRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(3, history.getHistoryEntries().size());
-        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
-                collect(Collectors.toList());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).toList();
         assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 0, 3)), revisions);
     }
 
@@ -378,8 +373,7 @@ public class MercurialRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(5, history.getHistoryEntries().size());
-        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
-                collect(Collectors.toList());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).toList();
         assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 2, 7)), revisions);
     }
 
@@ -393,8 +387,7 @@ public class MercurialRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(5, history.getHistoryEntries().size());
-        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
-                collect(Collectors.toList());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).toList();
         assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 2, 7)), revisions);
     }
 
@@ -447,8 +440,10 @@ public class MercurialRepositoryTest {
     }
 
     private static Stream<Triple<String, List<String>, List<String>>> provideParametersForPositiveAnnotationTest() {
-        return Stream.of(Triple.of("8:6a8c423f5624", List.of("7", "8"), List.of("8:6a8c423f5624", "7:db1394c05268")),
-                Triple.of("7:db1394c05268", List.of("7"), List.of("7:db1394c05268")));
+        return Stream.of(
+                Triple.of("8:6a8c423f5624", List.of("7", "8"), List.of("8:6a8c423f5624", "7:db1394c05268")),
+                Triple.of("7:db1394c05268", List.of("7"), List.of("7:db1394c05268"))
+        );
     }
 
     @ParameterizedTest
@@ -583,7 +578,7 @@ public class MercurialRepositoryTest {
         assertNotNull(tags);
         assertEquals(3, tags.size());
         expectedTags = List.of("start_of_novel", newTagName, branchTagName);
-        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).collect(Collectors.toList()));
+        assertEquals(expectedTags, tags.stream().map(TagEntry::getTags).toList());
 
         // cleanup
         IOUtils.removeRecursive(repositoryRootPath);
