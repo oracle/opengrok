@@ -109,7 +109,7 @@ class ExecutorTest {
 
     /**
      * Test setting environment variable. Assumes the {@code env} program exists
-     * and reports list of environment variables.
+     * and reports list of environment variables along with their values.
      */
     @Test
     void testEnv() throws IOException {
