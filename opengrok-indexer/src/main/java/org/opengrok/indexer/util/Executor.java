@@ -111,10 +111,11 @@ public class Executor {
     }
 
     /**
-     * Create a new instance of the Executor with default command timeout value.
+     * Create a new instance of the Executor with default command timeout value and environment.
      * The timeout value will be based on the running context (indexer or web application).
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the working directory
+     * @param environ map of environment variables to be added/overridden
      */
     public Executor(List<String> cmdList, @Nullable File workingDirectory, Map<String, String> environ) {
         this.cmdList = cmdList;
