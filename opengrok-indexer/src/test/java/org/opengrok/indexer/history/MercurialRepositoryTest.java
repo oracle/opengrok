@@ -196,6 +196,7 @@ public class MercurialRepositoryTest {
         commandWithArgs.addAll(Arrays.asList(args));
 
         final Map<String, String> env = new HashMap<>();
+        // Set the user to record commits in order to prevent hg commands entering interactive mode.
         env.put("HGUSER", "Snufkin <snufkin@example.com>");
         Executor exec = new Executor(commandWithArgs, reposRoot, env);
         int exitCode = exec.exec();
