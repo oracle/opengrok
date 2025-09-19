@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -30,9 +30,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,6 +47,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Trond Norbye
  */
 class ExecutorTest {
+
+    @Test
+    void testConstructorWithTimeout() {
+        int timeout = 42;
+        Executor executor = new Executor(List.of("foo"), null, timeout);
+        assertEquals(timeout, executor.getTimeout());
+    }
 
     @Test
     void testString() {
@@ -64,10 +74,14 @@ class ExecutorTest {
         cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList);
         assertEquals(0, instance.exec());
-        BufferedReader in = new BufferedReader(instance.getOutputReader());
+        Reader outputReader = instance.getOutputReader();
+        assertNotNull(outputReader);
+        BufferedReader in = new BufferedReader(outputReader);
         assertEquals("testing org.opengrok.indexer.util.Executor", in.readLine());
         in.close();
-        in = new BufferedReader(instance.getErrorReader());
+        Reader errorReader = instance.getErrorReader();
+        assertNotNull(errorReader);
+        in = new BufferedReader(errorReader);
         assertNull(in.readLine());
         in.close();
     }
@@ -81,11 +95,41 @@ class ExecutorTest {
         assertEquals(0, instance.exec());
         assertNotNull(instance.getOutputStream());
         assertNotNull(instance.getErrorStream());
-        BufferedReader in = new BufferedReader(instance.getOutputReader());
+        Reader outputReader = instance.getOutputReader();
+        assertNotNull(outputReader);
+        BufferedReader in = new BufferedReader(outputReader);
         assertEquals("testing org.opengrok.indexer.util.Executor", in.readLine());
         in.close();
-        in = new BufferedReader(instance.getErrorReader());
+        Reader errorReader = instance.getErrorReader();
+        assertNotNull(errorReader);
+        in = new BufferedReader(errorReader);
         assertNull(in.readLine());
+        in.close();
+    }
+
+    /**
+     * Test setting environment variable. Assumes the {@code env} program exists
+     * and reports list of environment variables along with their values.
+     */
+    @Test
+    void testEnv() throws IOException {
+        List<String> cmdList = List.of("env");
+        final Map<String, String> env = new HashMap<>();
+        env.put("foo", "bar");
+        Executor instance = new Executor(cmdList, null, env);
+        assertEquals(0, instance.exec());
+        Reader outputReader = instance.getOutputReader();
+        assertNotNull(outputReader);
+        BufferedReader in = new BufferedReader(outputReader);
+        String line;
+        boolean found = false;
+        while ((line = in.readLine()) != null) {
+            if (line.equals("foo=bar")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
         in.close();
     }
 
