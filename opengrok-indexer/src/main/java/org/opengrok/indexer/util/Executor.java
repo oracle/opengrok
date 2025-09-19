@@ -131,7 +131,7 @@ public class Executor {
      * @param workingDirectory The directory the process should have as the working directory
      * @param useTimeout terminate the process after default timeout or not
      */
-    public Executor(List<String> cmdList, File workingDirectory, boolean useTimeout) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, boolean useTimeout) {
         this(cmdList, workingDirectory);
         if (!useTimeout) {
             this.timeout = 0;
