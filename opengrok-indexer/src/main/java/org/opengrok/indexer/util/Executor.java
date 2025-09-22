@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +68,7 @@ public class Executor {
     private byte[] stdout;
     private byte[] stderr;
     private int timeout; // in milliseconds, 0 means no timeout
+    private final Map<String, String> environ;
 
     /**
      * Create a new instance of the Executor.
@@ -88,45 +90,63 @@ public class Executor {
      * Create a new instance of the Executor with default command timeout value.
      * The timeout value will be based on the running context (indexer or web application).
      * @param cmdList A list containing the command to execute
-     * @param workingDirectory The directory the process should have as the
-     *                         working directory
+     * @param workingDirectory The directory the process should have as the working directory
      */
-    public Executor(List<String> cmdList, File workingDirectory) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        int timeoutSec = env.isIndexer() ? env.getIndexerCommandTimeout() : env.getInteractiveCommandTimeout();
-
-        this.cmdList = cmdList;
-        this.workingDirectory = workingDirectory;
-        this.timeout = timeoutSec * 1000;
+    public Executor(List<String> cmdList, @Nullable File workingDirectory) {
+        this(cmdList, workingDirectory, new HashMap<>());
     }
 
     /**
      * Create a new instance of the Executor with specific timeout value.
      * @param cmdList A list containing the command to execute
-     * @param workingDirectory The directory the process should have as the
-     *                         working directory
+     * @param workingDirectory The directory the process should have as the working directory
      * @param timeout If the command runs longer than the timeout (seconds),
      *                it will be terminated. If the value is 0, no timer
      *                will be set up.
      */
-    public Executor(List<String> cmdList, File workingDirectory, int timeout) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, int timeout) {
+        this(cmdList, workingDirectory, new HashMap<>());
+
+        this.timeout = timeout * 1000;
+    }
+
+    /**
+     * Create a new instance of the Executor with default command timeout value and environment.
+     * The timeout value will be based on the running context (indexer or web application).
+     * @param cmdList A list containing the command to execute
+     * @param workingDirectory The directory the process should have as the working directory
+     * @param environ map of environment variables to be added/overridden
+     */
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, Map<String, String> environ) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
-        this.timeout = timeout * 1000;
+        this.environ = environ;
+
+        setDefaultTimeout();
     }
 
     /**
      * Create a new instance of the Executor with or without timeout.
      * @param cmdList A list containing the command to execute
-     * @param workingDirectory The directory the process should have as the
-     *                         working directory
+     * @param workingDirectory The directory the process should have as the working directory
      * @param useTimeout terminate the process after default timeout or not
      */
-    public Executor(List<String> cmdList, File workingDirectory, boolean useTimeout) {
+    public Executor(List<String> cmdList, @Nullable File workingDirectory, boolean useTimeout) {
         this(cmdList, workingDirectory);
         if (!useTimeout) {
             this.timeout = 0;
         }
+    }
+
+    private void setDefaultTimeout() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        int timeoutSec = env.isIndexer() ? env.getIndexerCommandTimeout() : env.getInteractiveCommandTimeout();
+
+        this.timeout = timeoutSec * 1000;
+    }
+
+    int getTimeout() {
+        return timeout / 1000;
     }
 
     /**
@@ -180,6 +200,8 @@ public class Executor {
                 .map(File::toString)
                 .orElseGet(() -> System.getProperty("user.dir"));
 
+        processBuilder.environment().putAll(environ);
+
         String envStr = "";
         if (LOGGER.isLoggable(Level.FINER)) {
             Map<String, String> envMap = processBuilder.environment();
@@ -222,7 +244,7 @@ public class Executor {
                     @Override public void run() {
                         LOGGER.log(Level.WARNING,
                             String.format("Terminating process of command [%s] in directory '%s' " +
-                            "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
+                            "due to timeout %d seconds", cmd_str, dir_str, getTimeout()));
                         proc.destroy();
                     }
                 }, timeout);
