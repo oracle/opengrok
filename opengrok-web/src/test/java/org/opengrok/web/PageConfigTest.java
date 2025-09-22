@@ -679,11 +679,10 @@ class PageConfigTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.refreshDateForLastIndexRun();
         Path timestampPath = Path.of(env.getDataRootPath(), IndexTimestamp.TIMESTAMP_FILE_NAME);
+        Files.deleteIfExists(timestampPath);
         if (createTimestamp) {
             Files.createFile(timestampPath);
             assertTrue(timestampPath.toFile().exists());
-        } else {
-            Files.deleteIfExists(timestampPath);
         }
 
         PageConfig cfg = PageConfig.get(req);
