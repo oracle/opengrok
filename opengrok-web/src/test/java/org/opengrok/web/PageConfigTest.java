@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,6 +70,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
 
@@ -646,5 +653,40 @@ class PageConfigTest {
                 return pathInfo;
             }
         };
+    }
+
+    @Test
+    void testIsNotModifiedEtag() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getHeader(String name) {
+                if (name.equals(HttpHeaders.IF_NONE_MATCH)) {
+                    return "foo"; // will not match the hash computed in
+                }
+                return null;
+            }
+
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        assertFalse(cfg.isNotModified(req, resp));
+        verify(resp).setHeader(eq(HttpHeaders.ETAG), startsWith("W/"));
+    }
+
+    @Test
+    void testIsNotModifiedNotModified() {
+        DummyHttpServletRequest req = mock(DummyHttpServletRequest.class);
+        when(req.getPathInfo()).thenReturn("/");
+        PageConfig cfg = PageConfig.get(req);
+        final String etag = cfg.getEtag();
+        when(req.getHeader(HttpHeaders.IF_NONE_MATCH)).thenReturn(etag);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        assertTrue(cfg.isNotModified(req, resp));
+        verify(resp).setStatus(eq(HttpServletResponse.SC_NOT_MODIFIED));
     }
 }
