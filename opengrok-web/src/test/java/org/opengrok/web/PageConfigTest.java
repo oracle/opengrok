@@ -675,6 +675,7 @@ class PageConfigTest {
             }
         };
 
+        // The ETag value depends on the timestamp file.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.refreshDateForLastIndexRun();
         Path timestampPath = Path.of(env.getDataRootPath(), IndexTimestamp.TIMESTAMP_FILE_NAME);
