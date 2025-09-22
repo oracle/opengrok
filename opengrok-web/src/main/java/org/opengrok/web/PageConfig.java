@@ -38,7 +38,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1828,21 +1827,9 @@ public class PageConfig {
      * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html">HTTP Caching</a>
      */
     public boolean isNotModified(HttpServletRequest request, HttpServletResponse response) {
-        String currentEtag = String.format("W/\"%s\"",
-                Objects.hash(
-                        // last modified time as UTC timestamp in millis
-                        getLastModified(),
-                        // all project related messages which changes the view
-                        getProjectMessages(),
-                        // last timestamp value
-                        getEnv().getDateForLastIndexRun() != null ? getEnv().getDateForLastIndexRun().getTime() : 0,
-                        // OpenGrok version has changed since the last time
-                        Info.getVersion()
-                )
-        );
+        String currentEtag = getEtag();
 
         String headerEtag = request.getHeader(HttpHeaders.IF_NONE_MATCH);
-
         if (headerEtag != null && headerEtag.equals(currentEtag)) {
             // weak ETag has not changed, return 304 NOT MODIFIED
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -1852,6 +1839,21 @@ public class PageConfig {
         // return 200 OK
         response.setHeader(HttpHeaders.ETAG, currentEtag);
         return false;
+    }
+
+    @VisibleForTesting @NotNull String getEtag() {
+        return String.format("W/\"%s\"",
+                Objects.hash(
+                        // last modified time as UTC timestamp in millis
+                        getLastModified(),
+                        // all project related messages which changes the view
+                        getProjectMessages(),
+                        // last timestamp value
+                        getEnv().getDateForLastIndexRun() != null ? getEnv().getDateForLastIndexRun().getTime() : 0,
+                        // OpenGrok version
+                        Info.getVersion()
+                )
+        );
     }
 
     /**
