@@ -49,11 +49,13 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.TestPlugin;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.IndexTimestamp;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
@@ -655,8 +657,9 @@ class PageConfigTest {
         };
     }
 
-    @Test
-    void testIsNotModifiedEtag() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testIsNotModifiedEtag(boolean createTimestamp) throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest() {
             @Override
             public String getHeader(String name) {
@@ -671,6 +674,16 @@ class PageConfigTest {
                 return "path";
             }
         };
+
+        // The ETag value depends on the timestamp file.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.refreshDateForLastIndexRun();
+        Path timestampPath = Path.of(env.getDataRootPath(), IndexTimestamp.TIMESTAMP_FILE_NAME);
+        Files.deleteIfExists(timestampPath);
+        if (createTimestamp) {
+            Files.createFile(timestampPath);
+            assertTrue(timestampPath.toFile().exists());
+        }
 
         PageConfig cfg = PageConfig.get(req);
         HttpServletResponse resp = mock(HttpServletResponse.class);
