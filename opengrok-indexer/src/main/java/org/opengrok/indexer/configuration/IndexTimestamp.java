@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 public class IndexTimestamp {
@@ -34,15 +36,17 @@ public class IndexTimestamp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexTimestamp.class);
 
+    public static final String TIMESTAMP_FILE_NAME = "timestamp";
+
     /**
      * Get the date of the last index update.
      *
-     * @return the time of the last index update.
+     * @return the time of the last index update or {@code null}.
      */
-    public Date getDateForLastIndexRun() {
+    public @Nullable Date getDateForLastIndexRun() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (lastModified == null) {
-            File timestamp = new File(env.getDataRootFile(), "timestamp");
+            File timestamp = new File(env.getDataRootFile(), TIMESTAMP_FILE_NAME);
             if (timestamp.exists()) {
                 lastModified = new Date(timestamp.lastModified());
             }
