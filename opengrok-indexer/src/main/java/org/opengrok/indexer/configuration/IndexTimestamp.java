@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 public class IndexTimestamp {
@@ -36,6 +37,7 @@ public class IndexTimestamp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexTimestamp.class);
 
+    @VisibleForTesting
     public static final String TIMESTAMP_FILE_NAME = "timestamp";
 
     /**
