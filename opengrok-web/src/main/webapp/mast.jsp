@@ -44,12 +44,12 @@ org.opengrok.indexer.web.Util"%>
         return;
     }
 
-    String redir = cfg.canProcess();
-    if (redir == null || !redir.isEmpty()) {
-        if (redir == null) {            
+    String redirectLocation = cfg.canProcess();
+    if (redirectLocation == null || !redirectLocation.isEmpty()) {
+        if (redirectLocation == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
-            response.sendRedirect(redir);
+            response.sendRedirect(redirectLocation);
         }
         return;
     }
