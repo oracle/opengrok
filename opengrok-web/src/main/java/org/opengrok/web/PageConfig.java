@@ -1857,15 +1857,6 @@ public class PageConfig {
     }
 
     /**
-     * @param root root path
-     * @param path path
-     * @return path relative to root
-     */
-    public static String getRelativePath(String root, String path) {
-        return Paths.get(root).relativize(Paths.get(path)).toString();
-    }
-
-    /**
      * Determines whether a match offset from a search result has been indicated,
      * and if so tries to calculate a translated xref fragment identifier.
      * @return {@code true} if a xref fragment identifier was calculated by the call to this method
