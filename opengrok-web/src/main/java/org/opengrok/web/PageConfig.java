@@ -129,6 +129,9 @@ public class PageConfig {
 
     private static final String HISTORY_JSP_ATTR_NAME = "history.jsp-hist";
 
+    @VisibleForTesting
+    static final String SORTING_COOKIE_NAME = "OpenGrokSorting";
+
     // query parameters
     static final String PROJECT_PARAM_NAME = "project";
     static final String GROUP_PARAM_NAME = "group";
@@ -627,7 +630,7 @@ public class PageConfig {
             }
         }
         if (sort.isEmpty()) {
-            vals = getCookieVals("OpenGrokSorting");
+            vals = getCookieVals(SORTING_COOKIE_NAME);
             for (String s : vals) {
                 SortOrder so = SortOrder.get(s);
                 if (so != null) {

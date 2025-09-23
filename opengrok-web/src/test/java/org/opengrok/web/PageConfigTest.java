@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -66,6 +67,7 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.QueryParameters;
+import org.opengrok.indexer.web.SortOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -830,5 +832,46 @@ class PageConfigTest {
                      "in projects: &lt;project1&gt;,project2" +
                      " - OpenGrok search results",
                 cfg.getSearchTitle());
+    }
+
+    @Test
+    void testGetSortOrderParameter() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+
+            @Override
+            public String[] getParameterValues(String name) {
+                if (name.equals(QueryParameters.SORT_PARAM)) {
+                    return new String[]{SortOrder.LASTMODIFIED.toString(), "invalid"};
+                }
+
+                return null;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals(List.of(SortOrder.LASTMODIFIED), cfg.getSortOrder());
+    }
+
+    @Test
+    void testGetSortOrderCookie() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+
+            @Override
+            public Cookie[] getCookies() {
+                return new Cookie[]{new Cookie(PageConfig.SORTING_COOKIE_NAME, SortOrder.LASTMODIFIED.toString()),
+                        new Cookie(PageConfig.SORTING_COOKIE_NAME, "invalid")};
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals(List.of(SortOrder.LASTMODIFIED), cfg.getSortOrder());
     }
 }
