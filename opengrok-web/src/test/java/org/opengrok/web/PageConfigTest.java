@@ -738,7 +738,6 @@ class PageConfigTest {
         assertEquals("path &lt;foo&gt; - OpenGrok cross reference for /path &lt;foo&gt;", cfg.getPathTitle());
     }
 
-
     @Test
     void testGetPathTitleRevision() {
         HttpServletRequest req = new DummyHttpServletRequest() {
@@ -758,6 +757,19 @@ class PageConfigTest {
 
         PageConfig cfg = PageConfig.get(req);
         assertEquals("bar (revision 42) - OpenGrok cross reference for /bar", cfg.getPathTitle());
+    }
+
+    @Test
+    void testGetPathTitleEmptyPath() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals("/ - OpenGrok cross reference for /", cfg.getPathTitle());
     }
 
     @Test
