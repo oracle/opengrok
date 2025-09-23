@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011, Jens Elkner.
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -37,6 +37,7 @@ public enum SortOrder {
     RELEVANCY("relevancy", "relevance"),
     /** sort by path. */
     BY_PATH("fullpath", "path");
+
     private final String name;
     private final String desc;
 
@@ -53,7 +54,7 @@ public enum SortOrder {
      * @see #toString()
      */
     public static SortOrder get(String name) {
-        if (name == null || name.length() == 0) {
+        if (name == null || name.isEmpty()) {
             return null;
         }
         for (SortOrder s : values()) {
@@ -74,7 +75,7 @@ public enum SortOrder {
     }
 
     /**
-     * A more user friendly description (UI name) of the sort order.
+     * A more user-friendly description (UI name) of the sort order.
      * @return a very short description.
      */
     public String getDesc() {
