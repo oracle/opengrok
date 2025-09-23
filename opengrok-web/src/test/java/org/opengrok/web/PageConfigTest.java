@@ -816,7 +816,7 @@ class PageConfigTest {
             @Override
             public String[] getParameterValues(String name) {
                 if (name.equals(QueryBuilder.PROJECT)) {
-                    return List.of("<project1>").toArray(new String[0]);
+                    return new String[]{"<project1>", "project2"};
                 }
 
                 return null;
@@ -827,7 +827,7 @@ class PageConfigTest {
         assertEquals("&lt;foo bar&gt; (full), &lt;symbol1&gt; (definition), " +
                      "&lt;symbol2&gt; (reference), &lt;path1&gt; (path), " +
                      "&lt;c6f8b2553cb6bf280acb986b741792d55373de4e&gt; (history) " +
-                     "in projects: &lt;project1&gt;" +
+                     "in projects: &lt;project1&gt;,project2" +
                      " - OpenGrok search results",
                 cfg.getSearchTitle());
     }
