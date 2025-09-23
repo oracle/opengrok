@@ -657,6 +657,26 @@ class PageConfigTest {
         };
     }
 
+    @Test
+    void testIsNotModifiedNullHeaderEtag() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getHeader(String name) {
+                return null;
+            }
+
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        assertFalse(cfg.isNotModified(req, resp));
+        verify(resp).setHeader(eq(HttpHeaders.ETAG), startsWith("W/"));
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testIsNotModifiedEtag(boolean createTimestamp) throws IOException {
