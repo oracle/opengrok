@@ -64,6 +64,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
+import org.opengrok.indexer.web.QueryParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -721,5 +722,53 @@ class PageConfigTest {
         HttpServletResponse resp = mock(HttpServletResponse.class);
         assertTrue(cfg.isNotModified(req, resp));
         verify(resp).setStatus(eq(HttpServletResponse.SC_NOT_MODIFIED));
+    }
+
+    @Test
+    void testGetPathTitle() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path <foo>"; // use HTML reserved characters
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals("path &lt;foo&gt; - OpenGrok cross reference for /path &lt;foo&gt;", cfg.getPathTitle());
+    }
+
+
+    @Test
+    void testGetPathTitleRevision() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "bar";
+            }
+
+            @Override
+            public String getParameter(String name) {
+                if (name.equals(QueryParameters.REVISION_PARAM)) {
+                    return "42";
+                }
+                return null;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals("bar (revision 42) - OpenGrok cross reference for /bar", cfg.getPathTitle());
+    }
+
+    @Test
+    void testGetHistoryTitle() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "foo <bar>"; // use HTML reserved characters
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals("foo &lt;bar&gt; - OpenGrok history log for /foo &lt;bar&gt;", cfg.getHistoryTitle());
     }
 }
