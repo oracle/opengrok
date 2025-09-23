@@ -62,6 +62,7 @@ import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.LatestRevisionUtil;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.QueryParameters;
@@ -770,5 +771,52 @@ class PageConfigTest {
 
         PageConfig cfg = PageConfig.get(req);
         assertEquals("foo &lt;bar&gt; - OpenGrok history log for /foo &lt;bar&gt;", cfg.getHistoryTitle());
+    }
+
+    @Test
+    void testGetSearchTitle() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+
+            @Override
+            public String getParameter(String name) {
+                if (name.equals(QueryBuilder.FULL)) {
+                    return "<foo bar>";
+                }
+                if (name.equals(QueryBuilder.DEFS)) {
+                    return "<symbol1>";
+                }
+                if (name.equals(QueryBuilder.REFS)) {
+                    return "<symbol2>";
+                }
+                if (name.equals(QueryBuilder.PATH)) {
+                    return "<path1>";
+                }
+                if (name.equals(QueryBuilder.HIST)) {
+                    return "<c6f8b2553cb6bf280acb986b741792d55373de4e>";
+                }
+                return null;
+            }
+
+            @Override
+            public String[] getParameterValues(String name) {
+                if (name.equals(QueryBuilder.PROJECT)) {
+                    return List.of("<project1>").toArray(new String[0]);
+                }
+
+                return null;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertEquals("&lt;foo bar&gt; (full), &lt;symbol1&gt; (definition), " +
+                     "&lt;symbol2&gt; (reference), &lt;path1&gt; (path), " +
+                     "&lt;c6f8b2553cb6bf280acb986b741792d55373de4e&gt; (history) " +
+                     "in projects: &lt;project1&gt;" +
+                     " - OpenGrok search results",
+                cfg.getSearchTitle());
     }
 }
