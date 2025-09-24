@@ -526,7 +526,7 @@ public class PageConfig {
 
     @VisibleForTesting
     public static List<String> getSortedFiles(File[] files) {
-        return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).collect(Collectors.toList());
+        return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).toList();
     }
 
     /**
