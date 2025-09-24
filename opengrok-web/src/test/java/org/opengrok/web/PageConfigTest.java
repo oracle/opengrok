@@ -64,11 +64,13 @@ import org.opengrok.indexer.history.LatestRevisionUtil;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.SortOrder;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -367,6 +369,9 @@ class PageConfigTest {
         String rev = LatestRevisionUtil.getLastRevFromIndex(new File(repository.getSourceRoot(), filePath));
         assertNotNull(rev);
         assertEquals(HASH_AA35C258, rev);
+
+        // cleanup
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 
     @Test
@@ -923,5 +928,85 @@ class PageConfigTest {
         final String scriptName = "invalidScriptName";
         cfg.addScript(scriptName);
         assertFalse(cfg.getScripts().getScriptNames().contains(scriptName));
+    }
+
+    @Test
+    void testFindDataFilesNullOrEmpty() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertAll(() -> {
+            File[] files = cfg.findDataFiles(null);
+            assertNotNull(files);
+            assertEquals(0, files.length);
+            },
+                () -> {
+            File[] files = cfg.findDataFiles(new ArrayList<>());
+            assertNotNull(files);
+            assertEquals(0, files.length);
+            });
+    }
+
+    @Test
+    void testFindDataFilesNonExistent() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        var filenames = List.of("nonexistent1", "nonexistent2");
+        File[] files = cfg.findDataFiles(filenames);
+        assertNotNull(files);
+        assertEquals(2, files.length);
+        assertTrue(Arrays.stream(files).allMatch(Objects::isNull));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testFindDataFiles(boolean isCompressed) throws Exception {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "mercurial";
+            }
+        };
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
+        env.setCompressXref(isCompressed);
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        Indexer indexer = Indexer.getInstance();
+        indexer.prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                // don't create dictionary
+                null, // subFiles - needed when refreshing history partially
+                null); // repositories - needed when refreshing history partially
+        indexer.doIndexerExecution(null, null);
+
+        PageConfig cfg = PageConfig.get(req);
+        var filenames = List.of("main.c", "nonexistent", "Makefile");
+        File[] files = cfg.findDataFiles(filenames);
+        assertNotNull(files);
+        assertEquals(filenames.size(), files.length);
+        assertTrue(files[0].exists());
+        assertNull(files[1]);
+        assertTrue(files[2].exists());
+
+        // cleanup
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 }
