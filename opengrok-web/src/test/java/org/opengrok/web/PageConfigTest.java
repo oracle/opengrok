@@ -874,4 +874,54 @@ class PageConfigTest {
         PageConfig cfg = PageConfig.get(req);
         assertEquals(List.of(SortOrder.LASTMODIFIED), cfg.getSortOrder());
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testAddScript(boolean isDebug) {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+
+            @Override
+            public String getContextPath() {
+                return "/";
+            }
+
+            @Override
+            public String getParameter(String name) {
+                if (name.equals(PageConfig.DEBUG_PARAM_NAME)) {
+                    return isDebug ? "true" : "false";
+                }
+                return null;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        final String scriptName = "utils";
+        cfg.addScript(scriptName);
+        assertTrue(cfg.getScripts().getScriptNames().
+                contains(isDebug ? scriptName + Scripts.DEBUG_SUFFIX : scriptName));
+    }
+
+    @Test
+    void testAddScriptInvalid() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "path";
+            }
+
+            @Override
+            public String getContextPath() {
+                return "/";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        final String scriptName = "invalidScriptName";
+        cfg.addScript(scriptName);
+        assertFalse(cfg.getScripts().getScriptNames().contains(scriptName));
+    }
 }

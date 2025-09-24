@@ -135,7 +135,8 @@ public class PageConfig {
     // query parameters
     static final String PROJECT_PARAM_NAME = "project";
     static final String GROUP_PARAM_NAME = "group";
-    private static final String DEBUG_PARAM_NAME = "debug";
+    @VisibleForTesting
+    static final String DEBUG_PARAM_NAME = "debug";
 
     private final AuthorizationFramework authFramework;
     private RuntimeEnvironment env;
