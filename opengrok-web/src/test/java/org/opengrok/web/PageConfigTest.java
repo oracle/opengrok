@@ -688,7 +688,7 @@ class PageConfigTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testIsNotModifiedEtag(boolean createTimestamp) throws IOException {
+    void testIsNotModifiedEtag(boolean createTimestamp) throws Exception {
         HttpServletRequest req = new DummyHttpServletRequest() {
             @Override
             public String getHeader(String name) {
@@ -704,8 +704,25 @@ class PageConfigTest {
             }
         };
 
-        // The ETag value depends on the timestamp file.
+        // Need data root to be populated for the isNotModified() check, so index first.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        Indexer indexer = Indexer.getInstance();
+        indexer.prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                // don't create dictionary
+                null, // subFiles - needed when refreshing history partially
+                null); // repositories - needed when refreshing history partially
+        indexer.doIndexerExecution(null, null);
+
+        // The ETag value depends on the timestamp file.
         env.refreshDateForLastIndexRun();
         Path timestampPath = Path.of(env.getDataRootPath(), IndexTimestamp.TIMESTAMP_FILE_NAME);
         Files.deleteIfExists(timestampPath);
@@ -718,6 +735,9 @@ class PageConfigTest {
         HttpServletResponse resp = mock(HttpServletResponse.class);
         assertFalse(cfg.isNotModified(req, resp));
         verify(resp).setHeader(eq(HttpHeaders.ETAG), startsWith("W/"));
+
+        // cleanup
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 
     @Test
