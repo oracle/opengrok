@@ -1290,7 +1290,7 @@ public class PageConfig {
      * {@code ".gz"} to the filename. If that fails or an uncompressed version of the
      * file is younger than its compressed version, the uncompressed file gets used.
      *
-     * @param filenames filenames to lookup.
+     * @param filenames filenames to lookup, relative to source root.
      * @return an empty array if the related directory does not exist or the
      * given list is {@code null} or empty, otherwise an array, which may
      * contain {@code null} entries (when the related file could not be found)
