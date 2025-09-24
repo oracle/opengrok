@@ -371,11 +371,8 @@ class PageConfigTest {
         assertEquals(HASH_AA35C258, rev);
 
         // cleanup
-        try {
-            IOUtils.removeRecursive(env.getDataRootFile().toPath());
-        } catch (IOException e) {
-            // pass
-        }
+        env.releaseIndexSearchers();
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 
     @Test
@@ -741,11 +738,8 @@ class PageConfigTest {
         verify(resp).setHeader(eq(HttpHeaders.ETAG), startsWith("W/"));
 
         // cleanup
-        try {
-            IOUtils.removeRecursive(env.getDataRootFile().toPath());
-        } catch (IOException e) {
-            // pass
-        }
+        env.releaseIndexSearchers();
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 
     @Test
