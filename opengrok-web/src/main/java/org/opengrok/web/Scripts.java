@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2022, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.webjars.WebJarAssetLocator;
 
 /**
@@ -43,10 +44,14 @@ import org.webjars.WebJarAssetLocator;
  */
 public class Scripts implements Iterable<Scripts.Script> {
 
-    private static final String DEBUG_SUFFIX = "-debug";
+    @VisibleForTesting
+    static final String DEBUG_SUFFIX = "-debug";
     private static final String WEBJAR_PATH_PREFIX = "META-INF/resources/";
 
-    enum Type {
+    /**
+     * Holds type of the script.
+     */
+    public enum Type {
         MINIFIED, DEBUG
     }
 
@@ -64,10 +69,16 @@ public class Scripts implements Iterable<Scripts.Script> {
          */
         protected String scriptData;
         protected int priority;
+        private final String scriptName;
 
-        protected Script(String scriptData, int priority) {
+        protected Script(String scriptName, String scriptData, int priority) {
+            this.scriptName = scriptName;
             this.scriptData = scriptData;
             this.priority = priority;
+        }
+
+        public String getScriptName() {
+            return scriptName;
         }
 
         public abstract String toHtml();
@@ -87,7 +98,11 @@ public class Scripts implements Iterable<Scripts.Script> {
     public static class FileScript extends Script {
 
         public FileScript(String script, int priority) {
-            super(script, priority);
+            super(null, script, priority);
+        }
+
+        public FileScript(String scriptName, String script, int priority) {
+            super(scriptName, script, priority);
         }
 
         @Override
@@ -98,7 +113,6 @@ public class Scripts implements Iterable<Scripts.Script> {
                     this.getPriority() +
                     "\"></script>\n";
         }
-
     }
 
     protected static final Map<String, Script> SCRIPTS = new TreeMap<>();
@@ -209,6 +223,11 @@ public class Scripts implements Iterable<Scripts.Script> {
         return outputScripts.iterator();
     }
 
+    @VisibleForTesting
+    List<String> getScriptNames() {
+        return outputScripts.stream().map(Script::getScriptName).toList();
+    }
+
     /**
      * Add a script which is identified by the name.
      *
@@ -231,7 +250,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     }
 
     private void addScript(String contextPath, String scriptName) {
-        this.addScript(new FileScript(contextPath + SCRIPTS.get(scriptName).getScriptData(),
+        this.addScript(new FileScript(scriptName, contextPath + SCRIPTS.get(scriptName).getScriptData(),
                 SCRIPTS.get(scriptName).getPriority()));
     }
 
