@@ -1035,10 +1035,7 @@ class PageConfigTest {
         assertTrue(files[2].exists());
 
         // cleanup
-        try {
-            IOUtils.removeRecursive(env.getDataRootFile().toPath());
-        } catch (IOException e) {
-            // pass
-        }
+        env.releaseIndexSearchers();
+        IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
 }
