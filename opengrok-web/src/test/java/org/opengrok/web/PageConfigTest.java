@@ -371,7 +371,11 @@ class PageConfigTest {
         assertEquals(HASH_AA35C258, rev);
 
         // cleanup
-        IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        try {
+            IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        } catch (IOException e) {
+            // pass
+        }
     }
 
     @Test
@@ -737,7 +741,11 @@ class PageConfigTest {
         verify(resp).setHeader(eq(HttpHeaders.ETAG), startsWith("W/"));
 
         // cleanup
-        IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        try {
+            IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        } catch (IOException e) {
+            // pass
+        }
     }
 
     @Test
@@ -1027,6 +1035,10 @@ class PageConfigTest {
         assertTrue(files[2].exists());
 
         // cleanup
-        IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        try {
+            IOUtils.removeRecursive(env.getDataRootFile().toPath());
+        } catch (IOException e) {
+            // pass
+        }
     }
 }
