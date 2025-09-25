@@ -136,7 +136,7 @@ public final class Configuration {
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
     private Map<String, Project> projects; // project name -> Project
-    private Map<String, Group> groups; // project name -> Group
+    private Map<String, Group> groups; // group name -> Group
     private String sourceRoot;
     private String dataRoot;
     /**

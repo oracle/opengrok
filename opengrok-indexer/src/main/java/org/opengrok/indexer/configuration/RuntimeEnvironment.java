@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -2062,7 +2062,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Add a message to the application.
-     * Also schedules a expiration timer to remove this message after its expiration.
+     * Also schedules an expiration timer to remove this message after its expiration.
      *
      * @param message the message
      */
