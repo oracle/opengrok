@@ -1047,6 +1047,8 @@ class PageConfigTest {
         assertFalse(cfg.isUnreadable());
     }
 
+    // File.setReadable() does not change the behavior of File.canRead() on Windows.
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @Test
     void testIsUnreadableTrue() {
         final String relativePath = Path.of("mercurial", "Makefile").toString();
@@ -1057,7 +1059,7 @@ class PageConfigTest {
             }
         };
 
-        File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath);
+        final File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath);
         assertTrue(file.exists());
         assertTrue(file.setReadable(false, false));
         PageConfig cfg = PageConfig.get(req);
