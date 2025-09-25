@@ -765,6 +765,7 @@ class PageConfigTest {
                 Collections.singleton(projectName),
                 Message.MessageLevel.INFO,
                 Duration.ofMinutes(100)));
+        assertEquals(1, env.getMessages(projectName).size());
 
         DummyHttpServletRequest req = mock(DummyHttpServletRequest.class);
         when(req.getPathInfo()).thenReturn("/mercurial/main.c");
