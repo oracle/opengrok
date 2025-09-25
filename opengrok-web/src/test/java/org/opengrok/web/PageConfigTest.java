@@ -30,11 +30,14 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +59,7 @@ import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.TestPlugin;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.IndexTimestamp;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -69,6 +73,7 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.SortOrder;
+import org.opengrok.indexer.web.messages.Message;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,6 +90,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
+import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 /**
  * Unit tests for the {@code PageConfig} class.
@@ -744,8 +750,25 @@ class PageConfigTest {
 
     @Test
     void testIsNotModifiedNotModified() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjectsEnabled(true);
+        Map<String, Group> groups = new TreeMap<>();
+        Map<String, Project> projects = new TreeMap<>();
+        final String groupName = "test-group";
+        final String projectName = "test-project";
+
+        // Add message for a project in a group to increase coverage of getEtag().
+        groups.put(groupName, new Group(groupName, projectName));
+        projects.put(projectName, new Project(projectName, "/mercurial"));
+        env.setGroups(groups);
+        env.setProjects(projects);
+        env.addMessage(new Message("test",
+                Collections.singleton(projectName),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(100)));
+
         DummyHttpServletRequest req = mock(DummyHttpServletRequest.class);
-        when(req.getPathInfo()).thenReturn("/");
+        when(req.getPathInfo()).thenReturn("/mercurial/main.c");
         PageConfig cfg = PageConfig.get(req);
         final String etag = cfg.getEtag();
         when(req.getHeader(HttpHeaders.IF_NONE_MATCH)).thenReturn(etag);

@@ -2062,7 +2062,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Add a message to the application.
-     * Also schedules a expiration timer to remove this message after its expiration.
+     * Also schedules an expiration timer to remove this message after its expiration.
      *
      * @param message the message
      */
