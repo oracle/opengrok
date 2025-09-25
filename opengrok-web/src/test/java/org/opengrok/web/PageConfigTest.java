@@ -1032,4 +1032,38 @@ class PageConfigTest {
         env.releaseIndexSearchers();
         IOUtils.removeRecursive(env.getDataRootFile().toPath());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"main.c", "nonexistent"})
+    void testIsUnreadableFalse(String fileName) {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "mercurial/" + fileName;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req);
+        assertFalse(cfg.isUnreadable());
+    }
+
+    @Test
+    void testIsUnreadableTrue() {
+        final String relativePath = Path.of("mercurial", "Makefile").toString();
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return relativePath;
+            }
+        };
+
+        File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath);
+        assertTrue(file.exists());
+        assertTrue(file.setReadable(false, false));
+        PageConfig cfg = PageConfig.get(req);
+        assertTrue(cfg.isUnreadable());
+
+        // cleanup
+        assertTrue(file.setReadable(true, false));
+    }
 }
