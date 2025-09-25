@@ -90,7 +90,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
-import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 /**
  * Unit tests for the {@code PageConfig} class.
