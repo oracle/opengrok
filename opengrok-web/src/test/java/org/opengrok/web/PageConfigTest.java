@@ -90,6 +90,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.history.LatestRevisionUtil.getLatestRevision;
+import static org.opengrok.indexer.web.Util.fixPathIfWindows;
 
 /**
  * Unit tests for the {@code PageConfig} class.
@@ -1090,5 +1091,53 @@ class PageConfigTest {
 
         // cleanup
         assertTrue(file.setReadable(true, false));
+    }
+
+    @Test
+    void testEvaluateMatchOffsetNoParam() {
+        final String relativePath = Path.of("mercurial", "main.c").toString();
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return fixPathIfWindows(relativePath);
+            }
+        };
+
+        final File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath);
+        assertTrue(file.exists());
+        PageConfig cfg = PageConfig.get(req);
+        assertFalse(cfg.evaluateMatchOffset());
+        assertNull(cfg.getFragmentIdentifier());
+    }
+
+    private static Stream<Pair<String, String>> getParamsForTestEvaluateMatchOffset() {
+        return Stream.of(Pair.of("0", "1"),
+                Pair.of("42", "3"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getParamsForTestEvaluateMatchOffset")
+    void testEvaluateMatchOffset(Pair<String, String> offsetPair) {
+        final String relativePath = Path.of("mercurial", "main.c").toString();
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return fixPathIfWindows(relativePath);
+            }
+
+            @Override
+            public String getParameter(String name) {
+                if (name.equals(QueryParameters.MATCH_OFFSET_PARAM)) {
+                    return offsetPair.getLeft();
+                }
+                return null;
+            }
+        };
+
+        final File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), relativePath);
+        assertTrue(file.exists());
+        PageConfig cfg = PageConfig.get(req);
+        assertTrue(cfg.evaluateMatchOffset());
+        assertEquals(offsetPair.getRight(), cfg.getFragmentIdentifier());
     }
 }

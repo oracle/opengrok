@@ -1890,4 +1890,9 @@ public class PageConfig {
         }
         return false;
     }
+
+    @VisibleForTesting
+    String getFragmentIdentifier() {
+        return fragmentIdentifier;
+    }
 }
