@@ -657,6 +657,10 @@ The repository path is relative to source root.
   + projects (optional, string) - projects to search in
   + maxresults (optional, string) - maximum number of documents whose hits will be returned (default 1000)
   + start (optional, string) - start index from which to return results
+  + sort (optional, string) - sort order for results (default: "relevancy"). Possible values are:
+    - `relevancy` - by relevancy (Lucene score)
+    - `fullpath` - by file path
+    - `lastmodtime` - by last modification date of the file.
 
 + Response 200 (application/json)
   + Body
