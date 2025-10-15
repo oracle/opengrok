@@ -243,4 +243,9 @@ class IncomingFilterTest {
 
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
     }
+
+    @Test
+    void systemIndexTimeRemoteWithoutTokenTest() throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", "system/indextime");
+    }
 }
