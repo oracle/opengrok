@@ -24,7 +24,9 @@
 package org.opengrok.indexer.search;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterAll;
@@ -36,7 +38,9 @@ import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.web.SortOrder;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -146,6 +150,69 @@ class SearchEngineTest {
         assertTrue(instance.isValidQuery());
         assertEquals("+defs:\"std string\" +full:opengrok +hist:once +hist:upon +hist:time +path:makefile +refs:toString",
                 instance.getQuery());
+    }
+
+    @Test
+    void testSortOrderLastModified() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+        instance.setSortOrder(SortOrder.LASTMODIFIED);
+        int hitsCount = instance.search();
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, hitsCount, hits);
+        assertTrue(hits.size() > 1, "Should return at least 2 hits for RELEVANCY sort to check order");
+
+        List<String> results = new ArrayList<>();
+        for (Hit hit : hits) {
+            results.add(hit.getPath() + "@" + hit.getLineno());
+        }
+        final String[] expectedResults = {
+                "/teamware/main.c@5",
+                "/rcs_test/main.c@5",
+                "/mercurial/main.c@5",
+                "/git/main.c@5",
+                "/cvs_test/cvsrepo/main.c@7",
+                "/bazaar/main.c@5"
+        };
+
+        assertArrayEquals(expectedResults, results.toArray());
+
+        instance.destroy();
+    }
+
+    @Test
+    void testSortOrderByPath() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c OR header.h");
+        instance.setFreetext("arguments OR stdio");
+        instance.setSortOrder(SortOrder.BY_PATH);
+        int hitsCount = instance.search();
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, hitsCount, hits);
+        assertTrue(hits.size() > 1, "Should return at least 2 hits for RELEVANCY sort to check order");
+
+        List<String> results = new ArrayList<>();
+        for (Hit hit : hits) {
+            results.add(hit.getPath() + "@" + hit.getLineno());
+        }
+        final String[] expectedResults = {
+            "/bazaar/header.h@2",
+            "/bazaar/main.c@5",
+            "/cvs_test/cvsrepo/main.c@7",
+            "/git/header.h@2",
+            "/git/main.c@5",
+            "/mercurial/header.h@2",
+            "/mercurial/main.c@5",
+            "/rcs_test/header.h@2",
+            "/rcs_test/main.c@5",
+            "/teamware/header.h@2",
+            "/teamware/main.c@5"
+        };
+
+        assertArrayEquals(expectedResults, results.toArray());
+
+        instance.destroy();
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030
