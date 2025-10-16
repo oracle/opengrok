@@ -159,7 +159,7 @@ class SystemControllerTest extends OGKJerseyTest {
         Files.setLastModifiedTime(indexTimeFile, FileTime.fromMillis(date.getTime()));
 
         Response r = target("system")
-                .path("indextime")
+                .path(SystemController.INDEX_TIME)
                 .request().get();
         String result = r.readEntity(String.class);
 

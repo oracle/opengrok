@@ -73,7 +73,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
             SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config",
             HistoryController.PATH, FileController.PATH, AnnotationController.PATH,
-            SystemController.PATH + "/ping", SystemController.PATH + "/indextime" ));
+            SystemController.PATH + "/ping", SystemController.PATH + "/" + SystemController.INDEX_TIME ));
 
     @Context
     private HttpServletRequest request;

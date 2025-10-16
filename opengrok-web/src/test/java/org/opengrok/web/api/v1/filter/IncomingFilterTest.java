@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.web.api.v1.controller.SystemController;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -246,6 +247,6 @@ class IncomingFilterTest {
 
     @Test
     void systemIndexTimeRemoteWithoutTokenTest() throws Exception {
-        assertFilterDoesNotBlockAddress("10.0.0.1", "system/indextime");
+        assertFilterDoesNotBlockAddress("10.0.0.1", SystemController.PATH + "/" + SystemController.INDEX_TIME);
     }
 }
