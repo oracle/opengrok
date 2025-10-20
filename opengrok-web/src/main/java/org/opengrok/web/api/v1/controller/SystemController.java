@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 public class SystemController {
 
     public static final String PATH = "system";
+    public static final String INDEX_TIME = "indextime";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -70,7 +71,7 @@ public class SystemController {
     }
 
     @GET
-    @Path("/indextime")
+    @Path("/" + INDEX_TIME)
     @Produces(MediaType.APPLICATION_JSON)
     public String getIndexTime() throws JsonProcessingException {
         Date date = new IndexTimestamp().getDateForLastIndexRun();
