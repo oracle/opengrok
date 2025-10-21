@@ -643,7 +643,7 @@ The repository path is relative to source root.
   + repository - repository path with native path separators (of the machine
   running the service) starting with path separator for which to return type
 
-## Search [/search{?full,def,symbol,path,hist,type,projects,maxresults,start}]
+## Search [/search{?full,def,symbol,path,hist,type,projects,maxresults,start,sort}]
 
 ## return search results [GET]
 
@@ -657,10 +657,15 @@ The repository path is relative to source root.
   + projects (optional, string) - projects to search in
   + maxresults (optional, string) - maximum number of documents whose hits will be returned (default 1000)
   + start (optional, string) - start index from which to return results
-  + sort (optional, string) - sort order for results (default: "relevancy"). Possible values are:
-    - `relevancy` - by relevancy (Lucene score)
-    - `fullpath` - by file path
-    - `lastmodtime` - by last modification date of the file.
+  + sort: relevancy (optional, enum[string])
+     + Enum
+         + relevancy
+         + fullpath
+         + lastmodtime
+     + Description: Sort order for results. Possible values:
+         - `relevancy`: Sort by Lucene score (most relevant first).
+         - `fullpath`: Sort by file path (alphabetical).
+         - `lastmodtime`: Sort by last modification date (newest first).
 
 + Response 200 (application/json)
   + Body
