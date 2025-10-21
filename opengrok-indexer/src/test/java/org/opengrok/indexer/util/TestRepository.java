@@ -112,6 +112,35 @@ public class TestRepository {
      * @throws IOException on error
      */
     public void copyDirectory(Path src, Path dest) throws IOException {
+        try (Stream<Path> stream = Files.walk(src)) {
+            stream.forEach(sourceFile -> {
+                if (sourceFile.equals(src)) {
+                    return;
+                }
+                try {
+                    Path destRelativePath = getDestinationRelativePath(src, sourceFile);
+                    Path destPath = dest.resolve(destRelativePath);
+                    if (Files.isDirectory(sourceFile)) {
+                        if (!Files.exists(destPath)) {
+                            Files.createDirectory(destPath);
+                        }
+                        return;
+                    }
+                    Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Assumes the destination directory exists.
+     * @param src source directory
+     * @param dest destination directory
+     * @throws IOException on error
+     */
+    public void copyDirectoryWithUniqueModifiedTime(Path src, Path dest) throws IOException {
         // Create a deterministic order of paths for creation time, so last modified time indexing is stable in tests
         // note we cannot use Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES)
         // as the original creation time is the user checkout and not different accross files
