@@ -24,6 +24,8 @@
 package org.opengrok.indexer.search;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +61,9 @@ class SearchEngineTest {
     @BeforeAll
     static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        URL url = HistoryGuru.class.getResource("/repositories");
+        repository.createEmpty();
+        repository.copyDirectoryWithUniqueModifiedTime(Path.of(url.toURI()), Path.of(repository.getSourceRoot()));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
