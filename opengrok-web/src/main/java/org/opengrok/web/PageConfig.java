@@ -1530,7 +1530,12 @@ public class PageConfig {
      * @return a search helper.
      */
     public SearchHelper prepareInternalSearch(SortOrder sortOrder) {
+        boolean isRedirectOnSingleSearchResult = getEnv().isRedirectOnSingleSearchResult();
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
+        if (xrValue != null && !xrValue.isEmpty()) {
+            isRedirectOnSingleSearchResult = false;
+        }
+
         return new SearchHelper.Builder(getDataRoot(), new File(getSourceRootPath()), getEftarReader(),
                 getQueryBuilder(), req.getContextPath())
                 .start(getStartIndex())
@@ -1538,7 +1543,7 @@ public class PageConfig {
                 .maxItems(getMaxItems())
                 .crossRefSearch(getPrefix() == Prefix.SEARCH_R)
                 .guiSearch(getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P)
-                .noRedirect(xrValue != null && !xrValue.isEmpty())
+                .noRedirect(!isRedirectOnSingleSearchResult)
                 .build();
     }
 
