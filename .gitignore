@@ -60,3 +60,4 @@ pmd.bat
 .classpath
 .checkstyle
 .tox
+opengrok-indexer/index/dirty

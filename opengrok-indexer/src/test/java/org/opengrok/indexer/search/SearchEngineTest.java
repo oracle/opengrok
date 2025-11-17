@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -63,6 +64,7 @@ class SearchEngineTest {
         repository = new TestRepository();
         URL url = HistoryGuru.class.getResource("/repositories");
         repository.createEmpty();
+        Assertions.assertNotNull(url);
         repository.copyDirectoryWithUniqueModifiedTime(Path.of(url.toURI()), Path.of(repository.getSourceRoot()));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -165,12 +167,11 @@ class SearchEngineTest {
         int hitsCount = instance.search();
         List<Hit> hits = new ArrayList<>();
         instance.results(0, hitsCount, hits);
-        assertTrue(hits.size() > 1, "Should return at least 2 hits for RELEVANCY sort to check order");
+        assertTrue(hits.size() >= 2, "Should return at least 2 hits to verify sort order");
 
-        List<String> results = new ArrayList<>();
-        for (Hit hit : hits) {
-            results.add(hit.getPath() + "@" + hit.getLineno());
-        }
+        String[] results = hits.stream().
+                map(hit -> hit.getPath() + "@" + hit.getLineno()).
+                toArray(String[]::new);
         final String[] expectedResults = {
                 "/teamware/main.c@5",
                 "/rcs_test/main.c@5",
@@ -180,7 +181,7 @@ class SearchEngineTest {
                 "/bazaar/main.c@5"
         };
 
-        assertArrayEquals(expectedResults, results.toArray());
+        assertArrayEquals(expectedResults, results);
 
         instance.destroy();
     }
@@ -194,12 +195,11 @@ class SearchEngineTest {
         int hitsCount = instance.search();
         List<Hit> hits = new ArrayList<>();
         instance.results(0, hitsCount, hits);
-        assertTrue(hits.size() > 1, "Should return at least 2 hits for RELEVANCY sort to check order");
+        assertTrue(hits.size() >= 2, "Should return at least 2 hits to verify sort order");
 
-        List<String> results = new ArrayList<>();
-        for (Hit hit : hits) {
-            results.add(hit.getPath() + "@" + hit.getLineno());
-        }
+        String[] results = hits.stream().
+                map(hit -> hit.getPath() + "@" + hit.getLineno()).
+                toArray(String[]::new);
         final String[] expectedResults = {
             "/bazaar/header.h@2",
             "/bazaar/main.c@5",
@@ -214,9 +214,15 @@ class SearchEngineTest {
             "/teamware/main.c@5"
         };
 
-        assertArrayEquals(expectedResults, results.toArray());
+        assertArrayEquals(expectedResults, results);
 
         instance.destroy();
+    }
+
+    @Test
+    void testDefaultSortOrder() {
+        SearchEngine instance = new SearchEngine();
+        assertNull(instance.getSortOrder(), "Default sort should be relevancy (null implies Lucene score ordering)");
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030
