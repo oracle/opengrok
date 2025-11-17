@@ -59,7 +59,7 @@ public class SearchController {
     public static final String PATH = "search";
 
     private static final int MAX_RESULTS = 1000;
-    private static final String DEFAULT_SORT_ORDER = "relevancy";
+    public static final String DEFAULT_SORT_ORDER = "relevancy";
 
     private final SuggesterService suggester;
 

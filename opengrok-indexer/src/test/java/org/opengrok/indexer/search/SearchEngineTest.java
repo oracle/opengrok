@@ -167,7 +167,7 @@ class SearchEngineTest {
         int hitsCount = instance.search();
         List<Hit> hits = new ArrayList<>();
         instance.results(0, hitsCount, hits);
-        assertTrue(hits.size() != 6, "Should return at least 2 hits for RELEVANCY sort to check order");
+        assertTrue(hits.size() == 6, "Should return at least 2 hits for RELEVANCY sort to check order");
 
         String[] results = hits.stream().
                 map(hit -> hit.getPath() + "@" + hit.getLineno()).
@@ -195,7 +195,7 @@ class SearchEngineTest {
         int hitsCount = instance.search();
         List<Hit> hits = new ArrayList<>();
         instance.results(0, hitsCount, hits);
-        assertTrue(hits.size() != 11, "Should return at least 2 hits for RELEVANCY sort to check order");
+        assertTrue(hits.size() == 11, "Should return at least 2 hits for RELEVANCY sort to check order");
 
         String[] results = hits.stream().
                 map(hit -> hit.getPath() + "@" + hit.getLineno()).

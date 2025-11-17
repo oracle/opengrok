@@ -32,6 +32,8 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,35 +137,34 @@ public class TestRepository {
     }
 
     /**
-     * Assumes the destination directory exists.
+     * Create a deterministic order of paths for creation time.
+     * This is so last modified time indexing is stable in tests. Note we cannot use
+     * Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES) as the original creation time is the user
+     * checkout and not different across files.
+     *
      * @param src source directory
      * @param dest destination directory
      * @throws IOException on error
      */
     public void copyDirectoryWithUniqueModifiedTime(Path src, Path dest) throws IOException {
-        // Create a deterministic order of paths for creation time, so last modified time indexing is stable in tests
-        // note we cannot use Files.copy(sourceFile, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES)
-        // as the original creation time is the user checkout and not different accross files
-        List<Path> allPaths;
+          List<Path> allPaths;
         try (Stream<Path> stream = Files.walk(src)) {
             allPaths = stream.filter(p -> !p.equals(src)).sorted().toList();
         }
         // Set base time to now, and go ahead in time for each subsequent path by 1 minute
-        java.time.Instant baseTime = java.time.Instant.now();
+        Instant baseTime = java.time.Instant.now();
         for (int i = 0; i < allPaths.size(); i++) {
             Path sourcePath = allPaths.get(i);
             Path destRelativePath = getDestinationRelativePath(src, sourcePath);
             Path destPath = dest.resolve(destRelativePath);
-            var fileTime = java.nio.file.attribute.FileTime.from(baseTime.plusSeconds(i * 60L));
+            var fileTime = FileTime.from(baseTime.plusSeconds(i * 60L));
             if (Files.isDirectory(sourcePath)) {
-                if (!Files.exists(destPath)) {
-                    Files.createDirectories(destPath);
-                }
+                Files.createDirectories(destPath);
                 Files.setLastModifiedTime(destPath, fileTime);
             } else {
                 // Ensure parent directory exists before copying file
                 Path parentDir = destPath.getParent();
-                if (parentDir != null && !Files.exists(parentDir)) {
+                if (parentDir != null) {
                     Files.createDirectories(parentDir);
                 }
                 Files.copy(sourcePath, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
