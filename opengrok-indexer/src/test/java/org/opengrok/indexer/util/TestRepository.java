@@ -159,12 +159,7 @@ public class TestRepository {
                 if (!Files.exists(destPath)) {
                     Files.createDirectories(destPath);
                 }
-                try {
-                    Files.setLastModifiedTime(destPath, fileTime);
-                    Files.setAttribute(destPath, "basic:creationTime", fileTime);
-                } catch (Exception ignored) {
-                    // Not all filesystems support creationTime
-                }
+                Files.setLastModifiedTime(destPath, fileTime);
             } else {
                 // Ensure parent directory exists before copying file
                 Path parentDir = destPath.getParent();
@@ -173,11 +168,6 @@ public class TestRepository {
                 }
                 Files.copy(sourcePath, destPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
                 Files.setLastModifiedTime(destPath, fileTime);
-                try {
-                    Files.setAttribute(destPath, "basic:creationTime", fileTime);
-                } catch (Exception ignored) {
-                    // Not all filesystems support creationTime
-                }
             }
         }
     }
