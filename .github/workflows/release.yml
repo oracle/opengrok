@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Get the tag name
         id: get_tag
         env:
@@ -24,7 +24,7 @@ jobs:
     needs: get_tag
     steps:
     - name: Checkout master branch
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Set up JDK
       uses: actions/setup-java@v5
       with:
@@ -37,7 +37,7 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Checkout Universal ctags
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: universal-ctags/ctags
         path: ctags
