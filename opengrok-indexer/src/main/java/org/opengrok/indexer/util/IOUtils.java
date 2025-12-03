@@ -38,13 +38,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -302,5 +307,32 @@ public final class IOUtils {
             LOGGER.log(Level.WARNING, "failed to read file: {0}", e.getMessage());
         }
         return "";
+    }
+
+    /**
+     * Create temporary directory with permissions restricted to the owner.
+     * @param prefix prefix for the temporary directory name
+     * @return File object
+     * @throws IOException on I/O error or failure to set the permissions
+     */
+    public static File createTemporaryDirectory(String prefix) throws IOException {
+        File tmp;
+        if (SystemUtils.IS_OS_UNIX) {
+            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.
+                    asFileAttribute(PosixFilePermissions.fromString("rwx------"));
+            tmp = Files.createTempDirectory(prefix, attr).toFile();
+        } else {
+            tmp = Files.createTempDirectory(prefix).toFile();
+            if (!tmp.setReadable(true, true)) {
+                throw new IOException("unable to set read permissions for '" + tmp.getAbsolutePath() + "'");
+            }
+            if (!tmp.setWritable(true, true)) {
+                throw new IOException("unable to set write permissions for '" + tmp.getAbsolutePath() + "'");
+            }
+            if (!tmp.setExecutable(true, true)) {
+                throw new IOException("unable to set executable permissions for '" + tmp.getAbsolutePath() + "'");
+            }
+        }
+        return tmp;
     }
 }

@@ -30,7 +30,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -44,6 +43,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Access to Surround SCM repository.
@@ -178,9 +178,8 @@ public class SSCMRepository extends Repository {
     boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         File directory = new File(parent);
-
         try {
-            final File tmp = Files.createTempDirectory("opengrokSSCMtmp").toFile();
+            final File tmp = IOUtils.createTemporaryDirectory("opengrokSSCMtmp");
             String tmpName = tmp.getCanonicalPath();
 
             List<String> argv = new ArrayList<>();
@@ -235,6 +234,7 @@ public class SSCMRepository extends Repository {
         } catch (IOException exception) {
             LOGGER.log(Level.SEVERE, "Failed to get file", exception);
         }
+
 
         return false;
     }
