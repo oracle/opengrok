@@ -23,6 +23,7 @@
 package org.opengrok.suggest.popular.impl.chronicle;
 
 import net.openhft.chronicle.map.ChronicleMap;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.popular.PopularityMap;
 
@@ -30,10 +31,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -119,10 +124,27 @@ public class ChronicleMapAdapter implements PopularityMap {
             throw new IllegalArgumentException("Cannot resize chronicle map to map with negative key size");
         }
 
-        Path tempFile = Files.createTempFile("opengrok", "chronicle");
+        Path tempFilePath;
+        if (SystemUtils.IS_OS_UNIX) {
+            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.
+                    asFileAttribute(PosixFilePermissions.fromString("rwx------"));
+            tempFilePath = Files.createTempFile("opengrok", "chronicle", attr);
+        } else {
+            tempFilePath = Files.createTempFile("opengrok", "chronicle");
+            File tempFile = tempFilePath.toFile();
+            if (!tempFile.setReadable(true, true)) {
+                throw new IOException("unable to set read permissions for '" + tempFile.getAbsolutePath() + "'");
+            }
+            if (!tempFile.setWritable(true, true)) {
+                throw new IOException("unable to set write permissions for '" + tempFile.getAbsolutePath() + "'");
+            }
+            if (!tempFile.setExecutable(true, true)) {
+                throw new IOException("unable to set executable permissions for '" + tempFile.getAbsolutePath() + "'");
+            }
+        }
 
         try {
-            map.getAll(tempFile.toFile());
+            map.getAll(tempFilePath.toFile());
 
             String field = map.name();
 
@@ -136,10 +158,10 @@ public class ChronicleMapAdapter implements PopularityMap {
                     .entries(newMapSize)
                     .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                     .createPersistedTo(chronicleMapFile);
-            m.putAll(tempFile.toFile());
+            m.putAll(tempFilePath.toFile());
             map = m;
         } finally {
-            Files.delete(tempFile);
+            Files.delete(tempFilePath);
         }
     }
 

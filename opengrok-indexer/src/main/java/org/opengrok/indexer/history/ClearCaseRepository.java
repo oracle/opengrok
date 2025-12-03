@@ -38,6 +38,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Access to a ClearCase repository.
@@ -96,7 +97,7 @@ public class ClearCaseRepository extends Repository {
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
-            final File tmp = File.createTempFile("opengrok", "tmp");
+            final File tmp = IOUtils.createTemporaryFileOrDirectory(false, "opengrok", "tmp");
             String tmpName = tmp.getCanonicalPath();
 
             // cleartool can't get to a previously existing file
