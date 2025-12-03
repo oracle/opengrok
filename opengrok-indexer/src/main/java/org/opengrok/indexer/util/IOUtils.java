@@ -311,7 +311,9 @@ public final class IOUtils {
 
     /**
      * Create temporary directory with permissions restricted to the owner.
+     * @param isDirectory whether this is a file or directory
      * @param prefix prefix for the temporary directory name
+     * @param suffix optional suffix, can be {@code null} for directories
      * @return File object
      * @throws IOException on I/O error or failure to set the permissions
      */
