@@ -309,6 +309,12 @@ public final class IOUtils {
         return "";
     }
 
+    /**
+     * Create temporary directory with permissions restricted to the owner.
+     * @param prefix prefix for the temporary directory name
+     * @return File object
+     * @throws IOException on I/O error or failure to set the permissions
+     */
     public static File createTemporaryDirectory(String prefix) throws IOException {
         File tmp;
         if (SystemUtils.IS_OS_UNIX) {
