@@ -179,7 +179,7 @@ public class SSCMRepository extends Repository {
 
         File directory = new File(parent);
         try {
-            final File tmp = IOUtils.createTemporaryDirectory("opengrokSSCMtmp");
+            final File tmp = IOUtils.createTemporaryFileOrDirectory(true, "opengrokSSCMtmp", null);
             String tmpName = tmp.getCanonicalPath();
 
             List<String> argv = new ArrayList<>();

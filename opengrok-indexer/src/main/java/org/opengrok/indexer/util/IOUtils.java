@@ -311,18 +311,28 @@ public final class IOUtils {
 
     /**
      * Create temporary directory with permissions restricted to the owner.
+     * @param isDirectory whether this is a file or directory
      * @param prefix prefix for the temporary directory name
+     * @param suffix optional suffix, can be {@code null} for directories
      * @return File object
      * @throws IOException on I/O error or failure to set the permissions
      */
-    public static File createTemporaryDirectory(String prefix) throws IOException {
+    public static File createTemporaryFileOrDirectory(boolean isDirectory, String prefix, String suffix) throws IOException {
         File tmp;
         if (SystemUtils.IS_OS_UNIX) {
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.
                     asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            tmp = Files.createTempDirectory(prefix, attr).toFile();
+            if (isDirectory) {
+                tmp = Files.createTempDirectory(prefix, attr).toFile();
+            } else {
+                tmp = Files.createTempFile(prefix, suffix, attr).toFile();
+            }
         } else {
-            tmp = Files.createTempDirectory(prefix).toFile();
+            if (isDirectory) {
+                tmp = Files.createTempDirectory(prefix).toFile();
+            } else {
+                tmp = Files.createTempFile(prefix, suffix).toFile();
+            }
             if (!tmp.setReadable(true, true)) {
                 throw new IOException("unable to set read permissions for '" + tmp.getAbsolutePath() + "'");
             }
