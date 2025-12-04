@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.SortOrder;
 import org.opengrok.web.api.v1.RestApp;
 
 import java.util.Collections;
@@ -85,5 +86,10 @@ class SearchControllerTest extends OGKJerseyTest {
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
         assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
+    void defaultSortOrderRelevancy() {
+        assertEquals(SearchController.DEFAULT_SORT_ORDER, SortOrder.RELEVANCY.name().toLowerCase());
     }
 }
