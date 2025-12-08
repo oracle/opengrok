@@ -212,9 +212,12 @@ public class SearchEngine {
         stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
                 "search.latency", new String[]{"category", "engine",
                         "outcome", totalHits > 0 ? "success" : "empty"});
-        if (!paging && totalHits > 0) {
+        if (!paging && totalHits > hitsPerPage * cachePages) {
             collectorManager = new TopScoreDocCollectorManager(totalHits, Short.MAX_VALUE);
             hits = searcher.search(query, collectorManager).scoreDocs;
+            stat.report(LOGGER, Level.FINEST, "FULL search via SearchEngine done",
+                    "search.latency", new String[]{"category", "engine",
+                            "outcome", totalHits > 0 ? "success" : "empty"});
         }
         StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc hit : hits) {
