@@ -73,16 +73,16 @@ class SuggestResultCollector implements Collector {
         return new CollectorManager<>() {
             @Override
             public SuggestResultCollector newCollector() {
-                return new SuggestResultCollector(leafReaderContext, data, documentIds);
+                BitIntsHolder docIds = new BitIntsHolder();
+                return new SuggestResultCollector(leafReaderContext, data, docIds);
             }
 
             @Override
             public BitIntsHolder reduce(Collection<SuggestResultCollector> collectors) {
-                BitIntsHolder reduced = documentIds;
                 for (SuggestResultCollector collector : collectors) {
-                    documentIds.or(collector.documentIds); //TODO fix as per https://github.com/apache/lucene/pull/766/files
+                    documentIds.or(collector.documentIds);
                 }
-                return reduced;
+                return documentIds;
             }
         };
     }
