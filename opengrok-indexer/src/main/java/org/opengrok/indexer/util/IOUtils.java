@@ -362,7 +362,7 @@ public final class IOUtils {
             if (!tmp.setReadable(true, true)) {
                 throw new IOException("unable to set read permissions for '" + tmp.getAbsolutePath() + "'");
             }
-            if (!tmp.setWritable(true, true)) {
+            if (!tmp.canWrite() && !tmp.setWritable(true, true)) {
                 throw new IOException("unable to set write permissions for '" + tmp.getAbsolutePath() + "'");
             }
             if (!tmp.setExecutable(true, true)) {
