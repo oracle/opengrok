@@ -25,6 +25,8 @@ package org.opengrok.indexer.util;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +36,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IOUtilsTest {
     private static Path rootPath;
@@ -65,5 +68,17 @@ public class IOUtilsTest {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), ".txt");
         assertNotNull(fileList);
         assertEquals(List.of("foo.txt"), fileList.stream().map(File::getName).toList());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testCreateTemporaryFileOrDirectory(boolean isDirectory) throws IOException {
+        File tmpFile = IOUtils.createTemporaryFileOrDirectory(isDirectory, "prefix", "suffix");
+        assertNotNull(tmpFile);
+        assertTrue(tmpFile.exists());
+        assertEquals(isDirectory, tmpFile.isDirectory());
+        assertTrue(tmpFile.getAbsoluteFile().canWrite());
+        assertTrue(tmpFile.getAbsoluteFile().canRead());
+        Files.delete(tmpFile.toPath());
     }
 }
