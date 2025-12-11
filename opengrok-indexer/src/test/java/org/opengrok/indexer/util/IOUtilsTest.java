@@ -62,7 +62,8 @@ public class IOUtilsTest {
     void testListFilesRecursivelyNullSuffix() throws IOException {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), null);
         assertNotNull(fileList);
-        assertEquals(Set.of(FILE_LIST), fileList.stream().map(File::getName).collect(Collectors.toSet()));
+        assertEquals(FILE_LIST.stream().collect(Collectors.toSet()),
+                fileList.stream().map(File::getName).collect(Collectors.toSet()));
     }
 
     @Test
