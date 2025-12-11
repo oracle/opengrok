@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -117,19 +118,18 @@ public final class IOUtils {
     }
 
     /**
-     * List files in the directory recursively when looking for files only
-     * ending with suffix.
+     * List files in the directory recursively when looking for files only ending with suffix.
      *
      * @param root starting directory
      * @param suffix suffix for the files
      * @return recursively traversed list of files with given suffix
      */
-    public static List<File> listFilesRec(File root, String suffix) {
+    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) {
         List<File> results = new ArrayList<>();
         List<File> files = listFiles(root);
         for (File f : files) {
             if (f.isDirectory() && f.canRead() && !f.getName().equals(".") && !f.getName().equals("..")) {
-                results.addAll(listFilesRec(f, suffix));
+                results.addAll(listFilesRecursively(f, suffix));
             } else if (suffix != null && !suffix.isEmpty() && f.getName().endsWith(suffix)) {
                 results.add(f);
             } else if (suffix == null || suffix.isEmpty()) {
@@ -142,22 +142,22 @@ public final class IOUtils {
     /**
      * List files in the directory.
      *
-     * @param root starting directory
-     * @return list of file with suffix
+     * @param root directory
+     * @return list of files in the directory
      */
     public static List<File> listFiles(File root) {
         return listFiles(root, null);
     }
 
     /**
-     * List files in the directory when looking for files only ending with
-     * suffix.
+     * List files in the directory when looking for files only ending with given suffix.
+     * Does not descend into subdirectories.
      *
-     * @param root starting directory
+     * @param root directory
      * @param suffix suffix for the files
      * @return list of file with suffix
      */
-    public static List<File> listFiles(File root, String suffix) {
+    public static List<File> listFiles(@NotNull File root, @Nullable String suffix) {
         File[] files = root.listFiles((dir, name) -> {
             if (suffix != null && !suffix.isEmpty()) {
                 return name.endsWith(suffix);
