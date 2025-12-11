@@ -118,10 +118,11 @@ public final class IOUtils {
     }
 
     /**
-     * List files in the directory recursively when looking for files only ending with suffix.
+     * List files in the directory recursively when looking for regular files ending with suffix.
+     * If the suffix is {@code null}, add all regular files.
      *
      * @param root starting directory
-     * @param suffix suffix for the files
+     * @param suffix suffix for the files, can be {@code null}
      * @return recursively traversed list of files with given suffix
      */
     public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) throws IOException {
@@ -139,10 +140,12 @@ public final class IOUtils {
 
             @Override
             public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                if (!attrs.isRegularFile()) {
+                    return FileVisitResult.CONTINUE;
+                }
+
                 if (suffix == null) {
-                    if (attrs.isRegularFile()) {
-                        collectedFiles.add(file.toFile());
-                    }
+                    collectedFiles.add(file.toFile());
                 } else {
                     if (file.getFileName().toString().endsWith(suffix)) {
                         collectedFiles.add(file.toFile());
