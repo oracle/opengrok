@@ -52,6 +52,7 @@ public class IOUtilsTest {
         for (String fileName : FILE_LIST) {
             Files.createFile(rootPath.resolve(fileName));
         }
+        Files.createDirectory(rootPath.resolve("dir.txt"));
     }
 
     @AfterAll
