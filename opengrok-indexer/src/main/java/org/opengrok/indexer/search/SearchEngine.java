@@ -48,7 +48,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.TopScoreDocCollectorManager;
 import org.apache.lucene.util.Version;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
@@ -132,7 +132,7 @@ public class SearchEngine {
     int cachePages = RuntimeEnvironment.getInstance().getCachePages();
     int totalHits = 0;
     private ScoreDoc[] hits;
-    private TopScoreDocCollector collector;
+    private TopScoreDocCollectorManager collectorManager;
     private IndexSearcher searcher;
     boolean allCollected;
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
@@ -205,18 +205,20 @@ public class SearchEngine {
     }
 
     private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages, Short.MAX_VALUE);
+        collectorManager = new TopScoreDocCollectorManager(hitsPerPage * cachePages, Short.MAX_VALUE);
         Statistics stat = new Statistics();
-        searcher.search(query, collector);
-        totalHits = collector.getTotalHits();
+        hits = searcher.search(query, collectorManager).scoreDocs;
+        totalHits = searcher.count(query);
         stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
                 "search.latency", new String[]{"category", "engine",
                         "outcome", totalHits > 0 ? "success" : "empty"});
-        if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
-            searcher.search(query, collector);
+        if (!paging && totalHits > hitsPerPage * cachePages) {
+            collectorManager = new TopScoreDocCollectorManager(totalHits, Short.MAX_VALUE);
+            hits = searcher.search(query, collectorManager).scoreDocs;
+            stat.report(LOGGER, Level.FINEST, "FULL search via SearchEngine done",
+                    "search.latency", new String[]{"category", "engine",
+                            "outcome", totalHits > 0 ? "success" : "empty"});
         }
-        hits = collector.topDocs().scoreDocs;
         StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc hit : hits) {
             int docId = hit.doc;
@@ -412,14 +414,13 @@ public class SearchEngine {
         // TODO check if below fits for if end=old hits.length, or it should include it
         if (end > hits.length && !allCollected) {
             //do the requery, we want more than 5 pages
-            collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
+            collectorManager = new TopScoreDocCollectorManager(totalHits, Short.MAX_VALUE);
             try {
-                searcher.search(query, collector);
+                hits = searcher.search(query, collectorManager).scoreDocs;
             } catch (Exception e) { // this exception should never be hit, since search() will hit this before
                 LOGGER.log(
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
-            hits = collector.topDocs().scoreDocs;
             StoredFields storedFields = null;
             try {
                 storedFields = searcher.storedFields();
