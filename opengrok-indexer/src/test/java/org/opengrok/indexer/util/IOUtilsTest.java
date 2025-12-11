@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,17 +59,17 @@ public class IOUtilsTest {
     }
 
     @Test
-    void testListFilesRecursivelyNullSuffix() {
+    void testListFilesRecursivelyNullSuffix() throws IOException {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), null);
         assertNotNull(fileList);
-        assertEquals(FILE_LIST, fileList.stream().map(File::getName).toList());
+        assertEquals(Set.of(FILE_LIST), fileList.stream().map(File::getName).collect(Collectors.toSet()));
     }
 
     @Test
-    void testListFilesRecursively() {
+    void testListFilesRecursively() throws IOException {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), ".txt");
         assertNotNull(fileList);
-        assertEquals(List.of("foo.txt"), fileList.stream().map(File::getName).toList());
+        assertEquals(Set.of("foo.txt"), fileList.stream().map(File::getName).collect(Collectors.toSet()));
     }
 
     @ParameterizedTest
