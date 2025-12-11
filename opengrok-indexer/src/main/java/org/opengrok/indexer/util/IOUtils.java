@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -117,58 +119,81 @@ public final class IOUtils {
     }
 
     /**
-     * List files in the directory recursively when looking for files only
-     * ending with suffix.
+     * List files in the directory recursively when looking for regular files ending with suffix.
+     * If the suffix is {@code null}, add all regular files.
      *
      * @param root starting directory
-     * @param suffix suffix for the files
+     * @param suffix suffix for the files, can be {@code null}
      * @return recursively traversed list of files with given suffix
      */
-    public static List<File> listFilesRec(File root, String suffix) {
-        List<File> results = new ArrayList<>();
-        List<File> files = listFiles(root);
-        for (File f : files) {
-            if (f.isDirectory() && f.canRead() && !f.getName().equals(".") && !f.getName().equals("..")) {
-                results.addAll(listFilesRec(f, suffix));
-            } else if (suffix != null && !suffix.isEmpty() && f.getName().endsWith(suffix)) {
-                results.add(f);
-            } else if (suffix == null || suffix.isEmpty()) {
-                results.add(f);
+    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) throws IOException {
+        return listFilesRecursively(root, suffix, Integer.MAX_VALUE);
+    }
+
+    /**
+     * List files in the directory recursively when looking for regular files ending with suffix.
+     * If the suffix is {@code null}, add all regular files.
+     *
+     * @param root starting directory
+     * @param suffix suffix for the files, can be {@code null}
+     * @param maxDepth maximum recursion depth
+     * @return recursively traversed list of files with given suffix
+     */
+    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix, int maxDepth) throws IOException {
+        class SuffixFileCollector extends SimpleFileVisitor<Path> {
+            private final String suffix;
+            private final List<File> collectedFiles = new ArrayList<>();
+
+            SuffixFileCollector(String suffix) {
+                this.suffix = suffix;
+            }
+
+            public List<File> getCollectedFiles() {
+                return collectedFiles;
+            }
+
+            @Override
+            public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                if (!attrs.isRegularFile()) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                if (suffix == null) {
+                    collectedFiles.add(file.toFile());
+                } else {
+                    if (file.getFileName().toString().endsWith(suffix)) {
+                        collectedFiles.add(file.toFile());
+                    }
+                }
+                return FileVisitResult.CONTINUE;
             }
         }
-        return results;
+
+        SuffixFileCollector collector = new SuffixFileCollector(suffix);
+        Files.walkFileTree(root.toPath(), EnumSet.noneOf(FileVisitOption.class), maxDepth, collector);
+        return collector.getCollectedFiles();
     }
 
     /**
      * List files in the directory.
      *
-     * @param root starting directory
-     * @return list of file with suffix
+     * @param root directory
+     * @return list of files in the directory
      */
-    public static List<File> listFiles(File root) {
+    public static List<File> listFiles(File root) throws IOException {
         return listFiles(root, null);
     }
 
     /**
-     * List files in the directory when looking for files only ending with
-     * suffix.
+     * List files in the directory when looking for files only ending with given suffix.
+     * Does not descend into subdirectories.
      *
-     * @param root starting directory
+     * @param root directory
      * @param suffix suffix for the files
      * @return list of file with suffix
      */
-    public static List<File> listFiles(File root, String suffix) {
-        File[] files = root.listFiles((dir, name) -> {
-            if (suffix != null && !suffix.isEmpty()) {
-                return name.endsWith(suffix);
-            } else {
-                return true;
-            }
-        });
-        if (files == null) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(files);
+    public static List<File> listFiles(@NotNull File root, @Nullable String suffix) throws IOException {
+        return listFilesRecursively(root, suffix, 1);
     }
 
     /**
@@ -336,7 +361,7 @@ public final class IOUtils {
             if (!tmp.setReadable(true, true)) {
                 throw new IOException("unable to set read permissions for '" + tmp.getAbsolutePath() + "'");
             }
-            if (!tmp.setWritable(true, true)) {
+            if (!tmp.canWrite() && !tmp.setWritable(true, true)) {
                 throw new IOException("unable to set write permissions for '" + tmp.getAbsolutePath() + "'");
             }
             if (!tmp.setExecutable(true, true)) {
