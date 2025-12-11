@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +44,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,6 +128,19 @@ public final class IOUtils {
      * @return recursively traversed list of files with given suffix
      */
     public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) throws IOException {
+        return listFilesRecursively(root, suffix, Integer.MAX_VALUE);
+    }
+
+    /**
+     * List files in the directory recursively when looking for regular files ending with suffix.
+     * If the suffix is {@code null}, add all regular files.
+     *
+     * @param root starting directory
+     * @param suffix suffix for the files, can be {@code null}
+     * @param maxDepth maximum recursion depth
+     * @return recursively traversed list of files with given suffix
+     */
+    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix, int maxDepth) throws IOException {
         class SuffixFileCollector extends SimpleFileVisitor<Path> {
             private final String suffix;
             private final List<File> collectedFiles = new ArrayList<>();
@@ -156,7 +171,7 @@ public final class IOUtils {
         }
 
         SuffixFileCollector collector = new SuffixFileCollector(suffix);
-        Files.walkFileTree(root.toPath(), collector);
+        Files.walkFileTree(root.toPath(), EnumSet.noneOf(FileVisitOption.class), maxDepth, collector);
         return collector.getCollectedFiles();
     }
 
@@ -166,7 +181,7 @@ public final class IOUtils {
      * @param root directory
      * @return list of files in the directory
      */
-    public static List<File> listFiles(File root) {
+    public static List<File> listFiles(File root) throws IOException {
         return listFiles(root, null);
     }
 
@@ -178,18 +193,8 @@ public final class IOUtils {
      * @param suffix suffix for the files
      * @return list of file with suffix
      */
-    public static List<File> listFiles(@NotNull File root, @Nullable String suffix) {
-        File[] files = root.listFiles((dir, name) -> {
-            if (suffix != null && !suffix.isEmpty()) {
-                return name.endsWith(suffix);
-            } else {
-                return true;
-            }
-        });
-        if (files == null) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(files);
+    public static List<File> listFiles(@NotNull File root, @Nullable String suffix) throws IOException {
+        return listFilesRecursively(root, suffix, 1);
     }
 
     /**

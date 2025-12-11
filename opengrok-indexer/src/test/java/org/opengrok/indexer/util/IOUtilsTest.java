@@ -53,6 +53,9 @@ public class IOUtilsTest {
             Files.createFile(rootPath.resolve(fileName));
         }
         Files.createDirectory(rootPath.resolve("dir.txt"));
+        Path subdir = rootPath.resolve("subdir");
+        Files.createDirectory(subdir);
+        Files.createFile(subdir.resolve("another.txt"));
     }
 
     @AfterAll
@@ -64,13 +67,23 @@ public class IOUtilsTest {
     void testListFilesRecursivelyNullSuffix() throws IOException {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), null);
         assertNotNull(fileList);
-        assertEquals(new HashSet<>(FILE_LIST),
+        var expectedSet = new HashSet<>(FILE_LIST);
+        expectedSet.add("another.txt");
+        assertEquals(expectedSet,
                 fileList.stream().map(File::getName).collect(Collectors.toSet()));
     }
 
     @Test
     void testListFilesRecursively() throws IOException {
         var fileList = IOUtils.listFilesRecursively(rootPath.toFile(), ".txt");
+        assertNotNull(fileList);
+        assertEquals(Set.of("foo.txt", "another.txt"),
+                fileList.stream().map(File::getName).collect(Collectors.toSet()));
+    }
+
+    @Test
+    void testListFiles() throws IOException {
+        var fileList = IOUtils.listFiles(rootPath.toFile(), ".txt");
         assertNotNull(fileList);
         assertEquals(Set.of("foo.txt"), fileList.stream().map(File::getName).collect(Collectors.toSet()));
     }
