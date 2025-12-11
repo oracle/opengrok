@@ -124,19 +124,37 @@ public final class IOUtils {
      * @param suffix suffix for the files
      * @return recursively traversed list of files with given suffix
      */
-    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) {
-        List<File> results = new ArrayList<>();
-        List<File> files = listFiles(root);
-        for (File f : files) {
-            if (f.isDirectory() && f.canRead() && !f.getName().equals(".") && !f.getName().equals("..")) {
-                results.addAll(listFilesRecursively(f, suffix));
-            } else if (suffix != null && !suffix.isEmpty() && f.getName().endsWith(suffix)) {
-                results.add(f);
-            } else if (suffix == null || suffix.isEmpty()) {
-                results.add(f);
+    public static List<File> listFilesRecursively(@NotNull File root, @Nullable String suffix) throws IOException {
+        class SuffixFileCollector extends SimpleFileVisitor<Path> {
+            private final String suffix;
+            private final List<File> collectedFiles = new ArrayList<>();
+
+            SuffixFileCollector(String suffix) {
+                this.suffix = suffix;
+            }
+
+            public List<File> getCollectedFiles() {
+                return collectedFiles;
+            }
+
+            @Override
+            public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                if (suffix == null) {
+                    if (attrs.isRegularFile()) {
+                        collectedFiles.add(file.toFile());
+                    }
+                } else {
+                    if (file.getFileName().toString().endsWith(suffix)) {
+                        collectedFiles.add(file.toFile());
+                    }
+                }
+                return FileVisitResult.CONTINUE;
             }
         }
-        return results;
+
+        SuffixFileCollector collector = new SuffixFileCollector(suffix);
+        Files.walkFileTree(root.toPath(), collector);
+        return collector.getCollectedFiles();
     }
 
     /**

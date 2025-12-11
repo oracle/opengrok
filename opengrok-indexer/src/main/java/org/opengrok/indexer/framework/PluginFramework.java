@@ -389,8 +389,13 @@ public abstract class PluginFramework<P> {
 
         // load all other possible plugin classes.
         if (isLoadClassesEnabled()) {
-            loadClassFiles(IOUtils.listFilesRecursively(pluginDirectory, CLASS_SUFFIX));
+            try {
+                loadClassFiles(IOUtils.listFilesRecursively(pluginDirectory, CLASS_SUFFIX));
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "failed to load class files", ex);
+            }
         }
+
         if (isLoadJarsEnabled()) {
             loadJarFiles(IOUtils.listFiles(pluginDirectory, ".jar"));
         }
