@@ -823,7 +823,7 @@ class FileHistoryCacheTest {
             fos.write(comment.getBytes(StandardCharsets.UTF_8));
         }
 
-        git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
+        git.commit().setSign(false).setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
     }
 
     /**
@@ -868,7 +868,7 @@ class FileHistoryCacheTest {
             assertTrue(fooFile.renameTo(barFile));
             git.add().addFilepattern("bar.txt").call();
             git.rm().addFilepattern("foo.txt").call();
-            git.commit().setMessage("rename").setAuthor("foo", "foo@bar").setAll(true).call();
+            git.commit().setSign(false).setMessage("rename").setAuthor("foo", "foo@bar").setAll(true).call();
 
             changeFileAndCommit(git, barFile, "4");
             changeFileAndCommit(git, barFile, "5");

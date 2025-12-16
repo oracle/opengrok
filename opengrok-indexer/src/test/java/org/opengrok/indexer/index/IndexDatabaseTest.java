@@ -318,7 +318,7 @@ class IndexDatabaseTest {
     }
 
     private static RevCommit commitFile(Git git, String comment, String authorName, String authorEmail) throws GitAPIException {
-        return git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
+        return git.commit().setSign(false).setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
     }
 
     private void addFileAndCommit(Git git, String newFileName, File repositoryRoot, String message) throws Exception {
@@ -359,7 +359,7 @@ class IndexDatabaseTest {
 
         // Commit the merge separately so that the author can be set.
         // (MergeCommand - a result of git.merge() - does not have the setAuthor() method)
-        git.commit().setAuthor("foo bar", "foobar@example.com").call();
+        git.commit().setSign(false).setAuthor("foo bar", "foobar@example.com").call();
     }
 
     private void changeGitRepository(File repositoryRoot) throws Exception {
@@ -396,7 +396,7 @@ class IndexDatabaseTest {
             File rmFile = new File(repositoryRoot, deletedFileName);
             assertTrue(rmFile.exists());
             git.rm().addFilepattern(deletedFileName).call();
-            git.commit().setMessage("delete").setAuthor("foo", "foobar@example.com").setAll(true).call();
+            git.commit().setSign(false).setMessage("delete").setAuthor("foo", "foobar@example.com").setAll(true).call();
             assertFalse(rmFile.exists());
 
             // Rename some file.
@@ -408,7 +408,7 @@ class IndexDatabaseTest {
             assertTrue(fooFile.renameTo(barFile));
             git.add().addFilepattern(barFileName).call();
             git.rm().addFilepattern(fooFileName).call();
-            git.commit().setMessage("rename").setAuthor("foo", "foobar@example.com").setAll(true).call();
+            git.commit().setSign(false).setMessage("rename").setAuthor("foo", "foobar@example.com").setAll(true).call();
             assertTrue(barFile.exists());
             assertFalse(fooFile.exists());
 
@@ -441,7 +441,7 @@ class IndexDatabaseTest {
                 addFilepattern(fileLinkName).
                 addFilepattern(dirLinkName).call();
 
-        git.commit().setMessage("add symlinks").setAuthor("foo", "foobar@example.com").
+        git.commit().setSign(false).setMessage("add symlinks").setAuthor("foo", "foobar@example.com").
                 setAll(true).call();
     }
 
@@ -1154,6 +1154,7 @@ class IndexDatabaseTest {
                 changeFileAndCommit(gitParent, barFile, "change bar");
 
                 // Revert the changes done to foo.txt so that the changes got nullified for the subsequent pull.
+                gitParent.getRepository().getConfig().setBoolean("commit", null, "gpgsign", false);
                 gitParent.revert().include(commit).call();
 
                 // Bring the changes to the repository to be indexed. Again, done for better simulation.
