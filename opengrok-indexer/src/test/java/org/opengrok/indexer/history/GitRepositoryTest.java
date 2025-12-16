@@ -180,6 +180,7 @@ class GitRepositoryTest {
             String comment = "Added testfile";
             String authorName = "Foo Bar";
             gitClone.commit()
+                    .setSign(false)
                     .setMessage(comment)
                     .setAuthor(authorName, "foo@bar.com")
                     .call();
@@ -255,7 +256,7 @@ class GitRepositoryTest {
             int numEntries = history.getHistoryEntries().size();
             assertTrue(numEntries > 0);
 
-            RevCommit commit = gitClone.commit().
+            RevCommit commit = gitClone.commit().setSign(false).
                     setAuthor("Snufkin", "snufkin@moomin.valley").
                     setMessage("fresh commit on a new branch").setAllowEmpty(true).call();
             assertNotNull(commit);

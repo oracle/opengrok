@@ -266,7 +266,7 @@ class IndexerVsDeletedDocumentsTest {
             }
         }
         if (gitRepo != null) {
-            gitRepo.commit().setMessage("initial content").setAuthor(authorName, authorEmail).call();
+            gitRepo.commit().setSign(false).setMessage("initial content").setAuthor(authorName, authorEmail).call();
         }
         // Add the project and optionally detect the Git repository.
         env.setProjects(new HashMap<>());
@@ -324,7 +324,7 @@ class IndexerVsDeletedDocumentsTest {
             }
 
             if (gitRepo != null) {
-                gitRepo.commit().setMessage(String.format("iteration %d", i)).setAuthor(authorName, authorEmail).call();
+                gitRepo.commit().setSign(false).setMessage(String.format("iteration %d", i)).setAuthor(authorName, authorEmail).call();
             }
 
             listener.reset();
