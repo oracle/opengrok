@@ -24,10 +24,15 @@
 package org.opengrok.indexer.search;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -36,7 +41,9 @@ import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.web.SortOrder;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -55,7 +62,10 @@ class SearchEngineTest {
     @BeforeAll
     static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResource("/repositories"));
+        URL url = HistoryGuru.class.getResource("/repositories");
+        repository.createEmpty();
+        Assertions.assertNotNull(url);
+        repository.copyDirectoryWithUniqueModifiedTime(Path.of(url.toURI()), Path.of(repository.getSourceRoot()));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
@@ -146,6 +156,73 @@ class SearchEngineTest {
         assertTrue(instance.isValidQuery());
         assertEquals("+defs:\"std string\" +full:opengrok +hist:once +hist:upon +hist:time +path:makefile +refs:toString",
                 instance.getQuery());
+    }
+
+    @Test
+    void testSortOrderLastModified() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+        instance.setSortOrder(SortOrder.LASTMODIFIED);
+        int hitsCount = instance.search();
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, hitsCount, hits);
+        assertTrue(hits.size() >= 2, "Should return at least 2 hits to verify sort order");
+
+        String[] results = hits.stream().
+                map(hit -> hit.getPath() + "@" + hit.getLineno()).
+                toArray(String[]::new);
+        final String[] expectedResults = {
+                "/teamware/main.c@5",
+                "/rcs_test/main.c@5",
+                "/mercurial/main.c@5",
+                "/git/main.c@5",
+                "/cvs_test/cvsrepo/main.c@7",
+                "/bazaar/main.c@5"
+        };
+
+        assertArrayEquals(expectedResults, results);
+
+        instance.destroy();
+    }
+
+    @Test
+    void testSortOrderByPath() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c OR header.h");
+        instance.setFreetext("arguments OR stdio");
+        instance.setSortOrder(SortOrder.BY_PATH);
+        int hitsCount = instance.search();
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, hitsCount, hits);
+        assertTrue(hits.size() >= 2, "Should return at least 2 hits to verify sort order");
+
+        String[] results = hits.stream().
+                map(hit -> hit.getPath() + "@" + hit.getLineno()).
+                toArray(String[]::new);
+        final String[] expectedResults = {
+            "/bazaar/header.h@2",
+            "/bazaar/main.c@5",
+            "/cvs_test/cvsrepo/main.c@7",
+            "/git/header.h@2",
+            "/git/main.c@5",
+            "/mercurial/header.h@2",
+            "/mercurial/main.c@5",
+            "/rcs_test/header.h@2",
+            "/rcs_test/main.c@5",
+            "/teamware/header.h@2",
+            "/teamware/main.c@5"
+        };
+
+        assertArrayEquals(expectedResults, results);
+
+        instance.destroy();
+    }
+
+    @Test
+    void testDefaultSortOrder() {
+        SearchEngine instance = new SearchEngine();
+        assertNull(instance.getSortOrder(), "Default sort should be relevancy (null implies Lucene score ordering)");
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030

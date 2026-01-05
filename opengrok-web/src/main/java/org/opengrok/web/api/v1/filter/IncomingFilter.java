@@ -66,7 +66,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
     /**
      * Endpoint paths that are exempted from this filter.
      * @see SearchController#search(HttpServletRequest, String, String, String, String, String, String,
-     * java.util.List, int, int)
+     * java.util.List, int, int, String)
      * @see SuggesterController#getSuggestions(org.opengrok.web.api.v1.suggester.model.SuggesterQueryData)
      * @see SuggesterController#getConfig()
      */
