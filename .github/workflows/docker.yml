@@ -36,7 +36,7 @@ jobs:
     - name: Build and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
@@ -46,5 +46,5 @@ jobs:
       env:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
       run: ./dev/dockerhub_readme.py
