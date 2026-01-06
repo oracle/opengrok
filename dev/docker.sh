@@ -5,7 +5,7 @@
 #
 # When pushing, this script uses the following secure variables:
 #  - DOCKER_USERNAME
-#  - DOCKER_PASSWORD
+#  - DOCKER_PAT
 #
 # These are set via https://github.com/oracle/opengrok/settings/secrets
 #
@@ -15,7 +15,6 @@ set -e
 echo "Running linter"
 docker run --rm -i hadolint/hadolint:2.6.0 < Dockerfile || exit 1
 
-API_URL="https://hub.docker.com/v2"
 IMAGE="opengrok/docker"
 
 if [[ -n $OPENGROK_REF && $OPENGROK_REF == refs/tags/* ]]; then
@@ -24,7 +23,7 @@ fi
 
 if [[ -n $OPENGROK_TAG ]]; then
 	VERSION="$OPENGROK_TAG"
-	VERSION_SHORT=$( echo $VERSION | cut -d. -f1,2 )
+	VERSION_SHORT=$( echo "$VERSION" | cut -d. -f1,2 )
 
 	if [[ -z $VERSION ]]; then
 		echo "empty VERSION"
@@ -43,9 +42,9 @@ if [[ -n $OPENGROK_TAG ]]; then
 
 	echo "Building docker image for release ($TAGS)"
 	docker buildx build \
-	    -t $IMAGE:$VERSION \
-	    -t $IMAGE:$VERSION_SHORT \
-	    -t $IMAGE:latest .
+	    -t "$IMAGE:$VERSION" \
+	    -t "$IMAGE:$VERSION_SHORT" \
+	    -t "$IMAGE:latest" .
 else
 	TAGS="master"
 
@@ -78,19 +77,19 @@ if [[ -z $DOCKER_USERNAME ]]; then
 	exit 1
 fi
 
-if [[ -z $DOCKER_PASSWORD ]]; then
-	echo "DOCKER_PASSWORD is empty, exiting"
+if [[ -z $DOCKER_PAT ]]; then
+	echo "DOCKER_PAT is empty, exiting"
 	exit 1
 fi
 
 # Publish the image to Docker hub.
-if [ -n "$DOCKER_PASSWORD" -a -n "$DOCKER_USERNAME" -a -n "$TAGS" ]; then
+if [ -n "$DOCKER_PAT" -a -n "$DOCKER_USERNAME" -a -n "$TAGS" ]; then
 	echo "Logging into Docker Hub"
-	echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+	echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
 	# All the tags need to be pushed individually:
 	for tag in $TAGS; do
 		echo "Pushing Docker image for tag $tag"
-		docker push $IMAGE:$tag
+		docker push "$IMAGE:$tag"
 	done
 fi
