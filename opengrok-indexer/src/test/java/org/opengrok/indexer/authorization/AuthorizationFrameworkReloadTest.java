@@ -23,8 +23,11 @@
 package org.opengrok.indexer.authorization;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import jakarta.servlet.http.HttpSession;
@@ -163,5 +166,22 @@ class AuthorizationFrameworkReloadTest {
         assertTrue(framework.isLoadJarsEnabled());
         framework.setLoadJars(false);
         assertFalse(framework.isLoadJarsEnabled());
+    }
+
+    @Test
+    void testReloadWithNullPluginDirectory() {
+        AuthorizationFramework framework = new AuthorizationFramework(null);
+        assertNull(framework.getPluginDirectory());
+        framework.reload();
+    }
+
+    @Test
+    void testReloadWithPluginDirectoryNotDirectory() throws IOException {
+        Path tmpFile = Files.createTempFile("pluginFakeDirectory", "");
+        assertFalse(tmpFile.toFile().isDirectory());
+        AuthorizationFramework framework = new AuthorizationFramework(tmpFile.toString());
+        assertNotNull(framework.getPluginDirectory());
+        framework.reload();
+        Files.delete(tmpFile);
     }
 }

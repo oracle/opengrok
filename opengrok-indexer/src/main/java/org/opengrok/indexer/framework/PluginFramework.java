@@ -106,7 +106,7 @@ public abstract class PluginFramework<P> {
      *
      * @param directory the directory path
      */
-    public final synchronized void setPluginDirectory(String directory) {
+    public final synchronized void setPluginDirectory(@Nullable String directory) {
         setPluginDirectory(directory != null ? new File(directory) : null);
     }
 
