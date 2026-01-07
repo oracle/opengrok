@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 """
- Update the README on Docker hub.
+Update the README on Docker hub.
 
- This script uses the following secure variables:
-  - DOCKER_USERNAME
-  - DOCKER_PAT
+This script uses the following secure variables:
+ - DOCKER_USERNAME
+ - DOCKER_PAT
 
- These are set via https://github.com/oracle/opengrok/settings/secrets
+These are set via https://github.com/oracle/opengrok/settings/secrets
 """
 
 import logging
@@ -31,7 +31,7 @@ def get_token(username, pat):
     logger = logging.getLogger(__name__)
 
     logger.debug("Getting Docker hub token using username/pat")
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "User-Agent": "Docker-Client/1.0"}
     data = {"username": f"{username}", "password": f"{pat}"}
     response = requests.post(f"{API_URL}/users/login/", headers=headers, json=data)
     response.raise_for_status()
