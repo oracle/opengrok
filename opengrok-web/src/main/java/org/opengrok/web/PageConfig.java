@@ -1847,6 +1847,8 @@ public class PageConfig {
     }
 
     /**
+     * This method is used in {@code /src/main/webapp/WEB-INF/tags/repository.tag} under the web module,
+     * even though some tools may mark it as unused.
      * @param root root path
      * @param path path
      * @return path relative to root
