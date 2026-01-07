@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Paths;
 
 import jakarta.servlet.http.HttpSession;
@@ -49,7 +50,9 @@ class AuthorizationFrameworkReloadTest {
     volatile boolean runThread;
 
     AuthorizationFrameworkReloadTest() throws URISyntaxException {
-        pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
+        URL url = getClass().getResource("/authorization/plugins/testplugins.jar");
+        assertNotNull(url);
+        pluginDirectory = Paths.get(url.toURI()).toFile().getParentFile();
     }
 
     /**
@@ -61,7 +64,6 @@ class AuthorizationFrameworkReloadTest {
     void testReloadSimple() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath());
-        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
         framework.reload();
 
         // Ensure the framework was setup correctly.
@@ -102,7 +104,6 @@ class AuthorizationFrameworkReloadTest {
         stack.setForProjects(projectName);
         AuthorizationFramework framework =
                 new AuthorizationFramework(pluginDirectory.getPath(), stack);
-        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
         framework.reload();
 
         // Perform simple sanity check before long run is entered. If this fails,
@@ -125,7 +126,7 @@ class AuthorizationFrameworkReloadTest {
         });
         t.start();
 
-        // Process number or requests and check that framework decision is consistent.
+        // Process number of requests and check that framework decision is consistent.
         for (int i = 0; i < 1000; i++) {
             req = new DummyHttpServletRequest();
             assertFalse(framework.isAllowed(req, p));
