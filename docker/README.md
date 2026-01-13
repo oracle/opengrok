@@ -36,6 +36,8 @@ repositories).
 Projects are enabled in this setup by default. See environment variables
 below on how to change that.
 
+The container processes run under non-root user.
+
 ### Indexer logs
 
 The indexer/mirroring is set so that it does not log into files.
@@ -173,7 +175,7 @@ If you want to do your own development, you can build the image yourself:
 
 Then run the container:
 
-    docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok-dev
+    docker run -d -v <path/to/your/src>:/opengrok/src -v <path/to/your/data/dir>:/opengrok/data -p 8080:8080 opengrok-dev
 
 ## Inspecting the container
 
