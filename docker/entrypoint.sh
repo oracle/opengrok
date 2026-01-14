@@ -34,13 +34,13 @@ command -v gosu >/dev/null 2>&1 || { echo "gosu missing"; exit 1; }
 
 DATA_ROOT="/opengrok/data"
 if [[ ! -d $DATA_ROOT ]]; then
-  echo "Expected mounted directory at $DATA_ROOT but found none; create volume or directory"
+  echo "Expected mounted directory at '$DATA_ROOT' but found none; create volume or directory"
 	exit 1
 fi
 
 SRC_ROOT="/opengrok/src"
 if [[ ! -d $SRC_ROOT ]]; then
-  echo "Expected mounted directory at $SRC_ROOT but found none; create volume or directory"
+  echo "Expected mounted directory at '$SRC_ROOT' but found none; create volume or directory"
 	exit 1
 fi
 
