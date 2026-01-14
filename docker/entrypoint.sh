@@ -11,6 +11,25 @@ set -e
 # and then executes the start program as non-root.
 #
 
+function fix_ownership() {
+  typeset dir="$1"
+
+  echo "Making sure the ownership of the files/directories under at '$dir' is $OWNER_ID:$OWNER_ID"
+
+  #
+  # The directory itself has to be owned by the user (assuming certain permissions),
+  # so that the indexer can create directories and files underneath.
+  #
+  chown $OWNER_ID:$OWNER_ID "$dir"
+
+  #
+  # Perform the check per subdirectory to avoid unnecessary churn.
+  # Assumes the ownership of the directories matches its subdirectories/files.
+  #
+  find "$dir" -maxdepth 1 -mindepth 1 \! -user $OWNER_ID \
+      -exec chown -R $OWNER_ID:$OWNER_ID {} \;
+}
+
 DATA_ROOT="/opengrok/data"
 if [[ ! -d $DATA_ROOT ]]; then
   echo "Not a directory: $DATA_ROOT"
@@ -32,43 +51,10 @@ OWNER_ID=1111
 #
 chown -R $OWNER_ID:$OWNER_ID "/usr/local/tomcat/webapps"
 
-# The start program will create configuration files in the /opengrok/etc/ directory.
+# The start program needs to be able to create configuration files in the /opengrok/etc/ directory.
 chown -R $OWNER_ID:$OWNER_ID "/opengrok/etc"
 
-echo "Making sure the ownership of the files/directories under source root at $SRC_ROOT is $OWNER_ID:$OWNER_ID"
-
-#
-# The mirroring performed by the main program needs to have write access to the source root.
-# Assumes the ownership of the directories matches its subdirectories/files.
-#
-chown $OWNER_ID:$OWNER_ID "$SRC_ROOT"
-
-#
-# Perform the check per project to avoid unnecessary churn.
-#
-find "$SRC_ROOT" -maxdepth 1 -mindepth 1 -type d \! -user $OWNER_ID \
-    -exec chown -R $OWNER_ID:$OWNER_ID {} \;
-
-echo "Making sure the ownership of the files/directories under data root at $DATA_ROOT is $OWNER_ID:$OWNER_ID"
-
-#
-# The data root directory itself has to be owned by the user (assuming certain permissions),
-# so that the indexer can create directories and files underneath.
-#
-chown $OWNER_ID:$OWNER_ID "$DATA_ROOT"
-
-# The timestamp file does not exist prior to first successful indexing.
-[[ -f $DATA_ROOT/timestamp ]] && chown $OWNER_ID:$OWNER_ID "$DATA_ROOT/timestamp"
-
-#
-# Change ownership of the data directories. This is done separately
-# so that if for some reason just one of the directories is off,
-# the time is not spent changing the others needlessly.
-# Assumes the ownership of the directories matches its subdirectories/files.
-#
-# We do not care about the gid when performing the check.
-#
-find "$DATA_ROOT" -maxdepth 1 -mindepth 1 -type d \! -user $OWNER_ID \
-    -exec chown -R $OWNER_ID:$OWNER_ID {} \;
+fix_ownership "$SRC_ROOT"
+fix_ownership "$DATA_ROOT"
 
 exec gosu $OWNER_ID "$@"
