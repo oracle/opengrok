@@ -43,6 +43,7 @@ if [[ ! -d $SRC_ROOT ]]; then
 fi
 
 # The uid the start program will run as.
+# This has to match the ids of the user/group created in the Dockerfile.
 OWNER_ID=1111
 
 #
