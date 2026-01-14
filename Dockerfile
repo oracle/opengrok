@@ -93,8 +93,8 @@ RUN /venv/bin/python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-too
 
 COPY --from=build /mvn/VERSION /opengrok/VERSION
 
-# Create the user/group the main program will run at.
-# The ids have to match those used by entrypoint.sh.
+# Create the user/group the main program will run as.
+# The names have to match those used by entrypoint.sh.
 RUN groupadd -g 1111 -r appgroup && useradd -r -g appgroup -u 1111 appuser
 
 # environment variables
