@@ -1,4 +1,4 @@
-# Copyright (c) 2018, 2025 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2026 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 FROM ubuntu:jammy AS build
@@ -61,7 +61,7 @@ RUN echo 'deb https://package.perforce.com/apt/ubuntu jammy release' > /etc/apt/
 RUN apt-get update && \
     apt-get install --no-install-recommends -y git subversion mercurial cvs cssc bzr rcs rcs-blame \
     unzip python3 python3-pip \
-    python3-venv python3-setuptools openssh-client libyaml-dev
+    python3-venv python3-setuptools openssh-client libyaml-dev gosu
 
 # hadolint ignore=DL3008,DL3059
 RUN architecture=$(uname -m) && if [[ "$architecture" == "aarch64" ]]; then \
@@ -93,6 +93,10 @@ RUN /venv/bin/python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-too
 
 COPY --from=build /mvn/VERSION /opengrok/VERSION
 
+# Create the user/group the main program will run as.
+# The names have to match those used by entrypoint.sh.
+RUN groupadd -g 1111 -r appgroup && useradd -r -g appgroup -u 1111 appuser
+
 # environment variables
 ENV SRC_ROOT /opengrok/src
 ENV DATA_ROOT /opengrok/data
@@ -119,4 +123,4 @@ RUN chmod -R +x /scripts
 # run
 WORKDIR $CATALINA_HOME
 EXPOSE 8080
-CMD ["/scripts/start.py"]
+CMD ["/scripts/entrypoint.sh", "/scripts/start.py"]
