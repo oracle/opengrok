@@ -22,11 +22,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
-    - name: Set up JDK 17
+    - name: Set up JDK
       uses: actions/setup-java@v5
       with:
         distribution: 'oracle'
-        java-version: '17'
+        java-version: '21'
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:
