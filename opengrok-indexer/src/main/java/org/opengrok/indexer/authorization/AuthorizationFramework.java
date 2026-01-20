@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -36,6 +36,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Group;
@@ -135,18 +136,18 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      * @param path  the plugin directory path
      * @param stack the top level stack configuration
      */
-    public AuthorizationFramework(String path, AuthorizationStack stack) {
+    public AuthorizationFramework(@Nullable String path, AuthorizationStack stack) {
         super(IAuthorizationPlugin.class, path);
         this.stack = stack;
     }
 
     /**
-     * Checks if the request should have an access to project. See
-     * {@link #checkAll} for more information about invocation order.
+     * Checks if the request should have access to project.
+     * See {@link #checkAll} for more information about invocation order.
      *
      * @param request request object
      * @param project project object
-     * @return true if yes
+     * @return whether the request is allowed for given project
      * @see #checkAll
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
