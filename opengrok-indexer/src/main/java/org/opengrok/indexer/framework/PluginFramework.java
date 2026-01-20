@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.framework;
 
@@ -78,7 +78,7 @@ public abstract class PluginFramework<P> {
      * @param classType the class of the plugin type
      * @param path      the plugin directory path
      */
-    protected PluginFramework(Class<P> classType, String path) {
+    protected PluginFramework(Class<P> classType, @Nullable String path) {
         this.classType = classType;
         setPluginDirectory(path);
     }
