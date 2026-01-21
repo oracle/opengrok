@@ -740,6 +740,10 @@ div[id^='src'] pre {
     background-color: #dddddd;
     color: #666;
     margin-right: .5ex;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .blame .search {
