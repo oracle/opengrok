@@ -26,8 +26,8 @@ function fix_ownership() {
   # Perform the check per subdirectory to avoid unnecessary churn.
   # Assumes the ownership of the directories matches its subdirectories/files.
   #
-  find "$dir" -maxdepth 1 -mindepth 1 \! -user $OWNER_USER -o \! -group $OWNER_GROUP \
-      -exec chown -R $OWNER_USER:$OWNER_USER {} \;
+  find "$dir" -maxdepth 1 -mindepth 1 \! -user $OWNER_USER -o \! -group $OWNER_GROUP | \
+      xargs chown -R $OWNER_USER:$OWNER_USER
 }
 
 command -v gosu >/dev/null 2>&1 || { echo "gosu missing"; exit 1; }
