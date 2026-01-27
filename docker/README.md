@@ -123,7 +123,7 @@ The container has OpenGrok as default web app installed (accessible directly fro
 
 http://localhost:8080/
 
-The first reindex will take some time to finish. Subsequent reindex will be incremental so will take signigicantly less time.
+The first reindex will take some time to finish. Subsequent reindex will be incremental so will take significantly less time.
 
 ## Using Docker compose
 
