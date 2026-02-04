@@ -142,7 +142,19 @@ public class Ctags implements Resettable {
         if (ctagsProcess != null) {
             closing = true;
             LOGGER.log(Level.FINE, "Destroying ctags command");
-            ctagsProcess.destroyForcibly();
+            destroyProcess();
+        }
+    }
+
+    private void destroyProcess() {
+        ctagsProcess.destroyForcibly();
+        try {
+            if (!ctagsProcess.waitFor(10, TimeUnit.SECONDS)) {
+                LOGGER.log(Level.WARNING, "ctags process did not terminate within timeout");
+            }
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Interrupted while waiting for ctags process to terminate");
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -603,10 +615,10 @@ public class Ctags implements Resettable {
                         }
                     } catch (IllegalThreadStateException e) {
                         LOGGER.log(Level.WARNING, "ctags EOF but did not exit");
-                        ctagsProcess.destroyForcibly();
+                        destroyProcess();
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "ctags problem:", e);
-                        ctagsProcess.destroyForcibly();
+                        destroyProcess();
                     }
                     // Throw the following to indicate non-I/O error for retry.
                     throw new InterruptedException("tagLine == null");
