@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -454,7 +454,7 @@ public class Ctags implements Resettable {
     }
 
     /**
-     * Run ctags on a file.
+     * Run {@code ctags} program on a file.
      * @param file file path to process
      * @return valid instance of {@link Definitions} or {@code null} on error
      * @throws IOException I/O exception
@@ -463,7 +463,7 @@ public class Ctags implements Resettable {
     @Nullable
     public Definitions doCtags(String file) throws IOException, InterruptedException {
 
-        if (file.length() < 1 || "\n".equals(file)) {
+        if (file.isEmpty() || "\n".equals(file)) {
             return null;
         }
 

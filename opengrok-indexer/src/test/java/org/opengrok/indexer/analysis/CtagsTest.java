@@ -18,12 +18,16 @@
  */
 
 /*
- * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
@@ -33,10 +37,13 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -53,7 +60,9 @@ class CtagsTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(CtagsTest.class.getClassLoader().getResource("sources"));
+        URL repositoryURL = CtagsTest.class.getClassLoader().getResource("sources");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
 
         /*
          * This setting is only needed for bug19195 but it does not seem
@@ -82,6 +91,12 @@ class CtagsTest {
         String path = repository.getSourceRoot() + File.separator
                 + fileName.replace('/', File.separatorChar);
         return ctags.doCtags(new File(path).getAbsolutePath());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "\n"})
+    void testEmptyFile(String filePath) throws Exception {
+        assertNull(ctags.doCtags(filePath));
     }
 
     /**
@@ -150,8 +165,8 @@ class CtagsTest {
         var defs = getDefs("terraform/" + data.file + ".tf");
         assertAll(
                 () -> assertEquals(1, defs.getTags().size()),
-                () -> assertEquals(data.symbol, defs.getTags().get(0).symbol),
-                () -> assertEquals(data.type, defs.getTags().get(0).type)
+                () -> assertEquals(data.symbol, defs.getTags().getFirst().symbol),
+                () -> assertEquals(data.type, defs.getTags().getFirst().type)
         );
     }
 
@@ -166,16 +181,6 @@ class CtagsTest {
         );
     }
 
-    private static class SingleTagTestData {
-        private final String file;
-        private final String symbol;
-        private final String type;
-
-        SingleTagTestData(final String file, final String symbol, final String type) {
-            this.file = file;
-            this.symbol = symbol;
-            this.type = type;
-        }
+    private record SingleTagTestData(String file, String symbol, String type) {
     }
-
 }
