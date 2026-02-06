@@ -292,6 +292,12 @@ public final class Configuration {
      */
     private boolean navigateWindowEnabled;
 
+    /**
+     * If true, redirect to a single result when a single search result is found.
+     */
+    private boolean redirectOnSingleSearchResult;
+
+
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
     private StatsdConfig statsdConfig = new StatsdConfig();
@@ -605,6 +611,7 @@ public final class Configuration {
         setQuickContextScan(true);
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
         setRamBufferSize(DEFAULT_RAM_BUFFER_SIZE); //MB
+        setRedirectOnSingleSearchResult(true);
         setRemoteScmSupported(RemoteSCM.OFF);
         setRepositories(new ArrayList<>());
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
@@ -1233,6 +1240,14 @@ public final class Configuration {
 
     public void setDisplayRepositories(boolean flag) {
         this.displayRepositories = flag;
+    }
+
+    public boolean isRedirectOnSingleSearchResult() {
+        return redirectOnSingleSearchResult;
+    }
+
+    public void setRedirectOnSingleSearchResult(boolean flag) {
+        this.redirectOnSingleSearchResult = flag;
     }
 
     public boolean getListDirsFirst() {
