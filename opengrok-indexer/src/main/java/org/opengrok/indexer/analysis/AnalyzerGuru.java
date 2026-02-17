@@ -112,6 +112,7 @@ import org.opengrok.indexer.analysis.typescript.TypeScriptAnalyzerFactory;
 import org.opengrok.indexer.analysis.uue.UuencodeAnalyzerFactory;
 import org.opengrok.indexer.analysis.vb.VBAnalyzerFactory;
 import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
+import org.opengrok.indexer.analysis.yang.YangAnalyzerFactory;
 import org.opengrok.indexer.analysis.yaml.YamlAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -264,6 +265,7 @@ public class AnalyzerGuru {
                 new BZip2AnalyzerFactory(),
                 new XMLAnalyzerFactory(),
                 new YamlAnalyzerFactory(),
+                new YangAnalyzerFactory(),
                 MandocAnalyzerFactory.DEFAULT_INSTANCE,
                 TroffAnalyzerFactory.DEFAULT_INSTANCE,
                 new ELFAnalyzerFactory(),
@@ -347,7 +349,7 @@ public class AnalyzerGuru {
      * {@link FileAnalyzerFactory} subclasses are revised to target more or
      * different files.
      * @return a value whose lower 32-bits are a static value
-     * 20260504_00
+     * 20260511_00
      * for the current implementation and whose higher-32 bits are non-zero if
      * {@link #addExtension(java.lang.String, AnalyzerFactory)}
      * or
@@ -355,7 +357,7 @@ public class AnalyzerGuru {
      * has been called.
      */
     public static long getVersionNo() {
-        final int ver32 = 20260504_00; // Edit comment above too!
+        final int ver32 = 20260511_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
             ver |= (long) customizationHashCode << 32;
