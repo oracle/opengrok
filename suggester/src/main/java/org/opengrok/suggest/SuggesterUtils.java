@@ -130,7 +130,7 @@ public class SuggesterUtils {
 
             if (q instanceof BooleanQuery) {
                 for (BooleanClause bc : ((BooleanQuery) q).clauses()) {
-                    queue.add(bc.getQuery());
+                    queue.add(bc.query());
                 }
             } else if (q instanceof TermQuery) {
                 terms.add(((TermQuery) q).getTerm());
@@ -164,7 +164,7 @@ public class SuggesterUtils {
 
             if (q instanceof BooleanQuery) {
                 for (BooleanClause bc : ((BooleanQuery) q).clauses()) {
-                    queue.add(bc.getQuery());
+                    queue.add(bc.query());
                 }
             } else if (q instanceof TermQuery) {
                 terms.add(((TermQuery) q).getTerm());
