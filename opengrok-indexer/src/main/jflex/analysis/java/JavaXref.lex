@@ -90,6 +90,18 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  \}     { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
  \;     { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
+"record" {WhspChar}+ {Identifier} {
+    chkLOC();
+
+    String text = yytext();
+    int idx = text.lastIndexOf(' ');
+    String keyword = text.substring(0, idx);
+    String recordName = text.substring(idx + 1);
+
+    onNonSymbolMatched(keyword + " ", yychar);
+    onFilteredSymbolMatched(recordName, yychar + idx + 1, Consts.kwd);
+}
+
 {Identifier} {
     chkLOC();
     String id = yytext();
