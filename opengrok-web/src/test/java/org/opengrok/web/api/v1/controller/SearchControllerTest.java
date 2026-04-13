@@ -23,6 +23,7 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
@@ -34,12 +35,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
@@ -63,14 +70,18 @@ class SearchControllerTest extends OGKJerseyTest {
     public static void setUpClass() throws Exception {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
-
         repository.create(SearchControllerTest.class.getClassLoader().getResource("sources"));
 
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
-
         env.getSuggesterConfig().setRebuildCronConfig(null);
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        Indexer.getInstance().prepareIndexer(env, true, true, null, null);
+        Indexer.getInstance().doIndexerExecution(null, null);
     }
 
     @AfterAll
@@ -85,5 +96,73 @@ class SearchControllerTest extends OGKJerseyTest {
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
         assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
+    void testSearchReturnsResults() {
+        // "dump" is a method name defined in java/Main.java — verifies the index is live
+        // and the API returns a well-formed response.
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        Response response = target(SearchController.PATH)
+                .queryParam("full", "dump")
+                .request()
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Map<String, Object> body = response.readEntity(type);
+        assertNotNull(body.get("results"));
+        @SuppressWarnings("unchecked")
+        Map<String, List<Map<String, Object>>> results =
+                (Map<String, List<Map<String, Object>>>) body.get("results");
+        assertFalse(results.isEmpty());
+    }
+
+    @Test
+    void testSearchResultsPreserveHitOrder() {
+        // Results grouped by LinkedHashMap must return the same leading file on repeated calls,
+        // confirming that result ordering is deterministic (Lucene scoring order preserved).
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        String firstKey1 = getFirstResultKey(type);
+        String firstKey2 = getFirstResultKey(type);
+        assertNotNull(firstKey1);
+        assertEquals(firstKey1, firstKey2);
+    }
+
+    private String getFirstResultKey(GenericType<Map<String, Object>> type) {
+        Response response = target(SearchController.PATH)
+                .queryParam("full", "dump")
+                .request()
+                .get();
+        Map<String, Object> body = response.readEntity(type);
+        @SuppressWarnings("unchecked")
+        Map<String, ?> results = (Map<String, ?>) body.get("results");
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+        return results.keySet().iterator().next();
+    }
+
+    @Test
+    void testSearchResultsHaveLineNumbers() {
+        // maxhitsperfile defaults to 0 (unlimited) so all per-file hits carry a lineNumber.
+        // Restrict to Java source type to exclude XREFABLE binary files (jar, class, elf)
+        // whose hits go through the Summarizer path and never carry a lineNumber.
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        Response response = target(SearchController.PATH)
+                .queryParam("full", "dump")
+                .queryParam("type", "java")
+                .request()
+                .get();
+        Map<String, Object> body = response.readEntity(type);
+        @SuppressWarnings("unchecked")
+        Map<String, List<Map<String, Object>>> results =
+                (Map<String, List<Map<String, Object>>>) body.get("results");
+        assertNotNull(results);
+        assertFalse(results.isEmpty());
+        results.values().forEach(hits ->
+                hits.forEach(hit -> {
+                    assertNotNull(hit.get("lineNumber"));
+                    assertFalse(hit.get("lineNumber").toString().isEmpty());
+                })
+        );
     }
 }

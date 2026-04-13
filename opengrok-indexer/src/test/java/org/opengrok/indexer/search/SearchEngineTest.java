@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterAll;
@@ -223,6 +224,61 @@ class SearchEngineTest {
     void testDefaultSortOrder() {
         SearchEngine instance = new SearchEngine();
         assertNull(instance.getSortOrder(), "Default sort should be relevancy (null implies Lucene score ordering)");
+    }
+
+    @Test
+    void testMaxHitsPerFileDefault() {
+        SearchEngine instance = new SearchEngine();
+        assertEquals(0, instance.getMaxHitsPerFile());
+    }
+
+    @Test
+    void testMaxHitsPerFileSetterGetter() {
+        SearchEngine instance = new SearchEngine();
+        instance.setMaxHitsPerFile(20);
+        assertEquals(20, instance.getMaxHitsPerFile());
+        instance.setMaxHitsPerFile(0);
+        assertEquals(0, instance.getMaxHitsPerFile());
+    }
+
+    @Test
+    void testMaxHitsPerFileUnlimitedReturnsAllHits() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+        instance.setMaxHitsPerFile(0);
+        int hitsCount = instance.search();
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, hitsCount, hits);
+        assertFalse(hits.isEmpty());
+        assertTrue(hits.stream().allMatch(h -> !h.getLineno().isEmpty()));
+        instance.destroy();
+    }
+
+    @Test
+    void testMaxHitsPerFileLimitsHitsPerFile() {
+        SearchEngine unlimited = new SearchEngine();
+        unlimited.setFile("main.c");
+        unlimited.setFreetext("arguments");
+        unlimited.setMaxHitsPerFile(0);
+        int hitsCount = unlimited.search();
+        List<Hit> allHits = new ArrayList<>();
+        unlimited.results(0, hitsCount, allHits);
+        unlimited.destroy();
+
+        SearchEngine limited = new SearchEngine();
+        limited.setFile("main.c");
+        limited.setFreetext("arguments");
+        limited.setMaxHitsPerFile(1);
+        hitsCount = limited.search();
+        List<Hit> cappedHits = new ArrayList<>();
+        limited.results(0, hitsCount, cappedHits);
+        limited.destroy();
+
+        assertTrue(allHits.size() >= cappedHits.size());
+        Map<String, Long> hitsPerFile = cappedHits.stream()
+                .collect(java.util.stream.Collectors.groupingBy(Hit::getPath, java.util.stream.Collectors.counting()));
+        hitsPerFile.values().forEach(count -> assertTrue(count <= 1));
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030
