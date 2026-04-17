@@ -10,6 +10,9 @@ on:
     paths:
     - apiary.apib
 
+permissions:
+  contents: read
+
 jobs:
   ubuntu:
     name: Ubuntu
