@@ -12,6 +12,9 @@ on:
     - .github/workflows/javadoc.yml
     - dev/javadoc.sh
 
+permissions:
+  contents: write
+
 jobs:
   ubuntu:
     runs-on: ubuntu-latest
