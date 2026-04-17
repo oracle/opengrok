@@ -1,3 +1,9 @@
+# Copyright (c) 2026 - 2026, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/.
+
+# Run Macaron's policies and generate Verification Summary Attestation reports.
+# See https://github.com/oracle/macaron
+
 name: Macaron check-github-actions
 
 on:
@@ -28,7 +34,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run Macaron check-github-actions policy
+      - name: Check the GitHub Actions workflows in the repository for vulnerabilities.
         uses: oracle/macaron@b31acfe389133a5587d9639063ec70cb84e7bc47 # v0.23.0
         with:
           repo_path: ./
