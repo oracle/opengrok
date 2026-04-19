@@ -282,6 +282,29 @@ class SearchEngineTest {
         hitsPerFile.values().forEach(count -> assertTrue(count <= maxPerFile));
     }
 
+    /**
+     * Verify that search() returns the total number of matching documents (totalHits),
+     * not the number of collected/cached hits (which is capped at hitsPerPage * cachePages).
+     */
+    @Test
+    void testSearchReturnsTotalHitsNotCachedCount() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+
+        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
+        instance.hitsPerPage = 1;
+        instance.cachePages = 1;
+
+        int resultCount = instance.search();
+        assertTrue(resultCount > 1,
+                "Query should match multiple documents across test repositories");
+        assertEquals(instance.totalHits, resultCount,
+                "search() must return totalHits, not the number of cached hits");
+
+        instance.destroy();
+    }
+
     /* see https://github.com/oracle/opengrok/issues/2030
     @Test
     void testSearch() {

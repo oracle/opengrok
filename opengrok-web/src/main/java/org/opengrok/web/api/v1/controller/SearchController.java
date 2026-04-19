@@ -107,7 +107,8 @@ public class SearchController {
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
-            int endDocument = startDocIndex + hits.size() - 1;
+            int pageSize = Math.min(maxResults, Math.max(0, engine.numResults - startDocIndex));
+            int endDocument = pageSize > 0 ? startDocIndex + pageSize - 1 : startDocIndex;
 
             return new SearchResult(duration, engine.numResults, hits, startDocIndex, endDocument);
         }
