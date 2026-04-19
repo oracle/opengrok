@@ -305,6 +305,32 @@ class SearchEngineTest {
         instance.destroy();
     }
 
+    /**
+     * Verify that totalHits is exact (not an approximate lower bound) so that results()
+     * can fetch every matching document. With an inaccurate totalHitsThreshold, the
+     * re-query in results() would request too few documents, silently dropping results.
+     */
+    @Test
+    void testTotalHitsIsExactForFullRetrieval() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+        instance.hitsPerPage = 1;
+        instance.cachePages = 1;
+
+        int count = instance.search();
+        assertTrue(count > 1);
+
+        List<Hit> allHits = new ArrayList<>();
+        instance.results(0, count, allHits);
+
+        long uniquePaths = allHits.stream().map(Hit::getPath).distinct().count();
+        assertEquals(count, uniquePaths,
+                "totalHits must be exact so results() retrieves every matching document");
+
+        instance.destroy();
+    }
+
     /* see https://github.com/oracle/opengrok/issues/2030
     @Test
     void testSearch() {

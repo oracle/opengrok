@@ -49,6 +49,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
@@ -169,5 +170,37 @@ class SearchControllerTest extends OGKJerseyTest {
                     assertFalse(hit.get("lineNumber").toString().isEmpty());
                 })
         );
+    }
+
+    /**
+     * Verify that resultCount reflects the true total number of matching documents and
+     * endDocument is derived from the document page size, not from the number of unique
+     * file paths in the grouped results map.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testResultCountAndEndDocument() {
+        int maxResults = 100;
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
+                .queryParam("maxresults", maxResults)
+                .request()
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        Map<String, Object> json = response.readEntity(type);
+        int resultCount = (int) json.get("resultCount");
+        int startDocument = (int) json.get("startDocument");
+        int endDocument = (int) json.get("endDocument");
+
+        assertTrue(resultCount > 0, "Search for 'main' should return results");
+
+        int expectedPageSize = Math.min(maxResults, resultCount - startDocument);
+        int expectedEndDocument = expectedPageSize > 0
+                ? startDocument + expectedPageSize - 1
+                : startDocument;
+        assertEquals(expectedEndDocument, endDocument,
+                "endDocument must reflect the document page size, not the number of unique file paths");
     }
 }
