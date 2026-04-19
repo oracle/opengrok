@@ -38,8 +38,10 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.web.api.v1.RestApp;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,9 @@ class SearchControllerTest extends OGKJerseyTest {
     public static void setUpClass() throws Exception {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
-        repository.create(SearchControllerTest.class.getClassLoader().getResource("sources"));
+        URL url = SearchControllerTest.class.getClassLoader().getResource("sources");
+        assertNotNull(url);
+        repository.create(url);
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -104,22 +108,23 @@ class SearchControllerTest extends OGKJerseyTest {
         // and the API returns a well-formed response.
         GenericType<Map<String, Object>> type = new GenericType<>() { };
         Response response = target(SearchController.PATH)
-                .queryParam("full", "dump")
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .request()
                 .get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         Map<String, Object> body = response.readEntity(type);
-        assertNotNull(body.get("results"));
+        Object resultsObj = body.get("results");
+        assertNotNull(resultsObj);
         @SuppressWarnings("unchecked")
         Map<String, List<Map<String, Object>>> results =
-                (Map<String, List<Map<String, Object>>>) body.get("results");
+                (Map<String, List<Map<String, Object>>>) resultsObj;
         assertFalse(results.isEmpty());
     }
 
     @Test
     void testSearchResultsPreserveHitOrder() {
-        // Results grouped by LinkedHashMap must return the same leading file on repeated calls,
-        // confirming that result ordering is deterministic (Lucene scoring order preserved).
+        // Results presented by the search API must be stable w.r.t. file ordering across
+        // repeated calls, while preserving Lucene scoring order.
         GenericType<Map<String, Object>> type = new GenericType<>() { };
         String firstKey1 = getFirstResultKey(type);
         String firstKey2 = getFirstResultKey(type);
@@ -129,7 +134,7 @@ class SearchControllerTest extends OGKJerseyTest {
 
     private String getFirstResultKey(GenericType<Map<String, Object>> type) {
         Response response = target(SearchController.PATH)
-                .queryParam("full", "dump")
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .request()
                 .get();
         Map<String, Object> body = response.readEntity(type);
@@ -148,8 +153,8 @@ class SearchControllerTest extends OGKJerseyTest {
         // whose hits go through the Summarizer path and never carry a lineNumber.
         GenericType<Map<String, Object>> type = new GenericType<>() { };
         Response response = target(SearchController.PATH)
-                .queryParam("full", "dump")
-                .queryParam("type", "java")
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.TYPE_SEARCH_PARAM, "java")
                 .request()
                 .get();
         Map<String, Object> body = response.readEntity(type);

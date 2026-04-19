@@ -273,6 +273,29 @@ public class Context {
     public boolean getContext(Reader in, Writer out, String urlPrefix,
             String morePrefix, String path, Definitions tags,
             boolean limit, boolean isDefSearch, List<Hit> hits, Scopes scopes) {
+        return getContext(in, out, urlPrefix, morePrefix, path, tags, limit, isDefSearch, hits, scopes, 0);
+    }
+
+    /**
+     * Get the context for a source file.
+     * Closes the given <var>in</var> reader on return.
+     *
+     * @param in File to be matched
+     * @param out to write the context
+     * @param urlPrefix URL prefix
+     * @param morePrefix to link to more... page
+     * @param path path of the file
+     * @param tags format to highlight defs.
+     * @param limit should the number of matching lines be limited?
+     * @param isDefSearch is definition search
+     * @param hits list of hits
+     * @param scopes scopes object
+     * @param maxHits maximum number of hits to return for this file (0 = unlimited)
+     * @return Did it get any matching context?
+     */
+    public boolean getContext(Reader in, Writer out, String urlPrefix,
+            String morePrefix, String path, Definitions tags,
+            boolean limit, boolean isDefSearch, List<Hit> hits, Scopes scopes, int maxHits) {
         if (m == null) {
             IOUtils.close(in);
             return false;
@@ -415,7 +438,8 @@ public class Context {
             int matchState;
             int matchedLines = 0;
             while ((token = tokens.yylex()) != null && (!lim ||
-                    matchedLines < limitMaxLines)) {
+                    matchedLines < limitMaxLines) &&
+                    (maxHits <= 0 || matchedLines < maxHits)) {
                 for (LineMatcher lineMatcher : m) {
                     matchState = lineMatcher.match(token);
                     if (matchState == LineMatcher.MATCHED) {

@@ -657,7 +657,6 @@ The repository path is relative to source root.
   + projects (optional, string) - projects to search in
   + maxresults (optional, string) - maximum number of documents whose hits will be returned (default 1000)
   + start (optional, string) - start index from which to return results
-  + Note: the `results` map preserves the order of the `sort` parameter (Lucene scoring order for `relevancy`).
   + maxhitsperfile (optional, number) - maximum number of matching lines returned per file. 0 (default) returns all matching lines. Set to a positive integer to bound response size when a symbol appears many times per file.
   + sort: relevancy (optional, enum[string])
      + Enum
@@ -668,6 +667,8 @@ The repository path is relative to source root.
          - `relevancy`: Sort by Lucene score (most relevant first).
          - `fullpath`: Sort by file path (alphabetical).
          - `lastmodtime`: Sort by last modification date (newest first).
+
+The `results` map preserves the order of the `sort` parameter (Lucene scoring order for `relevancy`).
 
 + Response 200 (application/json)
   + Body

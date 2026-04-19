@@ -242,7 +242,7 @@ class SearchEngineTest {
     }
 
     @Test
-    void testMaxHitsPerFileUnlimitedReturnsAllHits() {
+    void testUnlimitedHitsPerFileContainLineNumbers() {
         SearchEngine instance = new SearchEngine();
         instance.setFile("main.c");
         instance.setFreetext("arguments");
@@ -259,26 +259,27 @@ class SearchEngineTest {
     void testMaxHitsPerFileLimitsHitsPerFile() {
         SearchEngine unlimited = new SearchEngine();
         unlimited.setFile("main.c");
-        unlimited.setFreetext("arguments");
+        unlimited.setFreetext("printf");
         unlimited.setMaxHitsPerFile(0);
         int hitsCount = unlimited.search();
         List<Hit> allHits = new ArrayList<>();
         unlimited.results(0, hitsCount, allHits);
         unlimited.destroy();
 
+        int maxPerFile = 1;
         SearchEngine limited = new SearchEngine();
         limited.setFile("main.c");
-        limited.setFreetext("arguments");
-        limited.setMaxHitsPerFile(1);
+        limited.setFreetext("printf");
+        limited.setMaxHitsPerFile(maxPerFile);
         hitsCount = limited.search();
         List<Hit> cappedHits = new ArrayList<>();
         limited.results(0, hitsCount, cappedHits);
         limited.destroy();
 
-        assertTrue(allHits.size() >= cappedHits.size());
+        assertTrue(allHits.size() > cappedHits.size());
         Map<String, Long> hitsPerFile = cappedHits.stream()
                 .collect(java.util.stream.Collectors.groupingBy(Hit::getPath, java.util.stream.Collectors.counting()));
-        hitsPerFile.values().forEach(count -> assertTrue(count <= 1));
+        hitsPerFile.values().forEach(count -> assertTrue(count <= maxPerFile));
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030

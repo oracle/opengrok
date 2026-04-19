@@ -507,15 +507,11 @@ public class SearchEngine {
                     try {
                         if (AbstractAnalyzer.Genre.PLAIN == genre && (source != null)) {
                             // SRCROOT is read with UTF-8 as a default.
-                            int hitsBefore = ret.size();
                             hasContext = sourceContext.getContext(
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
                                 null, null, null, filename, tags, false,
-                                getDefinition() != null, ret, scopes);
-                            if (maxHitsPerFile > 0 && ret.size() - hitsBefore > maxHitsPerFile) {
-                                ret.subList(hitsBefore + maxHitsPerFile, ret.size()).clear();
-                            }
+                                getDefinition() != null, ret, scopes, maxHitsPerFile);
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /*
