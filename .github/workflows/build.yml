@@ -10,7 +10,7 @@ on:
   - cron: "0 0 * * 0"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
