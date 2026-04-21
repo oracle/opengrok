@@ -647,6 +647,8 @@ The repository path is relative to source root.
 
 ## return search results [GET]
 
+The `results` map preserves the order of the `sort` parameter (Lucene scoring order for `relevancy`).
+
 + Parameters
   + full (optional, string) - full search field value to search for
   + def (optional, string) - definition field value to search for
@@ -667,8 +669,6 @@ The repository path is relative to source root.
          - `relevancy`: Sort by Lucene score (most relevant first).
          - `fullpath`: Sort by file path (alphabetical).
          - `lastmodtime`: Sort by last modification date (newest first).
-
-The `results` map preserves the order of the `sort` parameter (Lucene scoring order for `relevancy`).
 
 + Response 200 (application/json)
   + Body
