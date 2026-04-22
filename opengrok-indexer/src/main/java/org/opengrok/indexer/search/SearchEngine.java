@@ -137,6 +137,11 @@ public class SearchEngine {
     private final char[] content = new char[1024 * 8];
     private String source;
     private String data;
+    /**
+     * Holds value of property maxHitsPerFile.
+     * 0 means unlimited (default).
+     */
+    private int maxHitsPerFile;
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages = RuntimeEnvironment.getInstance().getCachePages();
     int totalHits = 0;
@@ -505,8 +510,8 @@ public class SearchEngine {
                             hasContext = sourceContext.getContext(
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
-                                null, null, null, filename, tags, nhits > 100,
-                                getDefinition() != null, ret, scopes);
+                                null, null, null, filename, tags, false,
+                                getDefinition() != null, ret, scopes, maxHitsPerFile);
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /*
@@ -622,6 +627,26 @@ public class SearchEngine {
      */
     public void setFreetext(String freetext) {
         this.freetext = freetext;
+    }
+
+    /**
+     * Getter for property maxHitsPerFile.
+     *
+     * @return Value of property maxHitsPerFile. 0 means unlimited.
+     */
+    public int getMaxHitsPerFile() {
+        return this.maxHitsPerFile;
+    }
+
+    /**
+     * Sets the maximum number of matching lines returned per file in {@link #results}.
+     * 0 (the default) returns all matching lines, consistent with the HTML search page.
+     * Callers that need to bound response size can pass a positive value to cap per-file hits.
+     *
+     * @param maxHitsPerFile maximum hits per file, or 0 for unlimited.
+     */
+    public void setMaxHitsPerFile(int maxHitsPerFile) {
+        this.maxHitsPerFile = maxHitsPerFile;
     }
 
     /**

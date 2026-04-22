@@ -48,6 +48,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,9 +85,10 @@ public class SearchController {
             @QueryParam("maxresults") // Akin to QueryParameters.COUNT_PARAM
             @DefaultValue(MAX_RESULTS + "") final int maxResults,
             @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex,
-            @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort
+            @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
+            @QueryParam("maxhitsperfile") @DefaultValue("0") final int maxHitsPerFile
     ) {
-        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort))) {
+        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort), maxHitsPerFile)) {
 
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
@@ -99,6 +101,7 @@ public class SearchController {
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
                     .collect(Collectors.groupingBy(Hit::getPath,
+                            LinkedHashMap::new,
                             Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno(), h.getTag()),
                                     Collectors.toList())));
 
@@ -123,7 +126,8 @@ public class SearchController {
                 final String path,
                 final String hist,
                 final String type,
-                final SortOrder sortOrder
+                final SortOrder sortOrder,
+                final int maxHitsPerFile
         ) {
             engine.setFreetext(full);
             engine.setDefinition(def);
@@ -132,6 +136,7 @@ public class SearchController {
             engine.setHistory(hist);
             engine.setType(type);
             engine.setSortOrder(sortOrder);
+            engine.setMaxHitsPerFile(maxHitsPerFile);
         }
 
         public List<Hit> search(
