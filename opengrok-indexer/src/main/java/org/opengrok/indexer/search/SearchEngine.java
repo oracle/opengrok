@@ -237,7 +237,7 @@ public class SearchEngine {
             topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, numHits, Short.MAX_VALUE));
         }
         hits = topDocs.scoreDocs;
-        totalHits = (int) topDocs.totalHits.value;
+        totalHits = (int) topDocs.totalHits.value();
 
         Statistics stat = new Statistics();
         stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
