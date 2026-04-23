@@ -117,6 +117,27 @@ public class QueryParameters {
     public static final String MATCH_OFFSET_PARAM_EQ = MATCH_OFFSET_PARAM + "=";
 
     /**
+     * Parameter name to specify the maximum number of results returned by the search API.
+     */
+    public static final String MAXRESULTS_PARAM = "maxresults";
+
+    /**
+     * {@link #MAXRESULTS_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String MAXRESULTS_PARAM_EQ = MAXRESULTS_PARAM + "=";
+
+    /**
+     * Parameter name to cap the number of matching lines returned per file by the search API
+     * (0 means unlimited, matching the HTML page).
+     */
+    public static final String MAXHITSPERFILE_PARAM = "maxhitsperfile";
+
+    /**
+     * {@link #MAXHITSPERFILE_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String MAXHITSPERFILE_PARAM_EQ = MAXHITSPERFILE_PARAM + "=";
+
+    /**
      * Parameter name to specify a value indicating if redirection should be
      * short-circuited when state or query result would have an indicated
      * otherwise.
