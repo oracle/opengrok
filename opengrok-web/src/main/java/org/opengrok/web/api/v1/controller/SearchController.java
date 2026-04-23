@@ -82,11 +82,11 @@ public class SearchController {
             @QueryParam(QueryParameters.HIST_SEARCH_PARAM) final String hist,
             @QueryParam(QueryParameters.TYPE_SEARCH_PARAM) final String type,
             @QueryParam("projects") final List<String> projects,
-            @QueryParam("maxresults") // Akin to QueryParameters.COUNT_PARAM
+            @QueryParam(QueryParameters.MAXRESULTS_PARAM)
             @DefaultValue(MAX_RESULTS + "") final int maxResults,
             @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex,
             @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
-            @QueryParam("maxhitsperfile") @DefaultValue("0") final int maxHitsPerFile
+            @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile
     ) {
         try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort), maxHitsPerFile)) {
 
@@ -107,7 +107,8 @@ public class SearchController {
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
-            int endDocument = startDocIndex + hits.size() - 1;
+            int pageSize = Math.min(maxResults, Math.max(0, engine.numResults - startDocIndex));
+            int endDocument = pageSize > 0 ? startDocIndex + pageSize - 1 : startDocIndex;
 
             return new SearchResult(duration, engine.numResults, hits, startDocIndex, endDocument);
         }

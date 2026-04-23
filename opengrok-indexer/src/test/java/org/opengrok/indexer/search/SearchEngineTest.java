@@ -282,6 +282,55 @@ class SearchEngineTest {
         hitsPerFile.values().forEach(count -> assertTrue(count <= maxPerFile));
     }
 
+    /**
+     * Verify that search() returns the total number of matching documents (totalHits),
+     * not the number of collected/cached hits (which is capped at hitsPerPage * cachePages).
+     */
+    @Test
+    void testSearchReturnsTotalHitsNotCachedCount() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+
+        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
+        instance.hitsPerPage = 1;
+        instance.cachePages = 1;
+
+        int resultCount = instance.search();
+        assertTrue(resultCount > 1,
+                "Query should match multiple documents across test repositories");
+        assertEquals(instance.totalHits, resultCount,
+                "search() must return totalHits, not the number of cached hits");
+
+        instance.destroy();
+    }
+
+    /**
+     * Verify that totalHits is exact (not an approximate lower bound) so that results()
+     * can fetch every matching document. With an inaccurate totalHitsThreshold, the
+     * re-query in results() would request too few documents, silently dropping results.
+     */
+    @Test
+    void testTotalHitsIsExactForFullRetrieval() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFile("main.c");
+        instance.setFreetext("arguments");
+        instance.hitsPerPage = 1;
+        instance.cachePages = 1;
+
+        int count = instance.search();
+        assertTrue(count > 1);
+
+        List<Hit> allHits = new ArrayList<>();
+        instance.results(0, count, allHits);
+
+        long uniquePaths = allHits.stream().map(Hit::getPath).distinct().count();
+        assertEquals(count, uniquePaths,
+                "totalHits must be exact so results() retrieves every matching document");
+
+        instance.destroy();
+    }
+
     /* see https://github.com/oracle/opengrok/issues/2030
     @Test
     void testSearch() {
