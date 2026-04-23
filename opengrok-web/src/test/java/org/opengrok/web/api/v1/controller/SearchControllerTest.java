@@ -184,7 +184,7 @@ class SearchControllerTest extends OGKJerseyTest {
         GenericType<Map<String, Object>> type = new GenericType<>() { };
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
-                .queryParam("maxresults", maxResults)
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, maxResults)
                 .request()
                 .get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
