@@ -35,7 +35,7 @@ jobs:
           persist-credentials: false
 
       - name: Check the GitHub Actions workflows in the repository for vulnerabilities.
-        uses: oracle/macaron@b31acfe389133a5587d9639063ec70cb84e7bc47 # v0.23.0
+        uses: oracle/macaron@4ddb55e3c9ef2c77b548be55c557078c4476fd9c # v0.24.0
         with:
           repo_path: ./
           policy_file: check-github-actions
