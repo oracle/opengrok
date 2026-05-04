@@ -1,0 +1,166 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2026, Siyabend Urun <urunsiyabend@gmail.com>.
+ */
+
+/*
+ * Shared productions for both fixed-format and free-format COBOL lexers.
+ * Included by CobolFixedProductions.lexh and CobolFreeProductions.lexh.
+ * Format-specific entry rules (col-7 indicator, *> inline comment, etc.)
+ * live in those wrappers.
+ */
+
+Identifier = [A-Za-z]([A-Za-z0-9-]*[A-Za-z0-9])?
+
+Sign = [+-]
+DigitSeq = [0-9]+
+PlainNumber = ({DigitSeq} "." {DigitSeq} | {DigitSeq} "." | "." {DigitSeq} | {DigitSeq})
+ScientificNumber = {PlainNumber} [eE] {Sign}? {DigitSeq}
+Number = {Sign}? ({ScientificNumber} | {PlainNumber})
+
+EXEC_SQL = [Ee][Xx][Ee][Cc][ \t]+[Ss][Qq][Ll]
+END_EXEC = [Ee][Nn][Dd]-[Ee][Xx][Ee][Cc]
+
+%state STRING QSTRING SCOMMENT SQL_BLOCK
+
+%%
+
+<YYINITIAL> {
+    {EXEC_SQL}    {
+        chkLOC();
+        yypush(SQL_BLOCK);
+        onDisjointSpanChanged(HtmlConsts.AUTHOR_CLASS, yychar);
+        offer(yytext());
+    }
+
+    {Identifier}    {
+        chkLOC();
+        if (offerSymbol(yytext(), 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Number}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    \"    {
+        chkLOC();
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \'    {
+        chkLOC();
+        yypush(QSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<SQL_BLOCK> {
+    {END_EXEC}    {
+        chkLOC();
+        offer(yytext());
+        yypop();
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    {Identifier}    {
+        chkLOC();
+        if (!Consts.kwd.contains(yytext().toLowerCase(Locale.ROOT))) {
+            if (offerSymbol(yytext(), 0, false) && returnOnSymbol()) {
+                return yystate();
+            }
+        }
+    }
+}
+
+<STRING> {
+    \"\"    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<QSTRING> {
+    \'\'    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \'    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<SCOMMENT> {
+    [^\r\n]+    {
+        offer(yytext());
+    }
+
+    {EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        yybegin(YYINITIAL);
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<YYINITIAL, STRING, QSTRING, SQL_BLOCK> {
+    \s    {
+        offer(yytext());
+    }
+
+    [^]    {
+        chkLOC();
+        offer(yytext());
+    }
+}

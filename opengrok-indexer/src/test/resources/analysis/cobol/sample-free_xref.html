@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<a class="l" name="1" href="#1">1</a><b>identification</b> <b>division</b>.
+<a class="l" name="2" href="#2">2</a><b>program-id</b>. <a href="/source/s?defs=sample%5C-free" class="intelliWindow-symbol" data-definition-place="undefined-in-file">sample-free</a>.
+<a class="l" name="3" href="#3">3</a><span class="c">*&gt; Demonstrates free-format COBOL parsing.</span>
+<a class="l" name="4" href="#4">4</a><b>data</b> <b>division</b>.
+<a class="l" name="5" href="#5">5</a><b>working-storage</b> <b>section</b>.
+<a class="l" name="6" href="#6">6</a><span class="n">01</span> <a href="/source/s?defs=ws%5C-customer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-customer</a>.
+<a class="l" name="7" href="#7">7</a>   <span class="n">05</span> <a href="/source/s?defs=ws%5C-name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-name</a>      <b>pic</b> <a href="/source/s?defs=x" class="intelliWindow-symbol" data-definition-place="undefined-in-file">x</a>(<span class="n">30</span>).
+<a class="l" name="8" href="#8">8</a>   <span class="n">05</span> <a href="/source/s?defs=ws%5C-age" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-age</a>       <b>pic</b> <span class="n">9</span>(<span class="n">03</span>).
+<a class="l" name="9" href="#9">9</a>   <span class="n">05</span> <a href="/source/s?defs=ws%5C-balance" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-balance</a>   <b>pic</b> <span class="n">9</span>(<span class="n">7</span>)<a href="/source/s?defs=v99" class="intelliWindow-symbol" data-definition-place="undefined-in-file">v99</a>.
+<a class="hl" name="10" href="#10">10</a>   <span class="n">05</span> <a href="/source/s?defs=ws%5C-empno" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-empno</a>     <b>pic</b> <span class="n">9</span>(<span class="n">05</span>).
+<a class="l" name="11" href="#11">11</a><b>procedure</b> <b>division</b>.
+<a class="l" name="12" href="#12">12</a><a href="/source/s?defs=main%5C-para" class="intelliWindow-symbol" data-definition-place="undefined-in-file">main-para</a>.
+<a class="l" name="13" href="#13">13</a>    <b>move</b> <span class="s">&quot;JANE DOE&quot;</span> <b>to</b> <a href="/source/s?defs=ws%5C-name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-name</a>.
+<a class="l" name="14" href="#14">14</a>    <b>move</b> <span class="n">31</span>         <b>to</b> <a href="/source/s?defs=ws%5C-age" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-age</a>.
+<a class="l" name="15" href="#15">15</a>    <b>compute</b> <a href="/source/s?defs=ws%5C-balance" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-balance</a> = <span class="n">2500.75</span> + <span class="n">100.</span>
+<a class="l" name="16" href="#16">16</a>    <b>move</b> <span class="s">&quot;She said &quot;&quot;hi&quot;&quot;&quot;</span> <b>to</b> <a href="/source/s?defs=ws%5C-name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-name</a>.
+<a class="l" name="17" href="#17">17</a>    <b>move</b> <span class="s">&apos;JANE&apos;&apos;S NAME&apos;</span>    <b>to</b> <a href="/source/s?defs=ws%5C-name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-name</a>.
+<a class="l" name="18" href="#18">18</a>    <span class="c">*&gt; Embedded SQL block (exercises SQL_BLOCK state).</span>
+<a class="l" name="19" href="#19">19</a>    <span class="a">exec sql
+        <a href="/source/s?defs=empno" class="intelliWindow-symbol" data-definition-place="undefined-in-file">empno</a>  :<a href="/source/s?defs=ws%5C-empno" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-empno</a>  <a href="/source/s?defs=employees" class="intelliWindow-symbol" data-definition-place="undefined-in-file">employees</a> <a href="/source/s?defs=where" class="intelliWindow-symbol" data-definition-place="undefined-in-file">where</a> <a href="/source/s?defs=dept" class="intelliWindow-symbol" data-definition-place="undefined-in-file">dept</a> = &apos;<a href="/source/s?defs=IT" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IT</a>&apos;
+    end-exec</span>.
+<a class="hl" name="20" href="#20">20</a>    <b>display</b> <a href="/source/s?defs=ws%5C-name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ws-name</a>.
+<a class="l" name="21" href="#21">21</a>    <b>stop</b> <b>run</b>.</body>
+</html>
