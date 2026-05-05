@@ -21,13 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Verifies that {@link SearchHelper} produces an exact and stable {@code totalHits}
  * regardless of the {@code maxItems} window, so the UI search total matches the REST
- * API and does not vary across repeated searches. With the previous implementation
- * {@code searcher.search(query, n, sort)} uses a {@code totalHitsThreshold} of 1000,
- * so for queries matching more than 1000 documents {@code totalHits} becomes an
- * approximate lower bound and can drift between calls.
+ * API and does not vary across repeated searches. The previous implementation could
+ * return an approximate lower-bound count for queries matching more than about a
+ * thousand documents.
  *
- * <p>To reliably exercise that threshold the test creates a synthetic corpus of
- * {@value #SYNTHETIC_DOC_COUNT} files, each containing a unique marker token.</p>
+ * <p>The test creates a synthetic corpus of {@value #SYNTHETIC_DOC_COUNT} files,
+ * each containing a unique marker token, large enough to exercise that boundary.</p>
  */
 class SearchHelperStableCountTest {
 
@@ -45,9 +44,8 @@ class SearchHelperStableCountTest {
 
         Path syntheticDir = Path.of(repository.getSourceRoot(), SYNTHETIC_PROJECT);
         Files.createDirectories(syntheticDir);
-        // Produce strong score variance so Lucene's block-max WAND can skip low-scoring
-        // docs once the heap is full. With the pre-fix implementation that lets the
-        // totalHitsThreshold of 1000 turn the totalHits into a lower-bound estimate.
+        // Make one document score much higher than the rest. Without this variance
+        // the bug does not reproduce reliably on a small corpus.
         for (int i = 0; i < SYNTHETIC_DOC_COUNT; i++) {
             int repeat = (i == 0) ? 10_000 : 1;
             Files.writeString(syntheticDir.resolve("doc_" + i + ".txt"),
@@ -77,12 +75,11 @@ class SearchHelperStableCountTest {
         projectNames.add(SYNTHETIC_PROJECT);
 
         // Run with a large maxItems first to capture the true matching document count;
-        // the pre-fix implementation returned an exact count only when the heap was
-        // large enough to disable block-max WAND early termination.
+        // the pre-fix implementation returned the exact count only with a sufficiently
+        // large result window.
         long reference = runSearchForTotalHits(projectNames, SYNTHETIC_DOC_COUNT);
         assertTrue(reference > 1000,
-                "need more than the Lucene default threshold of 1000 matches to trigger the bug, got "
-                        + reference);
+                "need more than a thousand matches to reliably trigger the bug, got " + reference);
 
         for (int maxItems : new int[]{1, 2, 10, 100}) {
             assertEquals(reference, runSearchForTotalHits(projectNames, maxItems),
@@ -97,7 +94,7 @@ class SearchHelperStableCountTest {
 
         long first = runSearchForTotalHits(projectNames, 1);
         assertTrue(first > 1000,
-                "need more than 1000 matches to trigger the bug, got " + first);
+                "need more than a thousand matches to reliably trigger the bug, got " + first);
         for (int i = 0; i < 5; i++) {
             assertEquals(first, runSearchForTotalHits(projectNames, 1),
                     "totalHits must not drift across repeated queries");
