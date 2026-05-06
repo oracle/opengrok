@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2022, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
@@ -55,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -69,6 +71,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileControllerTest extends OGKJerseyTest {
 
+    private static final String AUTH_TOKEN = "file-controller-test-token";
+    private static final String AUTH_HEADER = "Bearer " + AUTH_TOKEN;
+
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final String validPath = "git/main.c";
@@ -77,6 +82,9 @@ class FileControllerTest extends OGKJerseyTest {
 
     @Override
     protected DeploymentContext configureDeployment() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
 
@@ -120,6 +128,8 @@ class FileControllerTest extends OGKJerseyTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<>());
         env.getProjectRepositoriesMap().clear();
+        env.setAuthenticationTokens(Collections.emptySet());
+        env.setAllowInsecureTokens(false);
 
         repository.destroy();
     }
@@ -133,6 +143,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("content")
                 .queryParam("path", path)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(String.class);
         assertEquals(contents, output);
     }
@@ -143,6 +154,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("genre")
                 .queryParam("path", validPath)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(String.class);
         assertEquals("PLAIN", genre);
     }
@@ -155,6 +167,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("defs")
                 .queryParam("path", validPath)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(type);
         assertFalse(defs.isEmpty());
         assertAll(() -> assertFalse(defs.stream().map(Definitions.Tag::getType).anyMatch(Objects::isNull)),
@@ -183,6 +196,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("defs")
                 .queryParam("path", path)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(type);
         assertTrue(defs.isEmpty());
     }
@@ -209,7 +223,9 @@ class FileControllerTest extends OGKJerseyTest {
         Response response = target("file")
                 .path("defs")
                 .queryParam("path", validPath)
-                .request().get();
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .get();
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
 
         // Cleanup.

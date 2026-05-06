@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
@@ -31,6 +32,7 @@ import org.glassfish.jersey.test.ServletDeploymentContext;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.configuration.Configuration;
@@ -49,6 +51,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,16 +60,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SystemControllerTest extends OGKJerseyTest {
 
+    private static final String AUTH_TOKEN = "system-controller-test-token";
+    private static final String AUTH_HEADER = "Bearer " + AUTH_TOKEN;
+
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Override
     protected DeploymentContext configureDeployment() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
 
     @Override
     protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
         return new GrizzlyWebTestContainerFactory();
+    }
+
+    @AfterAll
+    static void cleanup() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.emptySet());
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(false);
     }
 
     /**
@@ -101,7 +116,9 @@ class SystemControllerTest extends OGKJerseyTest {
         // Reload the contents via API call.
         try (Response r = target("system")
                 .path("includes").path("reload")
-                .request().put(Entity.text(""))) {
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .put(Entity.text(""))) {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
         }
 
@@ -130,7 +147,9 @@ class SystemControllerTest extends OGKJerseyTest {
         // Reload the contents via API call.
         try (Response r = target("system")
                 .path("pathdesc")
-                .request().post(Entity.json(descriptions))) {
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .post(Entity.json(descriptions))) {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
         }
 
@@ -160,7 +179,9 @@ class SystemControllerTest extends OGKJerseyTest {
 
         Response r = target("system")
                 .path(SystemController.INDEX_TIME)
-                .request().get();
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .get();
         String result = r.readEntity(String.class);
 
         assertEquals("\"2021-02-16T11:18:01.000+00:00\"", result);
@@ -173,7 +194,9 @@ class SystemControllerTest extends OGKJerseyTest {
     void testVersion() {
         Response r = target("system")
                 .path("version")
-                .request().get();
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .get();
         String result = r.readEntity(String.class);
 
         assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());
@@ -184,7 +207,9 @@ class SystemControllerTest extends OGKJerseyTest {
     void testPing() {
         Response r = target("system")
                 .path("ping")
-                .request().get();
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .get();
         String result = r.readEntity(String.class);
 
         assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());

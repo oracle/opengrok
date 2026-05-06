@@ -91,6 +91,14 @@ The image contains these directories:
 `/opengrok/src` | source root - input data
 `/scripts` | startup script and top level configuration. Do not override unless debugging.
 
+At startup, the container generates an internal bearer token for OpenGrok web
+application REST API calls using the operating system's cryptographic random
+source. The token is not user configurable and is stored only in private files
+under `/opengrok/etc` that are used by the startup, synchronization, and indexer
+tooling. This is separate from the `REST_TOKEN` variable below, which protects
+only the small `/reindex` trigger endpoint exposed by the container startup
+program.
+
 ## Environment Variables
 
 | Docker Environment Var. | Default value | Description |

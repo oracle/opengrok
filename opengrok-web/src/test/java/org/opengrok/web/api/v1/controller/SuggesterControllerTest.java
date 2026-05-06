@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.apache.lucene.index.Term;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -68,6 +69,9 @@ import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class SuggesterControllerTest extends OGKJerseyTest {
 
+    private static final String AUTH_TOKEN = "suggester-controller-test-token";
+    private static final String AUTH_HEADER = "Bearer " + AUTH_TOKEN;
+
     public static class Result {
         public long time;
         public List<ResultItem> suggestions;
@@ -99,6 +103,9 @@ class SuggesterControllerTest extends OGKJerseyTest {
 
     @Override
     protected DeploymentContext configureDeployment() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
 
@@ -127,6 +134,8 @@ class SuggesterControllerTest extends OGKJerseyTest {
     @AfterAll
     public static void tearDownClass() {
         repository.destroy();
+        env.setAuthenticationTokens(Collections.emptySet());
+        env.setAllowInsecureTokens(false);
     }
 
     @BeforeEach
@@ -437,6 +446,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("init")
                 .path("queries")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .post(Entity.json(queries));
 
         Result res = target(SuggesterController.PATH)
@@ -474,6 +484,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("init")
                 .path("raw")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .post(Entity.json(Arrays.asList(data1, data2)));
 
         Result res = target(SuggesterController.PATH)
@@ -503,6 +514,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("init")
                 .path("raw")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .post(Entity.json(Collections.singleton(data)));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
@@ -604,6 +616,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("popularity")
                 .path("rust")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(popularityDataType);
 
         assertThat(res, contains(new SimpleEntry<>("main", 10)));
@@ -622,6 +635,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .queryParam("pageSize", 1)
                 .queryParam("all", true)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(popularityDataType);
 
         assertThat(res, contains(new SimpleEntry<>("topclass", 15), new SimpleEntry<>("mynamespace", 10)));
@@ -639,6 +653,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("swift")
                 .queryParam("field", QueryBuilder.DEFS)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(popularityDataType);
 
         assertThat(res, contains(new SimpleEntry<>("greet", 4)));
@@ -662,6 +677,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .put(Entity.text(""));
 
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
@@ -674,6 +690,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .path("rebuild")
                 .path("c")
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .put(Entity.text(""));
 
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());

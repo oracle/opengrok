@@ -22,12 +22,13 @@ Entry point for the OpenGrok Docker container.
 # CDDL HEADER END
 
 #
-# Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 import multiprocessing
 import os
+import secrets
 import shutil
 import signal
 import subprocess
@@ -81,6 +82,9 @@ OPENGROK_SRC_ROOT = os.path.join(OPENGROK_BASE_DIR, "src")
 BODY_INCLUDE_FILE = os.path.join(OPENGROK_DATA_ROOT, "body_include")
 OPENGROK_CONFIG_DIR = os.path.join(OPENGROK_BASE_DIR, "etc")
 OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_CONFIG_DIR, "configuration.xml")
+WEBAPP_API_TOKEN_FILE = os.path.join(OPENGROK_CONFIG_DIR, "webapp_api_token")
+WEBAPP_API_HEADERS_FILE = os.path.join(OPENGROK_CONFIG_DIR, "webapp_api_headers")
+DOCKER_READONLY_CONFIG_FILE = os.path.join(OPENGROK_CONFIG_DIR, "token-auth-config.xml")
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, "opengrok.jar")
 
@@ -245,11 +249,103 @@ def wait_for_tomcat(logger, uri):
     logger.info("Tomcat is ready")
 
 
-def refresh_projects(logger, uri, api_timeout):
+def write_private_file(file_path, content):
+    """
+    Write a file that is readable/writable only by the current user.
+    """
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    fd = os.open(file_path, flags, 0o600)
+    with os.fdopen(fd, "w") as file:
+        file.write(content)
+    os.chmod(file_path, 0o600)
+
+
+def create_webapp_api_auth_files(logger):
+    """
+    Generate Docker-internal API authentication token and write it to
+    private files for tools that accept token/header file arguments.
+
+    Return tuple of raw token value and dictionary with the HTTP header carrying the token
+    that can be used for requests.
+    """
+    if os.path.exists(WEBAPP_API_TOKEN_FILE) and os.path.exists(
+        WEBAPP_API_HEADERS_FILE
+    ):
+        with open(WEBAPP_API_TOKEN_FILE, "r", encoding="utf-8") as token_file:
+            token = token_file.readline().rstrip()
+        return token, {"Authorization": "Bearer " + token}
+
+    token = secrets.token_hex(32)
+    write_private_file(WEBAPP_API_TOKEN_FILE, token + "\n")
+    write_private_file(WEBAPP_API_HEADERS_FILE, "Authorization: Bearer " + token + "\n")
+    logger.info("Created private OpenGrok web app API authentication files")
+    return token, {"Authorization": "Bearer " + token}
+
+
+def create_token_readonly_config(logger, token):
+    """
+    Create read-only configuration overlay that enables Docker-internal
+    authenticated HTTP REST calls.
+    """
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<java version="11.0.8" class="java.beans.XMLDecoder">
+    <object class="org.opengrok.indexer.configuration.Configuration">
+        <void property="allowInsecureTokens">
+            <boolean>true</boolean>
+        </void>
+        <void property="authenticationTokens">
+            <void method="add">
+                <string>{token}</string>
+            </void>
+        </void>
+        <void property="indexerAuthenticationToken">
+            <string>{token}</string>
+        </void>
+    </object>
+</java>
+"""
+    write_private_file(DOCKER_READONLY_CONFIG_FILE, content)
+    logger.info("Created Docker read-only configuration for web app API authentication")
+    return DOCKER_READONLY_CONFIG_FILE
+
+
+def merge_readonly_config(logger, log_level, read_only_config_file):
+    """
+    Merge read-only configuration file with current OpenGrok configuration.
+    """
+    logger.info(
+        "Merging read-only configuration from '{}' with current "
+        "configuration in '{}'".format(read_only_config_file, OPENGROK_CONFIG_FILE)
+    )
+    out_file_path = None
+    with tempfile.NamedTemporaryFile(
+        mode="w+", delete=False, prefix="merged_config"
+    ) as tmp_out_fobj:
+        out_file_path = tmp_out_fobj.name
+        merge_config_files(
+            read_only_config_file,
+            OPENGROK_CONFIG_FILE,
+            out_file_path,
+            jar=OPENGROK_JAR,
+            loglevel=log_level,
+        )
+
+    if out_file_path and os.path.getsize(out_file_path) > 0:
+        os.chmod(out_file_path, 0o600)
+        shutil.move(out_file_path, OPENGROK_CONFIG_FILE)
+    else:
+        logger.warning(
+            "Failed to merge read-only configuration, " "leaving the original in place"
+        )
+        if out_file_path:
+            os.remove(out_file_path)
+
+
+def refresh_projects(logger, uri, api_timeout, headers):
     """
     Ensure each immediate source root subdirectory is a project.
     """
-    webapp_projects = list_projects(logger, uri, timeout=api_timeout)
+    webapp_projects = list_projects(logger, uri, headers=headers, timeout=api_timeout)
     if webapp_projects is None:
         return
 
@@ -265,10 +361,12 @@ def refresh_projects(logger, uri, api_timeout):
             else:
                 action = "Adding"
             logger.info(f"{action} project {item}")
-            add_project(logger, item, uri, timeout=api_timeout)
+            add_project(logger, item, uri, headers=headers, timeout=api_timeout)
 
             if logger.level == logging.DEBUG:
-                repos = get_repos(logger, item, uri)
+                repos = get_repos(
+                    logger, item, uri, headers=headers, timeout=api_timeout
+                )
                 if repos:
                     logger.debug(
                         "Project {} has these repositories: {}".format(item, repos)
@@ -278,10 +376,10 @@ def refresh_projects(logger, uri, api_timeout):
     for item in webapp_projects:
         if not os.path.isdir(os.path.join(src_root, item)):
             logger.info("Deleting project {}".format(item))
-            delete_project(logger, item, uri, timeout=api_timeout)
+            delete_project(logger, item, uri, headers=headers, timeout=api_timeout)
 
 
-def save_config(logger, uri, config_path, api_timeout):
+def save_config(logger, uri, config_path, api_timeout, headers):
     """
     Retrieve configuration from the web app and write it to file.
     :param logger: logger instance
@@ -289,7 +387,7 @@ def save_config(logger, uri, config_path, api_timeout):
     :param config_path: file path
     """
 
-    config = get_configuration(logger, uri, timeout=api_timeout)
+    config = get_configuration(logger, uri, headers=headers, timeout=api_timeout)
     if config is None:
         return
 
@@ -344,6 +442,8 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
             config_path,
             "-U",
             uri,
+            "--token",
+            "@" + WEBAPP_API_TOKEN_FILE,
         ]
         if extra_indexer_options:
             logger.debug(
@@ -364,7 +464,9 @@ def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
         periodic_timer.wait_for_event()
 
 
-def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_timeout):
+def project_syncer(
+    logger, loglevel, uri, config_path, numworkers, env, api_timeout, headers
+):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
@@ -373,7 +475,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
     wait_for_tomcat(logger, uri)
 
     while True:
-        refresh_projects(logger, uri, api_timeout)
+        refresh_projects(logger, uri, api_timeout, headers)
 
         if os.environ.get("OPENGROK_SYNC_YML"):  # debug only
             config_file = os.environ.get("OPENGROK_SYNC_YML")
@@ -384,7 +486,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
             logger.error(f"Cannot read config file from {config_file}")
             raise Exception("no sync config")
 
-        projects = list_projects(logger, uri, timeout=api_timeout)
+        projects = list_projects(logger, uri, headers=headers, timeout=api_timeout)
         if projects:
             #
             # The driveon=True is needed for the initial indexing of newly
@@ -410,6 +512,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
                 driveon=True,
                 logger=logger,
                 print_output=True,
+                http_headers=headers,
                 timeout=api_timeout,
             )
             logger.info("Sync done")
@@ -417,7 +520,7 @@ def project_syncer(logger, loglevel, uri, config_path, numworkers, env, api_time
             # Workaround for https://github.com/oracle/opengrok/issues/1670
             Path(os.path.join(OPENGROK_DATA_ROOT, "timestamp")).touch()
 
-            save_config(logger, uri, config_path, api_timeout)
+            save_config(logger, uri, config_path, api_timeout, headers)
 
         logger.info("Waiting for reindex to be triggered")
         global periodic_timer  # noqa: F824
@@ -602,6 +705,9 @@ def main():
     ):
         create_bare_config(logger, use_projects, extra_indexer_options.split())
 
+    webapp_api_token, webapp_api_headers = create_webapp_api_auth_files(logger)
+    token_config_file = create_token_readonly_config(logger, webapp_api_token)
+
     #
     # Index check needs read-only configuration, so it is called
     # right after create_bare_config().
@@ -614,32 +720,10 @@ def main():
     #
     read_only_config_file = os.environ.get("READONLY_CONFIG_FILE")
     if read_only_config_file and os.path.exists(read_only_config_file):
-        logger.info(
-            "Merging read-only configuration from '{}' with current "
-            "configuration in '{}'".format(read_only_config_file, OPENGROK_CONFIG_FILE)
-        )
-        out_file_path = None
-        with tempfile.NamedTemporaryFile(
-            mode="w+", delete=False, prefix="merged_config"
-        ) as tmp_out_fobj:
-            out_file_path = tmp_out_fobj.name
-            merge_config_files(
-                read_only_config_file,
-                OPENGROK_CONFIG_FILE,
-                out_file_path,
-                jar=OPENGROK_JAR,
-                loglevel=log_level,
-            )
+        merge_readonly_config(logger, log_level, read_only_config_file)
 
-        if out_file_path and os.path.getsize(out_file_path) > 0:
-            shutil.move(out_file_path, OPENGROK_CONFIG_FILE)
-        else:
-            logger.warning(
-                "Failed to merge read-only configuration, "
-                "leaving the original in place"
-            )
-            if out_file_path:
-                os.remove(out_file_path)
+    merge_readonly_config(logger, log_level, token_config_file)
+    os.remove(token_config_file)
 
     sync_enabled = True
     if use_projects:
@@ -670,6 +754,7 @@ def main():
             num_workers,
             env,
             api_timeout,
+            webapp_api_headers,
         )
     else:
         worker_function = indexer_no_projects

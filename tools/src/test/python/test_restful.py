@@ -20,19 +20,23 @@
 #
 
 #
-# Copyright (c) 2019, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
 #
+
+import os
+import tempfile
 
 import pytest
 import requests
-
-from requests.exceptions import HTTPError
-
-from mockito import verify, patch, mock
-
-from opengrok_tools.utils.restful import call_rest_api, \
-    CONTENT_TYPE, APPLICATION_JSON, do_api_call
+from mockito import mock, patch, verify
 from opengrok_tools.utils.commandsequence import ApiCall
+from opengrok_tools.utils.restful import (
+    APPLICATION_JSON,
+    CONTENT_TYPE,
+    call_rest_api,
+    do_api_call,
+)
+from requests.exceptions import HTTPError
 
 
 def test_replacement(monkeypatch):
@@ -53,25 +57,32 @@ def test_replacement(monkeypatch):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"
-        assert kwargs['data'] == '"fooBARbar"'
+        assert kwargs["data"] == '"fooBARbar"'
 
         return MockResponse()
 
     for verb in ["PUT", "POST", "DELETE"]:
-        call = {"uri": "http://localhost:8080/source/api/v1/%FOO%",
-                "method": verb, "data": "foo%FOO%bar"}
+        call = {
+            "uri": "http://localhost:8080/source/api/v1/%FOO%",
+            "method": verb,
+            "data": "foo%FOO%bar",
+        }
         pattern = "%FOO%"
         value = "BAR"
         with monkeypatch.context() as m:
-            m.setattr("opengrok_tools.utils.restful.do_api_call",
-                      mock_do_api_call)
-            assert call_rest_api(ApiCall(call), {pattern: value}). \
-                status_code == okay_status
+            m.setattr("opengrok_tools.utils.restful.do_api_call", mock_do_api_call)
+            assert (
+                call_rest_api(ApiCall(call), {pattern: value}).status_code
+                == okay_status
+            )
 
 
 def test_unknown_method():
-    call = {"uri": "http://localhost:8080/source/api/v1/foo",
-            "method": "FOOBAR", "data": "data"}
+    call = {
+        "uri": "http://localhost:8080/source/api/v1/foo",
+        "method": "FOOBAR",
+        "data": "data",
+    }
     pattern = "%FOO%"
     value = "BAR"
     with pytest.raises(Exception):
@@ -83,22 +94,24 @@ def test_content_type(monkeypatch):
     Test HTTP Content-type header handling.
     """
     for method in ["PUT", "POST", "DELETE"]:
-        text_plain_header = {CONTENT_TYPE: 'text/plain'}
+        text_plain_header = {CONTENT_TYPE: "text/plain"}
         for header_arg in [text_plain_header, None]:
-            call = {"uri": "http://localhost:8080/source/api/v1/foo",
-                    "method": method, "data": "data", "headers": header_arg}
+            call = {
+                "uri": "http://localhost:8080/source/api/v1/foo",
+                "method": method,
+                "data": "data",
+                "headers": header_arg,
+            }
 
             def mock_response(verb, uri, **kwargs):
-                headers = kwargs['headers']
+                headers = kwargs["headers"]
                 if header_arg:
                     assert text_plain_header.items() <= headers.items()
                 else:
-                    assert {CONTENT_TYPE: APPLICATION_JSON}.items() \
-                        <= headers.items()
+                    assert {CONTENT_TYPE: APPLICATION_JSON}.items() <= headers.items()
 
             with monkeypatch.context() as m:
-                m.setattr("opengrok_tools.utils.restful.do_api_call",
-                          mock_response)
+                m.setattr("opengrok_tools.utils.restful.do_api_call", mock_response)
                 call_rest_api(ApiCall(call))
 
 
@@ -108,27 +121,64 @@ def test_headers_timeout(monkeypatch):
     HTTP headers passed to call_res_api(). Also test timeout.
     :param monkeypatch: monkey fixture
     """
-    headers = {'Tatsuo': 'Yasuko'}
+    headers = {"Tatsuo": "Yasuko"}
     expected_timeout = 42
     expected_api_timeout = 24
-    call = {"uri": "http://localhost:8080/source/api/v1/bar",
-            "method": "GET", "data": "data", "headers": headers}
-    extra_headers = {'Mei': 'Totoro'}
+    call = {
+        "uri": "http://localhost:8080/source/api/v1/bar",
+        "method": "GET",
+        "data": "data",
+        "headers": headers,
+    }
+    extra_headers = {"Mei": "Totoro"}
 
     def mock_do_api_call(verb, uri, **kwargs):
         all_headers = headers
         all_headers.update(extra_headers)
         assert headers == all_headers
-        assert kwargs['timeout'] == expected_timeout
-        assert kwargs['api_timeout'] == expected_api_timeout
+        assert kwargs["timeout"] == expected_timeout
+        assert kwargs["api_timeout"] == expected_api_timeout
 
     with monkeypatch.context() as m:
-        m.setattr("opengrok_tools.utils.restful.do_api_call",
-                  mock_do_api_call)
-        call_rest_api(ApiCall(call),
-                      http_headers=extra_headers,
-                      timeout=expected_timeout,
-                      api_timeout=expected_api_timeout)
+        m.setattr("opengrok_tools.utils.restful.do_api_call", mock_do_api_call)
+        call_rest_api(
+            ApiCall(call),
+            http_headers=extra_headers,
+            timeout=expected_timeout,
+            api_timeout=expected_api_timeout,
+        )
+
+
+def test_headers_file(monkeypatch):
+    """
+    Test that HTTP headers from a file are united with headers from command
+    specification and HTTP headers passed to call_rest_api().
+    """
+    headers = {"Satsuki": "Tatsuo"}
+    file_headers = {"Authorization": "Bearer token"}
+    extra_headers = {"Mei": "Totoro"}
+
+    def mock_do_api_call(verb, uri, **kwargs):
+        assert headers.items() <= kwargs["headers"].items()
+        assert file_headers.items() <= kwargs["headers"].items()
+        assert extra_headers.items() <= kwargs["headers"].items()
+
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False) as headers_file:
+        for header, value in file_headers.items():
+            headers_file.write(f"{header}: {value}\n")
+
+    call = {
+        "uri": "http://localhost:8080/source/api/v1/bar",
+        "method": "GET",
+        "headers": headers,
+        "headers_file": headers_file.name,
+    }
+
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.restful.do_api_call", mock_do_api_call)
+        call_rest_api(ApiCall(call), http_headers=extra_headers)
+
+    os.remove(headers_file.name)
 
 
 def test_api_call_timeout_override(monkeypatch):
@@ -138,21 +188,25 @@ def test_api_call_timeout_override(monkeypatch):
     expected_timeout = 42
     expected_api_timeout = 24
 
-    call = {"uri": "http://localhost:8080/source/api/v1/bar",
-            "method": "POST", "data": "data",
-            "api_timeout": expected_timeout,
-            "async_api_timeout": expected_api_timeout}
+    call = {
+        "uri": "http://localhost:8080/source/api/v1/bar",
+        "method": "POST",
+        "data": "data",
+        "api_timeout": expected_timeout,
+        "async_api_timeout": expected_api_timeout,
+    }
 
     def mock_do_api_call(verb, uri, **kwargs):
-        assert kwargs['timeout'] == expected_timeout
-        assert kwargs['api_timeout'] == expected_api_timeout
+        assert kwargs["timeout"] == expected_timeout
+        assert kwargs["api_timeout"] == expected_api_timeout
 
     with monkeypatch.context() as m:
-        m.setattr("opengrok_tools.utils.restful.do_api_call",
-                  mock_do_api_call)
-        call_rest_api(ApiCall(call),
-                      timeout=expected_timeout + 1,
-                      api_timeout=expected_api_timeout + 1)
+        m.setattr("opengrok_tools.utils.restful.do_api_call", mock_do_api_call)
+        call_rest_api(
+            ApiCall(call),
+            timeout=expected_timeout + 1,
+            api_timeout=expected_api_timeout + 1,
+        )
 
 
 def test_headers_timeout_requests():
@@ -172,9 +226,9 @@ def test_headers_timeout_requests():
     with patch(requests.get, mock_requests_get):
         do_api_call("GET", uri, headers=headers, timeout=timeout)
 
-        verify(requests).get(uri, data=None, params=None,
-                             headers=headers, proxies=None,
-                             timeout=timeout)
+        verify(requests).get(
+            uri, data=None, params=None, headers=headers, proxies=None, timeout=timeout
+        )
 
 
 def test_restful_fail(monkeypatch):
@@ -182,6 +236,7 @@ def test_restful_fail(monkeypatch):
     Test that failures in call_rest_api() result in HTTPError exception.
     This is done only for the PUT HTTP verb.
     """
+
     class MockResponse:
         def p(self):
             raise HTTPError("foo")
@@ -196,7 +251,9 @@ def test_restful_fail(monkeypatch):
     with monkeypatch.context() as m:
         m.setattr("requests.put", mock_response)
         with pytest.raises(HTTPError):
-            call_rest_api(ApiCall({"uri": 'http://foo', "method": 'PUT', "data": 'data'}))
+            call_rest_api(
+                ApiCall({"uri": "http://foo", "method": "PUT", "data": "data"})
+            )
 
 
 def test_invalid_command_none():
@@ -216,4 +273,8 @@ def test_invalid_command_list():
 
 def test_invalid_command_bad_uri():
     with pytest.raises(Exception):
-        call_rest_api(ApiCall({"uri": "foo", "method": "PUT", "data": "data", "headers": "headers"}))
+        call_rest_api(
+            ApiCall(
+                {"uri": "foo", "method": "PUT", "data": "data", "headers": "headers"}
+            )
+        )

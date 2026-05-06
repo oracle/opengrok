@@ -4,9 +4,16 @@ HIFORMAT: 1A
 
 OpenGrok RESTful API documentation. The following endpoints are accessible under `/api/v1` with the exception of `/metrics`.
 
-Besides `/suggester`, `/search`, `/system/ping`, `/system/indextime` and `/metrics` endpoints, everything is accessible from `localhost` only
-unless authentication bearer tokens are configured in the web application and used via the 'Authorization' HTTP header
-(within HTTPS connection).
+Protected endpoints require an authentication bearer token configured in the web application and supplied via the
+`Authorization` HTTP header (`Authorization: Bearer <token>`). Bearer tokens are accepted over HTTPS connections;
+HTTP token use has to be explicitly enabled with the `allowInsecureTokens` configuration option and should be limited
+to trusted internal deployments. Example of a protected endpoint is `/configuration`.
+
+The access to the `/annotation`, `/file`, `/history`, `/search` and `/suggest` endpoints is controlled with
+authorization framework and requires user authentication if set up.
+
+The `/system/ping`, `/system/indextime`, `/suggest/config` and `/metrics` endpoints are public and do not require
+bearer token authentication.
 
 Some of the APIs are asynchronous. They return status code 202 (Accepted) and a Location header that contains the URL
 for the status endpoint to check for the result of the API call. Once the status API returns result other than 202,

@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -40,6 +40,7 @@ import re
 API_TIMEOUT_PROPERTY = "api_timeout"
 ASYNC_API_TIMEOUT_PROPERTY = "async_api_timeout"
 HEADERS_PROPERTY = "headers"
+HEADERS_FILE_PROPERTY = "headers_file"
 METHOD_PROPERTY = "method"
 URI_PROPERTY = "uri"
 ARGS_SUBST_PROPERTY = "args_subst"
@@ -63,7 +64,7 @@ def check_call_config(call):
 
     for key in call.keys():
         if key not in [URI_PROPERTY, METHOD_PROPERTY, API_TIMEOUT_PROPERTY, ASYNC_API_TIMEOUT_PROPERTY,
-                       DATA_PROPERTY, HEADERS_PROPERTY]:
+                       DATA_PROPERTY, HEADERS_PROPERTY, HEADERS_FILE_PROPERTY]:
             raise CommandConfigurationException(f"unknown property {key} in call {call}")
 
     uri = call.get(URI_PROPERTY)
@@ -77,6 +78,16 @@ def check_call_config(call):
     headers = call.get(HEADERS_PROPERTY)
     if headers and not isinstance(headers, dict):
         raise CommandConfigurationException("headers must be a dictionary")
+
+    headers_file = call.get(HEADERS_FILE_PROPERTY)
+    if headers_file:
+        if not isinstance(headers_file, str):
+            raise CommandConfigurationException("headers_file must be a string")
+        try:
+            with open(headers_file, encoding="utf-8"):
+                pass
+        except OSError as exc:
+            raise CommandConfigurationException(f"cannot open headers_file {headers_file}") from exc
 
     call_timeout = call.get(API_TIMEOUT_PROPERTY)
     if call_timeout:
@@ -188,6 +199,8 @@ class ApiCall:
         self.headers = call_dict.get(HEADERS_PROPERTY)
         if not self.headers:
             self.headers = {}
+
+        self.headers_file = call_dict.get(HEADERS_FILE_PROPERTY)
 
         self.api_timeout = None
         call_timeout = call_dict.get(API_TIMEOUT_PROPERTY)
