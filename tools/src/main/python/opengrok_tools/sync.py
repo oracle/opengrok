@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -61,7 +61,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.5"
+__version__ = "1.6"
 
 
 def update_headers_from_config(logger, config, headers):
