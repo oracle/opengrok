@@ -183,9 +183,8 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
     logger.debug(f"Headers from the ApiCall object: {call.headers}")
     headers = dict(call.headers)
     if call.headers_file:
-        headers_file = subst(call.headers_file, substitutions)
-        logger.debug(f"Updating HTTP headers from file: {headers_file}")
-        headers.update(read_headers_file(headers_file))
+        logger.debug(f"Updating HTTP headers from file: {call.headers_file}")
+        headers.update(read_headers_file(call.headers_file))
 
     if http_headers:
         logger.debug("Updating HTTP headers for API call {} with {}".
