@@ -1,8 +1,8 @@
+headers_file: /opengrok/etc/webapp_api_headers
 commands:
 - call:
     uri: '%URL%api/v1/messages'
     method: POST
-    headers_file: /opengrok/etc/webapp_api_headers
     data:
       messageLevel: warning
       duration: PT1H
@@ -29,7 +29,6 @@ commands:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
     method: DELETE
     data: 'resync + reindex in progress'
-    headers_file: /opengrok/etc/webapp_api_headers
     headers:
       'Content-type': 'text/plain'
     api_timeout: "$API_TIMEOUT"
@@ -38,7 +37,6 @@ cleanup:
     uri: '%URL%api/v1/messages?tag=%PROJECT%'
     method: DELETE
     data: 'resync + reindex in progress'
-    headers_file: /opengrok/etc/webapp_api_headers
     headers:
       'Content-type': 'text/plain'
     api_timeout: "$API_TIMEOUT"
