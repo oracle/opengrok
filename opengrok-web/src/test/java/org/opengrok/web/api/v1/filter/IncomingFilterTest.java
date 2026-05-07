@@ -263,6 +263,17 @@ class IncomingFilterTest {
     }
 
     @Test
+    void suggestConfigRemoteWithoutTokenTest() throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", "suggest/config");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"file/genre", "file/defs", "file/content"})
+    void fileRemoteWithoutTokenTest(final String path) throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", path);
+    }
+
+    @Test
     void systemPathDescWithoutTokenTest() throws Exception {
 
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
