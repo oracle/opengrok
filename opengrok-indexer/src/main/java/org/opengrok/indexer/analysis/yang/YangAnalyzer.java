@@ -22,19 +22,54 @@
  */
 package org.opengrok.indexer.analysis.yang;
 
+import java.io.Reader;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
-import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
- * Analyzer for YANG files with plain-text indexing and xref behavior.
+ * Analyzer for YANG files.
  */
-public class YangAnalyzer extends PlainAnalyzer {
+@SuppressWarnings("java:S110")
+public class YangAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of YangAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected YangAnalyzer(AnalyzerFactory factory) {
-        super(factory);
+        super(factory, () -> new JFlexTokenizer(new YangSymbolTokenizer(
+                AbstractAnalyzer.DUMMY_READER)));
+    }
+
+    /**
+     * @return {@code null} as there is no aligned ctags language.
+     */
+    @Override
+    public String getCtagsLang() {
+        return null;
+    }
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20260511_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20260511_00; // Edit comment above too!
+    }
+
+    /**
+     * Creates a wrapped instance of {@link YangXref}.
+     * @param reader an instance passed to the new {@link YangXref}
+     * @return a defined instance
+     */
+    @Override
+    protected JFlexXref newXref(Reader reader) {
+        return new JFlexXref(new YangXref(reader));
     }
 }
