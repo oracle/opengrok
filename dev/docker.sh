@@ -10,6 +10,10 @@
 # These are set via https://github.com/oracle/opengrok/settings/secrets
 #
 
+#
+# Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
+#
+
 set -e
 
 echo "Running linter"
