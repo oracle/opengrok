@@ -72,6 +72,11 @@ if [[ "$OPENGROK_REPO_SLUG" != "oracle/opengrok" ]]; then
 	exit 0
 fi
 
+if [[ "$OPENGROK_REF" != "refs/heads/master" && "$OPENGROK_REF" != refs/tags/* ]]; then
+	echo "Not pushing Docker image for ref $OPENGROK_REF"
+	exit 0
+fi
+
 if [[ -z $DOCKER_USERNAME ]]; then
 	echo "DOCKER_USERNAME is empty, exiting"
 	exit 1
