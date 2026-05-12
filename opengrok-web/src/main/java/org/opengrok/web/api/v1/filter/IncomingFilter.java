@@ -119,7 +119,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
                 LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication token", sanitizedPath);
                 return;
             } else {
-                LOGGER.log(Level.FINEST, "request to {0} has a valid token however is not secure", sanitizedPath);
+                LOGGER.log(Level.WARNING, "request to {0} has a valid token however is not secure", sanitizedPath);
             }
         }
 
