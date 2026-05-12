@@ -4,11 +4,15 @@ on:
   push:
     paths:
       - openapi.yaml
+      - .github/workflows/openapi.yml
+      - dev/openapi.sh
     branches:
       - master
   pull_request:
     paths:
       - openapi.yaml
+      - .github/workflows/openapi.yml
+      - dev/openapi.sh
 
 permissions:
   contents: write
