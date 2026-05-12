@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -183,78 +183,15 @@ public class SearchController {
         }
     }
 
-    private static class SearchResult {
-
-        private final long time;
-
-        private final int resultCount;
-
-        private final int startDocument;
-
-        private final int endDocument;
-
-        private final Map<String, List<SearchHit>> results;
-
-        private SearchResult(
-                final long time,
-                final int resultCount,
-                final Map<String, List<SearchHit>> results,
-                final int startDocument,
-                final int endDocument
-        ) {
-            this.time = time;
-            this.resultCount = resultCount;
-            this.results = results;
-            this.startDocument = startDocument;
-            this.endDocument = endDocument;
-        }
-
-        public long getTime() {
-            return time;
-        }
-
-        public int getResultCount() {
-            return resultCount;
-        }
-
-        public Map<String, List<SearchHit>> getResults() {
-            return results;
-        }
-
-        public int getStartDocument() {
-            return startDocument;
-        }
-
-        public int getEndDocument() {
-            return endDocument;
-        }
+    private record SearchResult(
+            long time,
+            int resultCount,
+            Map<String, List<SearchHit>> results,
+            int startDocument,
+            int endDocument
+    ) {
     }
 
-    private static class SearchHit {
-
-        private final String line;
-
-        private final String lineNumber;
-
-        private final String tag;
-
-        private SearchHit(final String line, final String lineNumber, final String tag) {
-            this.line = line;
-            this.lineNumber = lineNumber;
-            this.tag = tag;
-        }
-
-        public String getLine() {
-            return line;
-        }
-
-        public String getLineNumber() {
-            return lineNumber;
-        }
-
-        public String getTag() {
-            return tag;
-        }
+    private record SearchHit(String line, String lineNumber, String tag) {
     }
-
 }
