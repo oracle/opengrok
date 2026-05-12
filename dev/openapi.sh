@@ -15,26 +15,22 @@ fi
 if [[ "${OPENGROK_REPO_SLUG}" != "oracle/opengrok" ||
     -n "${OPENGROK_PULL_REQUEST}" ||
     "${OPENGROK_BRANCH}" != "master" ]]; then
-	echo "Skipping Javadoc refresh"
+	echo "Skipping API refresh"
 	exit 0
 fi
 
 BRANCH="gh-pages"
 
-echo -e "Building Javadoc...\n"
-./mvnw -DskipTests=true site
+echo -e "Generating API document...\n"
+./mvnw -DskipTests=true verify
 
-echo -e "Publishing javadoc to $BRANCH...\n"
+echo -e "Publishing OpenAPI document to $BRANCH...\n"
 git config --global user.name "github-actions[bot]"
 git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 cd "$BRANCH"
-if [[ -d ./javadoc ]]; then
-	git rm -rf ./javadoc
-fi
-cp -Rf "$OPENGROK_BUILD_DIR/target/site/apidocs" ./javadoc
-git add -f ./javadoc
-git commit -m "Latest javadoc auto-pushed to branch $BRANCH"
+cp -f "$OPENGROK_BUILD_DIR/target/openapi-validation/index.html" ./openapi.html
+git commit -m "Latest OpenAPI auto-pushed to branch $BRANCH"
 git push -fq origin "$BRANCH"
 
 echo -e "Published Javadoc to branch $BRANCH.\n"

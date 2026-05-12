@@ -1,0 +1,39 @@
+name: Generate REST API documentation
+
+on:
+  push:
+    paths:
+      - openapi.yaml
+    branches:
+      - master
+  pull_request:
+    paths:
+      - openapi.yaml
+
+permissions:
+  contents: write
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout master branch
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - name: Set up JDK
+      uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+      with:
+        distribution: 'oracle'
+        java-version: '21'
+    - name: Checkout gh-pages branch
+      if: github.repository == 'oracle/opengrok'
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        ref: gh-pages
+        path: gh-pages
+    - name: Refresh REST API doc
+      env:
+        OPENGROK_REPO_SLUG: ${{ github.repository }}
+        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
+        OPENGROK_REF: ${{ github.ref }}
+        OPENGROK_BUILD_DIR: ${{ github.workspace }}
+      run: ./dev/openapi.sh

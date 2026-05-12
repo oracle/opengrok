@@ -76,6 +76,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <micrometer.version>1.14.1</micrometer.version>
         <mockito.version>5.17.0</mockito.version>
         <commons-io.version>2.14.0</commons-io.version>
+        <openapi-generator.version>7.15.0</openapi-generator.version>
     </properties>
 
     <dependencyManagement>
@@ -327,6 +328,27 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                         </property>
                     </javaApiLinks>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>validate-openapi</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/openapi.yaml</inputSpec>
+                            <generatorName>html2</generatorName>
+                            <output>${project.build.directory}/openapi-validation</output>
+                            <skipValidateSpec>false</skipValidateSpec>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
