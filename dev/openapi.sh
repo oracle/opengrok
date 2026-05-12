@@ -22,7 +22,7 @@ fi
 BRANCH="gh-pages"
 
 echo -e "Generating API document...\n"
-./mvnw -DskipTests=true verify
+./mvnw -DskipTests=true -Dmaven.javadoc.skip=true verify
 
 echo -e "Publishing OpenAPI document to $BRANCH...\n"
 git config --global user.name "github-actions[bot]"
@@ -30,6 +30,7 @@ git config --global user.email "41898282+github-actions[bot]@users.noreply.githu
 
 cd "$BRANCH"
 cp -f "$OPENGROK_BUILD_DIR/target/openapi-validation/index.html" ./openapi.html
+git add openapi.html
 git commit -m "Latest OpenAPI auto-pushed to branch $BRANCH"
 git push -fq origin "$BRANCH"
 
