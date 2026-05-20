@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.servlet;
 
