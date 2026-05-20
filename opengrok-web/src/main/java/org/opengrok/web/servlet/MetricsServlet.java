@@ -45,6 +45,7 @@ public class MetricsServlet extends HttpServlet {
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) {
+        resp.setContentType(Metrics.getPrometheusContentType());
         try (PrintWriter pw = resp.getWriter()) {
             pw.print(Metrics.getPrometheusRegistry().scrape());
         } catch (IOException e) {
