@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer;
 
@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
  * Generally, the web application publishes metrics to Prometheus and the Indexer to StatsD.
  */
 public final class Metrics {
+
+    private static final String PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Metrics.class);
 
@@ -121,6 +123,14 @@ public final class Metrics {
 
     public static PrometheusMeterRegistry getPrometheusRegistry() {
         return prometheusRegistry;
+    }
+
+    /**
+     * Get content type for Prometheus text exposition format.
+     * @return Prometheus text exposition content type
+     */
+    public static String getPrometheusContentType() {
+        return PROMETHEUS_CONTENT_TYPE;
     }
 
     private static StatsdMeterRegistry getStatsdRegistry() {
