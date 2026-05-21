@@ -174,7 +174,7 @@ class SearchAndContextFormatterSecondTest {
         String[] frags = getFirstFragments(instance);
         assertNotNull(frags, "getFirstFragments() should return something");
         assertEquals(1, frags.length, "frags should have one element");
-        assertNotNull("frags[0] should be defined", frags[0]);
+        assertNotNull(frags[0], "frags[0] should be defined");
 
         final String CTX =
                 "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#16\"><span class=\"l\">16</span> </a><br/>" +
