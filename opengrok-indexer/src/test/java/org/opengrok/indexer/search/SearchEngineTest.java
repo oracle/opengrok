@@ -288,13 +288,10 @@ class SearchEngineTest {
      */
     @Test
     void testSearchReturnsTotalHitsNotCachedCount() {
-        SearchEngine instance = new SearchEngine();
+        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
+        SearchEngine instance = new SearchEngine(1, 1);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
-
-        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
-        instance.hitsPerPage = 1;
-        instance.cachePages = 1;
 
         int resultCount = instance.search();
         assertTrue(resultCount > 1,
@@ -312,11 +309,9 @@ class SearchEngineTest {
      */
     @Test
     void testTotalHitsIsExactForFullRetrieval() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(1, 1);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
-        instance.hitsPerPage = 1;
-        instance.cachePages = 1;
 
         int count = instance.search();
         assertTrue(count > 1);
