@@ -148,7 +148,7 @@ public class SearchEngine {
 
     private final int hitsPerPage;
     private final int cachePages;
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private IndexSearcher searcher;
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
@@ -163,7 +163,7 @@ public class SearchEngine {
      * Creates a new instance of SearchEngine.
      */
     public SearchEngine() {
-        this(RuntimeEnvironment.getInstance().getHitsPerPage(), RuntimeEnvironment.getInstance().getCachePages());
+        this(env.getHitsPerPage(), env.getCachePages());
     }
 
     /**
