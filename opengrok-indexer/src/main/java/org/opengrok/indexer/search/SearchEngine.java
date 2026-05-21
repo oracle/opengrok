@@ -18,13 +18,12 @@
  */
 
  /*
- * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -38,11 +37,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
@@ -54,6 +53,9 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldCollectorManager;
 import org.apache.lucene.search.TopScoreDocCollectorManager;
 import org.apache.lucene.util.Version;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
@@ -62,7 +64,6 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.history.HistoryException;
-import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Summary.Fragment;
 import org.opengrok.indexer.search.context.Context;
@@ -73,8 +74,11 @@ import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SortOrder;
 
 /**
- * This is an encapsulation of the details on how to search in the index database.
+ * This is an encapsulation of the details on how to search in the index database(s).
  * This is used for searching via the REST API.
+ * <p>
+ * Authorization is <b>not</b> enforced here, this has to be done by the caller by filtering out the projects
+ * passed to {@link #search(List)}.
  *
  * @author Trond Norbye 2005
  * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
@@ -86,10 +90,7 @@ public class SearchEngine {
     /**
      * Message text used when logging exceptions thrown when searching.
      */
-    private static final String SEARCH_EXCEPTION_MSG = "Exception searching {0}";
-    //NOTE below will need to be changed after new lucene upgrade, if they
-    //increase the version - every change of below makes us incompatible with the
-    //old index and we need to ask for reindex
+    private static final String SEARCH_EXCEPTION_MSG = "Exception searching";
     /**
      * Version of Lucene index common for the whole application.
      */
@@ -124,42 +125,49 @@ public class SearchEngine {
      */
     private SortOrder sortOrder;
     /**
-     * Holds value of property indexDatabase.
+     * Holds value of property maxHitsPerFile.
+     * 0 means unlimited (default).
      */
+    private int maxHitsPerFile;
+
     private Query query;
     private QueryBuilder queryBuilder;
     private final CompatibleAnalyser analyzer = new CompatibleAnalyser();
     private Context sourceContext;
     private HistoryContext historyContext;
     private Summarizer summarizer;
-    // internal structure to hold the results from lucene
+
+    // internal structures to hold the results from Lucene
     private final List<Document> docs;
-    private final char[] content = new char[1024 * 8];
-    private String source;
-    private String data;
-    /**
-     * Holds value of property maxHitsPerFile.
-     * 0 means unlimited (default).
-     */
-    private int maxHitsPerFile;
-    int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
-    int cachePages = RuntimeEnvironment.getInstance().getCachePages();
     int totalHits = 0;
     private ScoreDoc[] hits;
-    private IndexSearcher searcher;
     boolean allCollected;
+
+    private String source;
+    private String data;
+
+    private final int hitsPerPage;
+    private final int cachePages;
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private IndexSearcher searcher;
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
+
+    public SearchEngine(int hitsPerPage, int cachePages) {
+        docs = new ArrayList<>();
+        this.hitsPerPage = hitsPerPage;
+        this.cachePages = cachePages;
+    }
 
     /**
      * Creates a new instance of SearchEngine.
      */
     public SearchEngine() {
-        docs = new ArrayList<>();
+        this(RuntimeEnvironment.getInstance().getHitsPerPage(), RuntimeEnvironment.getInstance().getCachePages());
     }
 
     /**
-     * Create a QueryBuilder using the fields that have been set on this
-     * SearchEngine.
+     * Create a QueryBuilder using the fields that have been set on this instance.
      *
      * @return a query builder
      */
@@ -173,6 +181,9 @@ public class SearchEngine {
                 .setType(type);
     }
 
+    /**
+     * @return whether the query built from the set-parameters is valid
+     */
     public boolean isValidQuery() {
         boolean ret;
         try {
@@ -187,11 +198,11 @@ public class SearchEngine {
 
     /**
      * Search one index. This is used if no projects are set up.
-     * @param paging whether to use paging (if yes, first X pages will load  faster)
+     * @param paging whether to use paging (if yes, first {@link #cachePages} pages will load faster)
      * @throws IOException when index could not be read
      */
     private void searchSingleDatabase(boolean paging) throws IOException {
-        SuperIndexSearcher superIndexSearcher = RuntimeEnvironment.getInstance().getSuperIndexSearcher("");
+        SuperIndexSearcher superIndexSearcher = env.getSuperIndexSearcher("");
         searcherList.add(superIndexSearcher);
         searcher = superIndexSearcher;
         // If a field-based sort is requested, collect all hits (disable paging optimization)
@@ -208,29 +219,20 @@ public class SearchEngine {
      * @throws IOException when some index could not be read
      */
     private void searchMultiDatabase(List<Project> projectList, boolean paging) throws IOException {
-        SortedSet<String> projectNames = new TreeSet<>();
-        for (Project project : projectList) {
-            projectNames.add(project.getName());
-        }
+        SortedSet<String> projectNames = projectList.stream().map(Project::getName).
+                collect(Collectors.toCollection(TreeSet::new));
 
-        // We use MultiReader even for single project. This should
-        // not matter given that MultiReader is just a cheap wrapper
-        // around set of IndexReader objects.
-        MultiReader searchables = RuntimeEnvironment.getInstance().getMultiReader(projectNames, searcherList);
-        searcher = RuntimeEnvironment.getInstance().getIndexSearcherFactory().newSearcher(searchables);
+        // We use MultiReader even for single project. This should not matter given that MultiReader is just
+        // a cheap wrapper around set of IndexReader objects.
+        searcher = env.getIndexSearcherFactory().newSearcher(env.getMultiReader(projectNames, searcherList));
         searchIndex(searcher, paging);
     }
 
     private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
-        Sort luceneSort = null;
-        if (getSortOrder() == SortOrder.LASTMODIFIED) {
-            luceneSort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
-        } else if (getSortOrder() == SortOrder.BY_PATH) {
-            luceneSort = new Sort(new SortField(QueryBuilder.FULLPATH, SortField.Type.STRING));
-        }
-
-        int numHits = hitsPerPage * cachePages;
+        Statistics stat = new Statistics();
+        final int numHits = hitsPerPage * cachePages;
         TopDocs topDocs;
+        Sort luceneSort = getSort();
         if (luceneSort == null) {
             topDocs = searcher.search(query, new TopScoreDocCollectorManager(numHits, Integer.MAX_VALUE));
         } else {
@@ -238,11 +240,6 @@ public class SearchEngine {
         }
         hits = topDocs.scoreDocs;
         totalHits = (int) topDocs.totalHits.value;
-
-        Statistics stat = new Statistics();
-        stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
-                "search.latency", new String[]{"category", "engine",
-                        "outcome", totalHits > 0 ? "success" : "empty"});
 
         if (!paging && totalHits > numHits) {
             if (luceneSort == null) {
@@ -252,6 +249,9 @@ public class SearchEngine {
             }
             hits = topDocs.scoreDocs;
         }
+        stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
+                "search.latency", new String[]{"category", "engine",
+                        "outcome", totalHits > 0 ? "success" : "empty"});
 
         allCollected = !paging || totalHits <= numHits;
 
@@ -263,10 +263,22 @@ public class SearchEngine {
         }
     }
 
+    private @Nullable Sort getSort() {
+        Sort luceneSort = null;
+        if (getSortOrder() == SortOrder.LASTMODIFIED) {
+            luceneSort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
+        } else if (getSortOrder() == SortOrder.BY_PATH) {
+            luceneSort = new Sort(new SortField(QueryBuilder.FULLPATH, SortField.Type.STRING));
+        }
+        return luceneSort;
+    }
+
     /**
-     * Gets the instance from {@code search(...)} if it was called.
+     * Gets the string representation of search query used in {@link #search()} if it was called.
      * @return defined instance or {@code null}
      */
+    @VisibleForTesting
+    @Nullable
     public String getQuery() {
         return query != null ? query.toString() : null;
     }
@@ -282,10 +294,11 @@ public class SearchEngine {
     /**
      * Gets the builder from {@code search(...)} if it was called.
      * <p>
-     * (Modifying the builder will have no effect on this
-     * {@link SearchEngine}.)
+     * (Modifying the builder will have no effect on this {@link SearchEngine}.)
      * @return defined instance or {@code null}
      */
+    @VisibleForTesting
+    @Nullable
     public QueryBuilder getQueryBuilder() {
         return queryBuilder;
     }
@@ -294,64 +307,46 @@ public class SearchEngine {
      * Gets the searcher from {@code search(...)} if it was called.
      * @return defined instance or {@code null}
      */
+    @VisibleForTesting
+    @Nullable
     public IndexSearcher getSearcher() {
         return searcher;
     }
 
     /**
-     * Execute a search aware of current request, limited to specific project names.
+     * Execute a search.
+     * <p>
+     * Before calling this function, you must set the appropriate search criteria with the set-functions.
+     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}.
+     * <p>
+     * Must be eventually followed by call to {@link #destroy()} so that
+     * the {@code IndexSearcher} objects are properly freed.
      *
-     * This filters out all projects which are not allowed for the current request.
-     *
-     * Before calling this function,
-     * you must set the appropriate search criteria with the set-functions. Note
-     * that this search will return the first cachePages of hitsPerPage, for
-     * more you need to call more.
-     *
-     * Call to search() must be eventually followed by call to destroy()
-     * so that IndexSearcher objects are properly freed.
-     *
-     * @param projects projects to search
-     * @return The number of hits
+     * @return total number of hits
      */
-    public int search(List<Project> projects) {
-        return search(projects, new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
-    }
-
-    /**
-     * Execute a search without authorization.
-     *
-     * Before calling this function, you must set the
-     * appropriate search criteria with the set-functions. Note that this search
-     * will return the first cachePages of hitsPerPage, for more you need to
-     * call more.
-     *
-     * Call to search() must be eventually followed by call to destroy()
-     * so that IndexSearcher objects are properly freed.
-     *
-     * @return The number of hits
-     */
+    @VisibleForTesting
     public int search() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        return search(
-                env.hasProjects() ? env.getProjectList() : new ArrayList<>(),
-                new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
+        return search(env.hasProjects() ? env.getProjectList() : new ArrayList<>());
     }
 
     /**
      * Execute a search on projects or root file.
+     * <p>
+     * Before calling this function, you must set the appropriate search criteria with the set-functions.
+     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}.
+     * <p>
+     * If the {@code projects} parameter is an empty list, it tries to search in {@code searchSingleDatabase}
+     * with root set to the {@code root} parameter.
+     * <p>
+     * Must be eventually followed by call to {@link #destroy()} so that
+     * the {@code IndexSearcher} objects are properly freed.
      *
-     * If @param projects is an empty list it tries to search in @code
-     * searchSingleDatabase with root set to @param root
-     *
-     * Call to search() must be eventually followed by call to destroy()
-     * so that IndexSearcher objects are properly freed.
-     *
-     * @return The number of hits
+     * @param projects projects to search
+     * @return total number of hits
      */
-    private int search(List<Project> projects, File root) {
-        source = RuntimeEnvironment.getInstance().getSourceRootPath();
-        data = RuntimeEnvironment.getInstance().getDataRootPath();
+    public int search(List<Project> projects) {
+        source = env.getSourceRootPath();
+        data = env.getDataRootPath();
         docs.clear();
 
         QueryBuilder newBuilder = createQueryBuilder();
@@ -359,14 +354,9 @@ public class SearchEngine {
             query = newBuilder.build();
             if (query != null) {
                 if (projects.isEmpty()) {
-                    // search the index database
-                    // NOTE: this assumes that source root does not contain any project,
-                    //       just data files - so no authorization can be enforced.
                     searchSingleDatabase(true);
                 } else {
-                    // search selected projects
-                    //TODO support paging per project (in search.java)
-                    //NOTE projects are already filtered if we accessed through web page @see search(HttpServletRequest)
+                    // TODO support paging per project (in search.java)
                     searchMultiDatabase(projects, false);
                 }
             }
@@ -404,21 +394,21 @@ public class SearchEngine {
 
     /**
      * Gets the queried score docs from {@code search(...)} if it was called.
-     * @return a defined instance if a query succeeded, or {@code null}
+     * @return a defined instance if the query succeeded, or {@code null}
      */
+    @VisibleForTesting
     public ScoreDoc[] scoreDocs() {
         return hits;
     }
 
     /**
-     * Gets the document of the specified {@code docId} from
-     * {@code search(...)} if it was called.
+     * Gets the document of the specified {@code docId} from {@code search(...)} if it was called.
      *
      * @param docId document ID
      * @return a defined instance if a query succeeded
-     * @throws java.io.IOException if an error occurs obtaining the Lucene
-     * document by ID
+     * @throws java.io.IOException if an error occurs obtaining the Lucene document by ID
      */
+    @VisibleForTesting
     public Document doc(int docId) throws IOException {
         if (searcher == null) {
             throw new IllegalStateException("search(...) did not succeed");
@@ -427,20 +417,22 @@ public class SearchEngine {
     }
 
     /**
-     * Get results , if no search was started before, no results are returned.
+     * Get results by going through the documents from the search hits and grabbing the context therein.
+     * This involves reading various document fields as well as file contents from the respective files
+     * under source root.
+     * If no search was started before, no results are returned.
      * This method will requery if {@code end} is more than first query from search,
      * hence performance hit applies, if you want results in later pages than
-     * number of cachePages. {@code end} has to be bigger than {@code start} !
+     * number of {@code cachePages}. {@code end} has to be bigger than {@code start} !
      *
-     * @param start start of the hit list
-     * @param end end of the hit list
-     * @param ret list of results from start to end or null/empty if no search
-     * was started
+     * @param startDocIndex start index of the hit list
+     * @param endDocIndex end index of the hit list
+     * @param ret output argument that contains list of results from start to end or null/empty if no search was started
      */
-    public void results(int start, int end, List<Hit> ret) {
+    public void results(int startDocIndex, int endDocIndex, @NotNull List<Hit> ret) {
 
-        //return if no start search() was done
-        if (hits == null || (end < start)) {
+        // return if no start search() was done
+        if (hits == null || (endDocIndex < startDocIndex)) {
             ret.clear();
             return;
         }
@@ -448,41 +440,50 @@ public class SearchEngine {
         ret.clear();
 
         // TODO check if below fits for if end=old hits.length, or it should include it
-        if (end > hits.length && !allCollected) {
-            //do the requery, we want more than 5 pages
-            var collectorManager = new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE);
+        if (endDocIndex > hits.length && !allCollected) {
+            // Do the requery, we want more than 'cachePages' pages.
+            Sort luceneSort = getSort();
+            Statistics stat = new Statistics();
             try {
-                hits = searcher.search(query, collectorManager).scoreDocs;
+                if (luceneSort == null) {
+                    hits = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE)).scoreDocs;
+                } else {
+                    hits = searcher.search(query, new TopFieldCollectorManager(luceneSort, totalHits, Integer.MAX_VALUE)).scoreDocs;
+                }
             } catch (Exception e) { // this exception should never be hit, since search() will hit this before
-                LOGGER.log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+                LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
+            stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
+                    "search.latency", new String[]{"category", "engine",
+                            "outcome", hits.length > 0 ? "success" : "empty"});
             StoredFields storedFields = null;
             try {
                 storedFields = searcher.storedFields();
             } catch (Exception e) {
-                LOGGER.log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+                LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
             if (storedFields != null) {
-                Document d;
+                docs.clear();
                 for (ScoreDoc hit : hits) {
                     try {
-                        d = storedFields.document(hit.doc);
+                        Document d = storedFields.document(hit.doc);
                         docs.add(d);
                     } catch (Exception e) {
-                        LOGGER.log(
-                                Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+                        LOGGER.log(Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
                     }
                 }
             }
             allCollected = true;
         }
 
-        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever
+        extractResults(startDocIndex, endDocIndex, ret);
+    }
+
+    private void extractResults(int startDocIndex, int endDocIndex, @NotNull List<Hit> ret) {
+        //TODO generation of ret(results) could be cached and consumers of engine would just print them in whatever
         // form they need, this way we could get rid of docs
         // the only problem is that count of docs is usually smaller than number of results
-        for (int ii = start; ii < end; ++ii) {
+        for (int ii = startDocIndex; ii < endDocIndex; ++ii) {
             boolean alt = (ii % 2 == 0);
             boolean hasContext = false;
             try {
@@ -500,13 +501,12 @@ public class SearchEngine {
                 if (scopesField != null) {
                     scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
                 }
-                int nhits = docs.size();
 
                 if (sourceContext != null) {
                     sourceContext.toggleAlt();
                     try {
                         if (AbstractAnalyzer.Genre.PLAIN == genre && (source != null)) {
-                            // SRCROOT is read with UTF-8 as a default.
+                            // Source root is read with UTF-8 as a default.
                             hasContext = sourceContext.getContext(
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
@@ -515,11 +515,11 @@ public class SearchEngine {
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /*
-                              For backward compatibility, read the
-                              OpenGrok-produced document using the system
+                              For backward compatibility, read the OpenGrok-produced document using the system
                               default charset.
                              */
-                            try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
+                            final char[] content = new char[1024 * 8];
+                            try (Reader r = env.isCompressXref()
                                     ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(
                                             TandemPath.join(data + Prefix.XREF_P + filename, ".gz"))))))
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
@@ -532,7 +532,7 @@ public class SearchEngine {
                             Fragment[] fragments = sum.getFragments();
                             for (Fragment fragment : fragments) {
                                 String match = fragment.toString();
-                                if (match.length() > 0) {
+                                if (!match.isEmpty()) {
                                     if (!fragment.isEllipsis()) {
                                         Hit hit = new Hit(filename, fragment.toString(), "", true, alt);
                                         ret.add(hit);
@@ -556,8 +556,7 @@ public class SearchEngine {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
             } catch (IOException | ClassNotFoundException | HistoryException e) {
-                LOGGER.log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+                LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
     }
