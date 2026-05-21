@@ -226,4 +226,39 @@ class CtagsTest {
 
     private record SingleTagTestData(String file, String symbol, String type) {
     }
+
+    /**
+     * Verifies that the Groovy ctags regex injection in
+     * {@link Ctags#addGroovySupport(java.util.List)} produces the expected
+     * declaration tags for a small Groovy sample.
+     */
+    @Test
+    void testGroovyTags() throws Exception {
+        // (symbol, type, line) tuples that addGroovySupport should produce.
+        record Expected(String symbol, String type, int line) { }
+        List<Expected> expected = List.of(
+                new Expected("com.example.demo", "package", 1),
+                new Expected("groovy.transform.CompileStatic", "import", 3),
+                new Expected("java.util.Collections.emptyList", "import", 4),
+                new Expected("Sample", "class", 7),
+                new Expected("name", "field", 9),
+                new Expected("greet", "method", 11),
+                new Expected("Greeter", "interface", 16),
+                new Expected("Walker", "trait", 20),
+                new Expected("Color", "enum", 24),
+                new Expected("Stamp", "annotation", 28)
+        );
+
+        Definitions defs = getDefs("groovy/Sample.groovy");
+        assertNotNull(defs, "no definitions returned for Sample.groovy");
+
+        for (Expected e : expected) {
+            boolean found = defs.getTags().stream()
+                    .anyMatch(t -> t.symbol.equals(e.symbol)
+                            && t.type.equals(e.type)
+                            && t.line == e.line);
+            assertTrue(found, "missing tag: " + e.symbol + "/" + e.type + "@" + e.line
+                    + ", actual tags: " + defs.getTags());
+        }
+    }
 }

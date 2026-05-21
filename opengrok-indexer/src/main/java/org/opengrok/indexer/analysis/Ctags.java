@@ -207,6 +207,7 @@ public class Ctags implements Resettable {
         //on Solaris regexp.h used is different than on linux (gnu regexp)
         //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
         addScalaSupport(command);
+        addGroovySupport(command);
         addHaskellSupport(command);
         //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
         addClojureSupport(command);
@@ -451,6 +452,40 @@ public class Ctags implements Resettable {
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v/");
         command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p/");
+    }
+
+    private void addGroovySupport(List<String> command) {
+        if (!ctagsLanguages.contains("Groovy")) { // Built-in would be capitalized.
+            command.add("--langdef=groovy"); // Lower-case if user-defined.
+        }
+        command.add("--kinddef-groovy=c,class,Classes");
+        command.add("--kinddef-groovy=i,interface,Interfaces");
+        command.add("--kinddef-groovy=t,trait,Traits");
+        command.add("--kinddef-groovy=e,enum,Enumerations");
+        command.add("--kinddef-groovy=a,annotation,Annotation\\ types");
+        command.add("--kinddef-groovy=m,method,Methods");
+        command.add("--kinddef-groovy=f,field,Fields");
+        command.add("--kinddef-groovy=p,package,Packages");
+        command.add("--kinddef-groovy=I,import,Imports");
+
+        command.add("--regex-groovy=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p/");
+        command.add("--regex-groovy=/^[[:space:]]*import[[:space:]]+(static[[:space:]]+)?" +
+                "([a-zA-Z0-9_.*]+)/\\2/I/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected|abstract|final|static|sealed)" +
+                "[[:space:]]+)*class[[:space:]]+([a-zA-Z0-9_]+)/\\3/c/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected|abstract)" +
+                "[[:space:]]+)*interface[[:space:]]+([a-zA-Z0-9_]+)/\\3/i/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected|abstract)" +
+                "[[:space:]]+)*trait[[:space:]]+([a-zA-Z0-9_]+)/\\3/t/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected)" +
+                "[[:space:]]+)*enum[[:space:]]+([a-zA-Z0-9_]+)/\\3/e/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected)" +
+                "[[:space:]]+)*@interface[[:space:]]+([a-zA-Z0-9_]+)/\\3/a/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected|static|final|" +
+                "synchronized|abstract|native)[[:space:]]+)*def[[:space:]]+([a-zA-Z0-9_]+)" +
+                "[[:space:]]*\\(/\\3/m/");
+        command.add("--regex-groovy=/^[[:space:]]*((public|private|protected|static|final)" +
+                "[[:space:]]+)*def[[:space:]]+([a-zA-Z0-9_]+)[[:space:]]*[=;]/\\3/f/");
     }
 
     /**
