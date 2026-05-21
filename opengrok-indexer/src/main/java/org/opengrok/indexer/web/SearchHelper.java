@@ -61,7 +61,9 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldCollectorManager;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.TopScoreDocCollectorManager;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
@@ -475,7 +477,16 @@ public class SearchHelper {
             return this;
         }
         try {
-            TopFieldDocs fdocs = searcher.search(query, start + maxItems, sort);
+            // Use collector managers with Integer.MAX_VALUE totalHitsThreshold so totalHits
+            // is exact (rather than a lower-bound estimate). This keeps the hit count stable
+            // across repeated searches and aligns it with the SearchEngine used by the REST API.
+            int numHits = start + maxItems;
+            TopDocs fdocs;
+            if (Sort.RELEVANCE.equals(sort)) {
+                fdocs = searcher.search(query, new TopScoreDocCollectorManager(numHits, Integer.MAX_VALUE));
+            } else {
+                fdocs = searcher.search(query, new TopFieldCollectorManager(sort, numHits, Integer.MAX_VALUE));
+            }
             totalHits = fdocs.totalHits.value;
             hits = fdocs.scoreDocs;
 

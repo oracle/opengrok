@@ -232,9 +232,9 @@ public class SearchEngine {
         int numHits = hitsPerPage * cachePages;
         TopDocs topDocs;
         if (luceneSort == null) {
-            topDocs = searcher.search(query, new TopScoreDocCollectorManager(numHits, Short.MAX_VALUE));
+            topDocs = searcher.search(query, new TopScoreDocCollectorManager(numHits, Integer.MAX_VALUE));
         } else {
-            topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, numHits, Short.MAX_VALUE));
+            topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, numHits, Integer.MAX_VALUE));
         }
         hits = topDocs.scoreDocs;
         totalHits = (int) topDocs.totalHits.value;
@@ -246,9 +246,9 @@ public class SearchEngine {
 
         if (!paging && totalHits > numHits) {
             if (luceneSort == null) {
-                topDocs = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Short.MAX_VALUE));
+                topDocs = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE));
             } else {
-                topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, totalHits, Short.MAX_VALUE));
+                topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, totalHits, Integer.MAX_VALUE));
             }
             hits = topDocs.scoreDocs;
         }
@@ -397,7 +397,7 @@ public class SearchEngine {
                 LOGGER.log(Level.WARNING, "An error occurred while getting history context", e);
             }
         }
-        int count = hits == null ? 0 : hits.length;
+        int count = hits == null ? 0 : totalHits;
         queryBuilder = newBuilder;
         return count;
     }
@@ -450,7 +450,7 @@ public class SearchEngine {
         // TODO check if below fits for if end=old hits.length, or it should include it
         if (end > hits.length && !allCollected) {
             //do the requery, we want more than 5 pages
-            var collectorManager = new TopScoreDocCollectorManager(totalHits, Short.MAX_VALUE);
+            var collectorManager = new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE);
             try {
                 hits = searcher.search(query, collectorManager).scoreDocs;
             } catch (Exception e) { // this exception should never be hit, since search() will hit this before
