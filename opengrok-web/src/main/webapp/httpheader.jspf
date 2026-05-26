@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
@@ -46,7 +46,7 @@ org.opengrok.web.Scripts"
     PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
-    String dstyle = styleDir + '/' + "style-1.0.4.min.css";
+    String dstyle = styleDir + '/' + "style-1.0.5.min.css";
     String pstyle = styleDir + '/' + "print-1.0.2.min.css";
     String mstyle = styleDir + '/' + "mandoc-1.0.0.min.css";
 %><!DOCTYPE html>
@@ -57,24 +57,39 @@ org.opengrok.web.Scripts"
 <meta name="robots" content="noindex,nofollow" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="generator" content="{OpenGrok <%=Info.getVersion()%> (<%=Info.getRevision()%>)" />
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" data-theme-color-light>
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e1f22" data-theme-color-dark>
 <link rel="icon" href="<%=styleDir%>/img/favicon.svg">
 <link rel="mask-icon" href="<%=styleDir%>/img/mask-icon.svg" color="#000000">
 <link rel="apple-touch-icon" href="<%=styleDir%>/img/apple-touch-icon.png">
 <link rel="manifest" href="<%=ctxPath%>/manifest.json">
 <link rel="preload" href="<%=styleDir%>/font/SunSansRegular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" type="text/css" media="all"
-    title="Default" href="<%= dstyle %>" />
-<link rel="alternate stylesheet" type="text/css" media="all"
-    title="Paper White" href="<%= pstyle %>" />
-<link rel="stylesheet" type="text/css" href="<%= mstyle %>" media="all" />
-<link rel="stylesheet" type="text/css" href="<%= pstyle %>" media="print" />
+<script type="text/javascript">/* <![CDATA[ */
+    (function () {
+        try {
+            var themeMode = localStorage.getItem('theme-mode');
+            if (themeMode === 'light' || themeMode === 'dark') {
+                document.documentElement.dataset.theme = themeMode;
+                document.querySelector('[data-theme-color-light]').content = themeMode === 'dark' ? '#1e1f22' : '#ffffff';
+                document.querySelector('[data-theme-color-dark]').content = themeMode === 'dark' ? '#1e1f22' : '#ffffff';
+            }
+        } catch (e) {
+            // Ignore localStorage access errors and honor the OS setting.
+        }
+    }());
+/* ]]> */</script>
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.structure.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.theme.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.3.min.css" />
+<link rel="stylesheet" type="text/css" media="all"
+    title="Default" href="<%= dstyle %>" />
+<link rel="alternate stylesheet" type="text/css" media="all"
+    title="Paper White" href="<%= pstyle %>" />
+<link rel="stylesheet" type="text/css" href="<%= mstyle %>" media="all" />
+<link rel="stylesheet" type="text/css" href="<%= pstyle %>" media="print" />
 
 <%
     /**

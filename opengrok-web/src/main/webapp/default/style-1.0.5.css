@@ -1,7 +1,218 @@
+/* theme colors */
+:root {
+    color-scheme: light dark;
+    --og-bg: #ffffff;
+    --og-fg: #000000;
+    --og-header-bg: #ffffff;
+    --og-link: #2030A2;
+    --og-link-visited: #202062;
+    --og-accent: #ffc726;
+    --og-border: #dddddd;
+    --og-border-strong: #999999;
+    --og-table-head-bg: #c5d5a9;
+    --og-row-even-bg: #e8e8f0;
+    --og-control-bg: #a3b8cb;
+    --og-control-border: #bbbbff;
+    --og-control-fg: #4c4c4c;
+    --og-panel-bg: #ffffff;
+    --og-panel-heading-bg: #e0e0e0;
+    --og-panel-heading-fg: #333333;
+    --og-muted-fg: #777777;
+    --og-subtle-fg: #666666;
+    --og-subtle-path-fg: #888888;
+    --og-error-fg: #a52a2a;
+    --og-line-bg: #dddddd;
+    --og-line-fg: #666666;
+    --og-line-highlight-fg: #000000;
+    --og-target-bg: orange;
+    --og-target-fg: yellow;
+    --og-match-bg: #ffff99;
+    --og-diff-delete-bg: #ffcc40;
+    --og-diff-add-bg: #8bd98b;
+    --og-tab-bg: #fafae0;
+    --og-man-bg: #ddddcc;
+    --og-popup-bg: rgb(255,255,204);
+    --og-popup-bg-alpha: rgba(255,255,204,0.80);
+    --og-popup-shadow: #888888;
+    --og-message-active-bg: #337ab7;
+    --og-message-active-fg: #ffffff;
+    --og-message-disabled-bg: #eeeeee;
+    --og-message-disabled-fg: #777777;
+    --og-message-success-bg: #dff0d8;
+    --og-message-success-fg: #3c763d;
+    --og-message-info-bg: #d9edf7;
+    --og-message-info-fg: #31708f;
+    --og-message-warning-bg: #fcf8e3;
+    --og-message-warning-fg: #8a6d3b;
+    --og-message-error-bg: #f2dede;
+    --og-message-error-fg: #a94442;
+    --og-markdown-bg: #F7F7F7;
+    --og-code-number-fg: #a52a2a;
+    --og-code-string-fg: green;
+    --og-code-comment-fg: #666666;
+    --og-code-bold-fg: #000000;
+    --og-code-definition-fg: #990099;
+    --og-symbol-label-fg: red;
+    --og-symbol-label-bg: yellow;
+    --og-symbol-macro-fg: #cc6666;
+    --og-symbol-arg-fg: #6600cc;
+    --og-symbol-local-fg: #996633;
+    --og-symbol-variable-fg: #cc3300;
+    --og-symbol-type-fg: #990099;
+    --og-symbol-field-fg: #009900;
+    --og-symbol-function-fg: #0000ff;
+    --og-symbol-scope-fg: steelblue;
+    --og-highlight-yellow: #ffd700;
+    --og-highlight-green: #00ff00;
+    --og-highlight-blue: #00ccff;
+    --og-highlight-purple: #F653F8;
+    --og-highlight-orange: rgb(242, 132, 34);
+    --og-highlight-light-green: #B6EBB5;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --og-bg: #1e1f22;
+        --og-fg: #d8d8d8;
+        --og-header-bg: #1e1f22;
+        --og-link: #8ab4ff;
+        --og-link-visited: #c58fff;
+        --og-border: #4b4d52;
+        --og-border-strong: #777a80;
+        --og-table-head-bg: #35452f;
+        --og-row-even-bg: #282a2f;
+        --og-control-bg: #35465a;
+        --og-control-border: #5b6f94;
+        --og-control-fg: #e3e3e3;
+        --og-panel-bg: #24262b;
+        --og-panel-heading-bg: #303238;
+        --og-panel-heading-fg: #f0f0f0;
+        --og-muted-fg: #a8a8a8;
+        --og-subtle-fg: #ababab;
+        --og-subtle-path-fg: #a0a0a0;
+        --og-error-fg: #ff9b8d;
+        --og-line-bg: #2f3136;
+        --og-line-fg: #b0b0b0;
+        --og-line-highlight-fg: #ffffff;
+        --og-target-bg: #9b6500;
+        --og-target-fg: #ffffff;
+        --og-match-bg: #665c00;
+        --og-diff-delete-bg: #6a3f00;
+        --og-diff-add-bg: #285f28;
+        --og-tab-bg: #303022;
+        --og-man-bg: #333329;
+        --og-popup-bg: #333329;
+        --og-popup-bg-alpha: rgba(51,51,41,0.92);
+        --og-popup-shadow: #111111;
+        --og-message-disabled-bg: #303238;
+        --og-message-success-bg: #1f3b25;
+        --og-message-success-fg: #9be29b;
+        --og-message-info-bg: #1d3948;
+        --og-message-info-fg: #99d9f2;
+        --og-message-warning-bg: #453919;
+        --og-message-warning-fg: #f0d890;
+        --og-message-error-bg: #4a2525;
+        --og-message-error-fg: #ffb3ad;
+        --og-markdown-bg: #26282d;
+        --og-code-number-fg: #ff9b8d;
+        --og-code-string-fg: #7ee787;
+        --og-code-comment-fg: #a0a0a0;
+        --og-code-bold-fg: #ffffff;
+        --og-code-definition-fg: #d2a8ff;
+        --og-symbol-label-fg: #ff9b8d;
+        --og-symbol-label-bg: #665c00;
+        --og-symbol-macro-fg: #ffa198;
+        --og-symbol-arg-fg: #d2a8ff;
+        --og-symbol-local-fg: #d29922;
+        --og-symbol-variable-fg: #ffa657;
+        --og-symbol-type-fg: #d2a8ff;
+        --og-symbol-field-fg: #7ee787;
+        --og-symbol-function-fg: #79c0ff;
+        --og-symbol-scope-fg: #9ecbff;
+        --og-highlight-yellow: #7a6410;
+        --og-highlight-green: #176f2c;
+        --og-highlight-blue: #096a88;
+        --og-highlight-purple: #77317f;
+        --og-highlight-orange: #874d16;
+        --og-highlight-light-green: #3b703b;
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --og-bg: #1e1f22;
+    --og-fg: #d8d8d8;
+    --og-header-bg: #1e1f22;
+    --og-link: #8ab4ff;
+    --og-link-visited: #c58fff;
+    --og-border: #4b4d52;
+    --og-border-strong: #777a80;
+    --og-table-head-bg: #35452f;
+    --og-row-even-bg: #282a2f;
+    --og-control-bg: #35465a;
+    --og-control-border: #5b6f94;
+    --og-control-fg: #e3e3e3;
+    --og-panel-bg: #24262b;
+    --og-panel-heading-bg: #303238;
+    --og-panel-heading-fg: #f0f0f0;
+    --og-muted-fg: #a8a8a8;
+    --og-subtle-fg: #ababab;
+    --og-subtle-path-fg: #a0a0a0;
+    --og-error-fg: #ff9b8d;
+    --og-line-bg: #2f3136;
+    --og-line-fg: #b0b0b0;
+    --og-line-highlight-fg: #ffffff;
+    --og-target-bg: #9b6500;
+    --og-target-fg: #ffffff;
+    --og-match-bg: #665c00;
+    --og-diff-delete-bg: #6a3f00;
+    --og-diff-add-bg: #285f28;
+    --og-tab-bg: #303022;
+    --og-man-bg: #333329;
+    --og-popup-bg: #333329;
+    --og-popup-bg-alpha: rgba(51,51,41,0.92);
+    --og-popup-shadow: #111111;
+    --og-message-disabled-bg: #303238;
+    --og-message-success-bg: #1f3b25;
+    --og-message-success-fg: #9be29b;
+    --og-message-info-bg: #1d3948;
+    --og-message-info-fg: #99d9f2;
+    --og-message-warning-bg: #453919;
+    --og-message-warning-fg: #f0d890;
+    --og-message-error-bg: #4a2525;
+    --og-message-error-fg: #ffb3ad;
+    --og-markdown-bg: #26282d;
+    --og-code-number-fg: #ff9b8d;
+    --og-code-string-fg: #7ee787;
+    --og-code-comment-fg: #a0a0a0;
+    --og-code-bold-fg: #ffffff;
+    --og-code-definition-fg: #d2a8ff;
+    --og-symbol-label-fg: #ff9b8d;
+    --og-symbol-label-bg: #665c00;
+    --og-symbol-macro-fg: #ffa198;
+    --og-symbol-arg-fg: #d2a8ff;
+    --og-symbol-local-fg: #d29922;
+    --og-symbol-variable-fg: #ffa657;
+    --og-symbol-type-fg: #d2a8ff;
+    --og-symbol-field-fg: #7ee787;
+    --og-symbol-function-fg: #79c0ff;
+    --og-symbol-scope-fg: #9ecbff;
+    --og-highlight-yellow: #7a6410;
+    --og-highlight-green: #176f2c;
+    --og-highlight-blue: #096a88;
+    --og-highlight-purple: #77317f;
+    --og-highlight-orange: #874d16;
+    --og-highlight-light-green: #3b703b;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
 /* common stuff */
 body {
-    background-color: #ffffff;
-    color: black;
+    background-color: var(--og-bg);
+    color: var(--og-fg);
     font-family: sans-serif;
     margin: 0;
 }
@@ -22,16 +233,16 @@ div#src0 a.l.selected:after, div#src0 a.hl.selected:after{
 
 /* highlight line number with anchor */
 div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
-    background: orange;
-    color:yellow;
+    background: var(--og-target-bg);
+    color: var(--og-target-fg);
 }
 
 a:link {
-    color: #2030A2;
+    color: var(--og-link);
 }
 
 a:visited, a:active, a:hover {
-    color: #202062;
+    color: var(--og-link-visited);
 }
 
 a:active, a:hover {
@@ -53,16 +264,16 @@ caption {
 }
 
 thead {
-    background-color: #c5d5a9;
+    background-color: var(--og-table-head-bg);
 }
 
 /* alternate color for odd rows, search-result class handles this by itself */
 tbody:not(.search-result) tr:nth-child(EVEN) {
-    background-color: #e8e8f0;
+    background-color: var(--og-row-even-bg);
 }
 
 .search-result-even-row {
-    background-color: #e8e8f0;
+    background-color: var(--og-row-even-bg);
 }
 
 .bold {
@@ -82,14 +293,14 @@ tbody:not(.search-result) tr:nth-child(EVEN) {
 }
 
 a.btn {
-    color: rgb(76, 76, 76);
+    color: var(--og-control-fg);
 }
 
 input, button, .btn {
-    border: 1px solid #bbbbff;
+    border: 1px solid var(--og-control-border);
     border-radius: 0.75ex;
     -moz-border-radius: 0.75ex;
-    background-color: #a3b8cb;
+    background-color: var(--og-control-bg);
 }
 
 /* below seems to be a problem for input boxes, where the color will overwrite
@@ -113,7 +324,7 @@ button:hover, button:active, .btn:hover, .btn:active {
 }
 
 .error { /* error messages */
-    color: #a52a2a;
+    color: var(--og-error-fg);
 }
 
 .active {
@@ -129,8 +340,8 @@ button:hover, button:active, .btn:hover, .btn:active {
 
 .panel {
     margin-bottom: 10px;
-    background-color: #fff;
-    border-color: #ddd;
+    background-color: var(--og-panel-bg);
+    border-color: var(--og-border);
     border: 1px solid transparent;
     border-bottom: 0;
     border-radius: 4px;
@@ -170,9 +381,9 @@ button:hover, button:active, .btn:hover, .btn:active {
     border-bottom: 1px solid transparent;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    color: #333;
-    background-color: #e0e0e0;
-    border-color: #ddd;
+    color: var(--og-panel-heading-fg);
+    background-color: var(--og-panel-heading-bg);
+    border-color: var(--og-border);
 }
 
 .panel > .panel-heading:hover,
@@ -272,7 +483,7 @@ html.more #whole_header,
 html.diff #whole_header {
     position: fixed;
     top: 0;
-    background: #ffffff;
+    background: var(--og-header-bg);
     height: 70px;
     width: 100%;
 }
@@ -308,7 +519,7 @@ html.diff #whole_header {
 }
 
 #sbar, #bar { /* default navbar */
-    border-top: 4px solid #ffc726;
+    border-top: 4px solid var(--og-accent);
     margin: 0;
     padding-top: 1ex;
     clear: both;
@@ -322,7 +533,7 @@ html.diff #whole_header {
 
 /* eops = end of project search */
 #ptbl tr:nth-child(2) td {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--og-border);
     padding-bottom: 1ex;
 }
 
@@ -415,7 +626,7 @@ html.diff #whole_header {
 #history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before, #raw::before, #scopes::before {
     content: "|";
     padding: 0.5ex;
-    color: black;
+    color: var(--og-fg);
     font-size: large;
     font-weight: normal;
 }
@@ -425,12 +636,12 @@ html.diff #whole_header {
 }
 
 #annotate.c, #history.c { /* indicate annotation/history available */
-    color: #666;
+    color: var(--og-subtle-fg);
 }
 
 input.q { /* text input fields */
-    background-color: #ffffff;
-    border: 1px solid #bbbbff;
+    background-color: var(--og-bg);
+    border: 1px solid var(--og-control-border);
 }
 
 input.submit { /* start search button , clear button */
@@ -493,7 +704,7 @@ html.history #content{
 }
 
 #more b { /* highlight matches */
-    background-color: #ffff99;
+    background-color: var(--og-match-bg);
 }
 
 
@@ -546,7 +757,7 @@ html.history #content{
 
 #revisions tbody td.revtags { /* tags row */
     text-align: left;
-    color: #777777;
+    color: var(--og-muted-fg);
 }
 
 table#revisions tbody tr td p {
@@ -580,18 +791,18 @@ table#revisions tbody tr td p {
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */
     padding-top: 1.5ex;
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid var(--og-border-strong);
     white-space: nowrap;
 }
 
 #diffbar .d, #difftable .d {
     /* "Deleted" heading + highlight of deleted text in diff lines */
-    background-color: #ffcc40;
+    background-color: var(--og-diff-delete-bg);
 }
 
 #diffbar .a, #difftable .a {
     /* "Added" heading + highlight of added text in diff lines */
-    background-color: #8bd98b;
+    background-color: var(--og-diff-add-bg);
 }
 
 #diffbar .it, #difftable .it {
@@ -614,14 +825,14 @@ table#revisions tbody tr td p {
 #diffbar .tabs span {
     padding: 0.75ex 1ex;
     margin-left: 1ex;
-    border: 1px solid #999; /* should be the same as for #diffbar above */
+    border: 1px solid var(--og-border-strong); /* should be the same as for #diffbar above */
     border-radius: 0.75ex 0.75ex 0 00;
     -moz-border-radius: 0.75ex 0.75ex 0 00;
-    background-color: #fafae0; /* navbar like */
+    background-color: var(--og-tab-bg); /* navbar like */
 }
 
 #diffbar .tabs span.active, #diffbar .ctype span.active {
-    background-color: #c5d5a9; /* same as for table thead */
+    background-color: var(--og-table-head-bg); /* same as for table thead */
 }
 
 #diffbar .tabs span.active {
@@ -636,7 +847,7 @@ table#revisions tbody tr td p {
     border: 1px solid #755; /* same as for input */
     border-radius: 0.75ex;
     -moz-border-radius: 0.75ex;
-    background-color: #fafae0; /* navbar like */
+    background-color: var(--og-tab-bg); /* navbar like */
     margin-left: 1ex;
 }
 
@@ -718,7 +929,7 @@ table#dirlist thead tr:nth-child(1) {
 }
 
 span.simplified-path {
-    color: #888;
+    color: var(--og-subtle-path-fg);
 }
 
 div[id^='src'] pre {
@@ -737,25 +948,25 @@ div[id^='src'] pre {
     width: 6ex;
     text-align: right;
     padding-right: 0;
-    background-color: #dddddd;
-    color: #666;
+    background-color: var(--og-line-bg);
+    color: var(--og-subtle-fg);
     margin-right: .5ex;
 }
 
 .blame .search {
         padding-left: .5ex;
-    background-color: #dddddd;
+    background-color: var(--og-line-bg);
         margin-right: .5ex;
 }
 
 div[id^='src'] .hl { /* highlighted line number */
-    color: #000;
+    color: var(--og-line-highlight-fg);
 }
 
 /* highlight line number with anchor */
 div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
-    background: orange;
-    color:yellow;
+    background: var(--og-target-bg);
+    color: var(--og-target-fg);
 }
 
 .blame .r { /* revision number "column" (annotation) */
@@ -771,37 +982,37 @@ div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
 }
 
 /* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
-div[id^='src'] .n  { /* numbers/label      */ color: #a52a2a;                                           }
-div[id^='src'] .s  { /* strings            */ color: green;                                             }
-div[id^='src'] .c  { /* comment            */ color: #666;                                              }
-div[id^='src'] .b  { /* heading/title/bold */ color: #000;       font-weight: bold;                     }
-div[id^='src'] .k  { /* block display      */ color: #000;       font-family: monospace;                }
-div[id^='src'] a.d { /* symbol definition  */ color: #909;       font-weight: bold;                     }
+div[id^='src'] .n  { /* numbers/label      */ color: var(--og-code-number-fg);                                           }
+div[id^='src'] .s  { /* strings            */ color: var(--og-code-string-fg);                                             }
+div[id^='src'] .c  { /* comment            */ color: var(--og-code-comment-fg);                                              }
+div[id^='src'] .b  { /* heading/title/bold */ color: var(--og-code-bold-fg);       font-weight: bold;                     }
+div[id^='src'] .k  { /* block display      */ color: var(--og-code-bold-fg);       font-family: monospace;                }
+div[id^='src'] a.d { /* symbol definition  */ color: var(--og-code-definition-fg);       font-weight: bold;                     }
 
-a.xlbl           { /* label              */ color: red;       font-weight: bold; background-color: yellow }
-a.xm              { /* macro              */ color: #c66;       font-weight: bold;                     }
-a.xa               { /* argument           */ color: #60c;       font-weight: bold;                     }
-a.xl               { /* local              */ color: #963;       font-weight: bold;                     }
-a.xv               { /* variable           */ color: #c30;       font-weight: bold;                     }
-a.xc               { /* class              */ color: #909;       font-weight: bold; font-style: italic; }
-a.xp               { /* package            */ color: #909;       font-weight: bold; font-style: italic; }
-a.xi               { /* interface          */ color: #909;       font-weight: bold; font-style: italic; }
-a.xn               { /* namespace          */ color: #909;       font-weight: bold; font-style: italic; }
-a.xe               { /* enum               */ color: #909;       font-weight: bold; font-style: italic; }
-a.xer              { /* enumerator         */ color: #909;       font-weight: bold; font-style: italic; }
-a.xs               { /* struct             */ color: #909;       font-weight: bold; font-style: italic; }
-a.xt               { /* typedef            */ color: #909;       font-weight: bold; font-style: italic; }
-a.xts              { /* typedefs           */ color: #909;       font-weight: bold; font-style: italic; }
-a.xu               { /* union              */ color: #909;       font-weight: bold; font-style: italic; }
-a.xfld             { /* field              */ color: #090;       font-weight: bold;                     }
-a.xmb              { /* member             */ color: #090;       font-weight: bold;                     }
-a.xf               { /* function           */ color: #00f;       font-weight: bold;                     }
-a.xmt              { /* method             */ color: #00f;       font-weight: bold;                     }
-a.xsr              { /* subroutine         */ color: #00f;       font-weight: bold;                     }
-a.scope            { /* scope              */ color: steelblue; font-weight: bold; padding-left: 1ex;  }
+a.xlbl           { /* label              */ color: var(--og-symbol-label-fg);       font-weight: bold; background-color: var(--og-symbol-label-bg) }
+a.xm              { /* macro              */ color: var(--og-symbol-macro-fg);       font-weight: bold;                     }
+a.xa               { /* argument           */ color: var(--og-symbol-arg-fg);       font-weight: bold;                     }
+a.xl               { /* local              */ color: var(--og-symbol-local-fg);       font-weight: bold;                     }
+a.xv               { /* variable           */ color: var(--og-symbol-variable-fg);       font-weight: bold;                     }
+a.xc               { /* class              */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xp               { /* package            */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xi               { /* interface          */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xn               { /* namespace          */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xe               { /* enum               */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xer              { /* enumerator         */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xs               { /* struct             */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xt               { /* typedef            */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xts              { /* typedefs           */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xu               { /* union              */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xfld             { /* field              */ color: var(--og-symbol-field-fg);       font-weight: bold;                     }
+a.xmb              { /* member             */ color: var(--og-symbol-field-fg);       font-weight: bold;                     }
+a.xf               { /* function           */ color: var(--og-symbol-function-fg);       font-weight: bold;                     }
+a.xmt              { /* method             */ color: var(--og-symbol-function-fg);       font-weight: bold;                     }
+a.xsr              { /* subroutine         */ color: var(--og-symbol-function-fg);       font-weight: bold;                     }
+a.scope            { /* scope              */ color: var(--og-symbol-scope-fg); font-weight: bold; padding-left: 1ex;  }
 
 #man table, #man td  { /* #man == troff src */
-    background-color: #ddddcc;
+    background-color: var(--og-man-bg);
     border: 1px;
     padding: 2px;
 }
@@ -866,32 +1077,32 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 
 .symbol-highlighted.hightlight-color-1 {
     /* yellow */
-    background-color: #ffd700;
+    background-color: var(--og-highlight-yellow);
 }
 
 .symbol-highlighted.hightlight-color-2 {
     /* green */
-    background-color: #00ff00;
+    background-color: var(--og-highlight-green);
 }
 
 .symbol-highlighted.hightlight-color-3 {
     /* blue */
-    background-color: #00ccff;
+    background-color: var(--og-highlight-blue);
 }
 
 .symbol-highlighted.hightlight-color-4 {
     /* purple */
-    background-color: #F653F8;
+    background-color: var(--og-highlight-purple);
 }
 
 .symbol-highlighted.hightlight-color-5 {
     /* orange */
-    background-color: rgb(242, 132, 34);
+    background-color: var(--og-highlight-orange);
 }
 
 .symbol-highlighted.hightlight-color-6 {
     /* light green */
-    background-color: #B6EBB5;
+    background-color: var(--og-highlight-light-green);
 }
 
 .messages-window {
@@ -914,10 +1125,10 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 /**** DIFF NAVIGATION/JUMPER *****/
 
 .diff_navigation_style {
-    border: solid 1px #c0c0c0;
+    border: solid 1px var(--og-border);
     border-radius: 5px;
-    box-shadow: 10px 10px 5px #888888;
-    background-color: rgb(255,255,204);
+    box-shadow: 10px 10px 5px var(--og-popup-shadow);
+    background-color: var(--og-popup-bg);
 }
 
 .diff_navigation {
@@ -927,14 +1138,14 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     width: 30%;
     max-width: 250px;
 
-    background-color: rgba(255,255,204,0.80);
+    background-color: var(--og-popup-bg-alpha);
     overflow: auto;
     padding: 0;
 }
 
 .diff_navigation div.controls {
     margin-top: 1.5em;
-    border-top: solid 2px #c0c0c0;
+    border-top: solid 2px var(--og-border);
 }
 
 .diff_navigation_style .minimize {
@@ -976,7 +1187,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 .diff_navigation .error {
-    color: red;
+    color: var(--og-symbol-label-fg);
 }
 /**** DIFF NAVIGATION/JUMPER *****/
 
@@ -992,7 +1203,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 #results .dir { /* directory row above matched files */
-    background-color: #c5d5a9;
+    background-color: var(--og-table-head-bg);
 }
 
 #results .dir td { /* directory link */
@@ -1020,17 +1231,17 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 #results .s, #more .s { /* matched line contents */
-    color: #000;
+    color: var(--og-line-highlight-fg);
 }
 
 #results i { /* match type description (method, interface etc.) */
-    color: green;
+    color: var(--og-code-string-fg);
     font-weight: bold;
     padding-left: 1ex;
 }
 
 #results .sel, #revisions .sel { /* slider item for the shown search result page */
-    background-color: #a3b8cb;
+    background-color: var(--og-control-bg);
     border: 1px #333366 solid;
     padding: .5em;
     margin: 1px;
@@ -1048,7 +1259,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 
 /* ############### start of footer ############## */
 #footer {
-    color: #777777;
+    color: var(--og-muted-fg);
     font-size: small;
     margin: 1ex 0;
 }
@@ -1172,7 +1383,7 @@ span.scope-signature {
     position: relative;
     display: block;
     padding: 2px 10px;
-    background-color: #fff;
+    background-color: var(--og-panel-bg);
     margin-bottom: 3px;
 }
 
@@ -1200,9 +1411,9 @@ h6.message-group-caption {
 .message-group-item.disabled,
 .message-group-item.disabled:hover,
 .message-group-item.disabled:focus {
-    color: #777;
+    color: var(--og-message-disabled-fg);
     cursor: not-allowed;
-    background-color: #eee;
+    background-color: var(--og-message-disabled-bg);
 }
 
 .message-group-item.active,
@@ -1210,28 +1421,28 @@ h6.message-group-caption {
 .message-group-item.active:focus {
     z-index: 2;
     color: #fff;
-    background-color: #337ab7;
-    border-color: #337ab7;
+    background-color: var(--og-message-active-bg);
+    border-color: var(--og-message-active-bg);
 }
 
 .message-group-item.success {
-    color: #3c763d;
-    background-color: #dff0d8;
+    color: var(--og-message-success-fg);
+    background-color: var(--og-message-success-bg);
 }
 
 .message-group-item.info {
-    color: #31708f;
-    background-color: #d9edf7;
+    color: var(--og-message-info-fg);
+    background-color: var(--og-message-info-bg);
 }
 
 .message-group-item.warning {
-    color: #8a6d3b;
-    background-color: #fcf8e3;
+    color: var(--og-message-warning-fg);
+    background-color: var(--og-message-warning-bg);
 }
 
 .message-group-item.error {
-    color: #a94442;
-    background-color: #f2dede;
+    color: var(--og-message-error-fg);
+    background-color: var(--og-message-error-bg);
 }
 
 .message-group-item-heading {
@@ -1251,19 +1462,19 @@ h6.message-group-caption {
 }
 
 .important-note.note-success {
-    background-color: #3c763d;
+    background-color: var(--og-message-success-fg);
 }
 
 .important-note.note-info {
-    background-color: #31708f;
+    background-color: var(--og-message-info-fg);
 }
 
 .important-note.note-warning {
-    background-color: #8a6d3b;
+    background-color: var(--og-message-warning-fg);
 }
 
 .important-note.note-error {
-    background-color: #a94442;
+    background-color: var(--og-message-error-fg);
 }
 
 .important-note.important-note-rounded {
@@ -1318,7 +1529,7 @@ td#typeLabelTd {
     margin-top: 15px;
     width: 70%;
     padding: 15px;
-    background-color: #F7F7F7 !important;
+    background-color: var(--og-markdown-bg) !important;
     border-radius: 4px;
     box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, .3);
 }
@@ -1349,4 +1560,146 @@ td#typeLabelTd {
 
 .no-margin-left {
     margin-left: 0;
+}
+
+
+/* dark-mode capable vendor widget overrides */
+.ui-widget-content,
+.ui-widget-header,
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default,
+.ui-button,
+.sol-container,
+.sol-selection-container,
+.sol-action-buttons,
+.sol-optiongroup,
+.sol-optiongroup-label,
+.sol-selected-display-item {
+    background: var(--og-panel-bg);
+    border-color: var(--og-border);
+    color: var(--og-fg);
+}
+
+.ui-widget-content a,
+.ui-widget-header a {
+    color: var(--og-link);
+}
+
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus,
+.ui-button:hover,
+.ui-button:focus,
+.sol-selection:not(.sol-keyboard-navigation) .sol-option:hover,
+.sol-option.keyboard-selection {
+    background: var(--og-control-bg);
+    border-color: var(--og-control-border);
+    color: var(--og-message-active-fg);
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    background: var(--og-message-active-bg);
+    color: var(--og-message-active-fg);
+}
+
+.sol-input-container input[type="text"] {
+    background-color: var(--og-bg);
+    color: var(--og-fg);
+}
+
+:root[data-theme="dark"] img[src$="/img/rss.png"],
+:root[data-theme="dark"] #rssi,
+:root[data-theme="dark"] span.unfold-icon,
+:root[data-theme="dark"] span.fold-icon,
+:root[data-theme="dark"] .fold-down:before,
+:root[data-theme="dark"] .fold-up:before {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) img[src$="/img/rss.png"],
+    :root:not([data-theme="light"]) #rssi,
+    :root:not([data-theme="light"]) span.unfold-icon,
+    :root:not([data-theme="light"]) span.fold-icon,
+    :root:not([data-theme="light"]) .fold-down:before,
+    :root:not([data-theme="light"]) .fold-up:before {
+        filter: invert(1) hue-rotate(180deg);
+    }
+}
+
+/* Searchable option list project/file type selector dark-mode overrides. */
+.sol-inner-container,
+.sol-container.sol-active .sol-inner-container,
+.sol-container.sol-active .sol-selection-container,
+.sol-selection,
+.sol-option,
+.sol-label,
+.sol-results-count,
+.sol-selected-display-item {
+    background: var(--og-panel-bg);
+    color: var(--og-fg);
+}
+
+.sol-inner-container,
+.sol-container.sol-active .sol-selection-container,
+.sol-results-count,
+.sol-selected-display-item {
+    border-color: var(--og-border);
+}
+
+.sol-input-container input[type="text"],
+.sol-input-container input[type="text"]:focus,
+.sol-input-container input[type="text"]::placeholder {
+    background: transparent;
+    color: var(--og-fg);
+}
+
+.sol-input-container input[type="text"]:-ms-input-placeholder {
+    color: var(--og-muted-fg);
+}
+
+.sol-caret-container .sol-caret {
+    border-top-color: var(--og-fg);
+}
+
+.sol-action-buttons,
+.sol-optiongroup,
+.sol-optiongroup-label {
+    background: var(--og-panel-heading-bg);
+    border-color: var(--og-border);
+    color: var(--og-panel-heading-fg);
+}
+
+.sol-action-buttons a {
+    color: var(--og-link);
+}
+
+.sol-action-buttons a:hover {
+    border-bottom-color: var(--og-link);
+}
+
+.sol-optiongroup.disabled,
+.sol-no-results,
+.sol-loading-data,
+.sol-quick-delete {
+    color: var(--og-muted-fg);
+}
+
+.sol-quick-delete:hover {
+    color: var(--og-fg);
+}
+
+.sol-selection:not(.sol-keyboard-navigation) .sol-option:hover,
+.sol-option.keyboard-selection {
+    background: var(--og-control-bg);
+    color: var(--og-message-active-fg);
 }
