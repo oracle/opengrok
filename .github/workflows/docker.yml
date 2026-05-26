@@ -50,4 +50,5 @@ jobs:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
+        OPENGROK_REF: ${{ github.ref }}
       run: ./dev/dockerhub_readme.py
