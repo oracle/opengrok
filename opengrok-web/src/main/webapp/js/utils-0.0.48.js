@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2022, Krystof Tulinger <k.tulinger@seznam.cz>.
@@ -2409,6 +2409,56 @@ function getSettingsValue(key) {
 function onSettingsValueChange(el) {
     let value = getSettingsInputValue(el);
     localStorage.setItem(el.name, value);
+    applySettingValue(el.name, value);
+}
+
+/**
+ * Applies a user-specific setting value after it has been loaded or changed.
+ * @param name settings key
+ * @param value settings value
+ */
+function applySettingValue(name, value) {
+    if (name === 'theme-mode') {
+        applyThemeMode(value);
+    }
+}
+
+/**
+ * Applies the theme mode to the document root. The automatic mode deliberately
+ * does not set an override attribute so CSS can honor the operating system
+ * setting via prefers-color-scheme, including live OS setting changes.
+ * @param value theme mode: auto, light, or dark
+ */
+function applyThemeMode(value) {
+    updateThemeColor(value);
+    if (value === 'light' || value === 'dark') {
+        document.documentElement.dataset.theme = value;
+    } else {
+        delete document.documentElement.dataset.theme;
+    }
+}
+
+/**
+ * Updates browser UI theme colors. In automatic mode, keep separate media-aware
+ * values so the browser can honor operating system theme changes.
+ * @param value theme mode: auto, light, or dark
+ */
+function updateThemeColor(value) {
+    const lightThemeColor = document.querySelector('[data-theme-color-light]');
+    const darkThemeColor = document.querySelector('[data-theme-color-dark]');
+    if (!lightThemeColor || !darkThemeColor) {
+        return;
+    }
+    if (value === 'dark') {
+        lightThemeColor.content = '#1e1f22';
+        darkThemeColor.content = '#1e1f22';
+    } else if (value === 'light') {
+        lightThemeColor.content = '#ffffff';
+        darkThemeColor.content = '#ffffff';
+    } else {
+        lightThemeColor.content = '#ffffff';
+        darkThemeColor.content = '#1e1f22';
+    }
 }
 
 /**
@@ -2470,5 +2520,6 @@ function initSettings() {
         } else {
             setDefaultSettingsValue(el);
         }
+        applySettingValue(el.name, getSettingsInputValue(el));
     }
 }

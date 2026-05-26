@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="org.opengrok.web.PageConfig" %>
@@ -39,6 +39,16 @@ Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
     <div id="sbar"></div>
     <div style="padding-left: 1rem;">
         <h1>Settings</h1>
+        <h3 class="header-half-bottom-margin">Appearance</h3>
+        <label>Theme
+            <select class="local-setting" name="theme-mode" data-default-value="auto"
+                    onchange="onSettingsValueChange(this)">
+                <option value="auto">Use operating system setting</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </label>
+        <br>
         <h3 class="header-half-bottom-margin">Suggester</h3>
         <%
             boolean suggesterEnabled = RuntimeEnvironment.getInstance().getSuggesterConfig().isEnabled();
