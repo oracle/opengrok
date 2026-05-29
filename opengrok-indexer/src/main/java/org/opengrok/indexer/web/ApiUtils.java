@@ -50,10 +50,17 @@ public class ApiUtils {
      * by the {@link RuntimeEnvironment#getApiTimeout()}, however each individual status check
      * uses {@link RuntimeEnvironment#getConnectTimeout()} so in the worst case the total time can be
      * {@code getApiTimeout() * getConnectTimeout()}.
+     * <p>
+     * Once the asynchronous request is processed, i.e. after the remote returns anything other
+     * than {@code ACCEPTED} code before the timeout expires, a {@code DELETE} call is made
+     * to the location found in the original response to perform cleanup.
+     * In case the request is still in the {@code ACCEPTED} state after the timeout expires,
+     * the response is returned without making the {@code DELETE} call.
+     * </p>
      * @param response response returned from the server upon asynchronous API request
      * @return response from the status API call
      * @throws InterruptedException on sleep interruption
-     * @throws IllegalArgumentException on invalid request (no {@code Location} header)
+     * @throws IllegalArgumentException on invalid request (no {@code Location} header in the response)
      */
     public static @NotNull Response waitForAsyncApi(@NotNull Response response)
             throws InterruptedException, IllegalArgumentException {
