@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.web;
 
+import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
@@ -85,9 +86,9 @@ public class ApiUtils {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
-        try (Response deleteResponse = ClientBuilder.newBuilder().
-                connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
-                target(location).request().delete()) {
+        try (Client deleteClient = ClientBuilder.newBuilder().
+                connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build();
+                Response deleteResponse = deleteClient.target(location).request().delete()) {
             if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                 LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
                         new Object[]{location, response.getStatusInfo()});
