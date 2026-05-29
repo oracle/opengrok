@@ -63,7 +63,7 @@ public class ApiUtils {
             return response;
         }
 
-        String location = response.getHeaderString(HttpHeaders.LOCATION);
+        final String location = response.getHeaderString(HttpHeaders.LOCATION);
         if (location == null) {
             throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));
         }
