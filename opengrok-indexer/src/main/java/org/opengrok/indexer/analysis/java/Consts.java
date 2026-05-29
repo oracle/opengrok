@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.java;
 
@@ -31,6 +31,7 @@ import java.util.Set;
 public class Consts {
 
     static final Set<String> kwd = new HashSet<>();
+
     static {
         kwd.add("abstract");
         kwd.add("assert");
@@ -65,10 +66,12 @@ public class Consts {
         kwd.add("native");
         kwd.add("new");
         kwd.add("package");
+        kwd.add("permits");
         kwd.add("private");
         kwd.add("protected");
         kwd.add("public");
         kwd.add("return");
+        kwd.add("sealed");
         kwd.add("short");
         kwd.add("static");
         kwd.add("strictfp");
@@ -88,5 +91,4 @@ public class Consts {
 
     private Consts() {
     }
-
 }
