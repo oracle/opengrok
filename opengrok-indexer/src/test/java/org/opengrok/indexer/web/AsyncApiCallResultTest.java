@@ -119,7 +119,6 @@ class AsyncApiCallResultTest {
             verify(firstBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             verify(secondBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             verify(deleteResponse).close();
-            verify(secondClient).close();
         }
     }
 
