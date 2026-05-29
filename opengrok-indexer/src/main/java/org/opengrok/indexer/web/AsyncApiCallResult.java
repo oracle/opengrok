@@ -79,14 +79,13 @@ public class AsyncApiCallResult {
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
         for (int i = 0; i < apiTimeout; i++) {
-            try (Client client = ClientBuilder.newBuilder().
-                    connectTimeout(connectTimeout, TimeUnit.SECONDS).build()) {
-                response = client.target(location).request().get();
-                if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                    Thread.sleep(1000);
-                } else {
-                    break;
-                }
+            response = ClientBuilder.newBuilder().
+                    connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
+                    target(location).request().get();
+            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                Thread.sleep(1000);
+            } else {
+                break;
             }
         }
 
@@ -96,9 +95,9 @@ public class AsyncApiCallResult {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
-        try (Client deleteClient = ClientBuilder.newBuilder().
-                connectTimeout(connectTimeout, TimeUnit.SECONDS).build();
-                Response deleteResponse = deleteClient.target(location).request().delete()) {
+        try (Response deleteResponse = ClientBuilder.newBuilder().
+                connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
+                target(location).request().delete()) {
             if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                 LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
                         new Object[]{location, response.getStatusInfo()});
