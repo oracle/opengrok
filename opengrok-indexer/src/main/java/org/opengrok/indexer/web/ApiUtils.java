@@ -70,13 +70,14 @@ public class ApiUtils {
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
         for (int i = 0; i < env.getApiTimeout(); i++) {
-            response = ClientBuilder.newBuilder().
-                    connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
-                    target(location).request().get();
-            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                Thread.sleep(1000);
-            } else {
-                break;
+            try (Client client = ClientBuilder.newBuilder().
+                    connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build()) {
+                response = client.target(location).request().get();
+                if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                    Thread.sleep(1000);
+                } else {
+                    break;
+                }
             }
         }
 
