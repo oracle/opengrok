@@ -28,7 +28,9 @@ import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -42,11 +44,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ApiUtilsTest {
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private int originalApiTimeout;
+    private int originalConnectTimeout;
+
+    @BeforeEach
+    void saveRuntimeEnvironment() {
+        originalApiTimeout = env.getApiTimeout();
+        originalConnectTimeout = env.getConnectTimeout();
+    }
+
+    @AfterEach
+    void restoreRuntimeEnvironment() {
+        env.setApiTimeout(originalApiTimeout);
+        env.setConnectTimeout(originalConnectTimeout);
+    }
 
     @Test
     void waitForAsyncApiReturnsImmediatelyWhenNotAccepted() throws Exception {
@@ -68,7 +86,6 @@ class ApiUtilsTest {
 
     @Test
     void waitForAsyncApiCompletesImmediately() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setApiTimeout(3);
         env.setConnectTimeout(1);
 
@@ -116,15 +133,14 @@ class ApiUtilsTest {
             assertSame(statusResponse, result);
             verify(getInvocationBuilder).get();
             verify(deleteInvocationBuilder).delete();
+            verify(deleteResponse).close();
+            verify(secondClient).close();
         }
     }
 
     @Test
     void waitForAsyncApiTimesOutWhileStillAccepted() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-        // Random timeout between 1 and 8 seconds
-        int apiTimeout = 1 + (int) (Math.random() * 8);
+        int apiTimeout = 1;
         env.setApiTimeout(apiTimeout);
         env.setConnectTimeout(1);
 
@@ -143,9 +159,6 @@ class ApiUtilsTest {
         WebTarget target = mock(WebTarget.class);
         Invocation.Builder getInvocationBuilder = mock(Invocation.Builder.class);
 
-        // Delete-related mocks – we expect them not to be used
-        Invocation.Builder deleteInvocationBuilder = mock(Invocation.Builder.class);
-
         when(builder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(builder);
         when(builder.build()).thenReturn(client);
         when(client.target(location)).thenReturn(target);
@@ -163,8 +176,8 @@ class ApiUtilsTest {
             assertSame(stillAccepted, result);
             // GET must be called apiTimeout times
             verify(getInvocationBuilder, Mockito.times(apiTimeout)).get();
-            // DELETE must never be called when we only see ACCEPTED responses
-            verify(deleteInvocationBuilder, never()).delete();
+            // DELETE cleanup would require an extra client builder invocation.
+            clientBuilderStatic.verify(ClientBuilder::newBuilder, Mockito.times(apiTimeout));
 
             long expectedMillis = apiTimeout * 1000L;
             long lowerBound = Math.max(0, expectedMillis - 300L);
@@ -187,7 +200,6 @@ class ApiUtilsTest {
 
     @Test
     void waitForAsyncApiReturnsCompletedResponseWhenDeleteFails() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setApiTimeout(3);
         env.setConnectTimeout(1);
 
@@ -237,6 +249,8 @@ class ApiUtilsTest {
             assertSame(statusResponse, result);
             verify(getInvocationBuilder).get();
             verify(deleteInvocationBuilder).delete();
+            verify(deleteResponse).close();
+            verify(secondClient).close();
         }
     }
 }
