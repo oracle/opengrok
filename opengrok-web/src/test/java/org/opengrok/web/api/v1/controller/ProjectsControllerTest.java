@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -56,12 +56,13 @@ import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
-import org.opengrok.indexer.web.ApiUtils;
+import org.opengrok.indexer.web.AsyncApiCallResult;
 import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -120,7 +121,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
     public void setUp() throws Exception {
         super.setUp();
         repository = new TestRepository();
-        repository.create(this.getClass().getResource("/repositories"));
+        final URL repoUrl = this.getClass().getResource("/repositories");
+        assertNotNull(repoUrl);
+        repository.create(repoUrl);
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -163,7 +166,11 @@ class ProjectsControllerTest extends OGKJerseyTest {
         Response response = target("projects")
                 .request()
                 .post(Entity.text(project));
-        return org.opengrok.indexer.web.ApiUtils.waitForAsyncApi(response);
+        return getAsyncApiCallResult().waitFor(response);
+    }
+
+    private AsyncApiCallResult getAsyncApiCallResult() {
+        return new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout());
     }
 
     /**
@@ -362,7 +369,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 .path(project)
                 .request()
                 .delete();
-        return ApiUtils.waitForAsyncApi(response);
+        return getAsyncApiCallResult().waitFor(response);
     }
 
     /**
@@ -404,7 +411,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 .path(cacheName)
                 .request()
                 .delete();
-        Response response = org.opengrok.indexer.web.ApiUtils.waitForAsyncApi(initialResponse);
+        Response response = getAsyncApiCallResult().waitFor(initialResponse);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         Object entity = response.getEntity();
         List<String> list = response.readEntity(new GenericType<>() {
@@ -484,7 +491,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 .path("indexed")
                 .request()
                 .put(Entity.text(""));
-        return ApiUtils.waitForAsyncApi(response);
+        return getAsyncApiCallResult().waitFor(response);
     }
 
     @Test

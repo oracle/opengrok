@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -81,7 +81,7 @@ import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
 import org.opengrok.indexer.util.Statistics;
-import org.opengrok.indexer.web.ApiUtils;
+import org.opengrok.indexer.web.AsyncApiCallResult;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
@@ -1614,7 +1614,7 @@ public final class RuntimeEnvironment {
             Response.StatusType statusType = response.getStatusInfo();
 
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                Response apiResponse = ApiUtils.waitForAsyncApi(response);
+                Response apiResponse = new AsyncApiCallResult(getApiTimeout(), getConnectTimeout()).waitFor(response);
                 statusType = apiResponse.getStatusInfo();
             }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -39,6 +39,7 @@ import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.AsyncApiCallResult;
 import org.opengrok.indexer.web.Util;
 
 import java.util.Collection;
@@ -46,8 +47,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.opengrok.indexer.web.ApiUtils.waitForAsyncApi;
 
 public class IndexerUtil {
 
@@ -127,7 +126,8 @@ public class IndexerUtil {
 
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
                 try {
-                    response = waitForAsyncApi(response);
+                    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+                    response = new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout()).waitFor(response);
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
                 }

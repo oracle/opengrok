@@ -28,15 +28,12 @@ import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
@@ -49,48 +46,31 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ApiUtilsTest {
-
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    private int originalApiTimeout;
-    private int originalConnectTimeout;
-
-    @BeforeEach
-    void saveRuntimeEnvironment() {
-        originalApiTimeout = env.getApiTimeout();
-        originalConnectTimeout = env.getConnectTimeout();
-    }
-
-    @AfterEach
-    void restoreRuntimeEnvironment() {
-        env.setApiTimeout(originalApiTimeout);
-        env.setConnectTimeout(originalConnectTimeout);
-    }
+class AsyncApiCallResultTest {
 
     @Test
-    void waitForAsyncApiReturnsImmediatelyWhenNotAccepted() throws Exception {
+    void waitForReturnsImmediatelyWhenNotAccepted() throws Exception {
         Response initial = mock(Response.class);
         when(initial.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
 
-        Response result = ApiUtils.waitForAsyncApi(initial);
+        Response result = new AsyncApiCallResult(1, 1).waitFor(initial);
         assertSame(initial, result);
     }
 
     @Test
-    void waitForAsyncApiThrowsWhenNoLocationHeader() {
+    void waitForThrowsWhenNoLocationHeader() {
         Response initial = mock(Response.class);
         when(initial.getStatus()).thenReturn(Response.Status.ACCEPTED.getStatusCode());
         when(initial.getHeaderString(HttpHeaders.LOCATION)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> ApiUtils.waitForAsyncApi(initial));
+        assertThrows(IllegalArgumentException.class, () -> new AsyncApiCallResult(1, 1).waitFor(initial));
     }
 
     @ParameterizedTest
     @EnumSource(value = Response.Status.class, names = {"OK", "INTERNAL_SERVER_ERROR"})
-    void waitForAsyncApiCompletesImmediately(Response.Status deleteStatus) throws Exception {
-        env.setApiTimeout(3);
-        env.setConnectTimeout(1);
+    void waitForCompletesImmediately(Response.Status deleteStatus) throws Exception {
+        int apiTimeout = 3;
+        int connectTimeout = 1;
 
         String location = "http://example.com/api/status/123";
 
@@ -131,21 +111,22 @@ class ApiUtilsTest {
             // First newBuilder() call is for GET polling, second one is for DELETE cleanup.
             clientBuilderStatic.when(ClientBuilder::newBuilder).thenReturn(firstBuilder, secondBuilder);
 
-            Response result = ApiUtils.waitForAsyncApi(initial);
+            Response result = new AsyncApiCallResult(apiTimeout, connectTimeout).waitFor(initial);
 
             assertSame(statusResponse, result);
             verify(getInvocationBuilder).get();
             verify(deleteInvocationBuilder).delete();
+            verify(firstBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
+            verify(secondBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             verify(deleteResponse).close();
             verify(secondClient).close();
         }
     }
 
     @Test
-    void waitForAsyncApiTimesOutWhileStillAccepted() throws Exception {
+    void waitForTimesOutWhileStillAccepted() throws Exception {
         int apiTimeout = 1;
-        env.setApiTimeout(apiTimeout);
-        env.setConnectTimeout(1);
+        int connectTimeout = 1;
 
         String location = "http://example.com/api/status/timeout";
 
@@ -173,12 +154,13 @@ class ApiUtilsTest {
             clientBuilderStatic.when(ClientBuilder::newBuilder).thenReturn(builder);
 
             long startNanos = System.nanoTime();
-            Response result = ApiUtils.waitForAsyncApi(initial);
+            Response result = new AsyncApiCallResult(apiTimeout, connectTimeout).waitFor(initial);
             long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
 
             assertSame(stillAccepted, result);
             // GET must be called apiTimeout times
             verify(getInvocationBuilder, Mockito.times(apiTimeout)).get();
+            verify(builder, Mockito.times(apiTimeout)).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             // DELETE cleanup would require an extra client builder invocation.
             clientBuilderStatic.verify(ClientBuilder::newBuilder, Mockito.times(apiTimeout));
 
