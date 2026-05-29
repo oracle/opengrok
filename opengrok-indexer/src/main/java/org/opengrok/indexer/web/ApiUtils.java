@@ -56,9 +56,10 @@ public class ApiUtils {
      * to the location found in the original response to perform cleanup.
      * In case the request is still in the {@code ACCEPTED} state after the timeout expires,
      * the response is returned without making the {@code DELETE} call.
+     * If the {@code DELETE} call fails, the method will merely log this event.
      * </p>
      * @param response response returned from the server upon asynchronous API request
-     * @return response from the status API call
+     * @return last response from the status API call
      * @throws InterruptedException on sleep interruption
      * @throws IllegalArgumentException on invalid request (no {@code Location} header in the response)
      */
