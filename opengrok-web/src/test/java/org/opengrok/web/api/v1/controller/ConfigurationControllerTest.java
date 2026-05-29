@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -49,7 +49,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.web.ApiUtils;
+import org.opengrok.indexer.web.AsyncApiCallResult;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.ApiTaskManager;
@@ -97,7 +97,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        Response finalResponse = ApiUtils.waitForAsyncApi(response);
+        Response finalResponse = getAsyncApiCallResult().waitFor(response);
         assertEquals(Response.Status.CREATED.getStatusCode(), finalResponse.getStatus());
 
         assertEquals(srcRoot, env.getSourceRootPath());
@@ -122,7 +122,11 @@ class ConfigurationControllerTest extends OGKJerseyTest {
                 .request()
                 .put(Entity.text(value));
 
-        return ApiUtils.waitForAsyncApi(response);
+        return getAsyncApiCallResult().waitFor(response);
+    }
+
+    private AsyncApiCallResult getAsyncApiCallResult() {
+        return new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout());
     }
 
     @Test
@@ -263,7 +267,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(new Configuration().getXMLRepresentationAsString()));
-        ApiUtils.waitForAsyncApi(response);
+        getAsyncApiCallResult().waitFor(response);
         verify(suggesterService).refresh();
     }
 
@@ -299,7 +303,7 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        ApiUtils.waitForAsyncApi(response);
+        getAsyncApiCallResult().waitFor(response);
 
         // Unblock the thread.
         endLatch.countDown();

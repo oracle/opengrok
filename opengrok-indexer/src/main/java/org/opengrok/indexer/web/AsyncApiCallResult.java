@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -26,35 +26,44 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.jetbrains.annotations.NotNull;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ApiUtils {
+public class AsyncApiCallResult {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApiUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncApiCallResult.class);
 
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final int apiTimeout;
+    private final int connectTimeout;
 
-    private ApiUtils() {
-        // utility class
+    public AsyncApiCallResult(int apiTimeout, int connectTimeout) {
+        this.apiTimeout = apiTimeout;
+        this.connectTimeout = connectTimeout;
     }
 
     /**
      * Busy waits for API call to complete by repeatedly querying the status API endpoint passed
      * in the {@code Location} header in the response parameter. The overall time is governed
-     * by the {@link RuntimeEnvironment#getApiTimeout()}, however each individual status check
-     * uses {@link RuntimeEnvironment#getConnectTimeout()} so in the worst case the total time can be
-     * {@code getApiTimeout() * getConnectTimeout()}.
+     * by the API timeout configured in the constructor, however each individual status check
+     * uses the connect timeout configured in the constructor so in the worst case the total time can be
+     * {@code apiTimeout * connectTimeout}.
+     * <p>
+     * Once the asynchronous request is processed, i.e. after the remote returns anything other
+     * than {@code ACCEPTED} code before the timeout expires, a {@code DELETE} call is made
+     * to the location found in the original response to perform cleanup.
+     * In case the request is still in the {@code ACCEPTED} state after the timeout expires,
+     * the response is returned without making the {@code DELETE} call.
+     * If the {@code DELETE} call fails, the method will merely log this event.
+     * </p>
      * @param response response returned from the server upon asynchronous API request
-     * @return response from the status API call
+     * @return last response from the status API call
      * @throws InterruptedException on sleep interruption
-     * @throws IllegalArgumentException on invalid request (no {@code Location} header)
+     * @throws IllegalArgumentException on invalid request (no {@code Location} header in the response)
      */
-    public static @NotNull Response waitForAsyncApi(@NotNull Response response)
+    public @NotNull Response waitFor(@NotNull Response response)
             throws InterruptedException, IllegalArgumentException {
 
         if (response.getStatus() != Response.Status.ACCEPTED.getStatusCode()) {
@@ -62,15 +71,21 @@ public class ApiUtils {
             return response;
         }
 
-        String location = response.getHeaderString(HttpHeaders.LOCATION);
+        final String location = response.getHeaderString(HttpHeaders.LOCATION);
         if (location == null) {
             throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));
         }
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
-        for (int i = 0; i < env.getApiTimeout(); i++) {
+        for (int i = 0; i < apiTimeout; i++) {
+            /*
+             * The Client object is not closed (e.g. assigned to within the try-with-resources block),
+             * because the response is returned from the method and when it is closed (perhaps in its own
+             * try-with-resources block), the owning Client object has to be still valid, otherwise
+             * Jersey/HK2 IllegalStateException will ensue.
+             */
             response = ClientBuilder.newBuilder().
-                    connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
+                    connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
                     target(location).request().get();
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
                 Thread.sleep(1000);
@@ -85,8 +100,9 @@ public class ApiUtils {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
+        // Ditto w.r.t. closing the Client object as in the cycle above.
         try (Response deleteResponse = ClientBuilder.newBuilder().
-                connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build().
+                connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
                 target(location).request().delete()) {
             if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                 LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
