@@ -82,7 +82,7 @@ public class AsyncApiCallResult {
              * The Client object is not closed (e.g. assigned to within the try-with-resources block),
              * because the response is returned from the method and when it is closed (perhaps in its own
              * try-with-resources block), the owning Client object has to be still valid, otherwise
-             * Jersey/HK2 related exceptions will ensue.
+             * Jersey/HK2 IllegalStateException will ensue.
              */
             response = ClientBuilder.newBuilder().
                     connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
