@@ -32,6 +32,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -84,8 +86,9 @@ class ApiUtilsTest {
         assertThrows(IllegalArgumentException.class, () -> ApiUtils.waitForAsyncApi(initial));
     }
 
-    @Test
-    void waitForAsyncApiCompletesImmediately() throws Exception {
+    @ParameterizedTest
+    @EnumSource(value = Response.Status.class, names = {"OK", "INTERNAL_SERVER_ERROR"})
+    void waitForAsyncApiCompletesImmediately(Response.Status deleteStatus) throws Exception {
         env.setApiTimeout(3);
         env.setConnectTimeout(1);
 
@@ -100,7 +103,7 @@ class ApiUtilsTest {
         when(statusResponse.getStatusInfo()).thenReturn(Response.Status.OK);
 
         Response deleteResponse = mock(Response.class);
-        when(deleteResponse.getStatusInfo()).thenReturn(Response.Status.OK);
+        when(deleteResponse.getStatusInfo()).thenReturn(deleteStatus);
 
         ClientBuilder firstBuilder = mock(ClientBuilder.class);
         Client firstClient = mock(Client.class);
@@ -195,62 +198,6 @@ class ApiUtilsTest {
                                     "ms for apiTimeout=" + apiTimeout
                     )
             );
-        }
-    }
-
-    @Test
-    void waitForAsyncApiReturnsCompletedResponseWhenDeleteFails() throws Exception {
-        env.setApiTimeout(3);
-        env.setConnectTimeout(1);
-
-        String location = "http://example.com/api/status/456";
-
-        Response initial = mock(Response.class);
-        when(initial.getStatus()).thenReturn(Response.Status.ACCEPTED.getStatusCode());
-        when(initial.getHeaderString(HttpHeaders.LOCATION)).thenReturn(location);
-
-        Response statusResponse = mock(Response.class);
-        when(statusResponse.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
-        when(statusResponse.getStatusInfo()).thenReturn(Response.Status.OK);
-
-        Response deleteResponse = mock(Response.class);
-        Response.StatusType deleteStatusType = mock(Response.StatusType.class);
-        when(deleteStatusType.getFamily()).thenReturn(Response.Status.Family.SERVER_ERROR);
-        when(deleteResponse.getStatusInfo()).thenReturn(deleteStatusType);
-
-        ClientBuilder firstBuilder = mock(ClientBuilder.class);
-        Client firstClient = mock(Client.class);
-        WebTarget firstTarget = mock(WebTarget.class);
-        Invocation.Builder getInvocationBuilder = mock(Invocation.Builder.class);
-
-        ClientBuilder secondBuilder = mock(ClientBuilder.class);
-        Client secondClient = mock(Client.class);
-        WebTarget secondTarget = mock(WebTarget.class);
-        Invocation.Builder deleteInvocationBuilder = mock(Invocation.Builder.class);
-
-        when(firstBuilder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(firstBuilder);
-        when(firstBuilder.build()).thenReturn(firstClient);
-        when(firstClient.target(location)).thenReturn(firstTarget);
-        when(firstTarget.request()).thenReturn(getInvocationBuilder);
-        when(getInvocationBuilder.get()).thenReturn(statusResponse);
-
-        when(secondBuilder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(secondBuilder);
-        when(secondBuilder.build()).thenReturn(secondClient);
-        when(secondClient.target(location)).thenReturn(secondTarget);
-        when(secondTarget.request()).thenReturn(deleteInvocationBuilder);
-        when(deleteInvocationBuilder.delete()).thenReturn(deleteResponse);
-
-        try (MockedStatic<ClientBuilder> clientBuilderStatic = org.mockito.Mockito.mockStatic(ClientBuilder.class)) {
-            // First newBuilder() call is for GET polling, second one is for DELETE cleanup.
-            clientBuilderStatic.when(ClientBuilder::newBuilder).thenReturn(firstBuilder, secondBuilder);
-
-            Response result = ApiUtils.waitForAsyncApi(initial);
-
-            assertSame(statusResponse, result);
-            verify(getInvocationBuilder).get();
-            verify(deleteInvocationBuilder).delete();
-            verify(deleteResponse).close();
-            verify(secondClient).close();
         }
     }
 }
