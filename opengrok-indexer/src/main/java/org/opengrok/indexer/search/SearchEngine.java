@@ -139,6 +139,14 @@ public class SearchEngine {
 
     // internal structures to hold the results from Lucene
     private final List<Document> docs;
+    /**
+     * Hard cap on the number of Lucene documents collected during search.
+     * When positive, overrides {@code hitsPerPage * cachePages} and disables
+     * the unbounded re-collection path, keeping heap usage proportional to
+     * this value rather than to the total number of matching documents.
+     * 0 means no cap (default, legacy behavior).
+     */
+    private int maxDocs;
     int totalHits = 0;
     private ScoreDoc[] hits;
     boolean allCollected;
@@ -230,7 +238,7 @@ public class SearchEngine {
 
     private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
         Statistics stat = new Statistics();
-        final int numHits = hitsPerPage * cachePages;
+        final int numHits = maxDocs > 0 ? maxDocs : hitsPerPage * cachePages;
         TopDocs topDocs;
         Sort luceneSort = getSort();
         if (luceneSort == null) {
@@ -241,7 +249,7 @@ public class SearchEngine {
         hits = topDocs.scoreDocs;
         totalHits = (int) topDocs.totalHits.value;
 
-        if (!paging && totalHits > numHits) {
+        if (maxDocs <= 0 && !paging && totalHits > numHits) {
             if (luceneSort == null) {
                 topDocs = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE));
             } else {
@@ -253,7 +261,7 @@ public class SearchEngine {
                 "search.latency", new String[]{"category", "engine",
                         "outcome", totalHits > 0 ? "success" : "empty"});
 
-        allCollected = !paging || totalHits <= numHits;
+        allCollected = maxDocs > 0 || !paging || totalHits <= numHits;
 
         StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc hit : hits) {
@@ -646,6 +654,27 @@ public class SearchEngine {
      */
     public void setMaxHitsPerFile(int maxHitsPerFile) {
         this.maxHitsPerFile = maxHitsPerFile;
+    }
+
+    /**
+     * Set a hard cap on the number of Lucene documents collected.
+     * When positive, the search collects at most this many documents
+     * and never re-queries for the full result set.
+     *
+     * @param maxDocs maximum documents to collect (0 = unlimited)
+     */
+    public void setMaxDocs(int maxDocs) {
+        this.maxDocs = maxDocs;
+    }
+
+    /**
+     * Returns the total number of Lucene documents matching the query,
+     * regardless of the {@code maxDocs} cap. Available after {@code search()}.
+     *
+     * @return total matching document count
+     */
+    public int getTotalHits() {
+        return totalHits;
     }
 
     /**

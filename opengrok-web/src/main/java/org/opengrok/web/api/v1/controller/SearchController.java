@@ -146,23 +146,23 @@ public class SearchController {
                 final int startDocIndex,
                 final int maxResults
         ) {
+            engine.setMaxDocs(startDocIndex + maxResults);
+
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
             if (projects == null || projects.isEmpty()) {
-                numResults = engine.search(new ArrayList<>(allProjects));
+                engine.search(new ArrayList<>(allProjects));
             } else {
-                numResults = engine.search(allProjects.stream()
+                engine.search(allProjects.stream()
                         .filter(p -> projects.contains(p.getName()))
                         .collect(Collectors.toList()));
             }
+            numResults = engine.getTotalHits();
 
             if (startDocIndex > numResults) {
                 return Collections.emptyList();
             }
 
-            int resultSize = numResults - startDocIndex;
-            if (resultSize > maxResults) {
-                resultSize = maxResults;
-            }
+            int resultSize = Math.min(numResults - startDocIndex, maxResults);
 
             List<Hit> results = new ArrayList<>();
             engine.results(startDocIndex, startDocIndex + resultSize, results);
