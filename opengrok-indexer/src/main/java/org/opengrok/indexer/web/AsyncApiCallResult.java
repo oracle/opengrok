@@ -22,7 +22,6 @@
  */
 package org.opengrok.indexer.web;
 
-import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
@@ -79,6 +78,12 @@ public class AsyncApiCallResult {
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
         for (int i = 0; i < apiTimeout; i++) {
+            /*
+             * The Client object is not closed (e.g. assigned to within the try-with-resources block),
+             * because the response is returned from the method and when it is closed (perhaps in its own
+             * try-with-resources block), the owning Client object has to be still valid, otherwise
+             * exception will ensue.
+             */
             response = ClientBuilder.newBuilder().
                     connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
                     target(location).request().get();
@@ -95,6 +100,7 @@ public class AsyncApiCallResult {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
+        // Ditto w.r.t. closing the Client object as in the cycle above.
         try (Response deleteResponse = ClientBuilder.newBuilder().
                 connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
                 target(location).request().delete()) {
