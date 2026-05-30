@@ -139,13 +139,8 @@ public class SearchEngine {
 
     // internal structures to hold the results from Lucene
     private final List<Document> docs;
-    /**
-     * Hard cap on the number of Lucene documents collected during search.
-     * When positive, overrides {@code hitsPerPage * cachePages} and disables
-     * the unbounded re-collection path, keeping heap usage proportional to
-     * this value rather than to the total number of matching documents.
-     * 0 means no cap (default, legacy behavior).
-     */
+    // Caps Lucene collection to prevent unbounded heap use on large result sets.
+    // 0 = no cap (default, preserves legacy behaviour).
     private int maxDocs;
     int totalHits = 0;
     private ScoreDoc[] hits;
@@ -656,20 +651,18 @@ public class SearchEngine {
         this.maxHitsPerFile = maxHitsPerFile;
     }
 
-    /**
-     * Set a hard cap on the number of Lucene documents collected.
-     * When positive, the search collects at most this many documents
-     * and never re-queries for the full result set.
-     *
-     * @param maxDocs maximum documents to collect (0 = unlimited)
-     */
     public void setMaxDocs(int maxDocs) {
         this.maxDocs = maxDocs;
     }
 
+    public int getMaxDocs() {
+        return maxDocs;
+    }
+
     /**
      * Returns the total number of Lucene documents matching the query,
-     * regardless of the {@code maxDocs} cap. Available after {@code search()}.
+     * regardless of the {@code maxDocs} cap. Callers need the true total
+     * to paginate correctly when collection is bounded.
      *
      * @return total matching document count
      */

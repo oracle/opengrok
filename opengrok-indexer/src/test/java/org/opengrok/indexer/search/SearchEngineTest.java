@@ -455,4 +455,66 @@ class SearchEngineTest {
         instance.destroy();
     }
     */
+
+    @Test
+    void testMaxDocsDefault() {
+        assertEquals(0, new SearchEngine().getMaxDocs());
+    }
+
+    @Test
+    void testMaxDocsSetterGetter() {
+        SearchEngine instance = new SearchEngine();
+        instance.setMaxDocs(5);
+        assertEquals(5, instance.getMaxDocs());
+        instance.setMaxDocs(0);
+        assertEquals(0, instance.getMaxDocs());
+    }
+
+    @Test
+    void testMaxDocsLimitsCollectedHits() {
+        SearchEngine unlimited = new SearchEngine();
+        unlimited.setFreetext("arguments");
+        int totalCount = unlimited.search();
+        unlimited.destroy();
+        assertTrue(totalCount > 1, "Query must match multiple documents for this test to be meaningful");
+
+        SearchEngine limited = new SearchEngine();
+        limited.setFreetext("arguments");
+        limited.setMaxDocs(1);
+        limited.search();
+        assertEquals(1, limited.scoreDocs().length);
+        limited.destroy();
+    }
+
+    @Test
+    void testGetTotalHitsReflectsFullCountWhenMaxDocsCaps() {
+        SearchEngine unlimited = new SearchEngine();
+        unlimited.setFreetext("arguments");
+        int realTotal = unlimited.search();
+        unlimited.destroy();
+        assertTrue(realTotal > 1, "Query must match multiple documents");
+
+        // totalHits must be accurate even when collection is capped — callers
+        // need it to paginate correctly.
+        SearchEngine limited = new SearchEngine();
+        limited.setFreetext("arguments");
+        limited.setMaxDocs(1);
+        limited.search();
+        assertEquals(realTotal, limited.getTotalHits());
+        limited.destroy();
+    }
+
+    @Test
+    void testMaxDocsResultsRespectBound() {
+        SearchEngine instance = new SearchEngine();
+        instance.setFreetext("arguments");
+        instance.setMaxDocs(1);
+        int totalCount = instance.search();
+        assertTrue(totalCount > 1, "Total should exceed maxDocs for this test to exercise the cap");
+
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, instance.getMaxDocs(), hits);
+        assertEquals(1, hits.size());
+        instance.destroy();
+    }
 }
