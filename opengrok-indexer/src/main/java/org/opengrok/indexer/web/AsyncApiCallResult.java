@@ -42,10 +42,38 @@ public class AsyncApiCallResult {
     private final int connectTimeout;
     private final String bearerToken;
 
+    /**
+     * Creates a new {@code AsyncApiCallResult} instance with the given API and connection timeouts.
+     * <p>
+     * This is a convenience constructor equivalent to calling
+     * {@link #AsyncApiCallResult(int, int, String) AsyncApiCallResult(apiTimeout, connectTimeout, null)}.
+     * See {@link #AsyncApiCallResult(int, int, String)} for detailed parameter semantics.
+     * </p>
+     *
+     * @param apiTimeout     maximum time to wait, in seconds, for the asynchronous API
+     *                       call to complete
+     * @param connectTimeout connection timeout, in seconds, used for each HTTP request
+     */
     public AsyncApiCallResult(int apiTimeout, int connectTimeout) {
         this(apiTimeout, connectTimeout, null);
     }
 
+    /**
+     * Creates a new {@code AsyncApiCallResult} instance with the given timeouts and
+     * optional bearer token for authorization.
+     * <p>
+     * The {@code apiTimeout} parameter specifies the maximum duration, in seconds,
+     * to wait for completion of the asynchronous API call. The {@code connectTimeout}
+     * parameter specifies the connection timeout, in seconds, for each HTTP request.
+     * When {@code bearerToken} is not {@code null}, it is sent as a {@code Bearer}
+     * authorization header with all outgoing requests.
+     *
+     * @param apiTimeout     maximum time to wait, in seconds, for the asynchronous API
+     *                       call to complete
+     * @param connectTimeout connection timeout, in seconds, used for each HTTP request
+     * @param bearerToken    optional bearer token used for authenticated calls; when
+     *                       not {@code null}, an {@code Authorization} header is added
+     */
     public AsyncApiCallResult(int apiTimeout, int connectTimeout, @Nullable String bearerToken) {
         this.apiTimeout = apiTimeout;
         this.connectTimeout = connectTimeout;
