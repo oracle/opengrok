@@ -31,11 +31,13 @@ import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -67,8 +69,8 @@ class AsyncApiCallResultTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = Response.Status.class, names = {"OK", "INTERNAL_SERVER_ERROR"})
-    void waitForCompletesImmediately(Response.Status deleteStatus) throws Exception {
+    @MethodSource("waitForCompletesImmediatelyArgs")
+    void waitForCompletesImmediately(Response.Status deleteStatus, String bearerToken) throws Exception {
         int apiTimeout = 3;
         int connectTimeout = 1;
 
@@ -86,40 +88,35 @@ class AsyncApiCallResultTest {
         when(deleteResponse.getStatusInfo()).thenReturn(deleteStatus);
 
         ClientBuilder firstBuilder = mock(ClientBuilder.class);
-        Client firstClient = mock(Client.class);
-        WebTarget firstTarget = mock(WebTarget.class);
-        Invocation.Builder getInvocationBuilder = mock(Invocation.Builder.class);
-
         ClientBuilder secondBuilder = mock(ClientBuilder.class);
-        Client secondClient = mock(Client.class);
-        WebTarget secondTarget = mock(WebTarget.class);
-        Invocation.Builder deleteInvocationBuilder = mock(Invocation.Builder.class);
-
-        when(firstBuilder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(firstBuilder);
-        when(firstBuilder.build()).thenReturn(firstClient);
-        when(firstClient.target(location)).thenReturn(firstTarget);
-        when(firstTarget.request()).thenReturn(getInvocationBuilder);
+        Invocation.Builder getInvocationBuilder = mockGetRequestBuilder(location, firstBuilder);
+        Invocation.Builder deleteInvocationBuilder = mockGetRequestBuilder(location, secondBuilder);
         when(getInvocationBuilder.get()).thenReturn(statusResponse);
-
-        when(secondBuilder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(secondBuilder);
-        when(secondBuilder.build()).thenReturn(secondClient);
-        when(secondClient.target(location)).thenReturn(secondTarget);
-        when(secondTarget.request()).thenReturn(deleteInvocationBuilder);
         when(deleteInvocationBuilder.delete()).thenReturn(deleteResponse);
 
         try (MockedStatic<ClientBuilder> clientBuilderStatic = org.mockito.Mockito.mockStatic(ClientBuilder.class)) {
             // First newBuilder() call is for GET polling, second one is for DELETE cleanup.
             clientBuilderStatic.when(ClientBuilder::newBuilder).thenReturn(firstBuilder, secondBuilder);
 
-            Response result = new AsyncApiCallResult(apiTimeout, connectTimeout).waitFor(initial);
+            Response result = newAsyncApiCallResult(apiTimeout, connectTimeout, bearerToken).waitFor(initial);
 
             assertSame(statusResponse, result);
+            verifyAuthorizationHeader(getInvocationBuilder, bearerToken);
             verify(getInvocationBuilder).get();
+            verifyAuthorizationHeader(deleteInvocationBuilder, bearerToken);
             verify(deleteInvocationBuilder).delete();
             verify(firstBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             verify(secondBuilder).connectTimeout(connectTimeout, TimeUnit.SECONDS);
             verify(deleteResponse).close();
         }
+    }
+
+    private static Stream<Arguments> waitForCompletesImmediatelyArgs() {
+        return Stream.of(Response.Status.OK, Response.Status.INTERNAL_SERVER_ERROR).
+                flatMap(status -> Stream.of(
+                        Arguments.of(status, null),
+                        Arguments.of(status, "secret")
+                ));
     }
 
     @Test
@@ -180,5 +177,35 @@ class AsyncApiCallResultTest {
                     )
             );
         }
+    }
+
+    private static Invocation.Builder mockGetRequestBuilder(String location, ClientBuilder builder) {
+        Client client = mock(Client.class);
+        WebTarget target = mock(WebTarget.class);
+        Invocation.Builder invocationBuilder = mock(Invocation.Builder.class);
+
+        when(builder.connectTimeout(anyLong(), eq(TimeUnit.SECONDS))).thenReturn(builder);
+        when(builder.build()).thenReturn(client);
+        when(client.target(location)).thenReturn(target);
+        when(target.request()).thenReturn(invocationBuilder);
+
+        return invocationBuilder;
+    }
+
+    private static AsyncApiCallResult newAsyncApiCallResult(int apiTimeout, int connectTimeout, String bearerToken) {
+        if (bearerToken == null) {
+            return new AsyncApiCallResult(apiTimeout, connectTimeout);
+        }
+
+        return new AsyncApiCallResult(apiTimeout, connectTimeout, bearerToken);
+    }
+
+    private static void verifyAuthorizationHeader(Invocation.Builder invocationBuilder, String bearerToken) {
+        if (bearerToken == null) {
+            verify(invocationBuilder, Mockito.never()).header(eq(HttpHeaders.AUTHORIZATION), Mockito.any());
+            return;
+        }
+
+        verify(invocationBuilder).header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
     }
 }

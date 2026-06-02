@@ -23,9 +23,11 @@
 package org.opengrok.indexer.web;
 
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
@@ -38,10 +40,16 @@ public class AsyncApiCallResult {
 
     private final int apiTimeout;
     private final int connectTimeout;
+    private final String bearerToken;
 
     public AsyncApiCallResult(int apiTimeout, int connectTimeout) {
+        this(apiTimeout, connectTimeout, null);
+    }
+
+    public AsyncApiCallResult(int apiTimeout, int connectTimeout, @Nullable String bearerToken) {
         this.apiTimeout = apiTimeout;
         this.connectTimeout = connectTimeout;
+        this.bearerToken = bearerToken;
     }
 
     /**
@@ -78,15 +86,7 @@ public class AsyncApiCallResult {
 
         LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
         for (int i = 0; i < apiTimeout; i++) {
-            /*
-             * The Client object is not closed (e.g. assigned to within the try-with-resources block),
-             * because the response is returned from the method and when it is closed (perhaps in its own
-             * try-with-resources block), the owning Client object has to be still valid, otherwise
-             * Jersey/HK2 IllegalStateException will ensue.
-             */
-            response = ClientBuilder.newBuilder().
-                    connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
-                    target(location).request().get();
+            response = getRequestBuilder(location).get();
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
                 Thread.sleep(1000);
             } else {
@@ -100,10 +100,7 @@ public class AsyncApiCallResult {
         }
 
         LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
-        // Ditto w.r.t. closing the Client object as in the cycle above.
-        try (Response deleteResponse = ClientBuilder.newBuilder().
-                connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
-                target(location).request().delete()) {
+        try (Response deleteResponse = getRequestBuilder(location).delete()) {
             if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                 LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
                         new Object[]{location, response.getStatusInfo()});
@@ -111,5 +108,22 @@ public class AsyncApiCallResult {
         }
 
         return response;
+    }
+
+    private Invocation.Builder getRequestBuilder(@NotNull String location) {
+        /*
+         * The Client object is not closed (e.g. assigned to within the try-with-resources block),
+         * because the response is returned from the method and when it is closed (perhaps in its own
+         * try-with-resources block), the owning Client object has to be still valid, otherwise
+         * Jersey/HK2 IllegalStateException will ensue.
+         */
+        Invocation.Builder request = ClientBuilder.newBuilder().
+                connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
+                target(location).request();
+        if (bearerToken != null) {
+            request.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        }
+
+        return request;
     }
 }

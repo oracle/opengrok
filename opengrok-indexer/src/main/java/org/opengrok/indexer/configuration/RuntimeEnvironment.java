@@ -1614,7 +1614,8 @@ public final class RuntimeEnvironment {
             Response.StatusType statusType = response.getStatusInfo();
 
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                Response apiResponse = new AsyncApiCallResult(getApiTimeout(), getConnectTimeout()).waitFor(response);
+                Response apiResponse = new AsyncApiCallResult(getApiTimeout(), getConnectTimeout(),
+                        getIndexerAuthenticationToken()).waitFor(response);
                 statusType = apiResponse.getStatusInfo();
             }
 

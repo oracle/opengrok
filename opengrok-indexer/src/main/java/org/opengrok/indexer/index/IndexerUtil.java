@@ -127,7 +127,8 @@ public class IndexerUtil {
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
                 try {
                     RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                    response = new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout()).waitFor(response);
+                    response = new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout(),
+                            env.getIndexerAuthenticationToken()).waitFor(response);
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
                 }
