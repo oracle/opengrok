@@ -487,20 +487,19 @@ class SearchEngineTest {
     }
 
     @Test
-    void testGetTotalHitsReflectsFullCountWhenMaxDocsCaps() {
+    void testSearchReturnsFullCountWhenMaxDocsCaps() {
         SearchEngine unlimited = new SearchEngine();
         unlimited.setFreetext("arguments");
         int realTotal = unlimited.search();
         unlimited.destroy();
         assertTrue(realTotal > 1, "Query must match multiple documents");
 
-        // totalHits must be accurate even when collection is capped — callers
-        // need it to paginate correctly.
+        // search() must report the full match count even when collection is
+        // capped — callers need it to paginate correctly.
         SearchEngine limited = new SearchEngine();
         limited.setFreetext("arguments");
         limited.setMaxDocs(1);
-        limited.search();
-        assertEquals(realTotal, limited.getTotalHits());
+        assertEquals(realTotal, limited.search());
         limited.destroy();
     }
 

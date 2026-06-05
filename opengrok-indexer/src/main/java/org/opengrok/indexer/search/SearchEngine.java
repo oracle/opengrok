@@ -320,7 +320,8 @@ public class SearchEngine {
      * Execute a search.
      * <p>
      * Before calling this function, you must set the appropriate search criteria with the set-functions.
-     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}.
+     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}, unless a positive
+     * {@code maxDocs} has been set via {@link #setMaxDocs(int)}, in which case collection is bounded to that many hits.
      * <p>
      * Must be eventually followed by call to {@link #destroy()} so that
      * the {@code IndexSearcher} objects are properly freed.
@@ -336,7 +337,8 @@ public class SearchEngine {
      * Execute a search on projects or root file.
      * <p>
      * Before calling this function, you must set the appropriate search criteria with the set-functions.
-     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}.
+     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}, unless a positive
+     * {@code maxDocs} has been set via {@link #setMaxDocs(int)}, in which case collection is bounded to that many hits.
      * <p>
      * If the {@code projects} parameter is an empty list, it tries to search in {@code searchSingleDatabase}
      * with root set to the {@code root} parameter.
@@ -655,19 +657,9 @@ public class SearchEngine {
         this.maxDocs = maxDocs;
     }
 
+    @VisibleForTesting
     public int getMaxDocs() {
         return maxDocs;
-    }
-
-    /**
-     * Returns the total number of Lucene documents matching the query,
-     * regardless of the {@code maxDocs} cap. Callers need the true total
-     * to paginate correctly when collection is bounded.
-     *
-     * @return total matching document count
-     */
-    public int getTotalHits() {
-        return totalHits;
     }
 
     /**
