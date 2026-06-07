@@ -2294,7 +2294,7 @@ function scope_on_scroll() {
  * @returns true if on search page, false otherwise
  */
 function isOnSearchPage() {
-    return $(document.documentElement).hasClass('search');
+    return $(document.documentElement).hasClass('search') || $(document.documentElement).hasClass('s');
 }
 
 function checkIsOnSearchPage() {
