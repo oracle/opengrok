@@ -10,7 +10,7 @@
     <context-param>
         <description>Full path to the configuration file where OpenGrok can read its configuration</description>
         <param-name>CONFIGURATION</param-name>
-        <param-value>/var/opengrok/etc/configuration.xml</param-value>
+        <param-value>c:\Users\srinivas\Desktop\second\data\configuration.xml</param-value>
     </context-param>
     <listener>
         <listener-class>org.opengrok.web.WebappListener</listener-class>
