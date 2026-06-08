@@ -1629,14 +1629,13 @@ $(document).ready(function () {
     }
 
     // Intercept clicks on symbol links to append the persistent file path
-    $(document).on('click', 'a.intelliWindow-symbol, a.search-defs, a.search-refs', function (e) {
+    $(document).on('click', 'a', function (e) {
         const href = $(this).attr('href');
         if (!href) return;
         
-        try {
-            const url = new URL(href, window.location.origin);
-            // Verify it runs a symbol query
-            if (url.searchParams.has('refs') || url.searchParams.has('defs')) {
+        if (href.indexOf('defs=') !== -1 || href.indexOf('refs=') !== -1) {
+            try {
+                const url = new URL(href, window.location.origin);
                 if (!url.searchParams.has('path')) {
                     const storedPath = sessionStorage.getItem('opengrok_search_path');
                     if (storedPath) {
@@ -1645,9 +1644,9 @@ $(document).ready(function () {
                         window.location.href = url.pathname + url.search + url.hash;
                     }
                 }
+            } catch (err) {
+                // Ignore malformed URLs
             }
-        } catch (err) {
-            // Ignore malformed URLs
         }
     });
 });
