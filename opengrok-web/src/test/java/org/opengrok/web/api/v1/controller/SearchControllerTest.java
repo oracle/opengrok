@@ -235,16 +235,32 @@ class SearchControllerTest extends OGKJerseyTest {
     }
 
     /**
-     * {@code startDocIndex + maxResults} must not overflow into a negative (i.e. unbounded)
-     * collection cap; a page far beyond the match count comes back well-formed and empty.
+     * {@code startDocIndex + maxResults} overflowing must be rejected rather than silently
+     * turning into a wrong (or unbounded) collection cap.
      */
     @Test
-    @SuppressWarnings("unchecked")
-    void testStartDocIndexNearIntegerMaxDoesNotOverflow() {
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+    void testStartDocIndexPlusMaxResultsOverflowIsRejected() {
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .queryParam(QueryParameters.START_PARAM, Integer.MAX_VALUE)
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, 1)
+                .request()
+                .get();
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    /**
+     * The largest non-overflowing page request must stay well-formed: a page far beyond the
+     * match count comes back empty while resultCount reports the true total.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testMaxNonOverflowingStartDocIndexReturnsEmptyPage() {
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.START_PARAM, Integer.MAX_VALUE - 1)
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, 1)
                 .request()
                 .get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());

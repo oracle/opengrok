@@ -151,7 +151,12 @@ public class SearchController {
                 final int startDocIndex,
                 final int maxResults
         ) {
-            engine.setMaxDocs(Math.clamp((long) startDocIndex + maxResults, 1, Integer.MAX_VALUE));
+            try {
+                engine.setMaxDocs(Math.max(Math.addExact(startDocIndex, maxResults), 1));
+            } catch (ArithmeticException e) {
+                throw new WebApplicationException("Sum of start and maxresults parameters must not exceed "
+                        + Integer.MAX_VALUE, Response.Status.BAD_REQUEST);
+            }
 
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
             int collected;
