@@ -233,7 +233,10 @@ public class SearchEngine {
 
     private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
         Statistics stat = new Statistics();
-        final int numHits = maxDocs > 0 ? maxDocs : hitsPerPage * cachePages;
+        // The collector managers eagerly allocate a priority queue of the requested size, hence
+        // the index-size cap, mirroring IndexSearcher#search(Query, int).
+        final int numHits = Math.min(maxDocs == 0 ? hitsPerPage * cachePages : maxDocs,
+                Math.max(1, searcher.getIndexReader().maxDoc()));
         TopDocs topDocs;
         Sort luceneSort = getSort();
         if (luceneSort == null) {
@@ -244,7 +247,7 @@ public class SearchEngine {
         hits = topDocs.scoreDocs;
         totalHits = (int) topDocs.totalHits.value;
 
-        if (maxDocs <= 0 && !paging && totalHits > numHits) {
+        if (maxDocs == 0 && !paging && totalHits > numHits) {
             if (luceneSort == null) {
                 topDocs = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE));
             } else {
@@ -326,7 +329,8 @@ public class SearchEngine {
      * Must be eventually followed by call to {@link #destroy()} so that
      * the {@code IndexSearcher} objects are properly freed.
      *
-     * @return total number of hits
+     * @return number of collected hits, safe to pass to {@link #results(int, int, List)}; when {@code maxDocs}
+     * is not set this equals the total number of hits, otherwise see {@link #getTotalHits()} for the total
      */
     @VisibleForTesting
     public int search() {
@@ -347,7 +351,8 @@ public class SearchEngine {
      * the {@code IndexSearcher} objects are properly freed.
      *
      * @param projects projects to search
-     * @return total number of hits
+     * @return number of collected hits, safe to pass to {@link #results(int, int, List)}; when {@code maxDocs}
+     * is not set this equals the total number of hits, otherwise see {@link #getTotalHits()} for the total
      */
     public int search(List<Project> projects) {
         source = env.getSourceRootPath();
@@ -392,7 +397,7 @@ public class SearchEngine {
                 LOGGER.log(Level.WARNING, "An error occurred while getting history context", e);
             }
         }
-        int count = hits == null ? 0 : totalHits;
+        int count = hits == null ? 0 : (maxDocs > 0 ? hits.length : totalHits);
         queryBuilder = newBuilder;
         return count;
     }
@@ -653,13 +658,38 @@ public class SearchEngine {
         this.maxHitsPerFile = maxHitsPerFile;
     }
 
+    /**
+     * Sets the maximum number of documents collected by {@code search(...)}.
+     * 0 (the default) collects per the legacy paging behaviour, i.e. all matching documents eventually.
+     * Callers that need to bound heap usage on queries matching many documents should pass a positive value;
+     * {@link #getTotalHits()} still reports the full match count for pagination.
+     *
+     * @param maxDocs maximum number of documents to collect, or 0 for unbounded
+     * @throws IllegalArgumentException if {@code maxDocs} is negative
+     */
     public void setMaxDocs(int maxDocs) {
+        if (maxDocs < 0) {
+            throw new IllegalArgumentException("maxDocs cannot be negative: " + maxDocs);
+        }
         this.maxDocs = maxDocs;
     }
 
+    /**
+     * @return maximum number of documents collected by {@code search(...)}, 0 means unbounded
+     */
     @VisibleForTesting
     public int getMaxDocs() {
         return maxDocs;
+    }
+
+    /**
+     * Gets the total number of documents matching the query from {@code search(...)} if it was called,
+     * regardless of the {@link #setMaxDocs(int)} cap.
+     *
+     * @return total matching document count
+     */
+    public int getTotalHits() {
+        return totalHits;
     }
 
     /**

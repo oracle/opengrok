@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -471,6 +472,11 @@ class SearchEngineTest {
     }
 
     @Test
+    void testSetMaxDocsRejectsNegative() {
+        assertThrows(IllegalArgumentException.class, () -> new SearchEngine().setMaxDocs(-1));
+    }
+
+    @Test
     void testMaxDocsLimitsCollectedHits() {
         SearchEngine unlimited = new SearchEngine();
         unlimited.setFreetext("arguments");
@@ -487,19 +493,36 @@ class SearchEngineTest {
     }
 
     @Test
-    void testSearchReturnsFullCountWhenMaxDocsCaps() {
+    void testSearchReturnsCollectedCountWhenMaxDocsCaps() {
+        SearchEngine unlimited = new SearchEngine();
+        unlimited.setFreetext("arguments");
+        assertTrue(unlimited.search() > 1, "Query must match multiple documents");
+        unlimited.destroy();
+
+        // search() must report the collected count so that its return value
+        // is safe to pass to results() as the end index.
+        SearchEngine limited = new SearchEngine();
+        limited.setFreetext("arguments");
+        limited.setMaxDocs(1);
+        assertEquals(1, limited.search());
+        limited.destroy();
+    }
+
+    @Test
+    void testGetTotalHitsReportsFullCountWhenMaxDocsCaps() {
         SearchEngine unlimited = new SearchEngine();
         unlimited.setFreetext("arguments");
         int realTotal = unlimited.search();
         unlimited.destroy();
         assertTrue(realTotal > 1, "Query must match multiple documents");
 
-        // search() must report the full match count even when collection is
-        // capped — callers need it to paginate correctly.
+        // totalHits must stay accurate even when collection is capped —
+        // callers need it to paginate correctly.
         SearchEngine limited = new SearchEngine();
         limited.setFreetext("arguments");
         limited.setMaxDocs(1);
-        assertEquals(realTotal, limited.search());
+        limited.search();
+        assertEquals(realTotal, limited.getTotalHits());
         limited.destroy();
     }
 
@@ -508,11 +531,11 @@ class SearchEngineTest {
         SearchEngine instance = new SearchEngine();
         instance.setFreetext("arguments");
         instance.setMaxDocs(1);
-        int totalCount = instance.search();
-        assertTrue(totalCount > 1, "Total should exceed maxDocs for this test to exercise the cap");
+        int collected = instance.search();
+        assertTrue(instance.getTotalHits() > 1, "Total should exceed maxDocs for this test to exercise the cap");
 
         List<Hit> hits = new ArrayList<>();
-        instance.results(0, instance.getMaxDocs(), hits);
+        instance.results(0, collected, hits);
         assertEquals(1, hits.size());
         instance.destroy();
     }

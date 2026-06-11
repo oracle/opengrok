@@ -88,6 +88,11 @@ public class SearchController {
             @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
             @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile
     ) {
+        if (maxResults < 0 || startDocIndex < 0 || maxHitsPerFile < 0) {
+            throw new WebApplicationException("Negative integer parameters are not allowed",
+                    Response.Status.BAD_REQUEST);
+        }
+
         try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort), maxHitsPerFile)) {
 
             if (!engine.isValid()) {
@@ -146,22 +151,24 @@ public class SearchController {
                 final int startDocIndex,
                 final int maxResults
         ) {
-            engine.setMaxDocs(startDocIndex + maxResults);
+            engine.setMaxDocs(Math.clamp((long) startDocIndex + maxResults, 1, Integer.MAX_VALUE));
 
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
+            int collected;
             if (projects == null || projects.isEmpty()) {
-                numResults = engine.search(new ArrayList<>(allProjects));
+                collected = engine.search(new ArrayList<>(allProjects));
             } else {
-                numResults = engine.search(allProjects.stream()
+                collected = engine.search(allProjects.stream()
                         .filter(p -> projects.contains(p.getName()))
                         .collect(Collectors.toList()));
             }
+            numResults = engine.getTotalHits();
 
-            if (startDocIndex > numResults) {
+            if (startDocIndex > collected) {
                 return Collections.emptyList();
             }
 
-            int resultSize = numResults - startDocIndex;
+            int resultSize = collected - startDocIndex;
             if (resultSize > maxResults) {
                 resultSize = maxResults;
             }
