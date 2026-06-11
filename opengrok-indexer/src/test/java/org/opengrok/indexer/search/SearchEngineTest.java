@@ -284,47 +284,26 @@ class SearchEngineTest {
     }
 
     /**
-     * Verify that search() returns the total number of matching documents (totalHits),
-     * not the number of collected/cached hits (which is capped at hitsPerPage * cachePages).
+     * Verify that totalHits is exact (not an approximate lower bound) even when the collector
+     * is restricted to a single document; an inaccurate totalHitsThreshold would silently
+     * under-report the match count callers paginate by.
      */
     @Test
-    void testSearchReturnsTotalHitsNotCachedCount() {
-        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
-        SearchEngine instance = new SearchEngine(1, 1);
-        instance.setFile("main.c");
-        instance.setFreetext("arguments");
+    void testTotalHitsIsExactUnderTightCap() {
+        SearchEngine unlimited = new SearchEngine();
+        unlimited.setFile("main.c");
+        unlimited.setFreetext("arguments");
+        int realTotal = unlimited.search();
+        unlimited.destroy();
+        assertTrue(realTotal > 1, "Query should match multiple documents across test repositories");
 
-        int resultCount = instance.search();
-        assertTrue(resultCount > 1,
-                "Query should match multiple documents across test repositories");
-        assertEquals(instance.totalHits, resultCount,
-                "search() must return totalHits, not the number of cached hits");
-
-        instance.destroy();
-    }
-
-    /**
-     * Verify that totalHits is exact (not an approximate lower bound) so that results()
-     * can fetch every matching document. With an inaccurate totalHitsThreshold, the
-     * re-query in results() would request too few documents, silently dropping results.
-     */
-    @Test
-    void testTotalHitsIsExactForFullRetrieval() {
-        SearchEngine instance = new SearchEngine(1, 1);
-        instance.setFile("main.c");
-        instance.setFreetext("arguments");
-
-        int count = instance.search();
-        assertTrue(count > 1);
-
-        List<Hit> allHits = new ArrayList<>();
-        instance.results(0, count, allHits);
-
-        long uniquePaths = allHits.stream().map(Hit::getPath).distinct().count();
-        assertEquals(count, uniquePaths,
-                "totalHits must be exact so results() retrieves every matching document");
-
-        instance.destroy();
+        SearchEngine capped = new SearchEngine(1);
+        capped.setFile("main.c");
+        capped.setFreetext("arguments");
+        capped.search();
+        assertEquals(realTotal, capped.getTotalHits(),
+                "totalHits must be exact regardless of how few documents are collected");
+        capped.destroy();
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030
@@ -459,21 +438,19 @@ class SearchEngineTest {
 
     @Test
     void testMaxDocsDefault() {
-        assertEquals(0, new SearchEngine().getMaxDocs());
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        assertEquals(env.getHitsPerPage() * env.getCachePages(), new SearchEngine().getMaxDocs());
     }
 
     @Test
-    void testMaxDocsSetterGetter() {
-        SearchEngine instance = new SearchEngine();
-        instance.setMaxDocs(5);
-        assertEquals(5, instance.getMaxDocs());
-        instance.setMaxDocs(0);
-        assertEquals(0, instance.getMaxDocs());
+    void testMaxDocsConstructorGetter() {
+        assertEquals(5, new SearchEngine(5).getMaxDocs());
     }
 
     @Test
-    void testSetMaxDocsRejectsNegative() {
-        assertThrows(IllegalArgumentException.class, () -> new SearchEngine().setMaxDocs(-1));
+    void testConstructorRejectsNonPositiveMaxDocs() {
+        assertThrows(IllegalArgumentException.class, () -> new SearchEngine(0));
+        assertThrows(IllegalArgumentException.class, () -> new SearchEngine(-1));
     }
 
     @Test
@@ -484,9 +461,8 @@ class SearchEngineTest {
         unlimited.destroy();
         assertTrue(totalCount > 1, "Query must match multiple documents for this test to be meaningful");
 
-        SearchEngine limited = new SearchEngine();
+        SearchEngine limited = new SearchEngine(1);
         limited.setFreetext("arguments");
-        limited.setMaxDocs(1);
         limited.search();
         assertEquals(1, limited.scoreDocs().length);
         limited.destroy();
@@ -501,9 +477,8 @@ class SearchEngineTest {
 
         // search() must report the collected count so that its return value
         // is safe to pass to results() as the end index.
-        SearchEngine limited = new SearchEngine();
+        SearchEngine limited = new SearchEngine(1);
         limited.setFreetext("arguments");
-        limited.setMaxDocs(1);
         assertEquals(1, limited.search());
         limited.destroy();
     }
@@ -518,9 +493,8 @@ class SearchEngineTest {
 
         // totalHits must stay accurate even when collection is capped —
         // callers need it to paginate correctly.
-        SearchEngine limited = new SearchEngine();
+        SearchEngine limited = new SearchEngine(1);
         limited.setFreetext("arguments");
-        limited.setMaxDocs(1);
         limited.search();
         assertEquals(realTotal, limited.getTotalHits());
         limited.destroy();
@@ -528,14 +502,27 @@ class SearchEngineTest {
 
     @Test
     void testMaxDocsResultsRespectBound() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(1);
         instance.setFreetext("arguments");
-        instance.setMaxDocs(1);
         int collected = instance.search();
         assertTrue(instance.getTotalHits() > 1, "Total should exceed maxDocs for this test to exercise the cap");
 
         List<Hit> hits = new ArrayList<>();
         instance.results(0, collected, hits);
+        assertEquals(1, hits.size());
+        instance.destroy();
+    }
+
+    @Test
+    void testResultsClampsEndBeyondCollected() {
+        SearchEngine instance = new SearchEngine(1);
+        instance.setFreetext("arguments");
+        instance.search();
+        assertTrue(instance.getTotalHits() > 1, "Total should exceed maxDocs for this test to be meaningful");
+
+        // asking past the collected window must not blow up, only serve what was collected
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, instance.getTotalHits(), hits);
         assertEquals(1, hits.size());
         instance.destroy();
     }

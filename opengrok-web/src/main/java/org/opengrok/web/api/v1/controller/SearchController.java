@@ -93,7 +93,16 @@ public class SearchController {
                     Response.Status.BAD_REQUEST);
         }
 
-        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort), maxHitsPerFile)) {
+        final int maxDocs;
+        try {
+            maxDocs = Math.max(Math.addExact(startDocIndex, maxResults), 1);
+        } catch (ArithmeticException e) {
+            throw new WebApplicationException("Sum of start and maxresults parameters must not exceed "
+                    + Integer.MAX_VALUE, Response.Status.BAD_REQUEST);
+        }
+
+        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type,
+                SortOrder.get(sort), maxHitsPerFile, maxDocs)) {
 
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
@@ -121,7 +130,7 @@ public class SearchController {
 
     private static class SearchEngineWrapper implements AutoCloseable {
 
-        private final SearchEngine engine = new SearchEngine();
+        private final SearchEngine engine;
 
         private int numResults;
 
@@ -133,8 +142,10 @@ public class SearchController {
                 final String hist,
                 final String type,
                 final SortOrder sortOrder,
-                final int maxHitsPerFile
+                final int maxHitsPerFile,
+                final int maxDocs
         ) {
+            engine = new SearchEngine(maxDocs);
             engine.setFreetext(full);
             engine.setDefinition(def);
             engine.setSymbol(symbol);
@@ -151,13 +162,6 @@ public class SearchController {
                 final int startDocIndex,
                 final int maxResults
         ) {
-            try {
-                engine.setMaxDocs(Math.max(Math.addExact(startDocIndex, maxResults), 1));
-            } catch (ArithmeticException e) {
-                throw new WebApplicationException("Sum of start and maxresults parameters must not exceed "
-                        + Integer.MAX_VALUE, Response.Status.BAD_REQUEST);
-            }
-
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
             int collected;
             if (projects == null || projects.isEmpty()) {

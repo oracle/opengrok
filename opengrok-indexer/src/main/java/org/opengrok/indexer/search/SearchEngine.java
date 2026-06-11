@@ -139,34 +139,40 @@ public class SearchEngine {
 
     // internal structures to hold the results from Lucene
     private final List<Document> docs;
-    // Caps Lucene collection to prevent unbounded heap use on large result sets.
-    // 0 = no cap (default, preserves legacy behaviour).
-    private int maxDocs;
+    private final int maxDocs;
     int totalHits = 0;
     private ScoreDoc[] hits;
-    boolean allCollected;
 
     private String source;
     private String data;
 
-    private final int hitsPerPage;
-    private final int cachePages;
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private IndexSearcher searcher;
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
 
-    public SearchEngine(int hitsPerPage, int cachePages) {
+    /**
+     * Creates a new instance of SearchEngine which collects at most {@code maxDocs} documents,
+     * so that heap usage stays bounded on queries matching many documents.
+     * {@link #getTotalHits()} still reports the full match count for pagination.
+     *
+     * @param maxDocs positive maximum number of documents to collect
+     * @throws IllegalArgumentException if {@code maxDocs} is not positive
+     */
+    public SearchEngine(int maxDocs) {
+        if (maxDocs <= 0) {
+            throw new IllegalArgumentException("maxDocs must be positive: " + maxDocs);
+        }
         docs = new ArrayList<>();
-        this.hitsPerPage = hitsPerPage;
-        this.cachePages = cachePages;
+        this.maxDocs = maxDocs;
     }
 
     /**
-     * Creates a new instance of SearchEngine.
+     * Creates a new instance of SearchEngine collecting at most the configured
+     * hits per page times the number of cache pages.
      */
     public SearchEngine() {
-        this(env.getHitsPerPage(), env.getCachePages());
+        this(env.getHitsPerPage() * env.getCachePages());
     }
 
     /**
@@ -201,42 +207,35 @@ public class SearchEngine {
 
     /**
      * Search one index. This is used if no projects are set up.
-     * @param paging whether to use paging (if yes, first {@link #cachePages} pages will load faster)
      * @throws IOException when index could not be read
      */
-    private void searchSingleDatabase(boolean paging) throws IOException {
+    private void searchSingleDatabase() throws IOException {
         SuperIndexSearcher superIndexSearcher = env.getSuperIndexSearcher("");
         searcherList.add(superIndexSearcher);
         searcher = superIndexSearcher;
-        // If a field-based sort is requested, collect all hits (disable paging optimization)
-        if (sortOrder != SortOrder.RELEVANCY) {
-            paging = false;
-        }
-        searchIndex(superIndexSearcher, paging);
+        searchIndex(superIndexSearcher);
     }
 
     /**
      * Perform search on multiple indexes.
-     * @param paging whether to use paging (if yes, first X pages will load faster)
      * @param projectList list of projects to search
      * @throws IOException when some index could not be read
      */
-    private void searchMultiDatabase(List<Project> projectList, boolean paging) throws IOException {
+    private void searchMultiDatabase(List<Project> projectList) throws IOException {
         SortedSet<String> projectNames = projectList.stream().map(Project::getName).
                 collect(Collectors.toCollection(TreeSet::new));
 
         // We use MultiReader even for single project. This should not matter given that MultiReader is just
         // a cheap wrapper around set of IndexReader objects.
         searcher = env.getIndexSearcherFactory().newSearcher(env.getMultiReader(projectNames, searcherList));
-        searchIndex(searcher, paging);
+        searchIndex(searcher);
     }
 
-    private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
+    private void searchIndex(IndexSearcher searcher) throws IOException {
         Statistics stat = new Statistics();
         // The collector managers eagerly allocate a priority queue of the requested size, hence
         // the index-size cap, mirroring IndexSearcher#search(Query, int).
-        final int numHits = Math.min(maxDocs == 0 ? hitsPerPage * cachePages : maxDocs,
-                Math.max(1, searcher.getIndexReader().maxDoc()));
+        final int numHits = Math.min(maxDocs, Math.max(1, searcher.getIndexReader().maxDoc()));
         TopDocs topDocs;
         Sort luceneSort = getSort();
         if (luceneSort == null) {
@@ -247,19 +246,9 @@ public class SearchEngine {
         hits = topDocs.scoreDocs;
         totalHits = (int) topDocs.totalHits.value;
 
-        if (maxDocs == 0 && !paging && totalHits > numHits) {
-            if (luceneSort == null) {
-                topDocs = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE));
-            } else {
-                topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, totalHits, Integer.MAX_VALUE));
-            }
-            hits = topDocs.scoreDocs;
-        }
         stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
                 "search.latency", new String[]{"category", "engine",
                         "outcome", totalHits > 0 ? "success" : "empty"});
-
-        allCollected = maxDocs > 0 || !paging || totalHits <= numHits;
 
         StoredFields storedFields = searcher.storedFields();
         for (ScoreDoc hit : hits) {
@@ -323,14 +312,13 @@ public class SearchEngine {
      * Execute a search.
      * <p>
      * Before calling this function, you must set the appropriate search criteria with the set-functions.
-     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}, unless a positive
-     * {@code maxDocs} has been set via {@link #setMaxDocs(int)}, in which case collection is bounded to that many hits.
+     * Note that this search collects at most {@code maxDocs} documents (see {@link #SearchEngine(int)}).
      * <p>
      * Must be eventually followed by call to {@link #destroy()} so that
      * the {@code IndexSearcher} objects are properly freed.
      *
-     * @return number of collected hits, safe to pass to {@link #results(int, int, List)}; when {@code maxDocs}
-     * is not set this equals the total number of hits, otherwise see {@link #getTotalHits()} for the total
+     * @return number of collected hits, safe to pass to {@link #results(int, int, List)};
+     * see {@link #getTotalHits()} for the total match count
      */
     @VisibleForTesting
     public int search() {
@@ -341,8 +329,7 @@ public class SearchEngine {
      * Execute a search on projects or root file.
      * <p>
      * Before calling this function, you must set the appropriate search criteria with the set-functions.
-     * Note that this search will return the first {@link #cachePages} of {@link #hitsPerPage}, unless a positive
-     * {@code maxDocs} has been set via {@link #setMaxDocs(int)}, in which case collection is bounded to that many hits.
+     * Note that this search collects at most {@code maxDocs} documents (see {@link #SearchEngine(int)}).
      * <p>
      * If the {@code projects} parameter is an empty list, it tries to search in {@code searchSingleDatabase}
      * with root set to the {@code root} parameter.
@@ -351,8 +338,8 @@ public class SearchEngine {
      * the {@code IndexSearcher} objects are properly freed.
      *
      * @param projects projects to search
-     * @return number of collected hits, safe to pass to {@link #results(int, int, List)}; when {@code maxDocs}
-     * is not set this equals the total number of hits, otherwise see {@link #getTotalHits()} for the total
+     * @return number of collected hits, safe to pass to {@link #results(int, int, List)};
+     * see {@link #getTotalHits()} for the total match count
      */
     public int search(List<Project> projects) {
         source = env.getSourceRootPath();
@@ -364,10 +351,9 @@ public class SearchEngine {
             query = newBuilder.build();
             if (query != null) {
                 if (projects.isEmpty()) {
-                    searchSingleDatabase(true);
+                    searchSingleDatabase();
                 } else {
-                    // TODO support paging per project (in search.java)
-                    searchMultiDatabase(projects, false);
+                    searchMultiDatabase(projects);
                 }
             }
         } catch (Exception e) {
@@ -397,7 +383,7 @@ public class SearchEngine {
                 LOGGER.log(Level.WARNING, "An error occurred while getting history context", e);
             }
         }
-        int count = hits == null ? 0 : (maxDocs > 0 ? hits.length : totalHits);
+        int count = hits == null ? 0 : hits.length;
         queryBuilder = newBuilder;
         return count;
     }
@@ -431,62 +417,22 @@ public class SearchEngine {
      * This involves reading various document fields as well as file contents from the respective files
      * under source root.
      * If no search was started before, no results are returned.
-     * This method will requery if {@code end} is more than first query from search,
-     * hence performance hit applies, if you want results in later pages than
-     * number of {@code cachePages}. {@code end} has to be bigger than {@code start} !
+     * Only documents collected by {@code search(...)} are available; {@code endDocIndex} is clamped
+     * to the collected count, i.e. the value {@code search(...)} returned.
      *
      * @param startDocIndex start index of the hit list
      * @param endDocIndex end index of the hit list
      * @param ret output argument that contains list of results from start to end or null/empty if no search was started
      */
     public void results(int startDocIndex, int endDocIndex, @NotNull List<Hit> ret) {
+        ret.clear();
 
-        // return if no start search() was done
+        // return if no search() was done
         if (hits == null || (endDocIndex < startDocIndex)) {
-            ret.clear();
             return;
         }
 
-        ret.clear();
-
-        // TODO check if below fits for if end=old hits.length, or it should include it
-        if (endDocIndex > hits.length && !allCollected) {
-            // Do the requery, we want more than 'cachePages' pages.
-            Sort luceneSort = getSort();
-            Statistics stat = new Statistics();
-            try {
-                if (luceneSort == null) {
-                    hits = searcher.search(query, new TopScoreDocCollectorManager(totalHits, Integer.MAX_VALUE)).scoreDocs;
-                } else {
-                    hits = searcher.search(query, new TopFieldCollectorManager(luceneSort, totalHits, Integer.MAX_VALUE)).scoreDocs;
-                }
-            } catch (Exception e) { // this exception should never be hit, since search() will hit this before
-                LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
-            }
-            stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
-                    "search.latency", new String[]{"category", "engine",
-                            "outcome", hits.length > 0 ? "success" : "empty"});
-            StoredFields storedFields = null;
-            try {
-                storedFields = searcher.storedFields();
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, SEARCH_EXCEPTION_MSG, e);
-            }
-            if (storedFields != null) {
-                docs.clear();
-                for (ScoreDoc hit : hits) {
-                    try {
-                        Document d = storedFields.document(hit.doc);
-                        docs.add(d);
-                    } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
-                    }
-                }
-            }
-            allCollected = true;
-        }
-
-        extractResults(startDocIndex, endDocIndex, ret);
+        extractResults(startDocIndex, Math.min(endDocIndex, docs.size()), ret);
     }
 
     private void extractResults(int startDocIndex, int endDocIndex, @NotNull List<Hit> ret) {
@@ -659,23 +605,7 @@ public class SearchEngine {
     }
 
     /**
-     * Sets the maximum number of documents collected by {@code search(...)}.
-     * 0 (the default) collects per the legacy paging behaviour, i.e. all matching documents eventually.
-     * Callers that need to bound heap usage on queries matching many documents should pass a positive value;
-     * {@link #getTotalHits()} still reports the full match count for pagination.
-     *
-     * @param maxDocs maximum number of documents to collect, or 0 for unbounded
-     * @throws IllegalArgumentException if {@code maxDocs} is negative
-     */
-    public void setMaxDocs(int maxDocs) {
-        if (maxDocs < 0) {
-            throw new IllegalArgumentException("maxDocs cannot be negative: " + maxDocs);
-        }
-        this.maxDocs = maxDocs;
-    }
-
-    /**
-     * @return maximum number of documents collected by {@code search(...)}, 0 means unbounded
+     * @return maximum number of documents collected by {@code search(...)}
      */
     @VisibleForTesting
     public int getMaxDocs() {
@@ -684,7 +614,7 @@ public class SearchEngine {
 
     /**
      * Gets the total number of documents matching the query from {@code search(...)} if it was called,
-     * regardless of the {@link #setMaxDocs(int)} cap.
+     * regardless of the {@code maxDocs} cap (see {@link #SearchEngine(int)}).
      *
      * @return total matching document count
      */
