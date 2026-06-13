@@ -204,6 +204,35 @@ class SearchControllerTest extends OGKJerseyTest {
                 "endDocument must reflect the document page size, not the number of unique file paths");
     }
 
+    /**
+     * Without the {@code maxresults} parameter the page size must follow the configured
+     * {@code hitsPerPage * cachePages} rather than a hardcoded constant.
+     */
+    @Test
+    void testDefaultMaxResultsFollowsConfiguration() {
+        int hitsPerPage = env.getHitsPerPage();
+        int cachePages = env.getCachePages();
+        env.setHitsPerPage(1);
+        env.setCachePages(1);
+        try {
+            GenericType<Map<String, Object>> type = new GenericType<>() { };
+            Response response = target(SearchController.PATH)
+                    .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
+                    .request()
+                    .get();
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+            Map<String, Object> json = response.readEntity(type);
+            assertTrue((int) json.get("resultCount") > 1,
+                    "query must match more documents than the page for this test to be meaningful");
+            assertEquals(0, (int) json.get("endDocument"),
+                    "default page size must be hitsPerPage * cachePages");
+        } finally {
+            env.setHitsPerPage(hitsPerPage);
+            env.setCachePages(cachePages);
+        }
+    }
+
     @Test
     void testNegativeMaxResultsIsRejected() {
         Response response = target(SearchController.PATH)

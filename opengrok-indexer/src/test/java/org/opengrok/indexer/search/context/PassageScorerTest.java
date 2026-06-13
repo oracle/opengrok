@@ -76,7 +76,7 @@ class PassageScorerTest {
 
     @Test
     void testSearch() throws Exception {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("DTRACE_PROBE4");
         instance.setFile("sdt");
         int noHits = instance.search();

@@ -96,7 +96,7 @@ class SearchEngineTest {
 
     @Test
     void testIsValidQuery() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertFalse(instance.isValidQuery());
         instance.setFile("foo");
         assertTrue(instance.isValidQuery());
@@ -104,7 +104,7 @@ class SearchEngineTest {
 
     @Test
     void testDefinition() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getDefinition());
         String defs = "This is a definition";
         instance.setDefinition(defs);
@@ -113,7 +113,7 @@ class SearchEngineTest {
 
     @Test
     void testFile() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getFile());
         String file = "This is a File";
         instance.setFile(file);
@@ -122,7 +122,7 @@ class SearchEngineTest {
 
     @Test
     void testFreetext() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getFreetext());
         String freetext = "This is just a piece of text";
         instance.setFreetext(freetext);
@@ -131,7 +131,7 @@ class SearchEngineTest {
 
     @Test
     void testHistory() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getHistory());
         String hist = "This is a piece of history";
         instance.setHistory(hist);
@@ -140,7 +140,7 @@ class SearchEngineTest {
 
     @Test
     void testSymbol() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getSymbol());
         String sym = "This is a symbol";
         instance.setSymbol(sym);
@@ -149,7 +149,7 @@ class SearchEngineTest {
 
     @Test
     void testGetQuery() throws Exception {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setHistory("Once upon a time");
         instance.setFile("Makefile");
         instance.setDefinition("\"std::string\"");
@@ -162,7 +162,7 @@ class SearchEngineTest {
 
     @Test
     void testSortOrderLastModified() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
         instance.setSortOrder(SortOrder.LASTMODIFIED);
@@ -190,7 +190,7 @@ class SearchEngineTest {
 
     @Test
     void testSortOrderByPath() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c OR header.h");
         instance.setFreetext("arguments OR stdio");
         instance.setSortOrder(SortOrder.BY_PATH);
@@ -223,19 +223,19 @@ class SearchEngineTest {
 
     @Test
     void testDefaultSortOrder() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getSortOrder(), "Default sort should be relevancy (null implies Lucene score ordering)");
     }
 
     @Test
     void testMaxHitsPerFileDefault() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertEquals(0, instance.getMaxHitsPerFile());
     }
 
     @Test
     void testMaxHitsPerFileSetterGetter() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setMaxHitsPerFile(20);
         assertEquals(20, instance.getMaxHitsPerFile());
         instance.setMaxHitsPerFile(0);
@@ -244,7 +244,7 @@ class SearchEngineTest {
 
     @Test
     void testUnlimitedHitsPerFileContainLineNumbers() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
         instance.setMaxHitsPerFile(0);
@@ -258,7 +258,7 @@ class SearchEngineTest {
 
     @Test
     void testMaxHitsPerFileLimitsHitsPerFile() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFile("main.c");
         unlimited.setFreetext("printf");
         unlimited.setMaxHitsPerFile(0);
@@ -268,7 +268,7 @@ class SearchEngineTest {
         unlimited.destroy();
 
         int maxPerFile = 1;
-        SearchEngine limited = new SearchEngine();
+        SearchEngine limited = new SearchEngine(Integer.MAX_VALUE);
         limited.setFile("main.c");
         limited.setFreetext("printf");
         limited.setMaxHitsPerFile(maxPerFile);
@@ -290,7 +290,7 @@ class SearchEngineTest {
      */
     @Test
     void testTotalHitsIsExactUnderTightCap() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFile("main.c");
         unlimited.setFreetext("arguments");
         int realTotal = unlimited.search();
@@ -311,7 +311,7 @@ class SearchEngineTest {
     void testSearch() {
         List<Hit> hits = new ArrayList<>();
 
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
         int noHits =  instance.search();
         if (noHits > 0) {
@@ -320,7 +320,7 @@ class SearchEngineTest {
         }
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("printf");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -336,7 +336,7 @@ class SearchEngineTest {
         assertEquals(8, noHits);
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("arguments");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -351,7 +351,7 @@ class SearchEngineTest {
         assertEquals(8, noHits);
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setDefinition("main");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -367,7 +367,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // negative symbol test (comments should be ignored)
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("Ordinary");
         instance.setFile("\"Main.java\"");
         instance.search();
@@ -377,7 +377,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case sensitivity of definition search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setDefinition("Mai*"); // definition is case sensitive
         instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
@@ -390,7 +390,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case sensitivity of symbol search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("Mai*"); // symbol is case sensitive
         instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
@@ -401,14 +401,14 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case insensitivity of freetext search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("MaI*"); // should match both Main and main
         instance.setFile("\"Main.java\" OR \"main.c\"");
         assertEquals(10, instance.search());
         instance.destroy();
 
         // file name search is case insensitive
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("JaVa"); // should match java
         int count=instance.search();
         if (count > 0) {
@@ -418,29 +418,23 @@ class SearchEngineTest {
         instance.destroy();
 
         //test eol and eof
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("makeW");
         assertEquals(1, instance.search());
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("WeirdEOL");
         assertEquals(1, instance.search());
         instance.destroy();
 
         //test bcel jar parser
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("InstConstraintVisitor");
         assertEquals(1, instance.search());
         instance.destroy();
     }
     */
-
-    @Test
-    void testMaxDocsDefault() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        assertEquals(env.getHitsPerPage() * env.getCachePages(), new SearchEngine().getMaxDocs());
-    }
 
     @Test
     void testMaxDocsConstructorGetter() {
@@ -455,7 +449,7 @@ class SearchEngineTest {
 
     @Test
     void testMaxDocsLimitsCollectedHits() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFreetext("arguments");
         int totalCount = unlimited.search();
         unlimited.destroy();
@@ -470,7 +464,7 @@ class SearchEngineTest {
 
     @Test
     void testSearchReturnsCollectedCountWhenMaxDocsCaps() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFreetext("arguments");
         assertTrue(unlimited.search() > 1, "Query must match multiple documents");
         unlimited.destroy();
@@ -485,7 +479,7 @@ class SearchEngineTest {
 
     @Test
     void testGetTotalHitsReportsFullCountWhenMaxDocsCaps() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFreetext("arguments");
         int realTotal = unlimited.search();
         unlimited.destroy();
@@ -511,6 +505,12 @@ class SearchEngineTest {
         instance.results(0, collected, hits);
         assertEquals(1, hits.size());
         instance.destroy();
+    }
+
+    @Test
+    void testResultsWithoutSearchThrows() {
+        SearchEngine instance = new SearchEngine(1);
+        assertThrows(IllegalStateException.class, () -> instance.results(0, 1, new ArrayList<>()));
     }
 
     @Test

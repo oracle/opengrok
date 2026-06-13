@@ -79,6 +79,10 @@ import org.opengrok.indexer.web.SortOrder;
  * <p>
  * Authorization is <b>not</b> enforced here, this has to be done by the caller by filtering out the projects
  * passed to {@link #search(List)}.
+ * <p>
+ * The expected lifecycle is: set the search criteria, call {@code search(...)}, retrieve the hits via
+ * {@link #results(int, int, List)} and finally call {@link #destroy()}. Calling
+ * {@link #results(int, int, List)} without a successful search throws {@link IllegalStateException}.
  *
  * @author Trond Norbye 2005
  * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
@@ -168,14 +172,6 @@ public class SearchEngine {
     }
 
     /**
-     * Creates a new instance of SearchEngine collecting at most the configured
-     * hits per page times the number of cache pages.
-     */
-    public SearchEngine() {
-        this(env.getHitsPerPage() * env.getCachePages());
-    }
-
-    /**
      * Create a QueryBuilder using the fields that have been set on this instance.
      *
      * @return a query builder
@@ -235,7 +231,7 @@ public class SearchEngine {
         Statistics stat = new Statistics();
         // The collector managers eagerly allocate a priority queue of the requested size, hence
         // the index-size cap, mirroring IndexSearcher#search(Query, int).
-        final int numHits = Math.min(maxDocs, Math.max(1, searcher.getIndexReader().maxDoc()));
+        final int numHits = Math.clamp(searcher.getIndexReader().maxDoc(), 1, maxDocs);
         TopDocs topDocs;
         Sort luceneSort = getSort();
         if (luceneSort == null) {
@@ -416,19 +412,21 @@ public class SearchEngine {
      * Get results by going through the documents from the search hits and grabbing the context therein.
      * This involves reading various document fields as well as file contents from the respective files
      * under source root.
-     * If no search was started before, no results are returned.
      * Only documents collected by {@code search(...)} are available; {@code endDocIndex} is clamped
      * to the collected count, i.e. the value {@code search(...)} returned.
      *
      * @param startDocIndex start index of the hit list
      * @param endDocIndex end index of the hit list
-     * @param ret output argument that contains list of results from start to end or null/empty if no search was started
+     * @param ret output argument that contains list of results from start to end
+     * @throws IllegalStateException if no search was performed or it did not succeed
      */
     public void results(int startDocIndex, int endDocIndex, @NotNull List<Hit> ret) {
-        ret.clear();
+        if (hits == null) {
+            throw new IllegalStateException("results(...) called without a successful search(...)");
+        }
 
-        // return if no search() was done
-        if (hits == null || (endDocIndex < startDocIndex)) {
+        ret.clear();
+        if (endDocIndex < startDocIndex) {
             return;
         }
 

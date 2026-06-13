@@ -282,7 +282,7 @@ class IndexDatabaseTest {
      */
     @Test
     void testIndexPath() throws IOException {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         // Use as broad search as possible.
         instance.setFile("c");
         instance.search();

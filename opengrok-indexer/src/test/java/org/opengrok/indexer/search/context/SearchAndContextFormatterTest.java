@@ -95,7 +95,7 @@ class SearchAndContextFormatterTest {
 
     @Test
     void testSearch() throws IOException {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("mt19937");
         instance.setFile("bkexlib.cpp");
         int noHits = instance.search();
