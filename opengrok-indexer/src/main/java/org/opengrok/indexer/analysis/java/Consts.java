@@ -70,6 +70,7 @@ public class Consts {
         kwd.add("private");
         kwd.add("protected");
         kwd.add("public");
+        kwd.add("record");
         kwd.add("return");
         kwd.add("sealed");
         kwd.add("short");

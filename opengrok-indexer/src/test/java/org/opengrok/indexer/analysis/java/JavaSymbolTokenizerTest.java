@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.java;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,5 +86,12 @@ class JavaSymbolTokenizerTest {
                     },
                     termsFor);
         }
+    }
+
+    @Test
+    void shouldTreatRecordAsKeyword() {
+        String[] termsFor = getTermsFor(new StringReader(
+                "public record SearchHit(String path, LineRange range, double score) {}"));
+        assertArrayEquals(new String[] {"SearchHit", "String", "path", "LineRange", "range", "score"}, termsFor);
     }
 }

@@ -374,6 +374,7 @@ a.xa     { /* argument */           color: #60c; font-weight: bold;             
 a.xl     { /* local */              color: #963; font-weight: bold;                     }
 a.xv     { /* variable */           color: #c30; font-weight: bold;                     }
 a.xc     { /* class */              color: #909; font-weight: bold; font-style: italic; }
+a.xr     { /* record */             color: #909; font-weight: bold; font-style: italic; }
 a.xp     { /* package */            color: #909; font-weight: bold; font-style: italic; }
 a.xi     { /* interface */          color: #909; font-weight: bold; font-style: italic; }
 a.xn     { /* namespace */          color: #909; font-weight: bold; font-style: italic; }
