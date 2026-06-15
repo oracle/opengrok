@@ -35,6 +35,8 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -42,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  *
@@ -88,6 +91,12 @@ class CtagsTest {
         String path = repository.getSourceRoot() + File.separator
                 + fileName.replace('/', File.separatorChar);
         return ctags.doCtags(new File(path).getAbsolutePath());
+    }
+
+    private static Definitions getDefsFromResource(String resourceName) throws Exception {
+        URL resourceURL = CtagsTest.class.getClassLoader().getResource(resourceName);
+        assertNotNull(resourceURL);
+        return ctags.doCtags(new File(resourceURL.toURI()).getAbsolutePath());
     }
 
     @ParameterizedTest
@@ -152,6 +161,43 @@ class CtagsTest {
             }
         }
         assertEquals(names.length, count, "function count");
+    }
+
+    @Test
+    void javaRecordDefinitions() throws Exception {
+        assumeTrue(ctagsSupportsJavaRecordKind(), "ctags does not support Java record tags");
+
+        Definitions result = getDefsFromResource("analysis/java/SearchHit.java");
+        assertAll(
+                () -> assertTrue(result.getTags().stream().anyMatch(tag ->
+                        tag.symbol.equals("SearchHit") &&
+                        tag.namespace == null &&
+                        tag.type.equals("record") &&
+                        tag.signature.equals("(String path, LineRange range, double score)"))),
+                () -> assertTrue(result.getTags().stream().anyMatch(tag ->
+                        tag.symbol.equals("LineRange") &&
+                        tag.namespace.equals("SearchHit") &&
+                        tag.type.equals("record in SearchHit") &&
+                        tag.signature.equals("(int startLine, int endLine)"))),
+                () -> assertTrue(result.getTags().stream().anyMatch(tag ->
+                        tag.symbol.equals("isStrongMatch") &&
+                        tag.namespace.equals("SearchHit") &&
+                        tag.type.equals("method in SearchHit"))),
+                () -> assertTrue(result.getTags().stream().anyMatch(tag ->
+                        tag.symbol.equals("spansMultipleLines") &&
+                        tag.namespace.equals("SearchHit.LineRange") &&
+                        tag.type.equals("method in SearchHit.LineRange")))
+        );
+    }
+
+    private static boolean ctagsSupportsJavaRecordKind() {
+        String ctagsBinary = RuntimeEnvironment.getInstance().getCtags();
+        Executor executor = new Executor(new String[]{ctagsBinary, "--list-kinds-full=Java"});
+        if (executor.exec(false) != 0) {
+            return false;
+        }
+        String output = executor.getOutputString();
+        return output != null && output.lines().anyMatch(line -> line.matches("^r\\s+record\\s+.*"));
     }
 
     @ParameterizedTest

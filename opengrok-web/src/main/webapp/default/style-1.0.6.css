@@ -995,6 +995,7 @@ a.xa               { /* argument           */ color: var(--og-symbol-arg-fg);   
 a.xl               { /* local              */ color: var(--og-symbol-local-fg);       font-weight: bold;                     }
 a.xv               { /* variable           */ color: var(--og-symbol-variable-fg);       font-weight: bold;                     }
 a.xc               { /* class              */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
+a.xr               { /* record             */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
 a.xp               { /* package            */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
 a.xi               { /* interface          */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
 a.xn               { /* namespace          */ color: var(--og-symbol-type-fg);       font-weight: bold; font-style: italic; }
