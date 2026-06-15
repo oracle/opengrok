@@ -203,4 +203,100 @@ class SearchControllerTest extends OGKJerseyTest {
         assertEquals(expectedEndDocument, endDocument,
                 "endDocument must reflect the document page size, not the number of unique file paths");
     }
+
+    /**
+     * Without the {@code maxresults} parameter the page size must follow the configured
+     * {@code hitsPerPage * cachePages} rather than a hardcoded constant.
+     */
+    @Test
+    void testDefaultMaxResultsFollowsConfiguration() {
+        int hitsPerPage = env.getHitsPerPage();
+        int cachePages = env.getCachePages();
+        env.setHitsPerPage(1);
+        env.setCachePages(1);
+        try {
+            GenericType<Map<String, Object>> type = new GenericType<>() { };
+            Response response = target(SearchController.PATH)
+                    .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
+                    .request()
+                    .get();
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+            Map<String, Object> json = response.readEntity(type);
+            assertTrue((int) json.get("resultCount") > 1,
+                    "query must match more documents than the page for this test to be meaningful");
+            assertEquals(0, (int) json.get("endDocument"),
+                    "default page size must be hitsPerPage * cachePages");
+        } finally {
+            env.setHitsPerPage(hitsPerPage);
+            env.setCachePages(cachePages);
+        }
+    }
+
+    @Test
+    void testNegativeMaxResultsIsRejected() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, -1)
+                .request()
+                .get();
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void testNegativeStartDocIndexIsRejected() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.START_PARAM, -1)
+                .request()
+                .get();
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void testNegativeMaxHitsPerFileIsRejected() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.MAXHITSPERFILE_PARAM, -1)
+                .request()
+                .get();
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    /**
+     * {@code startDocIndex + maxResults} overflowing must be rejected rather than silently
+     * turning into a wrong (or unbounded) collection cap.
+     */
+    @Test
+    void testStartDocIndexPlusMaxResultsOverflowIsRejected() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.START_PARAM, Integer.MAX_VALUE)
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, 1)
+                .request()
+                .get();
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    /**
+     * The largest non-overflowing page request must stay well-formed: a page far beyond the
+     * match count comes back empty while resultCount reports the true total.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testMaxNonOverflowingStartDocIndexReturnsEmptyPage() {
+        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .queryParam(QueryParameters.START_PARAM, Integer.MAX_VALUE - 1)
+                .queryParam(QueryParameters.MAXRESULTS_PARAM, 1)
+                .request()
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        Map<String, Object> json = response.readEntity(type);
+        assertTrue((int) json.get("resultCount") > 0, "resultCount must still report the true total");
+        Map<String, ?> results = (Map<String, ?>) json.get("results");
+        assertTrue(results.isEmpty(), "page beyond the match count must be empty");
+    }
 }

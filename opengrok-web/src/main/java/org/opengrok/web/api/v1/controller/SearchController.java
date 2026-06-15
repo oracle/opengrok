@@ -36,6 +36,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.web.QueryParameters;
@@ -59,7 +60,6 @@ public class SearchController {
 
     public static final String PATH = "search";
 
-    private static final int MAX_RESULTS = 1000;
     private static final String DEFAULT_SORT_ORDER = "relevancy";
 
     private final SuggesterService suggester;
@@ -82,13 +82,34 @@ public class SearchController {
             @QueryParam(QueryParameters.HIST_SEARCH_PARAM) final String hist,
             @QueryParam(QueryParameters.TYPE_SEARCH_PARAM) final String type,
             @QueryParam("projects") final List<String> projects,
-            @QueryParam(QueryParameters.MAXRESULTS_PARAM)
-            @DefaultValue(MAX_RESULTS + "") final int maxResults,
+            @QueryParam(QueryParameters.MAXRESULTS_PARAM) final Integer maxResultsParam,
             @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex,
             @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
             @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile
     ) {
-        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort), maxHitsPerFile)) {
+        if ((maxResultsParam != null && maxResultsParam < 0) || startDocIndex < 0 || maxHitsPerFile < 0) {
+            throw new WebApplicationException("Negative integer parameters are not allowed",
+                    Response.Status.BAD_REQUEST);
+        }
+
+        final int maxResults;
+        if (maxResultsParam != null) {
+            maxResults = maxResultsParam;
+        } else {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            maxResults = env.getHitsPerPage() * env.getCachePages();
+        }
+
+        final int maxDocs;
+        try {
+            maxDocs = Math.max(Math.addExact(startDocIndex, maxResults), 1);
+        } catch (ArithmeticException e) {
+            throw new WebApplicationException("Sum of start and maxresults parameters must not exceed "
+                    + Integer.MAX_VALUE, Response.Status.BAD_REQUEST);
+        }
+
+        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type,
+                SortOrder.get(sort), maxHitsPerFile, maxDocs)) {
 
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
@@ -107,7 +128,7 @@ public class SearchController {
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
-            int pageSize = Math.min(maxResults, Math.max(0, engine.numResults - startDocIndex));
+            int pageSize = Math.clamp(engine.numResults - startDocIndex, 0, maxResults);
             int endDocument = pageSize > 0 ? startDocIndex + pageSize - 1 : startDocIndex;
 
             return new SearchResult(duration, engine.numResults, hits, startDocIndex, endDocument);
@@ -116,7 +137,7 @@ public class SearchController {
 
     private static class SearchEngineWrapper implements AutoCloseable {
 
-        private final SearchEngine engine = new SearchEngine();
+        private final SearchEngine engine;
 
         private int numResults;
 
@@ -128,8 +149,10 @@ public class SearchController {
                 final String hist,
                 final String type,
                 final SortOrder sortOrder,
-                final int maxHitsPerFile
+                final int maxHitsPerFile,
+                final int maxDocs
         ) {
+            engine = new SearchEngine(maxDocs);
             engine.setFreetext(full);
             engine.setDefinition(def);
             engine.setSymbol(symbol);
@@ -147,19 +170,21 @@ public class SearchController {
                 final int maxResults
         ) {
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
+            int collected;
             if (projects == null || projects.isEmpty()) {
-                numResults = engine.search(new ArrayList<>(allProjects));
+                collected = engine.search(new ArrayList<>(allProjects));
             } else {
-                numResults = engine.search(allProjects.stream()
+                collected = engine.search(allProjects.stream()
                         .filter(p -> projects.contains(p.getName()))
                         .collect(Collectors.toList()));
             }
+            numResults = engine.getTotalHits();
 
-            if (startDocIndex > numResults) {
+            if (startDocIndex >= collected) {
                 return Collections.emptyList();
             }
 
-            int resultSize = numResults - startDocIndex;
+            int resultSize = collected - startDocIndex;
             if (resultSize > maxResults) {
                 resultSize = maxResults;
             }

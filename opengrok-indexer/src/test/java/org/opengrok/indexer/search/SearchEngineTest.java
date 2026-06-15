@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -95,7 +96,7 @@ class SearchEngineTest {
 
     @Test
     void testIsValidQuery() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertFalse(instance.isValidQuery());
         instance.setFile("foo");
         assertTrue(instance.isValidQuery());
@@ -103,7 +104,7 @@ class SearchEngineTest {
 
     @Test
     void testDefinition() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getDefinition());
         String defs = "This is a definition";
         instance.setDefinition(defs);
@@ -112,7 +113,7 @@ class SearchEngineTest {
 
     @Test
     void testFile() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getFile());
         String file = "This is a File";
         instance.setFile(file);
@@ -121,7 +122,7 @@ class SearchEngineTest {
 
     @Test
     void testFreetext() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getFreetext());
         String freetext = "This is just a piece of text";
         instance.setFreetext(freetext);
@@ -130,7 +131,7 @@ class SearchEngineTest {
 
     @Test
     void testHistory() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getHistory());
         String hist = "This is a piece of history";
         instance.setHistory(hist);
@@ -139,7 +140,7 @@ class SearchEngineTest {
 
     @Test
     void testSymbol() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getSymbol());
         String sym = "This is a symbol";
         instance.setSymbol(sym);
@@ -148,7 +149,7 @@ class SearchEngineTest {
 
     @Test
     void testGetQuery() throws Exception {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setHistory("Once upon a time");
         instance.setFile("Makefile");
         instance.setDefinition("\"std::string\"");
@@ -161,7 +162,7 @@ class SearchEngineTest {
 
     @Test
     void testSortOrderLastModified() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
         instance.setSortOrder(SortOrder.LASTMODIFIED);
@@ -189,7 +190,7 @@ class SearchEngineTest {
 
     @Test
     void testSortOrderByPath() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c OR header.h");
         instance.setFreetext("arguments OR stdio");
         instance.setSortOrder(SortOrder.BY_PATH);
@@ -222,19 +223,19 @@ class SearchEngineTest {
 
     @Test
     void testDefaultSortOrder() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertNull(instance.getSortOrder(), "Default sort should be relevancy (null implies Lucene score ordering)");
     }
 
     @Test
     void testMaxHitsPerFileDefault() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         assertEquals(0, instance.getMaxHitsPerFile());
     }
 
     @Test
     void testMaxHitsPerFileSetterGetter() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setMaxHitsPerFile(20);
         assertEquals(20, instance.getMaxHitsPerFile());
         instance.setMaxHitsPerFile(0);
@@ -243,7 +244,7 @@ class SearchEngineTest {
 
     @Test
     void testUnlimitedHitsPerFileContainLineNumbers() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("main.c");
         instance.setFreetext("arguments");
         instance.setMaxHitsPerFile(0);
@@ -257,7 +258,7 @@ class SearchEngineTest {
 
     @Test
     void testMaxHitsPerFileLimitsHitsPerFile() {
-        SearchEngine unlimited = new SearchEngine();
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
         unlimited.setFile("main.c");
         unlimited.setFreetext("printf");
         unlimited.setMaxHitsPerFile(0);
@@ -267,7 +268,7 @@ class SearchEngineTest {
         unlimited.destroy();
 
         int maxPerFile = 1;
-        SearchEngine limited = new SearchEngine();
+        SearchEngine limited = new SearchEngine(Integer.MAX_VALUE);
         limited.setFile("main.c");
         limited.setFreetext("printf");
         limited.setMaxHitsPerFile(maxPerFile);
@@ -283,47 +284,26 @@ class SearchEngineTest {
     }
 
     /**
-     * Verify that search() returns the total number of matching documents (totalHits),
-     * not the number of collected/cached hits (which is capped at hitsPerPage * cachePages).
+     * Verify that totalHits is exact (not an approximate lower bound) even when the collector
+     * is restricted to a single document; an inaccurate totalHitsThreshold would silently
+     * under-report the match count callers paginate by.
      */
     @Test
-    void testSearchReturnsTotalHitsNotCachedCount() {
-        // Restrict the cache to 1 document so that totalHits > hitsPerPage * cachePages.
-        SearchEngine instance = new SearchEngine(1, 1);
-        instance.setFile("main.c");
-        instance.setFreetext("arguments");
+    void testTotalHitsIsExactUnderTightCap() {
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
+        unlimited.setFile("main.c");
+        unlimited.setFreetext("arguments");
+        int realTotal = unlimited.search();
+        unlimited.destroy();
+        assertTrue(realTotal > 1, "Query should match multiple documents across test repositories");
 
-        int resultCount = instance.search();
-        assertTrue(resultCount > 1,
-                "Query should match multiple documents across test repositories");
-        assertEquals(instance.totalHits, resultCount,
-                "search() must return totalHits, not the number of cached hits");
-
-        instance.destroy();
-    }
-
-    /**
-     * Verify that totalHits is exact (not an approximate lower bound) so that results()
-     * can fetch every matching document. With an inaccurate totalHitsThreshold, the
-     * re-query in results() would request too few documents, silently dropping results.
-     */
-    @Test
-    void testTotalHitsIsExactForFullRetrieval() {
-        SearchEngine instance = new SearchEngine(1, 1);
-        instance.setFile("main.c");
-        instance.setFreetext("arguments");
-
-        int count = instance.search();
-        assertTrue(count > 1);
-
-        List<Hit> allHits = new ArrayList<>();
-        instance.results(0, count, allHits);
-
-        long uniquePaths = allHits.stream().map(Hit::getPath).distinct().count();
-        assertEquals(count, uniquePaths,
-                "totalHits must be exact so results() retrieves every matching document");
-
-        instance.destroy();
+        SearchEngine capped = new SearchEngine(1);
+        capped.setFile("main.c");
+        capped.setFreetext("arguments");
+        capped.search();
+        assertEquals(realTotal, capped.getTotalHits(),
+                "totalHits must be exact regardless of how few documents are collected");
+        capped.destroy();
     }
 
     /* see https://github.com/oracle/opengrok/issues/2030
@@ -331,7 +311,7 @@ class SearchEngineTest {
     void testSearch() {
         List<Hit> hits = new ArrayList<>();
 
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
         int noHits =  instance.search();
         if (noHits > 0) {
@@ -340,7 +320,7 @@ class SearchEngineTest {
         }
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("printf");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -356,7 +336,7 @@ class SearchEngineTest {
         assertEquals(8, noHits);
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("arguments");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -371,7 +351,7 @@ class SearchEngineTest {
         assertEquals(8, noHits);
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setDefinition("main");
         instance.setFile("main.c");
         noHits = instance.search();
@@ -387,7 +367,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // negative symbol test (comments should be ignored)
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("Ordinary");
         instance.setFile("\"Main.java\"");
         instance.search();
@@ -397,7 +377,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case sensitivity of definition search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setDefinition("Mai*"); // definition is case sensitive
         instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
@@ -410,7 +390,7 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case sensitivity of symbol search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setSymbol("Mai*"); // symbol is case sensitive
         instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
@@ -421,14 +401,14 @@ class SearchEngineTest {
         instance.destroy();
 
         // wildcards and case insensitivity of freetext search
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("MaI*"); // should match both Main and main
         instance.setFile("\"Main.java\" OR \"main.c\"");
         assertEquals(10, instance.search());
         instance.destroy();
 
         // file name search is case insensitive
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile("JaVa"); // should match java
         int count=instance.search();
         if (count > 0) {
@@ -438,21 +418,112 @@ class SearchEngineTest {
         instance.destroy();
 
         //test eol and eof
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("makeW");
         assertEquals(1, instance.search());
         instance.destroy();
 
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("WeirdEOL");
         assertEquals(1, instance.search());
         instance.destroy();
 
         //test bcel jar parser
-        instance = new SearchEngine();
+        instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFreetext("InstConstraintVisitor");
         assertEquals(1, instance.search());
         instance.destroy();
     }
     */
+
+    @Test
+    void testMaxDocsConstructorGetter() {
+        assertEquals(5, new SearchEngine(5).getMaxDocs());
+    }
+
+    @Test
+    void testConstructorRejectsNonPositiveMaxDocs() {
+        assertThrows(IllegalArgumentException.class, () -> new SearchEngine(0));
+        assertThrows(IllegalArgumentException.class, () -> new SearchEngine(-1));
+    }
+
+    @Test
+    void testMaxDocsLimitsCollectedHits() {
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
+        unlimited.setFreetext("arguments");
+        int totalCount = unlimited.search();
+        unlimited.destroy();
+        assertTrue(totalCount > 1, "Query must match multiple documents for this test to be meaningful");
+
+        SearchEngine limited = new SearchEngine(1);
+        limited.setFreetext("arguments");
+        limited.search();
+        assertEquals(1, limited.scoreDocs().length);
+        limited.destroy();
+    }
+
+    @Test
+    void testSearchReturnsCollectedCountWhenMaxDocsCaps() {
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
+        unlimited.setFreetext("arguments");
+        assertTrue(unlimited.search() > 1, "Query must match multiple documents");
+        unlimited.destroy();
+
+        // search() must report the collected count so that its return value
+        // is safe to pass to results() as the end index.
+        SearchEngine limited = new SearchEngine(1);
+        limited.setFreetext("arguments");
+        assertEquals(1, limited.search());
+        limited.destroy();
+    }
+
+    @Test
+    void testGetTotalHitsReportsFullCountWhenMaxDocsCaps() {
+        SearchEngine unlimited = new SearchEngine(Integer.MAX_VALUE);
+        unlimited.setFreetext("arguments");
+        int realTotal = unlimited.search();
+        unlimited.destroy();
+        assertTrue(realTotal > 1, "Query must match multiple documents");
+
+        // totalHits must stay accurate even when collection is capped —
+        // callers need it to paginate correctly.
+        SearchEngine limited = new SearchEngine(1);
+        limited.setFreetext("arguments");
+        limited.search();
+        assertEquals(realTotal, limited.getTotalHits());
+        limited.destroy();
+    }
+
+    @Test
+    void testMaxDocsResultsRespectBound() {
+        SearchEngine instance = new SearchEngine(1);
+        instance.setFreetext("arguments");
+        int collected = instance.search();
+        assertTrue(instance.getTotalHits() > 1, "Total should exceed maxDocs for this test to exercise the cap");
+
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, collected, hits);
+        assertEquals(1, hits.size());
+        instance.destroy();
+    }
+
+    @Test
+    void testResultsWithoutSearchThrows() {
+        SearchEngine instance = new SearchEngine(1);
+        assertThrows(IllegalStateException.class, () -> instance.results(0, 1, new ArrayList<>()));
+    }
+
+    @Test
+    void testResultsClampsEndBeyondCollected() {
+        SearchEngine instance = new SearchEngine(1);
+        instance.setFreetext("arguments");
+        instance.search();
+        assertTrue(instance.getTotalHits() > 1, "Total should exceed maxDocs for this test to be meaningful");
+
+        // asking past the collected window must not blow up, only serve what was collected
+        List<Hit> hits = new ArrayList<>();
+        instance.results(0, instance.getTotalHits(), hits);
+        assertEquals(1, hits.size());
+        instance.destroy();
+    }
 }
