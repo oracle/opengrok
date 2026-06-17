@@ -84,7 +84,7 @@ CONTAINER_ID=$(docker run -d \
     -v "$TEST_DATA_DIR:/opengrok/data" \
     "$TEST_IMAGE")
 
-if [ -z "$CONTAINER_ID" ]; then
+if [[ -z "$CONTAINER_ID" ]]; then
     echo "ERROR: Failed to start container"
     rm -rf "$TEST_SRC_DIR" "$TEST_DATA_DIR"
     exit 1
@@ -111,7 +111,7 @@ MAX_WAIT=90
 WAITED=0
 READY=false
 
-while [ $WAITED -lt $MAX_WAIT ]; do
+while [[ $WAITED -lt $MAX_WAIT ]]; do
     # Check if container is still running
     if ! docker ps -q --no-trunc | grep -q "$CONTAINER_ID"; then
         echo "ERROR: Container stopped unexpectedly"
@@ -127,11 +127,11 @@ while [ $WAITED -lt $MAX_WAIT ]; do
     fi
 
     sleep 3
-    WAITED=$((WAITED + 3))
+    (( WAITED = WAITED + 3 ))
     echo "  Waited ${WAITED}s..."
 done
 
-if [ "$READY" = false ]; then
+if [[ "$READY" == false ]]; then
     echo "ERROR: Container did not start within ${MAX_WAIT}s"
     echo "Container logs:"
     docker logs "$CONTAINER_ID"
@@ -144,7 +144,7 @@ echo "✓ Container is ready! (took ${WAITED}s)"
 echo ""
 echo "Checking for errors in container logs..."
 ERROR_COUNT=$(docker logs "$CONTAINER_ID" 2>&1 | grep -c -iE "^ERROR|^FATAL" || true)
-if [ "$ERROR_COUNT" -gt 0 ]; then
+if [[ "$ERROR_COUNT" -gt 0 ]]; then
     echo "WARNING: Found $ERROR_COUNT error/fatal messages in logs"
     docker logs "$CONTAINER_ID" 2>&1 | grep -iE "^ERROR|^FATAL" || true
     # Don't fail the build for warnings, but show them
@@ -161,12 +161,12 @@ echo "Container IP: $CONTAINER_IP"
 echo ""
 echo "Testing web interface on port 8080..."
 if command -v curl >/dev/null 2>&1; then
-    if [ -n "$CONTAINER_IP" ]; then
+    if [[ -n "$CONTAINER_IP" ]]; then
         # Try up to 3 times with 5 second delays
         WEB_SUCCESS=false
         for i in 1 2 3; do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "http://${CONTAINER_IP}:8080/" || echo "000")
-            if [ "$HTTP_CODE" = "200" ]; then
+            if [[ "$HTTP_CODE" == "200" ]]; then
                 echo "✓ Web interface is accessible (HTTP $HTTP_CODE)"
                 WEB_SUCCESS=true
                 break
@@ -176,7 +176,7 @@ if command -v curl >/dev/null 2>&1; then
             fi
         done
 
-        if [ "$WEB_SUCCESS" = false ]; then
+        if [[ "$WEB_SUCCESS" == false ]]; then
             echo "WARNING: Web interface is not accessible after 3 attempts (HTTP $HTTP_CODE)"
         fi
     else
@@ -189,9 +189,9 @@ fi
 # Test REST API (port 5000)
 echo ""
 echo "Testing REST API on port 5000..."
-if [ -n "$CONTAINER_IP" ] && command -v curl >/dev/null 2>&1; then
+if [[ -n "$CONTAINER_IP" ]] && command -v curl >/dev/null 2>&1; then
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "http://${CONTAINER_IP}:5000/" || echo "000")
-    if [ "$HTTP_CODE" != "000" ]; then
+    if [[ "$HTTP_CODE" != "000" ]]; then
         echo "✓ REST API is responding (HTTP $HTTP_CODE)"
     else
         echo "WARNING: REST API not accessible"
@@ -219,7 +219,7 @@ DATA_OWNER=$(docker exec "$CONTAINER_ID" stat -c '%U:%G' /opengrok/data 2>/dev/n
 echo "  /opengrok/src owner: $SRC_OWNER"
 echo "  /opengrok/data owner: $DATA_OWNER"
 
-if [ "$SRC_OWNER" = "appuser:appgroup" ] && [ "$DATA_OWNER" = "appuser:appgroup" ]; then
+if [[ "$SRC_OWNER" == "appuser:appgroup" ]] && [[ "$DATA_OWNER" = "appuser:appgroup" ]]; then
     echo "✓ File ownership is correct"
 else
     echo "WARNING: File ownership may be incorrect (expected appuser:appgroup)"
@@ -256,7 +256,7 @@ if [[ -z $DOCKER_PAT ]]; then
 fi
 
 # Publish the image to Docker hub.
-if [ -n "$DOCKER_PAT" -a -n "$DOCKER_USERNAME" -a -n "$TAGS" ]; then
+if [[ -n "$DOCKER_PAT" ]] && [[ -n "$DOCKER_USERNAME" ]] && [[ -n "$TAGS" ]]; then
 	echo "Logging into Docker Hub"
 	echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
