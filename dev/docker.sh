@@ -99,7 +99,6 @@ cleanup() {
     echo "Cleaning up..."
     docker stop "$CONTAINER_ID" >/dev/null 2>&1 || true
     docker rm "$CONTAINER_ID" >/dev/null 2>&1 || true
-    rm -rf "$TEST_SRC_DIR" "$TEST_DATA_DIR"
     echo "Cleanup complete"
 }
 trap cleanup EXIT
