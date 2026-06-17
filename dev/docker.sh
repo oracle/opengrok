@@ -49,28 +49,22 @@ if [[ -n $OPENGROK_TAG ]]; then
 	    -t "$IMAGE:$VERSION" \
 	    -t "$IMAGE:$VERSION_SHORT" \
 	    -t "$IMAGE:latest" .
+
+	TEST_IMAGE="$IMAGE:latest"
 else
 	TAGS="master"
 
 	echo "Building docker image for master"
 	docker buildx build -t $IMAGE:master .
+
+  TEST_IMAGE="$IMAGE:master"
 fi
 
 #
 # Run the image in a container with comprehensive smoke tests.
 # This validates basic functionality and catches common configuration errors.
 #
-echo "======================================"
-echo "Running Docker image smoke tests"
-echo "======================================"
-
-# Determine which tag to test
-if [[ -n $OPENGROK_TAG ]]; then
-    TEST_IMAGE="$IMAGE:latest"
-else
-    TEST_IMAGE="$IMAGE:master"
-fi
-echo "Testing image: $TEST_IMAGE"
+echo "Running Docker image smoke tests for image: $TEST_IMAGE"
 
 # Create temporary directories for volumes (required by entrypoint.sh)
 TEST_SRC_DIR=$(mktemp -d)
@@ -232,9 +226,7 @@ else
 fi
 
 echo ""
-echo "======================================"
 echo "✓ All smoke tests passed!"
-echo "======================================"
 
 # This can only work on home repository since it needs encrypted variables.
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
