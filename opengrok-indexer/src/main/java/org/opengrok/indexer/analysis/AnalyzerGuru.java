@@ -82,6 +82,7 @@ import org.opengrok.indexer.analysis.executables.JarAnalyzerFactory;
 import org.opengrok.indexer.analysis.executables.JavaClassAnalyzerFactory;
 import org.opengrok.indexer.analysis.fortran.FortranAnalyzerFactory;
 import org.opengrok.indexer.analysis.golang.GolangAnalyzerFactory;
+import org.opengrok.indexer.analysis.groovy.GroovyAnalyzerFactory;
 import org.opengrok.indexer.analysis.haskell.HaskellAnalyzerFactory;
 import org.opengrok.indexer.analysis.hcl.HCLAnalyzerFactory;
 import org.opengrok.indexer.analysis.java.JavaAnalyzerFactory;
@@ -311,6 +312,7 @@ public class AnalyzerGuru {
                 new HCLAnalyzerFactory(),
                 new TerraformAnalyzerFactory(),
                 new CobolAnalyzerFactory(),
+                new GroovyAnalyzerFactory(),
                 new RAnalyzerFactory(),
                 // Keep PlainAnalyzer last, with its lone, quite fuzzy matcher.
                 PlainAnalyzerFactory.DEFAULT_INSTANCE
@@ -347,7 +349,7 @@ public class AnalyzerGuru {
      * {@link FileAnalyzerFactory} subclasses are revised to target more or
      * different files.
      * @return a value whose lower 32-bits are a static value
-     * 20260504_00
+     * 20260521_00
      * for the current implementation and whose higher-32 bits are non-zero if
      * {@link #addExtension(java.lang.String, AnalyzerFactory)}
      * or
@@ -355,7 +357,7 @@ public class AnalyzerGuru {
      * has been called.
      */
     public static long getVersionNo() {
-        final int ver32 = 20260504_00; // Edit comment above too!
+        final int ver32 = 20260521_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
             ver |= (long) customizationHashCode << 32;
