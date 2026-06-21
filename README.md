@@ -18,27 +18,27 @@ Copyright (c) 2006, 2025 Oracle and/or its affiliates. All rights reserved.
 
 ## 1. Introduction
 
-OpenGrok is a fast and usable source code search and cross reference
-engine, written in Java. It helps you search, cross-reference and navigate
+OpenGrok is a fast and usable source code search and cross-reference
+engine, written in Java. It helps you search, cross-reference, and navigate
 your source tree. It can understand various program file formats and
 version control histories of many source code management systems.
 
-Official page of the project is on:
+Official project page:
 <https://oracle.github.io/opengrok/>
 
 ## 2. Installation
 
 See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
-### 2. 1. Updating
+### 2.1 Updating
 
-OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is *major.minor.micro* and change in any component is interpreted as:
+OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to a newer version. The version scheme is *major.minor.micro* and a change in any component is interpreted as:
 
-- major - major backwards incompatible update, will require full reindex as well as configuration changes
-- minor - full clean reindex of your repositories is needed (e. g. index format has changed)
+- major - major backwards incompatible update, will require a full reindex as well as configuration changes
+- minor - a full clean reindex of your repositories is needed (e.g., index format has changed)
 - micro - redeploy web application
 
-Generally it is possible to go backward only within the micro version.
+Generally, it is possible to downgrade only within the same micro version.
 
 ## 3. Information for developers
 
@@ -60,11 +60,11 @@ You can run OpenGrok as a Docker container as described [here](docker/README.md)
 
 ## Contributing
 
-This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md).
 
 ## Security
 
-Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process.
 
 ## License
 
