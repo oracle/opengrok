@@ -30,7 +30,11 @@ git config --global user.email "41898282+github-actions[bot]@users.noreply.githu
 
 cd "$BRANCH"
 cp -f "$OPENGROK_BUILD_DIR/target/openapi-validation/index.html" ./openapi.html
-git add openapi.html
+git add -f openapi.html
+if [[ -z $( git status -s ) ]]; then
+  echo "No change, bailing out"
+  exit 0
+fi
 git commit -m "Latest OpenAPI auto-pushed to branch $BRANCH"
 git push -fq origin "$BRANCH"
 
