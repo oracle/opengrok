@@ -1,0 +1,13 @@
+module sample-module {
+  yang-version 1.1;
+  namespace "urn:example:sample";
+  prefix smp;
+
+  import ietf-inet-types {
+    prefix inet;
+    revision-date 2013-07-15;
+  }
+
+  // See http://example.com/yang/sample.yang and /opt/yang/sample.yang
+  leaf host { type inet:ip-address; default '127.0.0.1'; }
+}
