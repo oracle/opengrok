@@ -205,7 +205,39 @@ public class PerforceRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
+        // Unlike Git/Mercurial/etc., Perforce has no local marker directory, so
+        // historically OpenGrok probed *every* scanned directory by executing p4.
+        // That is expensive and, when a p4 client is configured via the
+        // environment, `p4 files`/`p4 dirs` can return depot paths for
+        // non-Perforce (e.g. Git) working trees, causing them to be misclassified
+        // as Perforce and their real history to be lost. Require local evidence of
+        // Perforce (a P4CONFIG marker file) before running any p4 command.
+        if (!hasPerforceEvidence(file)) {
+            return false;
+        }
         return isInP4Depot(file, cmdType);
+    }
+
+    /**
+     * Determine, without executing any external command, whether {@code file}
+     * plausibly belongs to a Perforce workspace. This is the case when a P4CONFIG
+     * marker file (named by the {@code P4CONFIG} environment variable, or
+     * {@code .p4config} by default) is present in the directory or any ancestor.
+     *
+     * @param file directory to test
+     * @return true if a P4CONFIG marker is found in the directory or an ancestor
+     */
+    static boolean hasPerforceEvidence(File file) {
+        String p4configName = System.getenv("P4CONFIG");
+        if (p4configName == null || p4configName.isEmpty()) {
+            p4configName = ".p4config";
+        }
+        for (File dir = file; dir != null; dir = dir.getParentFile()) {
+            if (new File(dir, p4configName).isFile()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isP4Working() {
