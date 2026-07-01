@@ -49,6 +49,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
@@ -105,9 +106,11 @@ class SearchControllerTest extends OGKJerseyTest {
 
     @Test
     void testSearchReturnsResults() {
-        // "dump" is a method name defined in java/Main.java — verifies the index is live
+        // "dump" is a method name defined in java/Main.java — verifies the index is
+        // live
         // and the API returns a well-formed response.
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        GenericType<Map<String, Object>> type = new GenericType<>() {
+        };
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .request()
@@ -117,16 +120,17 @@ class SearchControllerTest extends OGKJerseyTest {
         Object resultsObj = body.get("results");
         assertNotNull(resultsObj);
         @SuppressWarnings("unchecked")
-        Map<String, List<Map<String, Object>>> results =
-                (Map<String, List<Map<String, Object>>>) resultsObj;
+        Map<String, List<Map<String, Object>>> results = (Map<String, List<Map<String, Object>>>) resultsObj;
         assertFalse(results.isEmpty());
     }
 
     @Test
     void testSearchResultsPreserveHitOrder() {
-        // Results presented by the search API must be stable w.r.t. file ordering across
+        // Results presented by the search API must be stable w.r.t. file ordering
+        // across
         // repeated calls, while preserving Lucene scoring order.
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        GenericType<Map<String, Object>> type = new GenericType<>() {
+        };
         String firstKey1 = getFirstResultKey(type);
         String firstKey2 = getFirstResultKey(type);
         assertNotNull(firstKey1);
@@ -149,10 +153,13 @@ class SearchControllerTest extends OGKJerseyTest {
 
     @Test
     void testSearchResultsHaveLineNumbers() {
-        // maxhitsperfile defaults to 0 (unlimited) so all per-file hits carry a lineNumber.
-        // Restrict to Java source type to exclude XREFABLE binary files (jar, class, elf)
+        // maxhitsperfile defaults to 0 (unlimited) so all per-file hits carry a
+        // lineNumber.
+        // Restrict to Java source type to exclude XREFABLE binary files (jar, class,
+        // elf)
         // whose hits go through the Summarizer path and never carry a lineNumber.
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        GenericType<Map<String, Object>> type = new GenericType<>() {
+        };
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .queryParam(QueryParameters.TYPE_SEARCH_PARAM, "java")
@@ -160,28 +167,28 @@ class SearchControllerTest extends OGKJerseyTest {
                 .get();
         Map<String, Object> body = response.readEntity(type);
         @SuppressWarnings("unchecked")
-        Map<String, List<Map<String, Object>>> results =
-                (Map<String, List<Map<String, Object>>>) body.get("results");
+        Map<String, List<Map<String, Object>>> results = (Map<String, List<Map<String, Object>>>) body.get("results");
         assertNotNull(results);
         assertFalse(results.isEmpty());
-        results.values().forEach(hits ->
-                hits.forEach(hit -> {
-                    assertNotNull(hit.get("lineNumber"));
-                    assertFalse(hit.get("lineNumber").toString().isEmpty());
-                })
-        );
+        results.values().forEach(hits -> hits.forEach(hit -> {
+            assertNotNull(hit.get("lineNumber"));
+            assertFalse(hit.get("lineNumber").toString().isEmpty());
+        }));
     }
 
     /**
-     * Verify that resultCount reflects the true total number of matching documents and
-     * endDocument is derived from the document page size, not from the number of unique
+     * Verify that resultCount reflects the true total number of matching documents
+     * and
+     * endDocument is derived from the document page size, not from the number of
+     * unique
      * file paths in the grouped results map.
      */
     @Test
     @SuppressWarnings("unchecked")
     void testResultCountAndEndDocument() {
         int maxResults = 100;
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        GenericType<Map<String, Object>> type = new GenericType<>() {
+        };
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
                 .queryParam(QueryParameters.MAXRESULTS_PARAM, maxResults)
@@ -205,7 +212,8 @@ class SearchControllerTest extends OGKJerseyTest {
     }
 
     /**
-     * Without the {@code maxresults} parameter the page size must follow the configured
+     * Without the {@code maxresults} parameter the page size must follow the
+     * configured
      * {@code hitsPerPage * cachePages} rather than a hardcoded constant.
      */
     @Test
@@ -215,7 +223,8 @@ class SearchControllerTest extends OGKJerseyTest {
         env.setHitsPerPage(1);
         env.setCachePages(1);
         try {
-            GenericType<Map<String, Object>> type = new GenericType<>() { };
+            GenericType<Map<String, Object>> type = new GenericType<>() {
+            };
             Response response = target(SearchController.PATH)
                     .queryParam(QueryParameters.FULL_SEARCH_PARAM, "main")
                     .request()
@@ -264,7 +273,8 @@ class SearchControllerTest extends OGKJerseyTest {
     }
 
     /**
-     * {@code startDocIndex + maxResults} overflowing must be rejected rather than silently
+     * {@code startDocIndex + maxResults} overflowing must be rejected rather than
+     * silently
      * turning into a wrong (or unbounded) collection cap.
      */
     @Test
@@ -279,13 +289,15 @@ class SearchControllerTest extends OGKJerseyTest {
     }
 
     /**
-     * The largest non-overflowing page request must stay well-formed: a page far beyond the
+     * The largest non-overflowing page request must stay well-formed: a page far
+     * beyond the
      * match count comes back empty while resultCount reports the true total.
      */
     @Test
     @SuppressWarnings("unchecked")
     void testMaxNonOverflowingStartDocIndexReturnsEmptyPage() {
-        GenericType<Map<String, Object>> type = new GenericType<>() { };
+        GenericType<Map<String, Object>> type = new GenericType<>() {
+        };
         Response response = target(SearchController.PATH)
                 .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
                 .queryParam(QueryParameters.START_PARAM, Integer.MAX_VALUE - 1)
@@ -298,5 +310,47 @@ class SearchControllerTest extends OGKJerseyTest {
         assertTrue((int) json.get("resultCount") > 0, "resultCount must still report the true total");
         Map<String, ?> results = (Map<String, ?>) json.get("results");
         assertTrue(results.isEmpty(), "page beyond the match count must be empty");
+    }
+
+    @Test
+    void testTruncateLine() {
+        String longString = "A".repeat(1000);
+
+        String result = SearchController.truncateLine(longString);
+
+        assertEquals("A".repeat(500) + " ...", result);
+    }
+
+    @Test
+    void testTruncateShortLine() {
+        String line = "Hello";
+
+        assertEquals(line, SearchController.truncateLine(line));
+    }
+
+    @Test
+    void testTruncateNullLine() {
+        assertNull(SearchController.truncateLine(null));
+    }
+
+    @Test
+    void testTruncateExactBoundaryLine() {
+        // A line of exactly MAX_LINE_LENGTH (500) chars must NOT be truncated.
+        // This guards against an off-by-one error (< vs <=) in the boundary check.
+        String line = "A".repeat(500);
+        assertEquals(line, SearchController.truncateLine(line));
+    }
+
+    @Test
+    void testTruncateOneOverBoundaryLine() {
+        // A line of exactly MAX_LINE_LENGTH + 1 (501) chars must be truncated.
+        String line = "A".repeat(501);
+        assertEquals("A".repeat(500) + " ...", SearchController.truncateLine(line));
+    }
+
+    @Test
+    void testTruncateEmptyLine() {
+        // An empty string is within the limit and must be returned unchanged.
+        assertEquals("", SearchController.truncateLine(""));
     }
 }
