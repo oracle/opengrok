@@ -1683,10 +1683,11 @@ public final class RuntimeEnvironment {
 
             // add project to the groups
             for (Group group : copy) {
-                if (repository_map.get(project) == null) {
-                    group.addProject(project);
-                } else {
+                List<RepositoryInfo> repositories = repository_map.get(project);
+                if (repositories != null && !repositories.isEmpty()) {
                     group.addRepository(project);
+                } else {
+                    group.addProject(project);
                 }
                 project.addGroup(group);
             }
