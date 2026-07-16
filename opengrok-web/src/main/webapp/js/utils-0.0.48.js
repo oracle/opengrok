@@ -1629,24 +1629,26 @@ $(document).ready(function () {
     }
 
     // Intercept clicks on symbol links to append the persistent file path
-    $(document).on('click', 'a', function (e) {
+    $(document).on('mousedown click', 'a[href*="search?"]', function (e) {
+        // Let the browser handle ctrl/cmd/shift/middle clicks naturally
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+
         const href = $(this).attr('href');
         if (!href) return;
         
-        if (href.indexOf('defs=') !== -1 || href.indexOf('refs=') !== -1) {
-            try {
-                const url = new URL(href, window.location.origin);
+        try {
+            const url = new URL(href, window.location.origin);
+            if (url.searchParams.has('defs') || url.searchParams.has('refs')) {
                 if (!url.searchParams.has('path')) {
                     const storedPath = sessionStorage.getItem('opengrok_search_path');
                     if (storedPath) {
                         url.searchParams.set('path', storedPath);
-                        e.preventDefault();
-                        window.location.href = url.pathname + url.search + url.hash;
+                        $(this).attr('href', url.pathname + url.search + url.hash);
                     }
                 }
-            } catch (err) {
-                // Ignore malformed URLs
             }
+        } catch (err) {
+            // Silently ignore malformed URLs
         }
     });
 });
