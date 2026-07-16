@@ -1624,9 +1624,7 @@ $(document).ready(function () {
         if (storedPath && $('#path').length && !$('#path').val() && getParameter('path') === undefined) {
             $('#path').val(storedPath);
         }
-    } catch (e) {
-        console.warn("sessionStorage is unavailable:", e);
-    }
+    } catch (e) {}
 
     // Intercept clicks on symbol links to append the persistent file path
     $(document).on('mousedown click', 'a[href*="search?"]', function (e) {
@@ -2392,9 +2390,7 @@ function searchSubmit(form) {
             } else {
                 sessionStorage.removeItem('opengrok_search_path');
             }
-        } catch (e) {
-            console.warn("sessionStorage is unavailable:", e);
-        }
+        } catch (e) {}
     }
 
     let submitInitiator = '';
