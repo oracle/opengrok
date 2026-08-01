@@ -26,6 +26,8 @@ package org.opengrok.indexer.analysis;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.jupiter.api.Test;
@@ -163,5 +165,183 @@ class JFlexTokenizerTest {
 
         // This call used to hang forever.
         assertFalse(tokenizer.incrementToken());
+    }
+
+    @Test
+    void tokenLimitStopsFurtherScanningAndResetRestoresTokenizer() throws Exception {
+        FakeMatcher matcher = new FakeMatcher(List.of("alpha", "beta", "gamma", "delta"));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
+        tokenizer.setMaxEmittedTokens(2);
+        tokenizer.setReader(new StringReader("unused"));
+        tokenizer.reset();
+
+        CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
+        List<String> seen = new ArrayList<>();
+        while (tokenizer.incrementToken()) {
+            seen.add(term.toString());
+        }
+
+        assertEquals(List.of("alpha", "beta"), seen);
+        assertTrue(tokenizer.isTokenLimitReached());
+        assertEquals(2, matcher.getYylexCalls());
+
+        tokenizer.close();
+        assertTrue(matcher.isClosed());
+
+        matcher.resetYylexCalls();
+        tokenizer.setReader(new StringReader("unused-again"));
+        tokenizer.reset();
+        tokenizer.setMaxEmittedTokens(0);
+        seen.clear();
+        while (tokenizer.incrementToken()) {
+            seen.add(term.toString());
+        }
+
+        assertEquals(List.of("alpha", "beta", "gamma", "delta"), seen);
+        assertFalse(tokenizer.isTokenLimitReached());
+        assertEquals(5, matcher.getYylexCalls());
+    }
+
+    private static final class FakeMatcher implements ScanningSymbolMatcher {
+        private static final int TOKEN = 1;
+        private static final int YYEOF = -1;
+
+        private final List<String> tokens;
+        private int cursor;
+        private int yylexCalls;
+        private Reader reader;
+        private SymbolMatchedListener symbolMatchedListener;
+        private NonSymbolMatchedListener nonSymbolMatchedListener;
+        private boolean closed;
+
+        private FakeMatcher(List<String> tokens) {
+            this.tokens = tokens;
+        }
+
+        int getYylexCalls() {
+            return yylexCalls;
+        }
+
+        void resetYylexCalls() {
+            yylexCalls = 0;
+        }
+
+        boolean isClosed() {
+            return closed;
+        }
+
+        @Override
+        public void setSymbolMatchedListener(SymbolMatchedListener l) {
+            symbolMatchedListener = l;
+        }
+
+        @Override
+        public void clearSymbolMatchedListener() {
+            symbolMatchedListener = null;
+        }
+
+        @Override
+        public void setNonSymbolMatchedListener(NonSymbolMatchedListener l) {
+            nonSymbolMatchedListener = l;
+        }
+
+        @Override
+        public void clearNonSymbolMatchedListener() {
+            nonSymbolMatchedListener = null;
+        }
+
+        @Override
+        public void reset() {
+            cursor = 0;
+            closed = false;
+        }
+
+        @Override
+        public void yypush(int newState) {
+        }
+
+        @Override
+        public void yypop() {
+        }
+
+        @Override
+        public long getYYCHAR() {
+            return cursor;
+        }
+
+        @Override
+        public int getYYEOF() {
+            return YYEOF;
+        }
+
+        @Override
+        public int getLineNumber() {
+            return 1;
+        }
+
+        @Override
+        public boolean emptyStack() {
+            return true;
+        }
+
+        @Override
+        public String yytext() {
+            return cursor == 0 ? "" : tokens.get(Math.min(cursor - 1, tokens.size() - 1));
+        }
+
+        @Override
+        public int yylength() {
+            return yytext().length();
+        }
+
+        @Override
+        public char yycharat(int pos) {
+            return yytext().charAt(pos);
+        }
+
+        @Override
+        public void yyclose() {
+            closed = true;
+        }
+
+        @Override
+        public void yyreset(Reader reader) {
+            this.reader = reader;
+            reset();
+        }
+
+        @Override
+        public int yystate() {
+            return 0;
+        }
+
+        @Override
+        public void yybegin(int lexicalState) {
+        }
+
+        @Override
+        public void yypushback(int number) {
+        }
+
+        @Override
+        public int yylex() throws IOException {
+            if (reader == null) {
+                throw new IOException("reader not set");
+            }
+
+            yylexCalls++;
+            if (cursor >= tokens.size()) {
+                return YYEOF;
+            }
+
+            String token = tokens.get(cursor);
+            cursor++;
+            if (symbolMatchedListener != null) {
+                long start = cursor * 10L;
+                symbolMatchedListener.symbolMatched(
+                        new SymbolMatchedEvent(this, token, start, start + token.length()));
+            }
+            return TOKEN;
+        }
     }
 }
