@@ -58,6 +58,12 @@ import org.opengrok.indexer.util.NullWriter;
 public class PlainAnalyzer extends TextAnalyzer {
 
     /**
+     * Conservative safeguard to stop pathological symbol streams from
+     * monopolizing indexing work while preserving normal indexing behavior.
+     */
+    static final int MAX_REFS_TOKENS_PER_FILE = 100_000;
+
+    /**
      * Creates a new instance of PlainAnalyzer.
      * @param factory defined instance for the analyzer
      */
@@ -130,6 +136,7 @@ public class PlainAnalyzer extends TextAnalyzer {
          * work around #1376: symbols search works like full text search.
          */
         JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
+        symbolTokenizer.setMaxEmittedTokens(getRefsTokenLimit());
         OGKTextField ref = new OGKTextField(QueryBuilder.REFS, symbolTokenizer);
         symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(ref);
@@ -206,5 +213,15 @@ public class PlainAnalyzer extends TextAnalyzer {
      */
     private Reader wrapReader(Reader reader) {
         return ExpandTabsReader.wrap(reader, project);
+    }
+
+    /**
+     * Gets the maximum number of tokens emitted into the REFS field for a
+     * single file.
+     *
+     * @return maximum REFS token count, or non-positive for unlimited
+     */
+    protected int getRefsTokenLimit() {
+        return MAX_REFS_TOKENS_PER_FILE;
     }
 }
