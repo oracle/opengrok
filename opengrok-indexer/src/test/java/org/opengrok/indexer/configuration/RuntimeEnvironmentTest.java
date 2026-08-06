@@ -912,6 +912,17 @@ class RuntimeEnvironmentTest {
         assertEquals(0, group2.getProjects().size());
         assertEquals(2, group2.getRepositories().size());
 
+        // empty repository map entries classify as projects
+        env.getProjectRepositoriesMap().put(project1, new ArrayList<>());
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
+
+        assertEquals(1, group1.getProjects().size());
+        assertEquals(0, group1.getRepositories().size());
+        assertEquals(1, group2.getProjects().size());
+        assertEquals(1, group2.getRepositories().size());
+
+        env.getProjectRepositoriesMap().put(project1, Arrays.asList(repository1));
+
         // remove a single repository object => project1 will become a simple project
         env.getProjectRepositoriesMap().remove(project1);
         env.getRepositories().remove(repository1);
