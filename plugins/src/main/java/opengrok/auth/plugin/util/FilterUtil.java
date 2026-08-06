@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 public class FilterUtil {
 
@@ -65,6 +66,21 @@ public class FilterUtil {
     }
 
     /**
+     * @param value string
+     * @return string with LDAP filter metacharacters escaped as per RFC 4515, section 3
+     */
+    private static String escapeLdapFilterValue(String value) {
+        // Use quoteReplacement() to deal with the $ character potentially present in the value
+        // because $ has special meaning in regex replacements.
+        return Matcher.quoteReplacement(value
+                .replace("\\", "\\5c")    // MUST be first
+                .replace("*",  "\\2a")
+                .replace("(",  "\\28")
+                .replace(")",  "\\29")
+                .replace("\u0000", "\\00"));
+    }
+
+    /**
      * Expand attributes in filter string.
      * @param filter input string
      * @param name attribute name
@@ -80,7 +96,7 @@ public class FilterUtil {
             }
         }
 
-        return filter.replaceAll("(?<!\\\\)%" + name + "(?<!\\\\)%", value);
+        return filter.replaceAll("(?<!\\\\)%" + name + "(?<!\\\\)%", escapeLdapFilterValue(value));
     }
 
     /**
@@ -96,8 +112,9 @@ public class FilterUtil {
 
     /**
      * Expand {@code User} object attribute values into the filter.
-     *
+     * <p>
      * Special values are:
+     * </p>
      * <ul>
      * <li>%username% - to be replaced with username value from the User object</li>
      * <li>%guid% - to be replaced with guid value from the User object</li>
