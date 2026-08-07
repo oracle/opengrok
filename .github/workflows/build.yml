@@ -30,6 +30,10 @@ jobs:
       with:
         distribution: 'oracle'
         java-version: '21'
+    - name: Set up Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      with:
+        python-version: '3.13'
     - name: Cache Maven packages
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
