@@ -48,6 +48,7 @@ import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
 import org.opengrok.indexer.analysis.plain.XMLAnalyzer;
 import org.opengrok.indexer.analysis.sh.ShAnalyzer;
 import org.opengrok.indexer.analysis.sh.ShAnalyzerFactory;
+import org.opengrok.indexer.analysis.yang.YangAnalyzer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -66,6 +67,15 @@ class AnalyzerGuruTest {
     void testGetFileTypeDescriptions() {
         Map<String, String> map = AnalyzerGuru.getfileTypeDescriptions();
         assertFalse(map.isEmpty());
+        assertEquals("Yang", map.get("yang"));
+    }
+
+    @Test
+    void testYangAnalyzerBySuffix() throws Exception {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "module example-yang {}".getBytes(StandardCharsets.UTF_8));
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file.yang");
+        assertSame(YangAnalyzer.class, fa.getClass());
     }
 
     /**
