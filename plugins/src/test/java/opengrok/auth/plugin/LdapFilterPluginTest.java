@@ -125,10 +125,10 @@ class LdapFilterPluginTest {
         assertEquals(MessageFormat.format("(uid=%{0}%)", addExpectedEscapeChars("007")),
                 plugin.expandFilter("(uid=%%username%%)", ldapUser, user));
 
-        assertEquals(MessageFormat.format("(uid=%{0}%)",  addExpectedEscapeChars("123")),
+        assertEquals(MessageFormat.format("(uid=%{0}%)", addExpectedEscapeChars("123")),
                 plugin.expandFilter("(uid=%%guid%%)", ldapUser, user));
 
-        assertEquals(MessageFormat.format("(objectclass=%{0}%)",   addExpectedEscapeChars("james@bond")),
+        assertEquals(MessageFormat.format("(objectclass=%{0}%)", addExpectedEscapeChars("james@bond")),
                 plugin.expandFilter("(objectclass=%%mail%%)", ldapUser, user));
 
         assertEquals(MessageFormat.format("(objectclass=%{0}%)", addExpectedEscapeChars("bondjame")),
