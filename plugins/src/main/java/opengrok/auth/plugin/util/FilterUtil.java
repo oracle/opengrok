@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FilterUtil {
 
@@ -96,7 +97,7 @@ public class FilterUtil {
             }
         }
 
-        return filter.replaceAll("(?<!\\\\)%" + name + "(?<!\\\\)%", escapeLdapFilterValue(value));
+        return filter.replaceAll("(?<!\\\\)%" + Pattern.quote(name) + "(?<!\\\\)%", escapeLdapFilterValue(value));
     }
 
     /**
