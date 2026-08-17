@@ -175,6 +175,12 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
                             String.format("Failed to expand filter ''%s'' with name ''%s'' and value ''%s''",
                                     filter, name, value), ex);
                 }
+            } else {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,
+                            String.format("ignoring expansion of filter ''%s'' for multi-value name ''%s''",
+                                    filter, entry.getKey()));
+                }
             }
         }
 
