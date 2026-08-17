@@ -119,7 +119,6 @@ class LdapFilterPluginTest {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList(addEscapeChars("james@bond"))));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList(addEscapeChars("bondjame"))));
-        ldapUser.setAttribute("ou", new TreeSet<>(Arrays.asList("MI6", "MI7")));
         User user = new User(addEscapeChars("007"), addEscapeChars("123"), null, true);
 
         assertEquals(MessageFormat.format("(uid=%{0}%)", addExpectedEscapeChars("007")),
