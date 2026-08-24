@@ -50,6 +50,7 @@ public class CorsFilter implements ContainerResponseFilter {
             return;
         }
 
+        // The CORS response depends on Origin; make shared caches key this response accordingly.
         response.getHeaders().add(VARY_HEADER, CORS_REQUEST_HEADER);
 
         if (RuntimeEnvironment.getInstance().getAllowedOrigins().contains(origin)) {
