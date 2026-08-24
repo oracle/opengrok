@@ -67,10 +67,10 @@ public class Laundromat {
      * (non-logging) processing. The value is assumed to represent a revision string,
      * not including file path.
      * @return {@code null} if null or else {@code value} with anything besides
-     * alphanumeric or {@code :} characters removed.
+     * alphanumeric or {@code :} or {@code .} characters removed.
      */
     public static String launderRevision(String value) {
-        return replaceAll(value, "[^a-zA-Z0-9:]", "");
+        return replaceAll(value, "[^a-zA-Z0-9:.]", "");
     }
 
     /**
