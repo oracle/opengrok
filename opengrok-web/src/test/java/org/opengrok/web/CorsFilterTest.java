@@ -41,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class CorsFilterTest {
     @AfterEach
@@ -50,22 +51,22 @@ class CorsFilterTest {
 
     @Test
     void nonCorsTest() {
-        testBoth(null, null);
+        testBoth(null, null, null);
     }
 
     @Test
     void disallowedCorsTest() {
         RuntimeEnvironment.getInstance().setAllowedOrigins(Set.of("https://allowed.example.com"));
-        testBoth("https://denied.example.com", null);
+        testBoth("https://denied.example.com", null, List.of(CORS_REQUEST_HEADER));
     }
 
     @Test
     void allowedCorsTest() {
         RuntimeEnvironment.getInstance().setAllowedOrigins(Set.of("https://example.com"));
-        testBoth("https://example.com", List.of("https://example.com"));
+        testBoth("https://example.com", List.of("https://example.com"), List.of(CORS_REQUEST_HEADER));
     }
 
-    private void testBoth(String origin, List<Object> headerValue) {
+    private void testBoth(String origin, List<Object> allowedOriginHeaderValue, List<Object> varyHeaderValue) {
         CorsFilter filter = new CorsFilter();
         ContainerRequestContext request = mock(ContainerRequestContext.class);
         when(request.getHeaderString(CORS_REQUEST_HEADER)).thenReturn(origin);
@@ -75,7 +76,7 @@ class CorsFilterTest {
         when(response.getHeaders()).thenReturn(headers);
 
         filter.filter(request, response);
-        assertEquals(headerValue, headers.get(ALLOW_CORS_HEADER));
+        assertEquals(allowedOriginHeaderValue, headers.get(ALLOW_CORS_HEADER));
+        assertEquals(varyHeaderValue, headers.get(VARY_HEADER));
     }
-
 }
