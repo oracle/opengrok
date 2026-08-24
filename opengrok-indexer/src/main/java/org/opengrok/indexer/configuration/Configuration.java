@@ -302,6 +302,7 @@ public final class Configuration {
     private Set<String> authenticationTokens; // set of bearer tokens used by the webapp to validate access to certain API endpoints
     private String indexerAuthenticationToken;  // bearer token used by the indexer to communicate with the webapp
     private boolean allowInsecureTokens;    // whether to allow bearer tokens over plain HTTP (as opposed to HTTPS)
+    private Set<String> allowedOrigins; // set of origins allowed to read CORS-enabled API responses
 
     private int historyChunkCount;
     private boolean historyCachePerPartesEnabled = true;
@@ -553,6 +554,7 @@ public final class Configuration {
         // This list of calls is sorted alphabetically so please keep it.
         cmds = new HashMap<>();
         setAllowLeadingWildcard(true);
+        setAllowedOrigins(new HashSet<>());
         setAllowedSymlinks(new HashSet<>());
         setAnnotationCacheEnabled(false);
         setApiTimeout(300); // 5 minutes
@@ -1423,6 +1425,14 @@ public final class Configuration {
 
     public void setAllowInsecureTokens(boolean value) {
         this.allowInsecureTokens = value;
+    }
+
+    public Set<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
+
+    public void setAllowedOrigins(Set<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
     }
 
     public int getHistoryChunkCount() {
