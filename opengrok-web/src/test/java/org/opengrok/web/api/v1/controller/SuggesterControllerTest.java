@@ -49,6 +49,7 @@ import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.filter.AuthorizationFilter;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
+import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
@@ -105,6 +107,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
     protected DeploymentContext configureDeployment() {
         RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
         RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+        RuntimeEnvironment.getInstance().setAllowedOrigins(Collections.singleton("http://example.com"));
 
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
@@ -119,7 +122,9 @@ class SuggesterControllerTest extends OGKJerseyTest {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
-        repository.create(SuggesterControllerTest.class.getClassLoader().getResource("sources"));
+        URL repositoryURL = SuggesterControllerTest.class.getClassLoader().getResource("sources");
+        assertNotNull(repositoryURL);
+        repository.create(repositoryURL);
 
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
@@ -136,6 +141,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
         repository.destroy();
         env.setAuthenticationTokens(Collections.emptySet());
         env.setAllowInsecureTokens(false);
+        env.setAllowedOrigins(Collections.emptySet());
     }
 
     @BeforeEach
@@ -162,7 +168,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .request()
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
-        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals("http://example.com", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
@@ -188,7 +194,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
 
-        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals("http://example.com", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
@@ -270,7 +276,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .request()
                 .get(Result.class);
 
-        var suggestions = res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList());
+        var suggestions = res.suggestions.stream().map(r -> r.phrase).toList();
         assertTrue(suggestions.containsAll(Arrays.asList("me", "method", "message")));
     }
 
@@ -284,7 +290,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .get(Result.class);
 
         assertEquals(1, res.suggestions.size());
-        assertThat(res.suggestions.get(0).projects, containsInAnyOrder("java", "kotlin"));
+        assertThat(res.suggestions.getFirst().projects, containsInAnyOrder("java", "kotlin"));
     }
 
     @Test
@@ -458,7 +464,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .request()
                 .get(Result.class);
 
-        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList());
+        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).toList();
 
         assertEquals("text", suggestions.get(0));
         assertEquals("teach", suggestions.get(1));
@@ -496,7 +502,7 @@ class SuggesterControllerTest extends OGKJerseyTest {
                 .request()
                 .get(Result.class);
 
-        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList());
+        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).toList();
 
         assertEquals("args", suggestions.get(0));
         assertEquals("array", suggestions.get(1));

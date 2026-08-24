@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2019, Shenghan Gao <gaoshenghan199123@gmail.com>.
+ * Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -26,10 +27,14 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.web.api.v1.filter.CorsFilter;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -38,14 +43,26 @@ import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 class CorsFilterTest {
+    @AfterEach
+    void tearDown() {
+        RuntimeEnvironment.getInstance().setAllowedOrigins(Collections.emptySet());
+    }
+
     @Test
     void nonCorsTest() {
         testBoth(null, null);
     }
 
     @Test
-    void corsTest() {
-        testBoth("https://example.org", List.of("*"));
+    void disallowedCorsTest() {
+        RuntimeEnvironment.getInstance().setAllowedOrigins(Set.of("https://allowed.example.com"));
+        testBoth("https://denied.example.com", null);
+    }
+
+    @Test
+    void allowedCorsTest() {
+        RuntimeEnvironment.getInstance().setAllowedOrigins(Set.of("https://example.com"));
+        testBoth("https://example.com", List.of("https://example.com"));
     }
 
     private void testBoth(String origin, List<Object> headerValue) {

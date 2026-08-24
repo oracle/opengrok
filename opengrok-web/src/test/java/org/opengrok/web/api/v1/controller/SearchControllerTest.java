@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -82,6 +82,7 @@ class SearchControllerTest extends OGKJerseyTest {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
+        env.setAllowedOrigins(Collections.singleton("http://example.com"));
         env.getSuggesterConfig().setRebuildCronConfig(null);
         RepositoryFactory.initializeIgnoredNames(env);
 
@@ -92,6 +93,7 @@ class SearchControllerTest extends OGKJerseyTest {
     @AfterAll
     public static void tearDownClass() {
         repository.destroy();
+        env.setAllowedOrigins(Collections.emptySet());
     }
 
     @Test
@@ -100,7 +102,7 @@ class SearchControllerTest extends OGKJerseyTest {
                 .request()
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
-        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals("http://example.com", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
