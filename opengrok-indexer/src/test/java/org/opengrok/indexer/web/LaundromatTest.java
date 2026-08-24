@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -68,6 +68,20 @@ class LaundromatTest {
     @MethodSource("getParamsForTestLaunderServerName")
     void testLaunderServerName(Pair<String, String> param) {
         assertEquals(param.getLeft(), Laundromat.launderServerName(param.getRight()));
+    }
+
+    private static Stream<Pair<String, String>> getParamsForTestLaunderRevision() {
+        return Stream.of(Pair.of(null, null),
+                Pair.of("1.2.3", "1.2.3"),
+                Pair.of("1:2.3", "1:2.3"),
+                Pair.of("abc123:.def456", "abc-123:._def/456"),
+                Pair.of("", "?@#/"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getParamsForTestLaunderRevision")
+    void testLaunderRevision(Pair<String, String> param) {
+        assertEquals(param.getLeft(), Laundromat.launderRevision(param.getRight()));
     }
 
     private static Stream<Pair<String, String>> getParamsForTestLaunderUriPath() {
