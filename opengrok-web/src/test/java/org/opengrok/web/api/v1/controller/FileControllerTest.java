@@ -68,6 +68,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 class FileControllerTest extends OGKJerseyTest {
 
@@ -97,6 +99,7 @@ class FileControllerTest extends OGKJerseyTest {
     @BeforeEach
     @Override
     public void setUp() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         super.setUp();
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -105,6 +108,7 @@ class FileControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setAllowedOrigins(Set.of("http://example.com"));
         RepositoryFactory.initializeIgnoredNames(env);
 
         Indexer.getInstance().prepareIndexer(
@@ -130,6 +134,7 @@ class FileControllerTest extends OGKJerseyTest {
         env.getProjectRepositoriesMap().clear();
         env.setAuthenticationTokens(Collections.emptySet());
         env.setAllowInsecureTokens(false);
+        env.setAllowedOrigins(Collections.emptySet());
 
         repository.destroy();
     }
@@ -157,6 +162,39 @@ class FileControllerTest extends OGKJerseyTest {
                 .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(String.class);
         assertEquals("PLAIN", genre);
+    }
+
+    @Test
+    void testFileCorsDeniedOrigin() {
+        Response contentResponse = target("file")
+                .path("content")
+                .queryParam("path", "git/header.h")
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        Response genreResponse = target("file")
+                .path("genre")
+                .queryParam("path", validPath)
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        Response defsResponse = target("file")
+                .path("defs")
+                .queryParam("path", validPath)
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+
+        assertAll(
+                () -> assertEquals(Response.Status.OK.getStatusCode(), contentResponse.getStatus()),
+                () -> assertEquals(Response.Status.OK.getStatusCode(), genreResponse.getStatus()),
+                () -> assertEquals(Response.Status.OK.getStatusCode(), defsResponse.getStatus()),
+                () -> assertNull(contentResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertNull(genreResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertNull(defsResponse.getHeaderString(ALLOW_CORS_HEADER)));
     }
 
     @Test

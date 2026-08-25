@@ -66,6 +66,12 @@ class CorsFilterTest {
         testBoth("https://example.com", List.of("https://example.com"), List.of(CORS_REQUEST_HEADER));
     }
 
+    @Test
+    void wildcardAllowedOriginIsNotSpecial() {
+        RuntimeEnvironment.getInstance().setAllowedOrigins(Set.of("*"));
+        testBoth("https://example.com", null, List.of(CORS_REQUEST_HEADER));
+    }
+
     private void testBoth(String origin, List<Object> allowedOriginHeaderValue, List<Object> varyHeaderValue) {
         CorsFilter filter = new CorsFilter();
         ContainerRequestContext request = mock(ContainerRequestContext.class);

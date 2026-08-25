@@ -49,6 +49,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
@@ -103,6 +104,17 @@ class SearchControllerTest extends OGKJerseyTest {
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
         assertEquals("http://example.com", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
+    void testSearchCorsDeniedOrigin() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNull(response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
