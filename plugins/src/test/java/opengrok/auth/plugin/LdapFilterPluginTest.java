@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -102,6 +103,35 @@ class LdapFilterPluginTest {
 
         assertEquals("(objectclass=%%%%)",
                 plugin.expandFilter("(objectclass=\\%%\\%\\%)", ldapUser, user));
+
+    }
+
+    private static String addEscapeChars(String value) {
+        return "$" + value + "\00\\((*))\\\00";
+    }
+
+    private static String addExpectedEscapeChars(String value) {
+        return "$" + value + "\\00\\5c\\28\\28\\2a\\29\\29\\5c\\00";
+    }
+
+    @Test
+    void expandFilterTestFilterMetacharacters() {
+        LdapUser ldapUser = new LdapUser();
+        ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList(addEscapeChars("james@bond"))));
+        ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList(addEscapeChars("bondjame"))));
+        User user = new User(addEscapeChars("007"), addEscapeChars("123"), null, true);
+
+        assertEquals(MessageFormat.format("(uid=%{0}%)", addExpectedEscapeChars("007")),
+                plugin.expandFilter("(uid=%%username%%)", ldapUser, user));
+
+        assertEquals(MessageFormat.format("(uid=%{0}%)", addExpectedEscapeChars("123")),
+                plugin.expandFilter("(uid=%%guid%%)", ldapUser, user));
+
+        assertEquals(MessageFormat.format("(objectclass=%{0}%)", addExpectedEscapeChars("james@bond")),
+                plugin.expandFilter("(objectclass=%%mail%%)", ldapUser, user));
+
+        assertEquals(MessageFormat.format("(objectclass=%{0}%)", addExpectedEscapeChars("bondjame")),
+                plugin.expandFilter("(objectclass=%%uid%%)", ldapUser, user));
     }
 
     @Test

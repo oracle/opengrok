@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -49,9 +49,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class SearchControllerTest extends OGKJerseyTest {
 
@@ -82,6 +84,7 @@ class SearchControllerTest extends OGKJerseyTest {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
+        env.setAllowedOrigins(Collections.singleton("http://example.com"));
         env.getSuggesterConfig().setRebuildCronConfig(null);
         RepositoryFactory.initializeIgnoredNames(env);
 
@@ -92,6 +95,7 @@ class SearchControllerTest extends OGKJerseyTest {
     @AfterAll
     public static void tearDownClass() {
         repository.destroy();
+        env.setAllowedOrigins(Collections.emptySet());
     }
 
     @Test
@@ -100,7 +104,19 @@ class SearchControllerTest extends OGKJerseyTest {
                 .request()
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
-        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals("http://example.com", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
+    void testSearchCorsDeniedOrigin() {
+        Response response = target(SearchController.PATH)
+                .queryParam(QueryParameters.FULL_SEARCH_PARAM, "dump")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNull(response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals(CORS_REQUEST_HEADER, response.getHeaderString(VARY_HEADER));
     }
 
     @Test

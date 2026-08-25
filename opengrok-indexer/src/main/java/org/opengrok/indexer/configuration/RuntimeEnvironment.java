@@ -2185,6 +2185,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(value, Configuration::setAllowInsecureTokens);
     }
 
+    public Set<String> getAllowedOrigins() {
+        return Collections.unmodifiableSet(syncReadConfiguration(Configuration::getAllowedOrigins));
+    }
+
+    public void setAllowedOrigins(Set<String> origins) {
+        syncWriteConfiguration(origins, Configuration::setAllowedOrigins);
+    }
+
     public void registerListener(ConfigurationChangedListener listener) {
         listeners.add(listener);
     }
