@@ -70,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class FileControllerTest extends OGKJerseyTest {
 
@@ -194,7 +195,10 @@ class FileControllerTest extends OGKJerseyTest {
                 () -> assertEquals(Response.Status.OK.getStatusCode(), defsResponse.getStatus()),
                 () -> assertNull(contentResponse.getHeaderString(ALLOW_CORS_HEADER)),
                 () -> assertNull(genreResponse.getHeaderString(ALLOW_CORS_HEADER)),
-                () -> assertNull(defsResponse.getHeaderString(ALLOW_CORS_HEADER)));
+                () -> assertNull(defsResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, contentResponse.getHeaderString(VARY_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, genreResponse.getHeaderString(VARY_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, defsResponse.getHeaderString(VARY_HEADER)));
     }
 
     @Test

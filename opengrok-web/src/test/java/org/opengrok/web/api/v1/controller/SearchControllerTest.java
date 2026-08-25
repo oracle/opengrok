@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class SearchControllerTest extends OGKJerseyTest {
 
@@ -115,6 +116,7 @@ class SearchControllerTest extends OGKJerseyTest {
                 .get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         assertNull(response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals(CORS_REQUEST_HEADER, response.getHeaderString(VARY_HEADER));
     }
 
     @Test
