@@ -25,6 +25,7 @@ package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.web.api.v1.filter.CorsFilter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,7 +52,11 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class AnnotationControllerTest extends OGKJerseyTest {
 
@@ -63,12 +69,13 @@ class AnnotationControllerTest extends OGKJerseyTest {
 
     @Override
     protected Application configure() {
-        return new ResourceConfig(AnnotationController.class);
+        return new ResourceConfig(AnnotationController.class, CorsFilter.class);
     }
 
     @BeforeEach
     @Override
     public void setUp() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         super.setUp();
         repository = new TestRepository();
         final URL repositoryURL = HistoryGuru.class.getResource("/repositories");
@@ -79,6 +86,7 @@ class AnnotationControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setAllowedOrigins(Set.of("http://example.com"));
         RepositoryFactory.initializeIgnoredNames(env);
 
         Indexer.getInstance().prepareIndexer(
@@ -99,6 +107,7 @@ class AnnotationControllerTest extends OGKJerseyTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<>());
         env.getProjectRepositoriesMap().clear();
+        env.setAllowedOrigins(Collections.emptySet());
 
         repository.destroy();
     }
@@ -158,5 +167,17 @@ class AnnotationControllerTest extends OGKJerseyTest {
         assertEquals(Arrays.asList("1/1", "1/1", "1/1", "1/1", "1/1", "1/1", "1/1", "1/1"),
                 versions);
         assertEquals(Collections.singleton(HASH_BB74B7E8), ids);
+    }
+
+    @Test
+    void testAnnotationCorsDeniedOrigin() {
+        Response response = target("annotation")
+                .queryParam("path", "git/Makefile")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNull(response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals(CORS_REQUEST_HEADER, response.getHeaderString(VARY_HEADER));
     }
 }

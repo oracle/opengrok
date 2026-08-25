@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -39,16 +39,22 @@ import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryDTO;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryEntryDTO;
+import org.opengrok.web.api.v1.filter.CorsFilter;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
 class HistoryControllerTest extends OGKJerseyTest {
@@ -59,12 +65,13 @@ class HistoryControllerTest extends OGKJerseyTest {
 
     @Override
     protected Application configure() {
-        return new ResourceConfig(HistoryController.class);
+        return new ResourceConfig(HistoryController.class, CorsFilter.class);
     }
 
     @BeforeEach
     @Override
     public void setUp() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         super.setUp();
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -73,6 +80,7 @@ class HistoryControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setAllowedOrigins(Set.of("http://example.com"));
         RepositoryFactory.initializeIgnoredNames(env);
 
         Indexer.getInstance().prepareIndexer(
@@ -93,6 +101,7 @@ class HistoryControllerTest extends OGKJerseyTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<>());
         env.getProjectRepositoriesMap().clear();
+        env.setAllowedOrigins(Collections.emptySet());
 
         repository.destroy();
     }
@@ -141,5 +150,17 @@ class HistoryControllerTest extends OGKJerseyTest {
         History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
         assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start), repoHistory.getTags(),
                 start, size, repoHistory.getHistoryEntries().size()));
+    }
+
+    @Test
+    void testHistoryCorsDeniedOrigin() {
+        Response response = target("history")
+                .queryParam("path", "git")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNull(response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals(CORS_REQUEST_HEADER, response.getHeaderString(VARY_HEADER));
     }
 }
