@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -130,11 +130,10 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <version>1.5.4</version>
         </dependency>
 
-        <!-- to get rid of SL4J warning messages -->
+        <!-- to get rid of SLF4J warning messages -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>1.7.30</version>
         </dependency>
 
         <dependency>
