@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -337,6 +337,7 @@ public class ProjectsController {
         Project project = Optional.ofNullable(env.getProjects().get(projectName)).
                 orElseThrow(() -> new NotFoundException("cannot get project \"" + projectName + "\""));
 
+        LOGGER.log(Level.FINE, "marking project ''{0}'' as indexed", projectName);
         project.setIndexed(true);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
@@ -382,14 +383,14 @@ public class ProjectsController {
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
-            // Set the property.
+            LOGGER.log(Level.INFO, "Setting field {0} of project {1} to ''{2}''",
+                    new Object[]{field, projectName, value});
             ClassUtil.setFieldValue(project, field, value);
 
-            // Refresh field values for project's repositories for this project as well.
+            // Refresh field values of project's repositories as well.
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             if (riList != null) {
                 for (RepositoryInfo ri : riList) {
-                    // Set the property if there is one.
                     if (ClassUtil.hasField(ri, field)) {
                         ClassUtil.setFieldValue(ri, field, value);
                     }

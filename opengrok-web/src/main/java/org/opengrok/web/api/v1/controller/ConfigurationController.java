@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -39,6 +39,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.web.api.ApiTask;
 import org.opengrok.web.api.ApiTaskManager;
@@ -47,6 +48,8 @@ import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.opengrok.web.api.v1.controller.ConfigurationController.PATH;
 
@@ -54,6 +57,8 @@ import static org.opengrok.web.api.v1.controller.ConfigurationController.PATH;
 public class ConfigurationController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationController.class);
 
     public static final String PATH = "configuration";
 
@@ -147,6 +152,8 @@ public class ConfigurationController {
         final int IOE_INDEX = 0;
         env.syncWriteConfiguration(value, (configuration, v) -> {
             try {
+                LOGGER.log(Level.INFO, "Setting value of configuration field {0} to ''{1}''",
+                        new Object[]{fieldName, value});
                 ClassUtil.setFieldValue(configuration, fieldName, v);
             } catch (IOException ex) {
                 capture[IOE_INDEX] = ex;
