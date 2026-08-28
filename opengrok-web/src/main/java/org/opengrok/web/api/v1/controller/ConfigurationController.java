@@ -152,7 +152,7 @@ public class ConfigurationController {
         final int IOE_INDEX = 0;
         env.syncWriteConfiguration(value, (configuration, v) -> {
             try {
-                LOGGER.log(Level.INFO, "Setting value of configuration field {0} to ''{1}''",
+                LOGGER.log(Level.INFO, "Setting value of configuration field ''{0}'' to ''{1}''",
                         new Object[]{fieldName, value});
                 ClassUtil.setFieldValue(configuration, fieldName, v);
             } catch (IOException ex) {

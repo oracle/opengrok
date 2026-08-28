@@ -383,7 +383,7 @@ public class ProjectsController {
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
-            LOGGER.log(Level.INFO, "Setting field {0} of project {1} to ''{2}''",
+            LOGGER.log(Level.INFO, "Setting field ''{0}'' of project ''{1}'' to ''{2}''",
                     new Object[]{field, projectName, value});
             ClassUtil.setFieldValue(project, field, value);
 
