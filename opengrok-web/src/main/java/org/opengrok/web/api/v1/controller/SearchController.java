@@ -64,9 +64,18 @@ public class SearchController {
 
     private final SuggesterService suggester;
 
+    private static final int MAX_LINE_LENGTH = 500;
+
     @Inject
     public SearchController(SuggesterService suggester) {
         this.suggester = suggester;
+    }
+
+    static String truncateLine(String line) {
+        if (line == null || line.length() <= MAX_LINE_LENGTH) {
+            return line;
+        }
+        return line.substring(0, MAX_LINE_LENGTH) + " ...";
     }
 
     @GET
@@ -85,8 +94,7 @@ public class SearchController {
             @QueryParam(QueryParameters.MAXRESULTS_PARAM) final Integer maxResultsParam,
             @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex,
             @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
-            @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile
-    ) {
+            @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile) {
         if ((maxResultsParam != null && maxResultsParam < 0) || startDocIndex < 0 || maxHitsPerFile < 0) {
             throw new WebApplicationException("Negative integer parameters are not allowed",
                     Response.Status.BAD_REQUEST);
@@ -123,7 +131,7 @@ public class SearchController {
                     .stream()
                     .collect(Collectors.groupingBy(Hit::getPath,
                             LinkedHashMap::new,
-                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno(), h.getTag()),
+                            Collectors.mapping(h -> new SearchHit(truncateLine(h.getLine()), h.getLineno(), h.getTag()),
                                     Collectors.toList())));
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
@@ -150,8 +158,7 @@ public class SearchController {
                 final String type,
                 final SortOrder sortOrder,
                 final int maxHitsPerFile,
-                final int maxDocs
-        ) {
+                final int maxDocs) {
             engine = new SearchEngine(maxDocs);
             engine.setFreetext(full);
             engine.setDefinition(def);
@@ -167,8 +174,7 @@ public class SearchController {
                 final HttpServletRequest req,
                 final List<String> projects,
                 final int startDocIndex,
-                final int maxResults
-        ) {
+                final int maxResults) {
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
             int collected;
             if (projects == null || projects.isEmpty()) {
@@ -214,8 +220,7 @@ public class SearchController {
             int resultCount,
             Map<String, List<SearchHit>> results,
             int startDocument,
-            int endDocument
-    ) {
+            int endDocument) {
     }
 
     private record SearchHit(String line, String lineNumber, String tag) {
