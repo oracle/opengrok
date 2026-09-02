@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -31,7 +31,7 @@ public class RuntimeUtil {
     /*
      * interval of supported Java versions
      */
-    static final int JAVA_VERSION_MIN = 11;
+    static final int JAVA_VERSION_MIN = 21;
     static final int JAVA_VERSION_MAX = 21;
 
     /**
