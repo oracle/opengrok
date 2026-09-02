@@ -40,7 +40,7 @@ public class RuntimeUtil {
      */
     public static void checkJavaVersion() throws RuntimeException {
         Runtime.Version javaVersion = Runtime.version();
-        int majorVersion = javaVersion.version().get(0);
+        int majorVersion = javaVersion.version().getFirst();
         if (majorVersion < JAVA_VERSION_MIN || majorVersion > JAVA_VERSION_MAX) {
             throw new RuntimeException(String.format("unsupported Java version %d [%d,%d)",
                     majorVersion, JAVA_VERSION_MIN, JAVA_VERSION_MAX));
@@ -73,7 +73,7 @@ public class RuntimeUtil {
             value /= 1024;
             idx++;
         }
-        return String.format("%.1f %siB", value, units.substring(idx, idx + 1));
+        return String.format("%.1f %siB", value, units.charAt(idx));
     }
 
     /**
