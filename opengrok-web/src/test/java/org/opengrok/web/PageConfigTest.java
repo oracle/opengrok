@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -561,7 +561,7 @@ class PageConfigTest {
             HttpServletRequest req = new DummyHttpServletRequest();
             PageConfig cfg = PageConfig.get(req);
             String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-            RuntimeEnvironment.getInstance().setSourceRoot("");
+            RuntimeEnvironment.getInstance().setSourceRoot("/nonexistent");
             try {
                 cfg.checkSourceRootExistence();
             } finally {
