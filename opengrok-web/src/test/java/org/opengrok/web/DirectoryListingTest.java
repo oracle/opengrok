@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -118,11 +118,11 @@ class DirectoryListingTest {
         long lastModified;
         /**
          * FileEntry size. May be:
-         * <pre>
-         * positive integer - for a file
-         * -2 - for a directory
-         * -1 - for an unparseable size
-         * </pre>
+         * <ul>
+         * <li>positive integer - for a file</li>
+         * <li><code>-2</code> - for a directory</li>
+         * <li><code>-1</code> - for an unparseable size</li>
+         * </ul>
          */
         long size;
         String readableSize;
@@ -188,15 +188,15 @@ class DirectoryListingTest {
                 return ret;
             }
 
-            // this is a file so the size must be exact
             if (subdirs == null) {
+                // This is a file so the size must be exact, unless it is in human-readable form.
                 if (fe.size == INVALID_SIZE) {
                     ret = readableSize.compareTo(fe.readableSize);
                 } else {
                     ret = Long.compare(size, fe.size);
                 }
             } else {
-                // this is a directory so the size must have been "-" char
+                // This is a directory so the size must be the "-" char.
                 if (size != DIRECTORY_INTERNAL_SIZE) {
                     ret = Long.compare(size, DIRECTORY_INTERNAL_SIZE);
                 }
@@ -218,7 +218,7 @@ class DirectoryListingTest {
     @BeforeEach
     void setUp() throws Exception {
         repositories = new TestRepository();
-        repositories.create(getClass().getResource("/repositories"));
+        repositories.create(Objects.requireNonNull(getClass().getResource("/repositories")));
 
         // Needed for HistoryGuru to operate normally.
         env.setRepositories(repositories.getSourceRoot());
@@ -537,7 +537,7 @@ class DirectoryListingTest {
         }
         assertNotNull(directory.list());
         instance.listTo("ctx", directory, out, directory.getName(),
-                Arrays.asList(directory.list()));
+                Arrays.asList(Objects.requireNonNull(directory.list())));
 
         verify(out, never()).write((String) ArgumentMatchers.isNull());
 
