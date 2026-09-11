@@ -32,7 +32,7 @@ public class RuntimeUtil {
      * interval of supported Java versions
      */
     static final int JAVA_VERSION_MIN = 21;
-    static final int JAVA_VERSION_MAX = 21;
+    static final int JAVA_VERSION_MAX = 25;
 
     /**
      * @throws RuntimeException if the Java runtime version is outside
