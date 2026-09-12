@@ -25,22 +25,21 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
 
 /**
  * @author austvik
@@ -49,22 +48,32 @@ class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
 
-    private Path sourceRootPath;
+    private TestRepository repository;
     private BazaarRepository bzrRepo = new BazaarRepository();
 
+    private File setUpTestRepository() throws IOException, URISyntaxException {
+        repository = new TestRepository();
+        repository.create(getClass().getResource("/repositories"));
+        File repositoryRoot = new File(repository.getSourceRoot(), "bazaar");
+        bzrRepo.setDirectoryName(repositoryRoot);
+        return repositoryRoot;
+    }
+
     @BeforeEach
-    void setUp() throws IOException {
-        sourceRootPath = Files.createTempDirectory("bazaarHistoryParserTest");
-        RuntimeEnvironment.getInstance().setSourceRoot(sourceRootPath.toString());
-        // BazaarHistoryParser needs to have a valid directory name.
+    void setUp() {
+        RuntimeEnvironment.getInstance().setSourceRoot(System.getProperty("java.io.tmpdir"));
         bzrRepo.setDirectoryNameRelative("bzrRepo");
         instance = new BazaarHistoryParser(bzrRepo);
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         instance = null;
-        IOUtils.removeRecursive(sourceRootPath);
+
+        if (repository != null) {
+            repository.destroy();
+            repository = null;
+        }
     }
 
     /**
@@ -79,143 +88,54 @@ class BazaarHistoryParserTest {
         assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
+    @EnabledForRepository(BAZAAR)
     @Test
-    void parseLogNoFile() throws Exception {
-        String revId1 = "1234";
-        String author1 = "First Last <username@example.com>";
-        String date1 = "Wed 2008-10-01 10:01:34 +0200";
-
-        String revId2 = "1234";
-        String author2 = "First2 Last2 <username2@example.com>";
-        String date2 = "Wed 2008-10-15 09:21:31 +0100";
-
-        String revId3 = "4";
-        String author3 = "First3 Last3 <username3@example.com>";
-        String date3 = "Wed 2008-10-15 09:21:31 -0100";
-
-        String revId4 = "4.1";
-        String author4 = "First3 Last3 <username3@example.com>";
-        String date4 = "Wed 2008-10-15 09:21:31 -0100";
-
-        String output = "------------------------------------------------------------\n" +
-                "revno: " + revId1 + "\n" +
-                "committer: " + author1 + "\n" +
-                "branch nick: 1.2 branch\n" +
-                "timestamp: " + date1 + "\n" +
-                "message:\n" +
-                "  Some message.\n" +
-                "------------------------------------------------------------\n" +
-                "revno: " + revId2 + "\n" +
-                "committer: " + author2 + "\n" +
-                "branch nick: branch-name\n" +
-                "timestamp: " + date2 + "\n" +
-                "message:\n" +
-                "  One line comment.\n" +
-                "------------------------------------------------------------\n" +
-                "revno: " + revId3 + "\n" +
-                "committer: " + author3 + "\n" +
-                "timestamp: " + date3 + "\n" +
-                "message:\n" +
-                "  Comment over two lines, this is line1\n" +
-                "  and this is line2\n" +
-                "    ------------------------------------------------------------\n" +
-                "    revno: " + revId4 + "\n" +
-                "    committer: " + author4 + "\n" +
-                "    timestamp: " + date4 + "\n" +
-                "    message:\n" +
-                "      Just a message\n";
-
-        History result = instance.parse(output);
+    void parseLogFile() throws Exception {
+        File repositoryRoot = setUpTestRepository();
+        History result = bzrRepo.getHistory(new File(repositoryRoot, "main.c"));
 
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals(3, result.getHistoryEntries().size());
-
-        HistoryEntry e1 = result.getHistoryEntries().get(0);
-        assertEquals(revId1, e1.getRevision());
-        assertEquals(author1, e1.getAuthor());
-        assertEquals(0, e1.getFiles().size());
-
-        HistoryEntry e2 = result.getHistoryEntries().get(1);
-        assertEquals(revId2, e2.getRevision());
-        assertEquals(author2, e2.getAuthor());
-        assertEquals(0, e2.getFiles().size());
-
-        HistoryEntry e3 = result.getHistoryEntries().get(2);
-        assertEquals(revId3, e3.getRevision());
-        assertEquals(author3, e3.getAuthor());
-        assertEquals(0, e3.getFiles().size());
-        assertTrue(e3.getMessage().contains("line1"));
-        assertTrue(e3.getMessage().contains("line2"));
-        assertTrue(e3.getMessage().contains("revno: " + revId4));
+        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).toList());
+        assertTrue(result.getHistoryEntries().stream().allMatch(entry -> entry.getFiles().isEmpty()));
     }
 
     @Test
+    void parseLogWithIndentedSeparatorInMessage() throws Exception {
+        String output = "------------------------------------------------------------\n" +
+                "revno: 1\n" +
+                "committer: username@example.com\n" +
+                "timestamp: Wed 2008-10-01 10:01:34 +0200\n" +
+                "message:\n" +
+                "  before separator\n" +
+                "    ------------------------------------------------------------\n" +
+                "  after separator\n";
+
+        History result = instance.parse(output);
+
+        assertEquals(1, result.getHistoryEntries().size());
+        String message = result.getHistoryEntries().getFirst().getMessage();
+        assertTrue(message.contains("before separator"));
+        assertTrue(message.contains("------------------------------------------------------------"));
+        assertTrue(message.contains("after separator"));
+    }
+
+    @EnabledForRepository(BAZAAR)
+    @Test
     void parseLogDirectory() throws Exception {
-        String revId1 = "1234";
-        String author1 = "username@example.com";
-        String date1 = "Wed 2008-10-01 10:01:34 +0200";
-        String[] directories;
-        String[] files;
-        if (SystemUtils.IS_OS_WINDOWS) {
-            directories = new String[] {
-                    "\\directory",
-                    "\\otherdir"
-            };
-            files = new String[] {
-                    "\\filename.ext",
-                    "\\directory\\filename.ext",
-                    "\\directory\\filename2.ext2",
-                    "\\otherdir\\file.extension"
-            };
-        } else {
-            directories = new String[] {
-                    "directory",
-                    "otherdir"
-            };
-            files = new String[] {
-                    "filename.ext",
-                    "directory/filename.ext",
-                    "directory/filename2.ext2",
-                    "otherdir/file.extension"
-            };
-        }
-
-        assertTrue(new File(bzrRepo.getDirectoryName()).mkdirs());
-        for (String directoryName : directories) {
-            Path dirPath = Paths.get(bzrRepo.getDirectoryName(), directoryName);
-            assertTrue(dirPath.toFile().mkdirs());
-        }
-        for (String file : files) {
-            Path filePath = Paths.get(bzrRepo.getDirectoryName(), file);
-            Files.createFile(filePath);
-        }
-
-        StringBuilder output = new StringBuilder();
-        output.append("-".repeat(60));
-        output.append('\n');
-        output.append("revno: ").append(revId1).append("\n");
-        output.append("committer: ").append(author1).append("\n");
-        output.append("timestamp: ").append(date1).append("\n");
-        output.append("message:\n");
-        output.append("  Some message\n");
-        output.append("added:\n");
-        for (String file : files) {
-            output.append("  ").append(file).append("\n");
-        }
-
-        History result = instance.parse(output.toString());
+        File repositoryRoot = setUpTestRepository();
+        History result = bzrRepo.getHistory(repositoryRoot);
 
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals(1, result.getHistoryEntries().size());
+        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).toList());
 
-        HistoryEntry e1 = result.getHistoryEntries().getFirst();
-        assertEquals(revId1, e1.getRevision());
-        assertEquals(author1, e1.getAuthor());
-        assertEquals(Arrays.stream(files).
-                        map(f -> File.separator + Path.of(bzrRepo.getDirectoryNameRelative(), f)).
-                        collect(Collectors.toSet()),
-                e1.getFiles());
+        String pathPrefix = File.separator + "bazaar" + File.separator;
+        assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "main.c"),
+                result.getHistoryEntries().get(0).getFiles());
+        assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "header.h", pathPrefix + "main.c"),
+                result.getHistoryEntries().get(1).getFiles());
     }
 }
