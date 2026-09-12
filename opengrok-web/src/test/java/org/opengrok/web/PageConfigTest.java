@@ -536,7 +536,7 @@ class PageConfigTest {
      * Test the case when the source root is null.
      */
     @Test
-    void testCheckSourceRootExistence1() {
+    void testCheckSourceRootExistenceNull() {
         assertThrows(FileNotFoundException.class, () -> {
             HttpServletRequest req = new DummyHttpServletRequest();
             PageConfig cfg = PageConfig.get(req);
@@ -556,12 +556,12 @@ class PageConfigTest {
      * Test the case when source root is empty.
      */
     @Test
-    void testCheckSourceRootExistence2() {
+    void testCheckSourceRootExistenceEmpty() {
         assertThrows(FileNotFoundException.class, () -> {
             HttpServletRequest req = new DummyHttpServletRequest();
             PageConfig cfg = PageConfig.get(req);
             String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-            RuntimeEnvironment.getInstance().setSourceRoot("/nonexistent");
+            RuntimeEnvironment.getInstance().setSourceRoot("");
             try {
                 cfg.checkSourceRootExistence();
             } finally {
@@ -576,7 +576,7 @@ class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
-    void testCheckSourceRootExistence3() throws IOException {
+    void testCheckSourceRootExistenceNonExistent() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
@@ -595,7 +595,7 @@ class PageConfigTest {
      */
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    void testCheckSourceRootExistence4() throws IOException {
+    void testCheckSourceRootExistenceNotReadable() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
@@ -618,7 +618,7 @@ class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
-    void testCheckSourceRootExistence5() throws IOException {
+    void testCheckSourceRootExistenceWorking() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();

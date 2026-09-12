@@ -276,7 +276,7 @@ public final class RuntimeEnvironment {
     }
 
     private String getCanonicalPath(String s) {
-        if (s == null) {
+        if (s == null || s.isEmpty()) {
             return null;
         }
         try {
