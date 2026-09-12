@@ -275,7 +275,7 @@ public final class RuntimeEnvironment {
         return new PathAccepter(getIgnoredNames(), getIncludedNames());
     }
 
-    private String getCanonicalPath(String s) {
+    private @Nullable String getCanonicalPath(String s) {
         if (s == null || s.isEmpty()) {
             return null;
         }
