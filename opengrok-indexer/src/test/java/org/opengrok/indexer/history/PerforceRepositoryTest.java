@@ -26,19 +26,26 @@ package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.PERFORCE;
+import static org.opengrok.indexer.history.PerforceRepository.hasPerforceEvidence;
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceFilename;
 
@@ -132,6 +139,36 @@ class PerforceRepositoryTest {
                 }
             }
         }
+    }
+
+    @Test
+    void hasPerforceEvidenceReturnsFalseWithoutMarker(@TempDir Path dir) {
+        assertFalse(hasPerforceEvidence(dir.toFile()),
+                "A directory without a .p4config marker must not be treated as Perforce");
+    }
+
+    @Test
+    void hasPerforceEvidenceReturnsTrueWithMarker(@TempDir Path dir) throws Exception {
+        Files.createFile(dir.resolve(".p4config"));
+        assertTrue(hasPerforceEvidence(dir.toFile()),
+                "A directory containing a .p4config marker must be recognized as Perforce");
+    }
+
+    @Test
+    void hasPerforceEvidenceFindsMarkerInAncestor(@TempDir Path dir) throws Exception {
+        Files.createFile(dir.resolve(".p4config"));
+        Path nested = Files.createDirectories(dir.resolve("a/b/c"));
+        assertTrue(hasPerforceEvidence(nested.toFile()),
+                "A .p4config marker in an ancestor directory must be honored");
+    }
+
+    @Test
+    void isRepositoryForReturnsFalseWithoutMarker(@TempDir Path dir) {
+        // Without a Perforce marker, detection must short-circuit and never run p4,
+        // so that non-Perforce (e.g. Git) working trees are not misclassified.
+        PerforceRepository instance = new PerforceRepository();
+        assertFalse(instance.isRepositoryFor(dir.toFile(), CommandTimeoutType.INDEXER),
+                "isRepositoryFor must be false for a directory without a .p4config marker");
     }
 
     @Test
