@@ -172,10 +172,15 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
         <td><label for="<%= QueryParameters.PATH_SEARCH_PARAM %>"
               title="Path or parts of it (no need to use separators)">File&nbsp;Path</label></td>
-        <td colspan="2"><input class="q" tabindex="4"
-            name="<%= QueryParameters.PATH_SEARCH_PARAM %>"
-            id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
-            Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
+        <td colspan="2">
+            <div class="path-search-container">
+                <input class="q" tabindex="4"
+                    name="<%= QueryParameters.PATH_SEARCH_PARAM %>"
+                    id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
+                    Util.formQuoteEscape(queryParams.getPath()) %>"/>
+                <button type="button" id="clear-path-btn" class="btn path-clear-btn" onclick="clearFilePath();" title="Clear File Path" aria-label="Clear File Path">Clear</button>
+            </div>
+        </td>
     </tr>
     <tr>
         <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>"
