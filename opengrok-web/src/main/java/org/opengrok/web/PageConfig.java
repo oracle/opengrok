@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2023, Gino Augustine <gino.augustine@oracle.com>.
@@ -715,7 +715,8 @@ public class PageConfig {
 
     /**
      * Get the revision parameter {@code r} from the request.
-     * Anything besides alphanumeric and {@code :} is removed via {@link Laundromat#launderInput(String)}.
+     * Anything besides alphanumeric, {@code :}, or {@code .} is removed via
+     * {@link Laundromat#launderRevision(String)}.
      *
      * @return revision if found, an empty string otherwise.
      */

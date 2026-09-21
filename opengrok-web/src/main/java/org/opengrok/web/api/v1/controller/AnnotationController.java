@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -40,7 +40,9 @@ import org.opengrok.web.util.NoPathParameterException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.opengrok.web.util.FileUtil.toFile;
 
@@ -50,46 +52,14 @@ public class AnnotationController {
 
     public static final String PATH = "annotation";
 
-    static class AnnotationDTO {
-        @JsonProperty
-        private String revision;
-        @JsonProperty
-        private String author;
-        @JsonProperty
-        private String description;
-        @JsonProperty
-        private String version;
-
-        // for testing
-        AnnotationDTO() {
-        }
-
-        AnnotationDTO(String revision, String author, String description, String version) {
-            this.revision = revision;
-            this.author = author;
-            this.description = description;
-            this.version = version;
-        }
-
-        // for testing
-        public String getAuthor() {
-            return this.author;
-        }
-
-        // for testing
-        public String getRevision() {
-            return this.revision;
-        }
-
-        // for testing
-        public String getDescription() {
-            return this.description;
-        }
-
-        // for testing
-        public String getVersion() {
-            return this.version;
-        }
+    /**
+     * API representation of one annotated source line.
+     */
+    public record AnnotationDTO(
+            @JsonProperty String revision,
+            @JsonProperty String author,
+            @JsonProperty String description,
+            @JsonProperty String version) {
     }
 
     @GET
@@ -106,6 +76,9 @@ public class AnnotationController {
 
         Annotation annotation = HistoryGuru.getInstance().annotate(file,
                 revision == null || revision.isEmpty() ? null : revision);
+        if (Objects.isNull(annotation)) {
+            return Collections.emptyList();
+        }
 
         ArrayList<AnnotationDTO> annotationList = new ArrayList<>();
         for (int i = 1; i <= annotation.size(); i++) {

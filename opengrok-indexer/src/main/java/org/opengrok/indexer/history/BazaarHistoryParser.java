@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -51,7 +51,14 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BazaarHistoryParser.class);
 
-    private String myDir;
+    private static final String TIMESTAMP = "timestamp:";
+    private static final String REVNO = "revno:";
+    private static final String COMMITTER = "committer:";
+    private static final String MODIFIED = "modified:";
+    private static final String ADDED = "added:";
+    private static final String REMOVED = "removed:";
+
+    private final String myDir;
     private final List<HistoryEntry> entries = new ArrayList<>();
     private final BazaarRepository repository;
 
@@ -128,8 +135,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                     state = state + populateCommitMessageInHistoryEntry(s, entry);
                     break;
                 case 4:
-                    // Finally, store the list of modified, added and removed
-                    // files. (Except the labels.)
+                    // Finally, store the list of modified, added and removed files. (Except the labels.)
                     populateCommitFilesInHistoryEntry(s, entry);
                     break;
                 default:
@@ -157,8 +163,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     private void populateCommitFilesInHistoryEntry(@NotNull String currentLine,
                                            @NotNull HistoryEntry historyEntry) throws IOException {
 
-        if (!(currentLine.startsWith("modified:") || currentLine.startsWith("added:")
-                || currentLine.startsWith("removed:"))) {
+        if (!(currentLine.startsWith(MODIFIED) || currentLine.startsWith(ADDED)
+                || currentLine.startsWith(REMOVED))) {
             // The list of files is prefixed with blanks.
             currentLine = currentLine.trim();
 
@@ -187,11 +193,9 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      * @return 1 if committer is populated else 0
      */
     private int populateCommitMessageInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
-        // everything up to the list of
-        // modified, added and removed files is part of the commit
-        // message.
+        // Everything up to the list of modified, added and removed files is part of the commit message.
         int state = 0;
-        if (currentLine.startsWith("modified:") || currentLine.startsWith("added:") || currentLine.startsWith("removed:")) {
+        if (currentLine.startsWith(MODIFIED) || currentLine.startsWith(ADDED) || currentLine.startsWith(REMOVED)) {
             ++state;
         } else if (currentLine.startsWith("  ")) {
             // Commit messages returned by bzr log -v are prefixed
@@ -209,8 +213,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     private int populateCommitterInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
         int state = 0;
-        if (currentLine.startsWith("committer:")) {
-            historyEntry.setAuthor(currentLine.substring("committer:".length()).trim());
+        if (currentLine.startsWith(COMMITTER)) {
+            historyEntry.setAuthor(currentLine.substring(COMMITTER.length()).trim());
             ++state;
         }
         return state;
@@ -225,9 +229,9 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     private int populateDateInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) throws IOException {
         int state = 0;
-        if (currentLine.startsWith("timestamp:")) {
+        if (currentLine.startsWith(TIMESTAMP)) {
             try {
-                Date date = repository.parse(currentLine.substring("timestamp:".length()).trim());
+                Date date = repository.parse(currentLine.substring(TIMESTAMP.length()).trim());
                 historyEntry.setDate(date);
             } catch (ParseException e) {
                 //
@@ -249,8 +253,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     private int populateRevisionInHistoryEntry(@NotNull String currentLine, @NotNull HistoryEntry historyEntry) {
         int state = 0;
-        if (currentLine.startsWith("revno:")) {
-            String[] rev = currentLine.substring("revno:".length()).trim().split(" ");
+        if (currentLine.startsWith(REVNO)) {
+            String[] rev = currentLine.substring(REVNO.length()).trim().split(" ");
             historyEntry.setRevision(rev[0]);
             ++state;
         }
@@ -265,7 +269,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        myDir = File.separator;
         processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return new History(entries);
     }

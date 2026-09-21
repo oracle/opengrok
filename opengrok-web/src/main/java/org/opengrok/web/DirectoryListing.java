@@ -319,6 +319,7 @@ public class DirectoryListing {
         out.write(strPathDescription);
         out.write("</tr>\n");
     }
+
     private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
         Long numlines = null;

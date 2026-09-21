@@ -263,7 +263,9 @@ public abstract class PluginFramework<P> {
             if (classname == null || classname.isEmpty()) {
                 continue;
             }
+
             // Load the class in memory and try to find a configured space for this class.
+            LOGGER.log(Level.INFO, "Loading class file ''{0}''", file.getAbsolutePath());
             if ((plugin = handleLoadClass(classname)) != null) {
                 classLoaded(plugin);
             }
@@ -286,6 +288,7 @@ public abstract class PluginFramework<P> {
 
         for (File file : fileList) {
             try (JarFile jar = new JarFile(file)) {
+                LOGGER.log(Level.INFO, "Loading jar file ''{0}''", file.getAbsolutePath());
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -299,7 +302,7 @@ public abstract class PluginFramework<P> {
                     }
                 }
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Could not manipulate with file because of: ", ex);
+                LOGGER.log(Level.WARNING, String.format("Could not load jar file '%s': ", file.getAbsolutePath()), ex);
             }
         }
     }

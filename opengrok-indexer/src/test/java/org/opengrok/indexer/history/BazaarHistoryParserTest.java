@@ -18,19 +18,25 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.IOUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,20 +49,22 @@ class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
 
+    private Path sourceRootPath;
+    private BazaarRepository bzrRepo = new BazaarRepository();
+
     @BeforeEach
-    void setUp() {
-        if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
-            RuntimeEnvironment.getInstance().setSourceRoot("");
-        }
-        BazaarRepository bzrRepo = new BazaarRepository();
+    void setUp() throws IOException {
+        sourceRootPath = Files.createTempDirectory("bazaarHistoryParserTest");
+        RuntimeEnvironment.getInstance().setSourceRoot(sourceRootPath.toString());
         // BazaarHistoryParser needs to have a valid directory name.
         bzrRepo.setDirectoryNameRelative("bzrRepo");
         instance = new BazaarHistoryParser(bzrRepo);
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws IOException {
         instance = null;
+        IOUtils.removeRecursive(sourceRootPath);
     }
 
     /**
@@ -147,23 +155,40 @@ class BazaarHistoryParserTest {
         String revId1 = "1234";
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
+        String[] directories;
         String[] files;
         if (SystemUtils.IS_OS_WINDOWS) {
+            directories = new String[] {
+                    "\\directory",
+                    "\\otherdir"
+            };
             files = new String[] {
-                    "\\\\filename.ext",
-                    "\\\\directory",
-                    "\\\\directory\\filename.ext",
-                    "\\\\directory\\filename2.ext2",
-                    "\\\\otherdir\\file.extension"
+                    "\\filename.ext",
+                    "\\directory\\filename.ext",
+                    "\\directory\\filename2.ext2",
+                    "\\otherdir\\file.extension"
             };
         } else {
-            files = new String[] {
-                    "/filename.ext",
-                    "/directory",
-                    "/directory/filename.ext",
-                    "/directory/filename2.ext2",
-                    "/otherdir/file.extension"
+            directories = new String[] {
+                    "directory",
+                    "otherdir"
             };
+            files = new String[] {
+                    "filename.ext",
+                    "directory/filename.ext",
+                    "directory/filename2.ext2",
+                    "otherdir/file.extension"
+            };
+        }
+
+        assertTrue(new File(bzrRepo.getDirectoryName()).mkdirs());
+        for (String directoryName : directories) {
+            Path dirPath = Paths.get(bzrRepo.getDirectoryName(), directoryName);
+            assertTrue(dirPath.toFile().mkdirs());
+        }
+        for (String file : files) {
+            Path filePath = Paths.get(bzrRepo.getDirectoryName(), file);
+            Files.createFile(filePath);
         }
 
         StringBuilder output = new StringBuilder();
@@ -176,7 +201,7 @@ class BazaarHistoryParserTest {
         output.append("  Some message\n");
         output.append("added:\n");
         for (String file : files) {
-            output.append("  ").append(file.substring(1)).append("\n");
+            output.append("  ").append(file).append("\n");
         }
 
         History result = instance.parse(output.toString());
@@ -185,10 +210,12 @@ class BazaarHistoryParserTest {
         assertNotNull(result.getHistoryEntries());
         assertEquals(1, result.getHistoryEntries().size());
 
-        HistoryEntry e1 = result.getHistoryEntries().get(0);
+        HistoryEntry e1 = result.getHistoryEntries().getFirst();
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
-        assertEquals(new HashSet<>(Arrays.asList(files)), e1.getFiles());
+        assertEquals(Arrays.stream(files).
+                        map(f -> File.separator + Path.of(bzrRepo.getDirectoryNameRelative(), f)).
+                        collect(Collectors.toSet()),
+                e1.getFiles());
     }
-
 }

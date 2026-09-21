@@ -275,8 +275,8 @@ public final class RuntimeEnvironment {
         return new PathAccepter(getIgnoredNames(), getIncludedNames());
     }
 
-    private String getCanonicalPath(String s) {
-        if (s == null) {
+    private @Nullable String getCanonicalPath(String s) {
+        if (s == null || s.isEmpty()) {
             return null;
         }
         try {
@@ -1683,10 +1683,11 @@ public final class RuntimeEnvironment {
 
             // add project to the groups
             for (Group group : copy) {
-                if (repository_map.get(project) == null) {
-                    group.addProject(project);
-                } else {
+                List<RepositoryInfo> repositories = repository_map.get(project);
+                if (repositories != null && !repositories.isEmpty()) {
                     group.addRepository(project);
+                } else {
+                    group.addProject(project);
                 }
                 project.addGroup(group);
             }
@@ -2182,6 +2183,14 @@ public final class RuntimeEnvironment {
 
     public void setAllowInsecureTokens(boolean value) {
         syncWriteConfiguration(value, Configuration::setAllowInsecureTokens);
+    }
+
+    public Set<String> getAllowedOrigins() {
+        return Collections.unmodifiableSet(syncReadConfiguration(Configuration::getAllowedOrigins));
+    }
+
+    public void setAllowedOrigins(Set<String> origins) {
+        syncWriteConfiguration(origins, Configuration::setAllowedOrigins);
     }
 
     public void registerListener(ConfigurationChangedListener listener) {

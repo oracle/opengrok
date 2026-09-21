@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
@@ -575,18 +575,18 @@ public final class Util {
     private static final NumberFormat COUNT_FORMATTER = new DecimalFormat("#,###,###,###");
 
     /**
-     * Convert the given size into a human readable string.
+     * Convert the given size into a human-readable string.
      * NOTE: when changing the output of this function make sure to adapt the
-     * jQuery tablesorter custom parsers in web/httpheader.jspf
+     * jQuery <code>tablesorter</code> custom parsers in <code>web/httpheader.jspf</code>
      *
      * @param num size to convert.
-     * @return a readable string
+     * @return string
      */
     public static String readableSize(long num) {
         NumberFormat formatter = (NumberFormat) FORMATTER.clone();
         float l = num;
         if (l < 1024) {
-            return formatter.format(l) + ' '; // for none-dirs append 'B'? ...
+            return formatter.format(l) + ' ';
         } else if (l < 1048576) {
             return (formatter.format(l / 1024) + " KiB");
         } else if (l < 1073741824) {
@@ -597,20 +597,20 @@ public final class Util {
     }
 
     /**
-     * Convert the specified {@code count} into a human readable string.
+     * Convert the specified {@code count} into a human-readable string.
      * @param count value to convert.
-     * @return a readable string
+     * @return string
      */
     public static String readableCount(long count) {
         return readableCount(count, false);
     }
 
     /**
-     * Convert the specified {@code count} into a human readable string.
+     * Convert the specified {@code count} into a human-readable string.
      * @param isKnownDirectory a value indicating if {@code count} is known to
      *                         be for a directory
      * @param count value to convert.
-     * @return a readable string
+     * @return string
      */
     public static String readableCount(long count, boolean isKnownDirectory) {
         NumberFormat formatter = (NumberFormat) COUNT_FORMATTER.clone();
@@ -622,8 +622,7 @@ public final class Util {
     }
 
     /**
-     * Converts different HTML special characters into their encodings used in
-     * html.
+     * Converts different special characters into their encodings used in HTML.
      *
      * @param s input text
      * @return encoded text for use in &lt;a title=""&gt; tag

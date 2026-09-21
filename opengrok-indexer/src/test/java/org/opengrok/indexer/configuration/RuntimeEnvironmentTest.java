@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -421,6 +421,18 @@ class RuntimeEnvironmentTest {
         assertFalse(instance.isIndexVersionedFilesOnly());
         instance.setIndexVersionedFilesOnly(true);
         assertTrue(instance.isIndexVersionedFilesOnly());
+    }
+
+    @Test
+    void testAllowedOrigins() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        final HashSet<String> origins = new HashSet<>(Arrays.asList("https://one.example.com", "https://two.example.com"));
+        try {
+            instance.setAllowedOrigins(origins);
+            assertEquals(origins, instance.getAllowedOrigins());
+        } finally {
+            instance.setAllowedOrigins(new HashSet<>());
+        }
     }
 
     @Test
@@ -911,6 +923,17 @@ class RuntimeEnvironmentTest {
         assertEquals(1, group1.getRepositories().size());
         assertEquals(0, group2.getProjects().size());
         assertEquals(2, group2.getRepositories().size());
+
+        // empty repository map entries classify as projects
+        env.getProjectRepositoriesMap().put(project1, new ArrayList<>());
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
+
+        assertEquals(1, group1.getProjects().size());
+        assertEquals(0, group1.getRepositories().size());
+        assertEquals(1, group2.getProjects().size());
+        assertEquals(1, group2.getRepositories().size());
+
+        env.getProjectRepositoriesMap().put(project1, Arrays.asList(repository1));
 
         // remove a single repository object => project1 will become a simple project
         env.getProjectRepositoriesMap().remove(project1);
