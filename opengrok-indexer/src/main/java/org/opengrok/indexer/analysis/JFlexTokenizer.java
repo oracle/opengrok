@@ -43,6 +43,9 @@ public class JFlexTokenizer extends Tokenizer
 
     private final ScanningSymbolMatcher matcher;
     private boolean didSetAttribsValues;
+    private int maxEmittedTokens;
+    private int emittedTokenCount;
+    private boolean tokenLimitReached;
 
     /**
      * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
@@ -72,6 +75,8 @@ public class JFlexTokenizer extends Tokenizer
         matcher.yyreset(input);
         matcher.reset();
         clearAttributesEtc();
+        emittedTokenCount = 0;
+        tokenLimitReached = false;
     }
 
     /**
@@ -98,12 +103,44 @@ public class JFlexTokenizer extends Tokenizer
      */
     @Override
     public final boolean incrementToken() throws IOException {
+        if (tokenLimitReached) {
+            clearAttributesEtc();
+            return false;
+        }
+
         boolean notAtEOF;
         do {
             clearAttributesEtc();
             notAtEOF = matcher.yylex() != matcher.getYYEOF();
         } while (!didSetAttribsValues && notAtEOF);
+
+        if (didSetAttribsValues) {
+            emittedTokenCount++;
+            if (maxEmittedTokens > 0 && emittedTokenCount >= maxEmittedTokens) {
+                tokenLimitReached = true;
+            }
+        }
+
         return notAtEOF;
+    }
+
+    /**
+     * Sets the maximum number of emitted tokens. Non-positive values disable
+     * the limit.
+     *
+     * @param maxEmittedTokens maximum number of emitted tokens
+     */
+    public void setMaxEmittedTokens(int maxEmittedTokens) {
+        this.maxEmittedTokens = maxEmittedTokens;
+    }
+
+    /**
+     * Gets whether the configured token limit has been reached.
+     *
+     * @return {@code true} if the limit has been reached, {@code false} otherwise
+     */
+    public boolean isTokenLimitReached() {
+        return tokenLimitReached;
     }
 
     /**
