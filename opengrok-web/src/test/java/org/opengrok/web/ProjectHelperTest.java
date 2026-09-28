@@ -42,6 +42,7 @@ import org.opengrok.indexer.history.RepoRepository;
 import org.opengrok.indexer.history.RepositoryInfo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -301,6 +302,23 @@ class ProjectHelperTest extends ProjectHelperTestBase {
         for (Project p : result) {
             assertTrue(p.getName().startsWith("allowed_"));
         }
+    }
+
+    @Test
+    void testEmptyRepositoryMapEntryIsUngroupedProject() {
+        Project project = new Project("allowed_empty_repository_entry");
+        project.setIndexed(true);
+        env.getProjects().put(project.getName(), project);
+        getRepositoriesMap().put(project, new ArrayList<>());
+
+        cfg = PageConfig.get(getRequest());
+        helper = cfg.getProjectHelper();
+
+        assertTrue(helper.getUngroupedProjects().contains(project));
+        assertFalse(helper.getUngroupedRepositories().contains(project));
+
+        env.getProjects().remove(project.getName());
+        getRepositoriesMap().remove(project);
     }
 
     /**

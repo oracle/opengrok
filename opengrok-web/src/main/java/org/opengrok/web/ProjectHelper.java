@@ -146,6 +146,11 @@ public final class ProjectHelper {
                 .collect(Collectors.toList());
     }
 
+    private boolean hasRepositories(Project project) {
+        List<RepositoryInfo> repositories = cfg.getEnv().getProjectRepositoriesMap().get(project);
+        return repositories != null && !repositories.isEmpty();
+    }
+
     /**
      * Generates ungrouped projects and repositories.
      */
@@ -157,10 +162,10 @@ public final class ProjectHelper {
 
             // If no group matches the project, add it to not-grouped projects.
             if (copy.isEmpty()) {
-                if (cfg.getEnv().getProjectRepositoriesMap().get(project) == null) {
-                    ungroupedProjects.add(project);
-                } else {
+                if (hasRepositories(project)) {
                     ungroupedRepositories.add(project);
+                } else {
+                    ungroupedProjects.add(project);
                 }
             }
         }
