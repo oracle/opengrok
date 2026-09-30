@@ -266,5 +266,7 @@ def test_failing_getcwd():
     os.mkdir("foo")
     os.chdir("foo")
     os.rmdir("../foo")
+    with pytest.raises(OSError):
+        os.getcwd()
     cmd = Command(['/bin/cat', '/etc/passwd'])
     cmd.execute()
