@@ -283,12 +283,11 @@ class Command:
         start_time = None
         try:
             start_time = time.time()
-            workdir = None
             try:
                 workdir = os.getcwd()
             except OSError:
                 self.logger.debug("cannot get working directory", exc_info=True)
-            if workdir:
+            else:
                 self.logger.debug("working directory = {}".format(workdir))
             self.logger.debug("command = '{}'".format(self))
             my_args = {'stderr': stderr_dest,
