@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2024, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -283,10 +283,13 @@ class Command:
         start_time = None
         try:
             start_time = time.time()
+            workdir = None
             try:
-                self.logger.debug("working directory = {}".format(os.getcwd()))
-            except PermissionError:
-                pass
+                workdir = os.getcwd()
+            except OSError:
+                self.logger.debug("cannot get working directory", exc_info=True)
+            if workdir:
+                self.logger.debug("working directory = {}".format(workdir))
             self.logger.debug("command = '{}'".format(self))
             my_args = {'stderr': stderr_dest,
                        'stdout': output_thread}
