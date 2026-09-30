@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2024, Oracle affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
