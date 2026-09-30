@@ -256,3 +256,15 @@ def test_resource_limits():
                   resource_limits=resource_limits)
     cmd.set_resource_limits(resource_limits)
     cmd.execute()
+
+
+@posix_only
+def test_failing_getcwd():
+    """
+    Simple smoke test for failing os.getcwd().
+    """
+    os.mkdir("foo")
+    os.chdir("foo")
+    os.rmdir("../foo")
+    cmd = Command(['/bin/cat', '/etc/passwd'])
+    cmd.execute()
