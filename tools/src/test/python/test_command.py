@@ -263,10 +263,14 @@ def test_failing_getcwd():
     """
     Simple smoke test for failing os.getcwd().
     """
-    os.mkdir("foo")
-    os.chdir("foo")
-    os.rmdir("../foo")
-    with pytest.raises(OSError):
-        os.getcwd()
-    cmd = Command(['/bin/cat', '/etc/passwd'])
-    cmd.execute()
+    old_cwd = os.getcwd()
+    try:
+        with tempfile.TemporaryDirectory(delete=False) as tmpdir:
+            os.chdir(tmpdir)
+            os.rmdir(tmpdir)
+            with pytest.raises(OSError):
+                os.getcwd()
+            cmd = Command(['/bin/cat', '/etc/passwd'])
+            cmd.execute()
+    finally:
+        os.chdir(old_cwd)
