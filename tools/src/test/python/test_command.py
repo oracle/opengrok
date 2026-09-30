@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2024, Oracle affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -256,3 +256,21 @@ def test_resource_limits():
                   resource_limits=resource_limits)
     cmd.set_resource_limits(resource_limits)
     cmd.execute()
+
+
+@posix_only
+def test_failing_getcwd():
+    """
+    Simple smoke test for failing os.getcwd().
+    """
+    old_cwd = os.getcwd()
+    try:
+        with tempfile.TemporaryDirectory(delete=False) as tmpdir:
+            os.chdir(tmpdir)
+            os.rmdir(tmpdir)
+            with pytest.raises(OSError):
+                os.getcwd()
+            cmd = Command(['/bin/cat', '/etc/passwd'])
+            cmd.execute()
+    finally:
+        os.chdir(old_cwd)
