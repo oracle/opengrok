@@ -291,8 +291,8 @@ test_rest_api() {
 check_volume_mounts() {
     echo ""
     echo "Checking volume mounts..."
-    if docker exec "$CONTAINER_ID" test -w /opengrok/src && \
-       docker exec "$CONTAINER_ID" test -w /opengrok/data; then
+    if docker exec -u appuser "$CONTAINER_ID" test -w /opengrok/src && \
+       docker exec -u appuser "$CONTAINER_ID" test -w /opengrok/data; then
         echo "✓ Volume mounts are writable"
     else
         echo "ERROR: Volume mounts are not writable"
