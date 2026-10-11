@@ -1,0 +1,7 @@
+sample-module
+smp
+ietf-inet-types
+inet
+host
+inet
+ip-address
