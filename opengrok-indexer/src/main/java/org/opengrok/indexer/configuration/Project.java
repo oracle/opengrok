@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -584,8 +584,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Get the project for a specific file.
      *
      * @param path the file to lookup (relative to source root)
-     * @return the project that this file belongs to (or null if the file
-     * doesn't belong to a project)
+     * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
      */
     public static Project getProject(String path) {
         // Try to match each project path as prefix of the given path.
