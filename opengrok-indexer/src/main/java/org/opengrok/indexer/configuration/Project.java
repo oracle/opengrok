@@ -599,7 +599,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         final Path lpath = Paths.get(path);
 
         // Refuse certain paths.
-        lpath.iterator().forEachRemaining(component -> {
+        lpath.forEach(component -> {
             if (component.toString().equals("..")) {
                 throw new InvalidPathException(lpath.toString(), "no traversal is allowed");
             }
