@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -27,6 +27,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.InvalidPathException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProjectTest {
@@ -53,8 +55,7 @@ class ProjectTest {
      */
     @Test
     void testEncodeDecode() {
-        // Create an exception listener to detect errors while encoding and
-        // decoding
+        // Create an exception listener to detect errors while encoding and decoding.
         final LinkedList<Exception> exceptions = new LinkedList<>();
         ExceptionListener listener = exceptions::addLast;
 
@@ -65,7 +66,7 @@ class ProjectTest {
         enc.writeObject(p1);
         enc.close();
 
-        // verify that the write didn't fail
+        // verify that write didn't fail
         if (!exceptions.isEmpty()) {
             // Can only chain one of the exceptions. Take the first one.
             throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
@@ -98,6 +99,8 @@ class ProjectTest {
         projects.put("foo", foo);
         projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        var originalProjects = env.getProjects();
+        var originalProjectsEnabled = env.isProjectsEnabled();
         env.setProjectsEnabled(true);
         env.setProjects(projects);
 
@@ -108,8 +111,14 @@ class ProjectTest {
                 () -> assertEquals(foo, Project.getProject("/foo/blah.c")),
                 () -> assertEquals(bar, Project.getProject("/foo-bar/ha.c")),
                 () -> assertNull(Project.getProject("/foof")),
-                () -> assertNull(Project.getProject("/foof/ha.c"))
+                () -> assertNull(Project.getProject("/foof/ha.c")),
+                () -> assertThrows(InvalidPathException.class, () -> Project.getProject("./foo/bar")),
+                () -> assertThrows(InvalidPathException.class, () -> Project.getProject("/foo/../bar"))
         );
+
+        // Cleanup.
+        env.setProjects(originalProjects);
+        env.setProjectsEnabled(originalProjectsEnabled);
     }
 
     /**
