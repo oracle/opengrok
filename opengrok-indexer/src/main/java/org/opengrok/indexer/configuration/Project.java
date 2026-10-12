@@ -27,6 +27,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -34,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -212,7 +216,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Set a textual name of this project, preferably don't use " , " in the
      * name, since it's used as delimiter for more projects
-     *
+     * <p>
      * XXX we should not allow setting project name after it has been
      * constructed because it is probably part of HashMap.
      *
@@ -583,28 +587,56 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Get the project for a specific file.
      *
-     * @param path the file to lookup (relative to source root)
+     * @param path path relative to source root
      * @return the project that this file belongs to (or {@code null} if the file doesn't belong to a project)
+     * @throws InvalidPathException if the path contains invalid components or is empty
      */
-    public static Project getProject(String path) {
+    public static Project getProject(@NotNull String path) {
+        if (!RuntimeEnvironment.getInstance().isProjectsEnabled()) {
+            return null;
+        }
+
+        if (path.isEmpty()) {
+            throw new InvalidPathException(path, "empty path");
+        }
+
+        final Path lpath;
+        try {
+            lpath = Paths.get(path);
+        } catch (InvalidPathException ex) {
+            return null;
+        }
+
+        // Refuse certain paths.
+        if (lpath.getNameCount() == 0) {
+            // This could never be a project.
+            return null;
+        }
+        lpath.forEach(component -> {
+            if (component.toString().equals("..")) {
+                throw new InvalidPathException(lpath.toString(), "no traversal is allowed");
+            }
+        });
+        if (lpath.getName(0).toString().equals(".")) {
+            throw new InvalidPathException(lpath.toString(), "working directory relative path");
+        }
+
         // Try to match each project path as prefix of the given path.
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            final String lpath = Util.fixPathIfWindows(path);
             for (Project p : env.getProjectList()) {
-                String projectPath = p.getPath();
+                final String projectPath = p.getPath();
                 if (projectPath == null) {
                     LOGGER.log(Level.WARNING, "Path of project {0} is not set", p.getName());
                     return null;
                 }
+                if (projectPath.isEmpty()) {
+                    LOGGER.log(Level.WARNING, "Path of project {0} is empty", p.getName());
+                    return null;
+                }
 
-                // Check if the project's path is a prefix of the given
-                // path. It has to be an exact match, or the project's path
-                // must be immediately followed by a separator. "/foo" is
-                // a prefix for "/foo" and "/foo/bar", but not for "/foof".
-                if (lpath.startsWith(projectPath)
-                        && (projectPath.length() == lpath.length()
-                        || lpath.charAt(projectPath.length()) == '/')) {
+                // Check if given path is prefix of the project path.
+                if (Path.of(projectPath).subpath(0, 1).equals(lpath.subpath(0, 1))) {
                     return p;
                 }
             }
