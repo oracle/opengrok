@@ -18,15 +18,18 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,6 +45,15 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
 class BazaarRepositoryTest {
 
     BazaarRepository instance;
+    private TestRepository repository;
+
+    private File setUpTestRepository() throws IOException, URISyntaxException {
+        repository = new TestRepository();
+        repository.create(getClass().getResource("/repositories"));
+        File repositoryRoot = new File(repository.getSourceRoot(), "bazaar");
+        instance.setDirectoryName(repositoryRoot);
+        return repositoryRoot;
+    }
 
     @BeforeEach
     void setUp() {
@@ -51,43 +63,29 @@ class BazaarRepositoryTest {
     @AfterEach
     void tearDown() {
         instance = null;
+
+        if (repository != null) {
+            repository.destroy();
+            repository = null;
+        }
     }
 
     /**
-     * Test of parseAnnotation method, of class GitRepository.
+     * Test of annotate method, of class BazaarRepository.
      * @throws java.lang.Exception exception
      */
     @Test
-    void parseAnnotation() throws Exception {
-        String revId1 = "1234.876.5";
-        String revId2 = "1.234";
-        String revId3 = "2";
-        String author1 = "username@example.com";
-        String author2 = "username2@example.com";
-        String author3 = "username3@example.com";
-        String output = revId1 + "  " + author1 + " 20050912 | some source code here\n" +
-                revId2 + "  " + author2 + " 20050912 | and here.\n" +
-                revId3 + "           " + author3 + "          20030731 | \n";
-
-        String fileName = "something.ext";
-
-        BazaarAnnotationParser parser = new BazaarAnnotationParser(fileName);
-        parser.processStream(new ByteArrayInputStream(output.getBytes()));
-        Annotation result = parser.getAnnotation();
+    void annotate() throws Exception {
+        File repositoryRoot = setUpTestRepository();
+        String fileName = "header.h";
+        Annotation result = instance.annotate(new File(repositoryRoot, fileName), null);
 
         assertNotNull(result);
-        assertEquals(3, result.size());
-        for (int i = 1; i <= 3; i++) {
+        assertEquals(2, result.size());
+        for (int i = 1; i <= 2; i++) {
             assertTrue(result.isEnabled(i));
+            assertEquals("1", result.getRevision(i));
         }
-        assertEquals(revId1, result.getRevision(1));
-        assertEquals(revId2, result.getRevision(2));
-        assertEquals(revId3, result.getRevision(3));
-        assertEquals(author1, result.getAuthor(1));
-        assertEquals(author2, result.getAuthor(2));
-        assertEquals(author3, result.getAuthor(3));
-        assertEquals(author2.length(), result.getWidestAuthor());
-        assertEquals(revId1.length(), result.getWidestRevision());
         assertEquals(fileName, result.getFilename());
     }
 
