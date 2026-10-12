@@ -604,7 +604,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
                 throw new InvalidPathException(lpath.toString(), "no traversal is allowed");
             }
         });
-        if (lpath.subpath(0, 1).toString().equals(".")) {
+        if (lpath.getNameCount() > 0 && lpath.subpath(0, 1).toString().equals(".")) {
             throw new InvalidPathException(lpath.toString(), "working directory relative path");
         }
 
