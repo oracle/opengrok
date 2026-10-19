@@ -283,7 +283,8 @@ class IndexerVsDeletedDocumentsTest {
         }
         if (useGit) {
             // Check the Git repository was detected.
-            assertFalse(env.getRepositories().isEmpty());
+            assertTrue(env.getRepositories().stream().
+                    anyMatch(p -> p.getDirectoryNameRelative().equals(File.separator + projectName)));
         }
         indexer.doIndexerExecution(null, null);
 
