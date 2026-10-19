@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -214,7 +214,7 @@ class IndexerVsDeletedDocumentsTest {
         FileUtils.deleteDirectory(env.getSourceRootFile());
     }
 
-    private static Stream<Arguments> provideAguments() {
+    private static Stream<Arguments> provideArguments() {
         return Stream.of(
                 Arguments.of(false, true),
                 Arguments.of(false, false),
@@ -233,7 +233,7 @@ class IndexerVsDeletedDocumentsTest {
      * @param useGit whether to initialize Git repository and commit the changes
      */
     @ParameterizedTest
-    @MethodSource("provideAguments")
+    @MethodSource("provideArguments")
     void testIndexTraversalWithDeletedDocuments(boolean projectsEnabled, boolean useGit) throws Exception {
         // Setup for the indexer.
         String projectName = "foo";
