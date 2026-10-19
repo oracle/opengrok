@@ -683,7 +683,7 @@ class PageConfigTest {
 
             @Override
             public String getPathInfo() {
-                return "path";
+                return "git";
             }
         };
 
@@ -707,7 +707,7 @@ class PageConfigTest {
 
             @Override
             public String getPathInfo() {
-                return "path";
+                return "git";
             }
         };
 
