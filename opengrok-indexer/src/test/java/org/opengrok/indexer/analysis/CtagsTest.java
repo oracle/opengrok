@@ -30,8 +30,6 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -202,8 +200,6 @@ class CtagsTest {
 
     @ParameterizedTest
     @MethodSource("terraformTestParams")
-    // Universal Ctags distributed via Chocolatey on Windows does not support Terraform yet.
-    @EnabledOnOs({OS.LINUX, OS.MAC})
     void testTfTags(final SingleTagTestData data) throws Exception {
         var defs = getDefs("terraform/" + data.file + ".tf");
         assertAll(
