@@ -283,7 +283,7 @@ class IndexerVsDeletedDocumentsTest {
         }
         if (useGit) {
             // Check the Git repository was detected.
-            assertTrue(env.getRepositories().size() > 0);
+            assertFalse(env.getRepositories().isEmpty());
         }
         indexer.doIndexerExecution(null, null);
 
@@ -353,7 +353,7 @@ class IndexerVsDeletedDocumentsTest {
             // At most one fileRemove() should be called for each path.
             assertEquals(new HashSet<>(listener.removedPaths).size(), listener.removedPaths.size());
 
-            if (getDeletedUids(getIndexPath(projectName)).size() > 0) {
+            if (!getDeletedUids(getIndexPath(projectName)).isEmpty()) {
                 break;
             }
         }
