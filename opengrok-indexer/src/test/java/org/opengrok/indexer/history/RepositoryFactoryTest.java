@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.junit.jupiter.api.AfterAll;
@@ -60,7 +61,7 @@ class RepositoryFactoryTest {
     @BeforeAll
     static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        repository.create(RepositoryFactoryTest.class.getResource("/repositories"));
+        repository.create(Objects.requireNonNull(RepositoryFactoryTest.class.getResource("/repositories")));
         savedDisabledRepositories = env.getDisabledRepositories();
         savedIsProjectsEnabled = env.isProjectsEnabled();
     }
