@@ -105,14 +105,16 @@ class BazaarRepositoryTest {
 
     @Test
     void parseLogWithIndentedSeparatorInMessage() throws Exception {
-        String output = "------------------------------------------------------------\n" +
-                "revno: 1\n" +
-                "committer: username@example.com\n" +
-                "timestamp: Wed 2008-10-01 10:01:34 +0200\n" +
-                "message:\n" +
-                "  before separator\n" +
-                "    ------------------------------------------------------------\n" +
-                "  after separator\n";
+        String output = """
+                ------------------------------------------------------------
+                revno: 1
+                committer: username@example.com
+                timestamp: Wed 2008-10-01 10:01:34 +0200
+                message:
+                  before separator
+                    ------------------------------------------------------------
+                  after separator
+                """;
 
         var parser = new BazaarHistoryParser(bazaarRepository);
         History result = parser.parse(output);
