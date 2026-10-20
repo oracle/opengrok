@@ -155,7 +155,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @param name the name of the project
      */
-    public Project(String name) {
+    public Project(@NotNull String name) {
         this.name = name;
     }
 
@@ -165,7 +165,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @param name the name of the project
      * @param path the path of the project relative to the source root
      */
-    public Project(String name, String path) {
+    public Project(@NotNull String name, @NotNull String path) {
         this.name = name;
         this.path = Util.fixPathIfWindows(path);
         completeWithDefaults();
@@ -223,7 +223,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @param name a textual name of the project
      */
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
