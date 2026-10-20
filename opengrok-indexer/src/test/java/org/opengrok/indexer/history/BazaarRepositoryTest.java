@@ -49,7 +49,6 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
  *
  * @author austvik
  */
-@EnabledForRepository(BAZAAR)
 class BazaarRepositoryTest {
 
     private BazaarRepository bazaarRepository;
@@ -93,6 +92,7 @@ class BazaarRepositoryTest {
         assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
+    @EnabledForRepository(BAZAAR)
     @Test
     void testGetHistoryForFile() throws Exception {
         History result = bazaarRepository.getHistory(new File(repositoryRoot, "main.c"));
@@ -137,6 +137,7 @@ class BazaarRepositoryTest {
         assertTrue(message.contains("after separator"));
     }
 
+    @EnabledForRepository(BAZAAR)
     @Test
     void testGetHistoryForDirectory() throws Exception {
         History result = bazaarRepository.getHistory(repositoryRoot);
@@ -160,6 +161,7 @@ class BazaarRepositoryTest {
     /**
      * Provides test of {@link BazaarRepository#annotate(File, String)}.
      */
+    @EnabledForRepository(BAZAAR)
     @Test
     void annotate() throws Exception {
         final String fileName = "main.c";
