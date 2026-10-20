@@ -59,7 +59,6 @@ class BazaarRepositoryTest {
     static void setUpTestRepository() throws IOException, URISyntaxException {
         repository.create(Objects.requireNonNull(BazaarRepository.class.getResource("/repositories")));
         repositoryRoot = new File(repository.getSourceRoot(), "bazaar");
-        RuntimeEnvironment.getInstance().setSourceRoot(System.getProperty("java.io.tmpdir"));
     }
 
     @BeforeEach
