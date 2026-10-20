@@ -182,6 +182,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * Set a textual name of this project, preferably don't use " , " in the
+     * name, since it's used as delimiter for more projects
+     * <p>
+     * XXX we should not allow setting project name after it has been
+     * constructed because it is probably part of HashMap.
+     *
+     * @param name a textual name of the project
+     */
+    @Override
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    /**
      * Get the path (relative from source root) where this project is located.
      *
      * @return the relative path
@@ -190,8 +204,22 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         return path;
     }
 
+    /**
+     * Set the path (relative from source root) this project is located.
+     *
+     * @param path the relative path from source root where this project is
+     * located, starting with path separator.
+     */
+    public void setPath(@NotNull String path) {
+        this.path = Util.fixPathIfWindows(path);
+    }
+
     public boolean isIndexed() {
         return indexed;
+    }
+
+    public void setIndexed(boolean flag) {
+        this.indexed = flag;
     }
 
     /**
@@ -211,34 +239,6 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public int getTabSize() {
         return tabSize;
-    }
-
-    /**
-     * Set a textual name of this project, preferably don't use " , " in the
-     * name, since it's used as delimiter for more projects
-     * <p>
-     * XXX we should not allow setting project name after it has been
-     * constructed because it is probably part of HashMap.
-     *
-     * @param name a textual name of the project
-     */
-    @Override
-    public void setName(@NotNull String name) {
-        this.name = name;
-    }
-
-    /**
-     * Set the path (relative from source root) this project is located.
-     *
-     * @param path the relative path from source root where this project is
-     * located, starting with path separator.
-     */
-    public void setPath(String path) {
-        this.path = Util.fixPathIfWindows(path);
-    }
-
-    public void setIndexed(boolean flag) {
-        this.indexed = flag;
     }
 
     /**
