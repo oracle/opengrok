@@ -63,13 +63,13 @@ class BazaarRepositoryTest {
     }
 
     @BeforeEach
-    void setUpBeforeClass() throws Exception {
+    void setUpBeforeClass() {
         bazaarRepository = new BazaarRepository();
         bazaarRepository.setDirectoryName(repositoryRoot);
     }
 
     @AfterEach
-    void tearDownAfterClass() throws Exception {
+    void tearDownAfterClass() {
         bazaarRepository = null;
     }
 
@@ -82,8 +82,7 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * Test of parse method, of class BazaarHistoryParser.
-     * @throws Exception exception
+     * Provides test of {@link BazaarHistoryParser#parse(String)}.
      */
     @Test
     void parseEmpty() throws Exception {
@@ -95,7 +94,7 @@ class BazaarRepositoryTest {
     }
 
     @Test
-    void parseLogFile() throws Exception {
+    void testGetHistoryForFile() throws Exception {
         History result = bazaarRepository.getHistory(new File(repositoryRoot, "main.c"));
 
         assertNotNull(result);
@@ -139,7 +138,7 @@ class BazaarRepositoryTest {
     }
 
     @Test
-    void parseLogDirectory() throws Exception {
+    void testGetHistoryForDirectory() throws Exception {
         History result = bazaarRepository.getHistory(repositoryRoot);
 
         assertNotNull(result);
