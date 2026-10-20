@@ -25,9 +25,11 @@ package org.opengrok.indexer.history;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -97,10 +99,20 @@ class BazaarRepositoryTest {
         History result = bazaarRepository.getHistory(new File(repositoryRoot, "main.c"));
 
         assertNotNull(result);
-        assertNotNull(result.getHistoryEntries());
-        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
+        List<HistoryEntry> entries = result.getHistoryEntries();
+        assertNotNull(entries);
+        assertEquals(List.of("2", "1"), entries.stream().
                 map(HistoryEntry::getRevision).toList());
-        assertTrue(result.getHistoryEntries().stream().allMatch(entry -> entry.getFiles().isEmpty()));
+        assertTrue(entries.stream().allMatch(HistoryEntry::isActive));
+        assertEquals(Set.of("Trond Norbye <trond@Macintosh-73.lan>"), entries.stream().
+                        map(HistoryEntry::getAuthor).collect(Collectors.toSet()));
+        assertEquals("Initial import of a small dummy program",
+                entries.get(1).getMessage());
+        assertEquals("Added a lint target and fixed lint warnings",
+                entries.get(0).getMessage());
+        assertEquals(new Date(1218913912000L), entries.get(0).getDate());
+        assertEquals(new Date(1218913867000L), entries.get(1).getDate());
+        assertTrue(entries.stream().allMatch(entry -> entry.getFiles().isEmpty()));
     }
 
     @Test
@@ -131,15 +143,19 @@ class BazaarRepositoryTest {
         History result = bazaarRepository.getHistory(repositoryRoot);
 
         assertNotNull(result);
-        assertNotNull(result.getHistoryEntries());
-        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
-                map(HistoryEntry::getRevision).toList());
+        List<HistoryEntry> entries = result.getHistoryEntries();
+        assertNotNull(entries);
+        assertEquals(2, entries.size());
+        assertTrue(entries.stream().allMatch(HistoryEntry::isActive));
+        assertEquals(List.of("2", "1"), entries.stream().map(HistoryEntry::getRevision).toList());
+        assertEquals(Set.of("Trond Norbye <trond@Macintosh-73.lan>"), entries.stream().
+                map(HistoryEntry::getAuthor).collect(Collectors.toSet()));
 
         String pathPrefix = File.separator + "bazaar" + File.separator;
         assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "main.c"),
-                result.getHistoryEntries().get(0).getFiles());
+                entries.get(0).getFiles());
         assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "header.h", pathPrefix + "main.c"),
-                result.getHistoryEntries().get(1).getFiles());
+                entries.get(1).getFiles());
     }
 
     /**
@@ -147,15 +163,18 @@ class BazaarRepositoryTest {
      */
     @Test
     void annotate() throws Exception {
-        final String fileName = "header.h";
+        final String fileName = "main.c";
         Annotation result = bazaarRepository.annotate(new File(repositoryRoot, fileName), null);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
-        for (int i = 1; i <= 2; i++) {
+        assertEquals(12, result.size());
+        for (int i = 1; i <= result.size(); i++) {
             assertTrue(result.isEnabled(i));
-            assertEquals("1", result.getRevision(i));
+            assertEquals("trond@Macintosh-73.lan", result.getAuthor(i));
         }
+        assertEquals(Set.of("1", "2"), result.getRevisions());
+        assertEquals(22, result.getWidestAuthor());
+        assertEquals(1, result.getWidestRevision());
         assertEquals(fileName, result.getFilename());
     }
 
