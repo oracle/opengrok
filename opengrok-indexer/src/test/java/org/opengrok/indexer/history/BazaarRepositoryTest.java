@@ -143,7 +143,7 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * test of {@link BazaarRepository#annotate(File, String)}
+     * Provides test of {@link BazaarRepository#annotate(File, String)}.
      */
     @Test
     void annotate() throws Exception {
@@ -160,7 +160,7 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * test of {@link BazaarRepository#fileHasAnnotation}
+     * Provides test of {@link BazaarRepository#fileHasAnnotation}.
      */
     @Test
     void fileHasAnnotation() {
@@ -169,7 +169,7 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * test of {@link BazaarRepository#fileHasHistory}
+     * Provides test of {@link BazaarRepository#fileHasHistory}.
      */
     @Test
     void fileHasHistory() {
