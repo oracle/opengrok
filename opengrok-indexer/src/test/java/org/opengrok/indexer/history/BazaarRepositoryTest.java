@@ -25,10 +25,17 @@ package org.opengrok.indexer.history;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,26 +51,30 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
 @EnabledForRepository(BAZAAR)
 class BazaarRepositoryTest {
 
-    BazaarRepository instance;
-    private TestRepository repository;
+    private BazaarRepository bazaarRepository;
+    private static TestRepository repository = new TestRepository();
+    private static File repositoryRoot;
 
-    private File setUpTestRepository() throws IOException, URISyntaxException {
-        repository = new TestRepository();
-        repository.create(getClass().getResource("/repositories"));
-        File repositoryRoot = new File(repository.getSourceRoot(), "bazaar");
-        instance.setDirectoryName(repositoryRoot);
-        return repositoryRoot;
+    @BeforeAll
+    static void setUpTestRepository() throws IOException, URISyntaxException {
+        repository.create(Objects.requireNonNull(BazaarRepository.class.getResource("/repositories")));
+        repositoryRoot = new File(repository.getSourceRoot(), "bazaar");
+        RuntimeEnvironment.getInstance().setSourceRoot(System.getProperty("java.io.tmpdir"));
     }
 
     @BeforeEach
-    void setUp() {
-        instance = new BazaarRepository();
+    void setUpBeforeClass() throws Exception {
+        bazaarRepository = new BazaarRepository();
+        bazaarRepository.setDirectoryName(repositoryRoot);
     }
 
     @AfterEach
-    void tearDown() {
-        instance = null;
+    void tearDownAfterClass() throws Exception {
+        bazaarRepository = null;
+    }
 
+    @AfterAll
+    static void tearDown() {
         if (repository != null) {
             repository.destroy();
             repository = null;
@@ -71,14 +82,73 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * Test of annotate method, of class BazaarRepository.
-     * @throws java.lang.Exception exception
+     * Test of parse method, of class BazaarHistoryParser.
+     * @throws Exception exception
+     */
+    @Test
+    void parseEmpty() throws Exception {
+        var parser = new BazaarHistoryParser(bazaarRepository);
+        History result = parser.parse("");
+        assertNotNull(result);
+        assertNotNull(result.getHistoryEntries());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
+    }
+
+    @Test
+    void parseLogFile() throws Exception {
+        History result = bazaarRepository.getHistory(new File(repositoryRoot, "main.c"));
+
+        assertNotNull(result);
+        assertNotNull(result.getHistoryEntries());
+        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).toList());
+        assertTrue(result.getHistoryEntries().stream().allMatch(entry -> entry.getFiles().isEmpty()));
+    }
+
+    @Test
+    void parseLogWithIndentedSeparatorInMessage() throws Exception {
+        String output = "------------------------------------------------------------\n" +
+                "revno: 1\n" +
+                "committer: username@example.com\n" +
+                "timestamp: Wed 2008-10-01 10:01:34 +0200\n" +
+                "message:\n" +
+                "  before separator\n" +
+                "    ------------------------------------------------------------\n" +
+                "  after separator\n";
+
+        var parser = new BazaarHistoryParser(bazaarRepository);
+        History result = parser.parse(output);
+
+        assertEquals(1, result.getHistoryEntries().size());
+        String message = result.getHistoryEntries().getFirst().getMessage();
+        assertTrue(message.contains("before separator"));
+        assertTrue(message.contains("------------------------------------------------------------"));
+        assertTrue(message.contains("after separator"));
+    }
+
+    @Test
+    void parseLogDirectory() throws Exception {
+        History result = bazaarRepository.getHistory(repositoryRoot);
+
+        assertNotNull(result);
+        assertNotNull(result.getHistoryEntries());
+        assertEquals(List.of("2", "1"), result.getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).toList());
+
+        String pathPrefix = File.separator + "bazaar" + File.separator;
+        assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "main.c"),
+                result.getHistoryEntries().get(0).getFiles());
+        assertEquals(Set.of(pathPrefix + "Makefile", pathPrefix + "header.h", pathPrefix + "main.c"),
+                result.getHistoryEntries().get(1).getFiles());
+    }
+
+    /**
+     * test of {@link BazaarRepository#annotate(File, String)}
      */
     @Test
     void annotate() throws Exception {
-        File repositoryRoot = setUpTestRepository();
-        String fileName = "header.h";
-        Annotation result = instance.annotate(new File(repositoryRoot, fileName), null);
+        final String fileName = "header.h";
+        Annotation result = bazaarRepository.annotate(new File(repositoryRoot, fileName), null);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -90,21 +160,20 @@ class BazaarRepositoryTest {
     }
 
     /**
-     * Test of fileHasAnnotation method.
+     * test of {@link BazaarRepository#fileHasAnnotation}
      */
     @Test
     void fileHasAnnotation() {
-        boolean result = instance.fileHasAnnotation(null);
+        boolean result = bazaarRepository.fileHasAnnotation(null);
         assertTrue(result);
     }
 
     /**
-     * Test of fileHasHistory method.
+     * test of {@link BazaarRepository#fileHasHistory}
      */
     @Test
     void fileHasHistory() {
-        boolean result = instance.fileHasHistory(null);
+        boolean result = bazaarRepository.fileHasHistory(null);
         assertTrue(result);
     }
-
 }
