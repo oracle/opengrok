@@ -1704,3 +1704,21 @@ a.ui-button:active,
     background: var(--og-control-bg);
     color: var(--og-message-active-fg);
 }
+
+/* File Path field layout and clear button styles */
+.path-search-container {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+}
+
+.path-search-container input.q {
+    flex-grow: 1;
+}
+
+.path-clear-btn {
+    padding: 1px 6px;
+    white-space: nowrap;
+}
+
