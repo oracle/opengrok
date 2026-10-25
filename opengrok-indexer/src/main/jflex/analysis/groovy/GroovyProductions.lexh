@@ -1,0 +1,469 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2026, Siyabend Urun <urunsiyabend@gmail.com>.
+ */
+
+Identifier = [A-Za-z_$] [A-Za-z_$0-9]*
+
+/*
+ * Numeric literals. Ported verbatim from the Apache Groovy ANTLR lexer
+ * (GroovyLexer.g4, sections §3.10.1 Integer Literals and §3.10.2
+ * Floating-Point Literals).
+ */
+
+Zero                            = "0"
+NonZeroDigit                    = [1-9]
+Digit                           = ({Zero} | {NonZeroDigit})
+Underscore                      = "_"
+Underscores                     = {Underscore}+
+DigitOrUnderscore               = ({Digit} | {Underscore})
+Digits                          = {Digit} ({DigitOrUnderscore}* {Digit})?
+DecimalNumeral                  = ({Zero} | {NonZeroDigit} ({Digits}? | {Underscores} {Digits}))
+
+HexDigit                        = [0-9a-fA-F]
+HexDigitOrUnderscore            = ({HexDigit} | {Underscore})
+HexDigits                       = {HexDigit} ({HexDigitOrUnderscore}* {HexDigit})?
+HexNumeral                      = {Zero} [xX] {HexDigits}
+
+OctalDigit                      = [0-7]
+OctalDigitOrUnderscore          = ({OctalDigit} | {Underscore})
+OctalDigits                     = {OctalDigit} ({OctalDigitOrUnderscore}* {OctalDigit})?
+OctalNumeral                    = {Zero} {Underscores}? {OctalDigits}
+
+BinaryDigit                     = [01]
+BinaryDigitOrUnderscore         = ({BinaryDigit} | {Underscore})
+BinaryDigits                    = {BinaryDigit} ({BinaryDigitOrUnderscore}* {BinaryDigit})?
+BinaryNumeral                   = {Zero} [bB] {BinaryDigits}
+
+IntegerTypeSuffix               = [lLiIgG]
+DecimalIntegerLiteral           = {DecimalNumeral} {IntegerTypeSuffix}?
+HexIntegerLiteral               = {HexNumeral} {IntegerTypeSuffix}?
+OctalIntegerLiteral             = {OctalNumeral} {IntegerTypeSuffix}?
+BinaryIntegerLiteral            = {BinaryNumeral} {IntegerTypeSuffix}?
+IntegerLiteral                  = ({DecimalIntegerLiteral} | {HexIntegerLiteral} | {OctalIntegerLiteral} | {BinaryIntegerLiteral})
+
+ExponentIndicator               = [eE]
+Sign                            = [+\-]
+SignedInteger                   = {Sign}? {Digits}
+ExponentPart                    = {ExponentIndicator} {SignedInteger}
+FloatTypeSuffix                 = [fFdDgG]
+DecimalFloatingPointLiteral     = ({Digits} "." {Digits} {ExponentPart}? {FloatTypeSuffix}?
+                                | {Digits} {ExponentPart} {FloatTypeSuffix}?
+                                | {Digits} {FloatTypeSuffix})
+
+BinaryExponentIndicator         = [pP]
+BinaryExponent                  = {BinaryExponentIndicator} {SignedInteger}
+HexSignificand                  = ({HexNumeral} "."? | {Zero} [xX] {HexDigits}? "." {HexDigits})
+HexadecimalFloatingPointLiteral = {HexSignificand} {BinaryExponent} {FloatTypeSuffix}?
+
+FloatingPointLiteral            = ({DecimalFloatingPointLiteral} | {HexadecimalFloatingPointLiteral})
+
+Number                          = ({IntegerLiteral} | {FloatingPointLiteral})
+
+/*
+ * COMMENT    : block comment
+ * SCOMMENT   : single-line comment
+ * DQ_STRING  : double-quoted single-line string ("..."), Groovy GString
+ * SQ_STRING  : single-quoted single-line string ('...'), plain string
+ * TDQ_STRING : triple double-quoted multi-line string ("""...""")
+ * TSQ_STRING : triple single-quoted multi-line string ('''...''')
+ * GSTRING_EXPR: GString expression (e.g. "${...}")
+ * GSTRING_PATH: GString property chain after $id (e.g. ".name.email")
+ */
+%state COMMENT SCOMMENT DQ_STRING SQ_STRING TDQ_STRING TSQ_STRING GSTRING_EXPR SLASHY DOLLAR_SLASHY GSTRING_PATH
+
+%%
+
+
+<YYINITIAL, GSTRING_EXPR> {
+    {Identifier}    {
+        chkLOC();
+        String _tok = yytext();
+        boolean _emitted = offerSymbol(_tok, 0, false);
+        if (_emitted) {
+            regexAllowed = false;
+        } else {
+            // Keyword. Per the Apache Groovy lexer (REGEX_CHECK_ARRAY) only
+            // value-producing keywords disallow a following slashy regex.
+
+            regexAllowed = !"null".equals(_tok) && !"true".equals(_tok)
+                    && !"false".equals(_tok) && !"this".equals(_tok);
+        }
+        if (_emitted && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Number}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        regexAllowed = false;
+    }
+
+    "$/"    {
+        if (regexAllowed) {
+            chkLOC();
+            yypush(DOLLAR_SLASHY);
+            onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+            offer(yytext());
+        } else {
+            chkLOC();
+            offer(yytext());
+        }
+    }
+
+    "++" | "--"    {
+        chkLOC();
+        offer(yytext());
+        regexAllowed = false;
+    }
+
+    \) | \]    {
+        chkLOC();
+        offer(yytext());
+        regexAllowed = false;
+    }
+
+    "/"    {
+        if (regexAllowed) {
+            chkLOC();
+            yypush(SLASHY);
+            onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+            offer(yytext());
+        } else {
+            chkLOC();
+            offer(yytext());
+            regexAllowed = true;
+        }
+    }
+
+    "/*"    {
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "//"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \"\"\"    {
+        chkLOC();
+        yypush(TDQ_STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        yypush(DQ_STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \'\'\'    {
+        chkLOC();
+        yypush(TSQ_STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \'    {
+        chkLOC();
+        yypush(SQ_STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+}
+
+<COMMENT> {
+    "*/"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    }
+}
+
+<SCOMMENT> {
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<DQ_STRING> {
+    \"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    \\[\"\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<SQ_STRING> {
+    \'    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    \\[\'\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<TDQ_STRING> {
+    \"\"\"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    \\[\"\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<TSQ_STRING> {
+    \'\'\'    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    \\[\'\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<DQ_STRING, TDQ_STRING> {
+    \\\$    {
+        offer(yytext());
+    }
+
+    \$ {Identifier}    {
+        chkLOC();
+        boolean _emitted = offerSymbol(yytext().substring(1), 1, false);
+        if (_emitted) {
+            yypush(GSTRING_PATH);
+            if (returnOnSymbol()) {
+                return yystate();
+            }
+        }
+    }
+
+    \$\{    {
+        yypush(GSTRING_EXPR);
+        offer(yytext());
+    }
+}
+
+<YYINITIAL> {
+    \}    {
+        chkLOC();
+        offer(yytext());
+        regexAllowed = false;
+    }
+}
+
+<GSTRING_EXPR> {
+    "}"    {
+        yypop();
+        offer(yytext());
+        regexAllowed = false;
+    }
+
+    "{"    {
+        yypush(GSTRING_EXPR);
+        offer(yytext());
+    }
+}
+
+<SLASHY> {
+    "/"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    \\\/    {
+        offer(yytext());
+    }
+    \\\$    {
+        offer(yytext());
+    }
+
+    \$ {Identifier}    {
+        chkLOC();
+        boolean _emitted = offerSymbol(yytext().substring(1), 1, false);
+        if (_emitted) {
+            yypush(GSTRING_PATH);
+            if (returnOnSymbol()) {
+                return yystate();
+            }
+        }
+    }
+
+    \$\{    {
+        yypush(GSTRING_EXPR);
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<DOLLAR_SLASHY> {
+    "/$"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        regexAllowed = false;
+    }
+
+    "$/$"   {
+        offer(yytext());
+    }
+
+    "$$"    {
+        offer(yytext());
+    }
+
+    \\\/    {
+        offer(yytext());
+    }
+
+    \$ {Identifier}    {
+        chkLOC();
+        boolean _emitted = offerSymbol(yytext().substring(1), 1, false);
+        if (_emitted) {
+            yypush(GSTRING_PATH);
+            if (returnOnSymbol()) {
+                return yystate();
+            }
+        }
+    }
+    \$\{    {
+        yypush(GSTRING_EXPR);
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<GSTRING_PATH> {
+    \. {Identifier}    {
+        chkLOC();
+        if (offerSymbol(yytext().substring(1), 1, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    [^]    {
+        yypushback(yylength());
+        yypop();
+    }
+}
+
+<YYINITIAL, COMMENT, SCOMMENT, DQ_STRING, SQ_STRING, TDQ_STRING, TSQ_STRING, GSTRING_EXPR, SLASHY, DOLLAR_SLASHY> {
+    {WhspChar}*{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
+    }
+
+    \s    {
+        offer(yytext());
+    }
+
+    [^]    {
+        chkLOC();
+        offer(yytext());
+        if (yystate() == YYINITIAL || yystate() == GSTRING_EXPR) {
+            regexAllowed = true;
+        }
+    }
+}
+
+<COMMENT, SCOMMENT, DQ_STRING, SQ_STRING, TDQ_STRING, TSQ_STRING, SLASHY, DOLLAR_SLASHY> {
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar);
+        }
+    }
+}
