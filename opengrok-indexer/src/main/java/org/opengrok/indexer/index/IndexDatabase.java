@@ -51,9 +51,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -1849,6 +1851,7 @@ public class IndexDatabase {
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = new HashMap<>();
+        List<Future<IndexFileWork>> futures = new ArrayList<>(worksCount);
         try (Progress progress = new Progress(LOGGER, String.format("indexing '%s'", dir), worksCount)) {
             Set<Callable<IndexFileWork>> callables = args.works.stream().
                     <Callable<IndexFileWork>>map(x -> () -> {
@@ -1895,16 +1898,27 @@ public class IndexDatabase {
                         }
                     }).
                     collect(Collectors.toSet());
-            List<Future<IndexFileWork>> futures = parallelizer.getIndexWorkExecutor().invokeAll(callables);
-            for (var future : futures) {
-                IndexFileWork work = future.get();
+            CompletionService<IndexFileWork> completionService =
+                    new ExecutorCompletionService<>(parallelizer.getIndexWorkExecutor());
+            for (Callable<IndexFileWork> callable : callables) {
+                futures.add(completionService.submit(callable));
+            }
+            for (int i = 0; i < worksCount; i++) {
+                Future<IndexFileWork> completedFuture = completionService.take();
+                IndexFileWork work = completedFuture.get();
                 bySuccess.computeIfAbsent(work.ret, key -> new ArrayList<>()).add(work);
             }
         } catch (InterruptedException | ExecutionException e) {
+            for (Future<IndexFileWork> future : futures) {
+                future.cancel(true);
+            }
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
             LOGGER.log(Level.SEVERE, String.format("%d successes (%.1f%%) after aborting parallel-indexing",
-                    successCount, successPct));
+                    successCount, successPct), e);
             throw new IndexerException(e);
         }
 
