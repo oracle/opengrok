@@ -26,7 +26,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
@@ -50,19 +49,26 @@ import java.util.logging.Logger;
 
 public class IndexerUtil {
 
+
+    private final int connectTimeout;
+    private final int apiTimeout;
+    private final String bearerToken;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexerUtil.class);
 
-    private IndexerUtil() {
-    }
+    public IndexerUtil(int connectTimeout, int apiTimeout, String bearerToken) {
+        this.connectTimeout = connectTimeout;
+        this.apiTimeout = apiTimeout;
+        this.bearerToken = bearerToken;
+     }
 
     /**
      * @return map of HTTP headers to use when making API requests to the web application
      */
-    public static MultivaluedMap<String, Object> getWebAppHeaders() {
+    public  MultivaluedMap<String, Object> getWebAppHeaders() {
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        String token;
-        if ((token = RuntimeEnvironment.getInstance().getIndexerAuthenticationToken()) != null) {
-            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        if (bearerToken != null) {
+            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
         }
 
         return headers;
@@ -79,13 +85,13 @@ public class IndexerUtil {
      * @throws ProcessingException         in case the request processing or subsequent I/O operation fails
      * @throws WebApplicationException     in case the response status code of the response returned by the server is not successful
      */
-    public static void enableProjects(final String webappUri) throws
+    public void enableProjects(final String webappUri) throws
             ResponseProcessingException,
             ProcessingException,
             WebApplicationException {
 
         try (Client client = ClientBuilder.newBuilder().
-                connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build()) {
+                connectTimeout(connectTimeout, TimeUnit.SECONDS).build()) {
             final Invocation.Builder request = client.target(webappUri)
                     .path("api")
                     .path("v1")
@@ -110,54 +116,58 @@ public class IndexerUtil {
      * @param webappUri URI for the webapp
      * @param project project to mark as indexed
      */
-    public static void markProjectIndexed(String webappUri, Project project) {
-        Response response;
-        try (Client client = ClientBuilder.newBuilder().
-                connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build()) {
-            response = client.target(webappUri)
-                    .path("api")
-                    .path("v1")
-                    .path("projects")
-                    .path(Util.uriEncode(project.getName()))
-                    .path("indexed")
-                    .request()
-                    .headers(getWebAppHeaders())
-                    .put(Entity.text(""));
+    public void markProjectIndexed(String webappUri, Project project) {
+    Response response;
 
-            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                try {
-                    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                    response = new AsyncApiCallResult(env.getApiTimeout(), env.getConnectTimeout(),
-                            env.getIndexerAuthenticationToken()).waitFor(response);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
-                }
-            }
+    try (Client client = ClientBuilder.newBuilder().
+            connectTimeout(connectTimeout, TimeUnit.SECONDS).build()) {
 
-            if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                LOGGER.log(Level.WARNING, "Could not notify the webapp that project {0} was indexed: {1}",
-                        new Object[] {project, response});
+        response = client.target(webappUri)
+                .path("api")
+                .path("v1")
+                .path("projects")
+                .path(Util.uriEncode(project.getName()))
+                .path("indexed")
+                .request()
+                .headers(getWebAppHeaders())
+                .put(Entity.text(""));
+
+        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+            try {
+                response = new AsyncApiCallResult(
+                        apiTimeout,
+                        connectTimeout,
+                        bearerToken
+                ).waitFor(response);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
             }
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, String.format("Could not notify the webapp that project %s was indexed",
-                    project), e);
         }
-    }
 
+        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            LOGGER.log(Level.WARNING, "Could not notify the webapp that project {0} was indexed: {1}",
+                    new Object[] {project, response});
+        }
+
+    } catch (RuntimeException e) {
+        LOGGER.log(Level.WARNING, String.format("Could not notify the webapp that project %s was indexed",
+                project), e);
+    }
+}
     /**
      * @param webappUri URI for the webapp
      * @return list of projects known to the webapp
      */
-    public static Collection<String> getProjects(String webappUri) {
-        try (Client client = ClientBuilder.newBuilder().
-                connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build()) {
-            final Invocation.Builder request = client.target(webappUri)
-                    .path("api")
-                    .path("v1")
-                    .path("projects")
-                    .request(MediaType.APPLICATION_JSON)
-                    .headers(getWebAppHeaders());
-            return request.get(new GenericType<List<String>>() { } );
-        }
+    public Collection<String> getProjects(String webappUri) {
+    try (Client client = ClientBuilder.newBuilder().
+            connectTimeout(connectTimeout, TimeUnit.SECONDS).build()) {
+        final Invocation.Builder request = client.target(webappUri)
+                .path("api")
+                .path("v1")
+                .path("projects")
+                .request(MediaType.APPLICATION_JSON)
+                .headers(getWebAppHeaders());
+        return request.get(new GenericType<List<String>>() { });
     }
+}
 }
