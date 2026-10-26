@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.InvalidParameterException;
@@ -125,6 +126,13 @@ public class PageConfig {
 
     // cookie name
     public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+
+    /**
+     * Cookie size browsers are required to support, see RFC 6265 section 6.1.
+     * Larger cookies may be dropped by the browser and may not fit into the response headers.
+     */
+    @VisibleForTesting
+    static final int MAX_COOKIE_SIZE = 4096;
 
     public static final String DUMMY_REVISION = "unknown";
 
@@ -831,6 +839,23 @@ public class PageConfig {
             requestedProjectsString = String.join(",", getRequestedProjects());
         }
         return requestedProjectsString;
+    }
+
+    /**
+     * Create the {@link #OPEN_GROK_PROJECT} cookie.
+     *
+     * @param projects comma separated project names
+     * @return the cookie or {@code null} if it would exceed {@link #MAX_COOKIE_SIZE}
+     */
+    @Nullable
+    public static Cookie getProjectsCookie(String projects) {
+        String value = URLEncoder.encode(projects, StandardCharsets.UTF_8);
+        if (OPEN_GROK_PROJECT.length() + 1 + value.length() > MAX_COOKIE_SIZE) {
+            LOGGER.log(Level.FINE, "not setting {0} cookie of {1} bytes",
+                    new Object[]{OPEN_GROK_PROJECT, value.length()});
+            return null;
+        }
+        return new Cookie(OPEN_GROK_PROJECT, value);
     }
 
     /**
