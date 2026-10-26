@@ -1140,4 +1140,21 @@ class PageConfigTest {
         assertTrue(cfg.evaluateMatchOffset());
         assertEquals(offsetPair.getRight(), cfg.getFragmentIdentifier());
     }
+
+    @Test
+    void testGetProjectsCookie() {
+        Cookie cookie = PageConfig.getProjectsCookie("foo,bar baz");
+        assertNotNull(cookie);
+        assertEquals(PageConfig.OPEN_GROK_PROJECT, cookie.getName());
+        assertEquals("foo%2Cbar+baz", cookie.getValue());
+    }
+
+    @Test
+    void testGetProjectsCookieTooLarge() {
+        int maxValueLength = PageConfig.MAX_COOKIE_SIZE - PageConfig.OPEN_GROK_PROJECT.length() - 1;
+        assertNotNull(PageConfig.getProjectsCookie("a".repeat(maxValueLength)));
+        assertNull(PageConfig.getProjectsCookie("a".repeat(maxValueLength + 1)));
+        // Size is checked after encoding.
+        assertNull(PageConfig.getProjectsCookie(",".repeat(maxValueLength / 3 + 1)));
+    }
 }
