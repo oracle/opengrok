@@ -18,15 +18,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page import="
-java.net.URLEncoder,
-java.nio.charset.StandardCharsets,
 org.opengrok.web.PageConfig
 "%><%
 /* ---------------------- projects.jspf start --------------------- */
@@ -39,8 +37,8 @@ org.opengrok.web.PageConfig
     PageConfig cfg = PageConfig.get(request);
 
     String projects = cfg.getRequestedProjectsAsString();
-    if (projects.length() != 0) {
-        Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, StandardCharsets.UTF_8));
+    Cookie cookie = projects.isEmpty() ? null : PageConfig.getProjectsCookie(projects);
+    if (cookie != null) {
         response.addCookie(cookie);
     }
 }

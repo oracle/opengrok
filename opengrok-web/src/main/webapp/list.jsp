@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 
@@ -27,7 +27,6 @@ java.io.File,
 java.io.FileInputStream,
 java.io.InputStreamReader,
 java.io.Reader,
-java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
@@ -147,10 +146,12 @@ document.pageReady.push(function() { pageReadyList();});
                 projects.add(projectName);
                 // update cookie
                 cookieValue = cookieValue.isEmpty() ? projectName : projectName + ',' + cookieValue;
-                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, StandardCharsets.UTF_8));
-                // TODO hmmm, projects.jspf doesn't set a path
-                cookie.setPath(request.getContextPath() + '/');
-                response.addCookie(cookie);
+                Cookie cookie = PageConfig.getProjectsCookie(cookieValue);
+                if (cookie != null) {
+                    // TODO hmmm, projects.jspf doesn't set a path
+                    cookie.setPath(request.getContextPath() + '/');
+                    response.addCookie(cookie);
+                }
             }
         }
         // requesting a directory listing
