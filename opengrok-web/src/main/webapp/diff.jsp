@@ -100,7 +100,7 @@ include file="/mast.jsp"
 </div><%
     } else if (data.getGenre() == AbstractAnalyzer.Genre.IMAGE) {
 
-        String encodedPath = Util.htmlize(request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath());
+        String encodedPath = request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath();
 %>
 <div id="difftable">
     <table class="image" aria-label="table with old and new image">
@@ -123,7 +123,7 @@ include file="/mast.jsp"
 
     } else if (data.getGenre() != AbstractAnalyzer.Genre.PLAIN && data.getGenre() != AbstractAnalyzer.Genre.HTML) {
 
-        String encodedPath = Util.htmlize(request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath());
+        String encodedPath = request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath();
 %>
 <div id="src">Diffs for binary files cannot be displayed! Files are
     <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>">
