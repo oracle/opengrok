@@ -112,10 +112,8 @@ include file="/mast.jsp"
         </thead>
         <tbody>
         <tr>
-            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>" alt="previous"/>
-            </td>
-            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>" alt="new"/>
-            </td>
+            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>" alt="previous"/></td>
+            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>" alt="new"/></td>
         </tr>
         </tbody>
     </table>
