@@ -469,24 +469,51 @@ class DirectoryListingTest {
     }
 
     @Test
-    @EnabledOnOs({OS.LINUX, OS.MAC})
-    void testDirectoryListingEscapesRepositoryNames() throws Exception {
+    void testDirectoryListingEscapesFile() throws Exception {
+        String payload = "<img src=x onerror=alert(1)>";
+        String filename = "readme" + payload + ".txt";
+        File readme = new File(directory, filename);
+        assertTrue(readme.createNewFile());
+
+        StringWriter out = new StringWriter();
+        DirectoryListing.printEntry(out, new DirectoryEntry(readme), false);
+
+        String listing = out.toString();
+        assertFalse(listing.contains(payload));
+        assertEquals("<td><a href=\"" +
+                Util.uriEncodePath(filename) + "\">" +
+                Util.htmlize(filename) + "</a></td>", listing);
+    }
+
+    @Test
+    void testDirectoryListingEscapesDirectory() throws Exception {
+        String payload = "<img src=x onerror=alert(1)>";
+        File topDirectory = new File(directory, "safe");
+        assertTrue(topDirectory.mkdirs());
+
+        StringWriter out = new StringWriter();
+        DirectoryListing.printEntry(out, new DirectoryEntry(topDirectory), true);
+
+        String listing = out.toString();
+        assertFalse(listing.contains(payload));
+        assertEquals("<td><a href=\"safe/\"><b>safe</b></a>/</td>", listing);
+    }
+
+    @Test
+    void testDirectoryListingEscapesSimplifiedDirectory() throws Exception {
         String payload = "<img src=x onerror=alert(1)>";
         File topDirectory = new File(directory, "safe");
         File deepestDirectory = new File(topDirectory, payload);
         assertTrue(deepestDirectory.mkdirs());
-        File readme = new File(directory, "readme" + payload + ".txt");
-        assertTrue(readme.createNewFile());
 
         StringWriter out = new StringWriter();
-        new DirectoryListing().extraListTo("/source", directory, out, "/git/", List.of(
-                new DirectoryEntry(topDirectory), new DirectoryEntry(readme)));
+        DirectoryListing.printEntry(out, new DirectoryEntry(topDirectory), true);
 
         String listing = out.toString();
         assertFalse(listing.contains(payload));
-        assertTrue(listing.contains("safe/</span>&lt;img src=x onerror=alert(1)&gt;"));
-        assertTrue(listing.contains("readme&lt;img src=x onerror=alert(1)&gt;.txt"));
-        assertTrue(listing.contains("readme%3Cimg%20src%3Dx%20onerror%3Dalert%281%29%3E.txt"));
+        assertEquals("<td><a href=\"safe/" + Util.uriEncodePath(payload) + "/\">" +
+                "<b><span class=\"simplified-path\">safe/</span>" + Util.htmlize(payload) + "</b></a>/</td>",
+                listing);
     }
 
     private void setEntries(boolean useHistoryCache, EftarFileReader eftarFileReader) throws Exception {
