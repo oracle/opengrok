@@ -868,16 +868,17 @@ public final class Util {
      *
      * @param out   writer for producing output
      * @param ctxE  URI encoded prefix
-     * @param entry file/directory name to write
+     * @param pathRelativeToSourceRoot unencoded file/directory name to write
      * @throws IOException depends on the destination (<var>out</var>).
      */
-    public static void writeHAD(Writer out, String ctxE, String entry) throws IOException {
+    public static void writeHAD(Writer out, String ctxE, String pathRelativeToSourceRoot) throws IOException {
 
         String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
 
         out.write("<td class=\"q\">");
-        File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), entry);
+        File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), pathRelativeToSourceRoot);
+        String encodedPath = uriEncodePath(pathRelativeToSourceRoot);
 
         // Write the 'H' (History) link.
         if (HistoryGuru.getInstance().hasHistory(file)) {
@@ -885,10 +886,10 @@ public final class Util {
 
             out.write(ANCHOR_LINK_START);
             out.write(histPrefixE);
-            if (!entry.startsWith("/")) {
-                entry = "/" + entry;
+            if (!encodedPath.startsWith("/")) {
+                encodedPath = "/" + encodedPath;
             }
-            out.write(entry);
+            out.write(encodedPath);
             out.write("\" title=\"History\">H</a>");
         }
 
@@ -896,7 +897,7 @@ public final class Util {
         if (HistoryGuru.getInstance().hasAnnotation(file)) {
             out.write(" <a href=\"");
             out.write(xrefPrefixE);
-            out.write(entry);
+            out.write(encodedPath);
             out.write("?");
             out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
             out.write("\" title=\"Annotate\">A</a> ");
@@ -906,7 +907,7 @@ public final class Util {
         if (!file.isDirectory()) {
             out.write(ANCHOR_LINK_START);
             out.write(downloadPrefixE);
-            out.write(entry);
+            out.write(encodedPath);
             out.write("\" title=\"Download\">D</a>");
         }
 

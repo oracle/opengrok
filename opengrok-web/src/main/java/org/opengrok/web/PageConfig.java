@@ -34,8 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -318,8 +316,7 @@ public class PageConfig {
                 in[i] = (InputStream) future[i].get();
                 if (in[i] == null) {
                     data.errorMsg = "Unable to get revision "
-                            + Util.htmlize(data.rev[i]) + " for file: "
-                            + Util.htmlize(getPath());
+                            + data.rev[i] + " for file: " + getPath();
                     return;
                 }
             }
@@ -383,15 +380,7 @@ public class PageConfig {
 
     private void populateRevisionURLDetails(DiffData data, String[] filePath) {
         IntStream.range(0, 2)
-                .forEach(i -> {
-                    try {
-                        URI u = new URI(null, null, null,
-                                filePath[i] + "@" + data.rev[i], null);
-                        data.param[i] = u.getRawQuery();
-                    } catch (URISyntaxException e) {
-                        LOGGER.log(Level.WARNING, "Failed to create URI: {}", Laundromat.launderLog(e.toString()));
-                    }
-                });
+                .forEach(i -> data.param[i] = Util.uriEncode(filePath[i] + "@" + data.rev[i]));
     }
 
     /**

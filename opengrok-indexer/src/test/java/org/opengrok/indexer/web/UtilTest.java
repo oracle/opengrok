@@ -641,6 +641,16 @@ class UtilTest {
                 output);
     }
 
+    @Test
+    void testWriteHADEncodesPathExactlyOnce() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        Util.writeHAD(writer, "/source", "/dir with space/file+%.c");
+
+        assertEquals("<td class=\"q\"><a href=\"/source/download/dir%20with%20space/file%2B%25.c\" " +
+                        "title=\"Download\">D</a></td>", writer.toString());
+    }
+
     /**
      * Test {@link Util#writeHAD(Writer, String, String)} for a file paths that correspond to a repository
      * with history enabled and disabled.

@@ -211,17 +211,17 @@ public final class Results {
             for (int docId : entry.getValue()) {
                 Document doc = storedFields.document(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
-                String rpathE = Util.uriEncodePath(rpath);
+                String rpathEncoded = Util.uriEncodePath(rpath);
                 if (evenRow) {
                     out.write("<tr class=\"search-result-even-row\">");
                 } else {
                     out.write("<tr>");
                 }
                 evenRow = !evenRow;
-                Util.writeHAD(out, sh.getContextPath(), rpathE);
+                Util.writeHAD(out, sh.getContextPath(), rpath);
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
-                out.write(rpathE);
+                out.write(rpathEncoded);
                 out.write("\"");
                 if (env.isLastEditedDisplayMode()) {
                     printLastEditedDate(out, doc);

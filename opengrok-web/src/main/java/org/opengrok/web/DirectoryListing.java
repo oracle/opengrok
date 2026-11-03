@@ -281,17 +281,17 @@ public class DirectoryListing {
         out.write("\"/>");
         out.write("</td><td><a href=\"");
         if (isDir) {
-            String longpath = getSimplifiedPath(child);
-            out.write(Util.uriEncodePath(longpath));
+            String longPath = getSimplifiedPath(child);
+            out.write(Util.uriEncodePath(longPath));
             out.write("/\"><b>");
             int idx;
-            if ((idx = longpath.lastIndexOf('/')) > 0) {
+            if ((idx = longPath.lastIndexOf('/')) > 0) {
                 out.write("<span class=\"simplified-path\">");
-                out.write(longpath.substring(0, idx + 1));
+                out.write(Util.htmlize(longPath.substring(0, idx + 1)));
                 out.write("</span>");
-                out.write(longpath.substring(idx + 1));
+                out.write(Util.htmlize(longPath.substring(idx + 1)));
             } else {
-                out.write(longpath);
+                out.write(Util.htmlize(longPath));
             }
             out.write("</b></a>/");
         } else {
@@ -304,7 +304,7 @@ public class DirectoryListing {
                 out.write("\"");
             }
             out.write(">");
-            out.write(filename);
+            out.write(Util.htmlize(filename));
             out.write("</a>");
         }
         out.write(TD_END_TAG);

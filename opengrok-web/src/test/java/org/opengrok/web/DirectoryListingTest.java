@@ -46,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -70,6 +72,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -463,6 +466,27 @@ class DirectoryListingTest {
         for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i), usePathDescriptions);
         }
+    }
+
+    @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    void testDirectoryListingEscapesRepositoryNames() throws Exception {
+        String payload = "<img src=x onerror=alert(1)>";
+        File topDirectory = new File(directory, "safe");
+        File deepestDirectory = new File(topDirectory, payload);
+        assertTrue(deepestDirectory.mkdirs());
+        File readme = new File(directory, "readme" + payload + ".txt");
+        assertTrue(readme.createNewFile());
+
+        StringWriter out = new StringWriter();
+        new DirectoryListing().extraListTo("/source", directory, out, "/git/", List.of(
+                new DirectoryEntry(topDirectory), new DirectoryEntry(readme)));
+
+        String listing = out.toString();
+        assertFalse(listing.contains(payload));
+        assertTrue(listing.contains("safe/</span>&lt;img src=x onerror=alert(1)&gt;"));
+        assertTrue(listing.contains("readme&lt;img src=x onerror=alert(1)&gt;.txt"));
+        assertTrue(listing.contains("readme%3Cimg%20src%3Dx%20onerror%3Dalert%281%29%3E.txt"));
     }
 
     private void setEntries(boolean useHistoryCache, EftarFileReader eftarFileReader) throws Exception {
