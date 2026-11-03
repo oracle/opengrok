@@ -468,52 +468,43 @@ class DirectoryListingTest {
         }
     }
 
-    @Test
-    void testDirectoryListingEscapesFile() throws Exception {
+    private static Stream<Arguments> directoryListingEscapeCases() {
         String payload = "<img src=x onerror=alert(1)>";
-        String filename = "readme" + payload + ".txt";
-        File readme = new File(directory, filename);
-        assertTrue(readme.createNewFile());
-
-        StringWriter out = new StringWriter();
-        DirectoryListing.printEntry(out, new DirectoryEntry(readme), false);
-
-        String listing = out.toString();
-        assertFalse(listing.contains(payload));
-        assertEquals("<td><a href=\"" +
-                Util.uriEncodePath(filename) + "\">" +
-                Util.htmlize(filename) + "</a></td>", listing);
+        String encodedPayload = Util.uriEncodePath(payload);
+        String escapedPayload = "&lt;img src=x onerror=alert(1)&gt;";
+        return Stream.of(
+                Arguments.of("readme" + payload + ".txt", null, false,
+                        "<td><a href=\"readme" + encodedPayload + ".txt\">readme" + escapedPayload + ".txt</a></td>"),
+                Arguments.of(payload, null, true,
+                        "<td><a href=\"" + encodedPayload + "/\"><b>" + escapedPayload + "</b></a>/</td>"),
+                Arguments.of("safe", null, true,
+                        "<td><a href=\"safe/\"><b>safe</b></a>/</td>"),
+                Arguments.of("safe", payload, true,
+                        "<td><a href=\"safe/" + encodedPayload + "/\"><b>" +
+                                "<span class=\"simplified-path\">safe/</span>" + escapedPayload + "</b></a>/</td>"));
     }
 
-    @Test
-    void testDirectoryListingEscapesDirectory() throws Exception {
+    @ParameterizedTest
+    @MethodSource("directoryListingEscapeCases")
+    // The payload contains '<' and '>', which Windows does not allow in file or directory names.
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    void testDirectoryListingEscapes(String name, String nestedName, boolean isDirectory,
+                                     String expected) throws Exception {
         String payload = "<img src=x onerror=alert(1)>";
-        File topDirectory = new File(directory, "safe");
-        assertTrue(topDirectory.mkdirs());
+        File listedEntry = new File(directory, name);
+        if (isDirectory) {
+            File deepestDirectory = nestedName == null ? listedEntry : new File(listedEntry, nestedName);
+            assertTrue(deepestDirectory.mkdirs());
+        } else {
+            assertTrue(listedEntry.createNewFile());
+        }
 
         StringWriter out = new StringWriter();
-        DirectoryListing.printEntry(out, new DirectoryEntry(topDirectory), true);
+        DirectoryListing.printEntry(out, new DirectoryEntry(listedEntry), isDirectory);
 
         String listing = out.toString();
         assertFalse(listing.contains(payload));
-        assertEquals("<td><a href=\"safe/\"><b>safe</b></a>/</td>", listing);
-    }
-
-    @Test
-    void testDirectoryListingEscapesSimplifiedDirectory() throws Exception {
-        String payload = "<img src=x onerror=alert(1)>";
-        File topDirectory = new File(directory, "safe");
-        File deepestDirectory = new File(topDirectory, payload);
-        assertTrue(deepestDirectory.mkdirs());
-
-        StringWriter out = new StringWriter();
-        DirectoryListing.printEntry(out, new DirectoryEntry(topDirectory), true);
-
-        String listing = out.toString();
-        assertFalse(listing.contains(payload));
-        assertEquals("<td><a href=\"safe/" + Util.uriEncodePath(payload) + "/\">" +
-                "<b><span class=\"simplified-path\">safe/</span>" + Util.htmlize(payload) + "</b></a>/</td>",
-                listing);
+        assertEquals(expected, listing);
     }
 
     private void setEntries(boolean useHistoryCache, EftarFileReader eftarFileReader) throws Exception {
