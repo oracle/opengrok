@@ -872,29 +872,26 @@ public final class Util {
      * @throws IOException depends on the destination (<var>out</var>).
      */
     public static void writeHAD(Writer out, String ctxE, String pathRelativeToSourceRoot) throws IOException {
-
-        String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
-        String xrefPrefixE = ctxE + Prefix.XREF_P;
-
         out.write("<td class=\"q\">");
+
         File file = new File(RuntimeEnvironment.getInstance().getSourceRootPath(), pathRelativeToSourceRoot);
         String encodedPath = uriEncodePath(pathRelativeToSourceRoot);
+        if (!encodedPath.startsWith("/")) {
+            encodedPath = "/" + encodedPath;
+        }
 
         // Write the 'H' (History) link.
         if (HistoryGuru.getInstance().hasHistory(file)) {
             String histPrefixE = ctxE + Prefix.HIST_L;
-
             out.write(ANCHOR_LINK_START);
             out.write(histPrefixE);
-            if (!encodedPath.startsWith("/")) {
-                encodedPath = "/" + encodedPath;
-            }
             out.write(encodedPath);
             out.write("\" title=\"History\">H</a>");
         }
 
         // Write the 'A' (Annotation) link.
         if (HistoryGuru.getInstance().hasAnnotation(file)) {
+            String xrefPrefixE = ctxE + Prefix.XREF_P;
             out.write(" <a href=\"");
             out.write(xrefPrefixE);
             out.write(encodedPath);
@@ -905,6 +902,7 @@ public final class Util {
 
         // Write the 'D' (Download) link.
         if (!file.isDirectory()) {
+            String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
             out.write(ANCHOR_LINK_START);
             out.write(downloadPrefixE);
             out.write(encodedPath);
