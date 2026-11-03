@@ -239,17 +239,17 @@ public class PageConfig {
      * The code extracts file path and revision from the URI.
      * @param data DiffData object (output parameter)
      * @param context context path
-     * @param filepath file path array (output parameter)
+     * @param filePaths file path array (output parameter)
      * @return true if the extraction was successful, false otherwise
      * (in which case {@link DiffData#errorMsg} will be set)
      */
-    private boolean getFileRevision(DiffData data, String context, String[] filepath) {
+    private boolean getFileRevision(DiffData data, String context, String[] filePaths) {
         for (int i = 1; i <= 2; i++) {
             String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
             if (p != null) {
                 int j = p.lastIndexOf("@");
                 if (j != -1) {
-                    filepath[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
+                    filePaths[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
                     data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
                 }
             }
@@ -281,16 +281,16 @@ public class PageConfig {
                 getResourceFile().getName());
 
         String context = req.getContextPath();
-        String[] filepath = new String[2];
+        String[] filePaths = new String[2];
 
-        if (!getFileRevision(data, context, filepath)) {
+        if (!getFileRevision(data, context, filePaths)) {
             return data;
         }
 
         data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
         Optional.of(data)
                 .filter(this::isTextGenre)
-                .ifPresent(textData -> generatePlainTextDiffData(textData, filepath));
+                .ifPresent(textData -> generatePlainTextDiffData(textData, filePaths));
        return data;
     }
 
@@ -298,14 +298,14 @@ public class PageConfig {
         return data.genre == null || txtGenres.contains(data.genre);
     }
 
-    private void generatePlainTextDiffData(DiffData data, String[] filepath) {
+    private void generatePlainTextDiffData(DiffData data, String[] filePaths) {
         String srcRoot = getSourceRootPath();
         InputStream[] in = new InputStream[2];
         try {
             // Get input stream for both older and newer file.
             Future<?>[] future = new Future<?>[2];
             for (int i = 0; i < 2; i++) {
-                File f = new File(srcRoot + filepath[i]);
+                File f = new File(srcRoot + filePaths[i]);
                 final String revision = data.rev[i];
                 future[i] = executor.submit(() -> HistoryGuru.getInstance().
                         getRevision(f.getParent(), f.getName(), revision));
@@ -350,7 +350,7 @@ public class PageConfig {
         }
         if (Objects.isNull(data.errorMsg)) {
             populateRevisionData(data);
-            populateRevisionURLDetails(data, filepath);
+            populateRevisionURLDetails(data, filePaths);
             data.full = fullDiff();
             data.type = getDiffType();
         }
