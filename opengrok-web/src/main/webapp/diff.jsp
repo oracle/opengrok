@@ -90,7 +90,7 @@ include file="/mast.jsp"
     PageConfig cfg = PageConfig.get(request);
     DiffData data = (DiffData) request.getAttribute("diff.jsp-data");
 
-    // the data is never null as the getDiffData always return valid object
+    // The data object is never null as PageConfig.getDiffData() always returns valid object.
     if (data.getErrorMsg() != null)  {
 
 %>
