@@ -245,8 +245,12 @@ public class PageConfig {
      */
     private boolean getFileRevision(DiffData data, String context, String[] filePaths) {
         for (int i = 1; i <= 2; i++) {
-            String p = URLDecoder.decode(req.getParameter(QueryParameters.REVISION_PARAM + i),
-                    StandardCharsets.UTF_8);
+            String encodedParam = req.getParameter(QueryParameters.REVISION_PARAM + i);
+            if (Objects.isNull(encodedParam)) {
+                data.errorMsg = "Missing " + QueryParameters.REVISION_PARAM + i + "parameter";
+                return false;
+            }
+            String p = URLDecoder.decode(encodedParam, StandardCharsets.UTF_8);
             if (p != null) {
                 int j = p.lastIndexOf("@");
                 if (j != -1) {
