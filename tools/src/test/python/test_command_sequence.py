@@ -250,6 +250,7 @@ def test_cleanup():
         file_foo = os.path.join(tmpdir, "foo")
         file_bar = os.path.join(tmpdir, "bar")
         cleanup_list = [
+            # Add project name substitution to avoid extra argument to be appended to the commands.
             {"command": {"args": ["/usr/bin/touch", file_foo + PROJECT_SUBST]}},
             {"command": {"args": ["/bin/cat", "/totallynonexistent" + PROJECT_SUBST]}},
             {"command": {"args": ["/usr/bin/touch", file_bar + PROJECT_SUBST]}},
