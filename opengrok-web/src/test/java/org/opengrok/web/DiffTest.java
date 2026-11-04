@@ -93,7 +93,7 @@ class DiffTest {
         DiffData diffData = pageConfig.getDiffData();
         assertNotNull(diffData);
         assertNotNull(diffData.getErrorMsg());
-        assertTrue(diffData.getErrorMsg().startsWith("Please pick"));
+        assertTrue(diffData.getErrorMsg().startsWith("Missing the"));
     }
 
     @Test
