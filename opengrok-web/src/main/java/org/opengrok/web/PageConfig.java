@@ -245,18 +245,16 @@ public class PageConfig {
      */
     private boolean getFileRevision(DiffData data, String context, String[] filePaths) {
         for (int i = 1; i <= 2; i++) {
-            String encodedParam = req.getParameter(QueryParameters.REVISION_PARAM + i);
-            if (Objects.isNull(encodedParam)) {
-                data.errorMsg = "Missing " + QueryParameters.REVISION_PARAM + i + "parameter";
+            String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
+            if (Objects.isNull(p)) {
+                data.errorMsg = "Missing the " + QueryParameters.REVISION_PARAM + i + " parameter";
                 return false;
             }
-            String p = URLDecoder.decode(encodedParam, StandardCharsets.UTF_8);
-            if (p != null) {
-                int j = p.lastIndexOf("@");
-                if (j != -1) {
-                    filePaths[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
-                    data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
-                }
+
+            int j = p.lastIndexOf("@");
+            if (j != -1) {
+                filePaths[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
+                data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
             }
         }
 
