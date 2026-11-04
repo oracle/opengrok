@@ -247,11 +247,11 @@ def test_cleanup_exception():
 )
 def test_cleanup():
     with tempfile.TemporaryDirectory() as tmpdir:
-        file_foo = os.path.join(tmpdir, "foo")
-        file_bar = os.path.join(tmpdir, "bar")
+        file_foo = os.path.join(tmpdir, "foo" + PROJECT_SUBST)
+        file_bar = os.path.join(tmpdir, "bar" + PROJECT_SUBST)
         cleanup_list = [
             {"command": {"args": ["/usr/bin/touch", file_foo]}},
-            {"command": {"args": ["/bin/cat", "/totallynonexistent"]}},
+            {"command": {"args": ["/bin/cat", "/totallynonexistent" + PROJECT_SUBST]}},
             {"command": {"args": ["/usr/bin/touch", file_bar]}},
         ]
         # Running 'cat' on non-existing entry causes it to return 1.
