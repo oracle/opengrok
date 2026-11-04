@@ -357,7 +357,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %>(no author)<%
                 } else if (userPage != null && !userPage.isEmpty()) {
                     String alink = Util.getEmail(author);
-                %><a href="<%= userPage + Util.uriEncode(alink).replace("+", "%20") + userPageSuffix
+                %><a href="<%= userPage + Util.uriEncode(alink).replaceAll("\\+", "%20") + userPageSuffix
                 %>"><%= Util.htmlize(author)%></a><%
                 } else {
                 %><%= Util.htmlize(author) %><%
