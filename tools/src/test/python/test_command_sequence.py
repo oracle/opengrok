@@ -247,24 +247,25 @@ def test_cleanup_exception():
 )
 def test_cleanup():
     with tempfile.TemporaryDirectory() as tmpdir:
-        file_foo = os.path.join(tmpdir, "foo" + PROJECT_SUBST)
-        file_bar = os.path.join(tmpdir, "bar" + PROJECT_SUBST)
+        file_foo = os.path.join(tmpdir, "foo")
+        file_bar = os.path.join(tmpdir, "bar")
         cleanup_list = [
-            {"command": {"args": ["/usr/bin/touch", file_foo]}},
+            {"command": {"args": ["/usr/bin/touch", file_foo + + PROJECT_SUBST]}},
             {"command": {"args": ["/bin/cat", "/totallynonexistent" + PROJECT_SUBST]}},
-            {"command": {"args": ["/usr/bin/touch", file_bar]}},
+            {"command": {"args": ["/usr/bin/touch", file_bar + PROJECT_SUBST]}},
         ]
         # Running 'cat' on non-existing entry causes it to return 1.
         cmd = ["/bin/cat", "/foobar"]
         cmd_list = [{"command": {"args": cmd}}]
+        project_name = "test-cleanup-list"
         commands = CommandSequence(
-            CommandSequenceBase("test-cleanup-list", cmd_list, cleanup=cleanup_list)
+            CommandSequenceBase(project_name, cmd_list, cleanup=cleanup_list)
         )
         assert commands is not None
         commands.run()
         assert list(commands.retcodes.values()) == [1]
-        assert os.path.isfile(file_foo)
-        assert os.path.isfile(file_bar)
+        assert os.path.isfile(file_foo + project_name)
+        assert os.path.isfile(file_bar + project_name)
 
 
 def test_restful_fail(monkeypatch):
