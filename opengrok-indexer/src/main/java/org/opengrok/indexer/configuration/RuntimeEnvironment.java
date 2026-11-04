@@ -1003,7 +1003,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the user page for the history listing.
      *
-     * @return the URL string fragment preceeding the username
+     * @return the URL string fragment preceding the username
      */
     public String getUserPage() {
         return syncReadConfiguration(Configuration::getUserPage);
@@ -1042,7 +1042,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the user page for the history listing.
      *
-     * @param userPage the URL fragment preceeding the username from history
+     * @param userPage the URL fragment preceding the username from history
      */
     public void setUserPage(String userPage) {
         syncWriteConfiguration(userPage, Configuration::setUserPage);
@@ -1070,7 +1070,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the bug page for the history listing.
      *
-     * @return the URL string fragment preceeding the bug ID
+     * @return the URL string fragment preceding the bug ID
      */
     public String getBugPage() {
         return syncReadConfiguration(Configuration::getBugPage);
@@ -1079,7 +1079,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the bug page for the history listing.
      *
-     * @param bugPage the URL fragment preceeding the bug ID
+     * @param bugPage the URL fragment preceding the bug ID
      */
     public void setBugPage(String bugPage) {
         syncWriteConfiguration(bugPage, Configuration::setBugPage);
@@ -1106,7 +1106,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the review(ARC) page for the history listing.
      *
-     * @return the URL string fragment preceeding the review page ID
+     * @return the URL string fragment preceding the review page ID
      */
     public String getReviewPage() {
         return syncReadConfiguration(Configuration::getReviewPage);
@@ -1115,7 +1115,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the review(ARC) page for the history listing.
      *
-     * @param reviewPage the URL fragment preceeding the review page ID
+     * @param reviewPage the URL fragment preceding the review page ID
      */
     public void setReviewPage(String reviewPage) {
         syncWriteConfiguration(reviewPage, Configuration::setReviewPage);
