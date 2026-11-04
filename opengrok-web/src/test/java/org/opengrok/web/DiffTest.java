@@ -23,13 +23,13 @@
 package org.opengrok.web;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
-import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
@@ -151,16 +151,15 @@ class DiffTest {
         String filename = "diff space+&percent%20#@café%.txt";
         File file = new File(gitDirectory, filename);
         String[] revisions = new String[2];
-        for (int i = 0; i < revisions.length; i++) {
-            Files.writeString(file.toPath(), "revision " + i + "\n");
-            assertEquals(0, new Executor(List.of("git", "add", "--", filename), gitDirectory).exec());
-            Executor commit = new Executor(List.of("git", "-c", "user.name=Diff Test",
-                    "-c", "user.email=diff@example.com", "commit", "--no-gpg-sign", "-m", "revision " + i),
-                    gitDirectory);
-            assertEquals(0, commit.exec(), commit.getErrorString());
-            Executor revision = new Executor(List.of("git", "rev-parse", "HEAD"), gitDirectory);
-            assertEquals(0, revision.exec());
-            revisions[i] = revision.getOutputString().trim();
+        try (Git git = Git.open(gitDirectory)) {
+            for (int i = 0; i < revisions.length; i++) {
+                Files.writeString(file.toPath(), "revision " + i + "\n");
+                git.add().addFilepattern(filename).call();
+                revisions[i] = git.commit().setSign(false)
+                        .setAuthor("Diff Test", "diff@example.com")
+                        .setCommitter("Diff Test", "diff@example.com")
+                        .setMessage("revision " + i).call().getName();
+            }
         }
 
         String path = "/git/" + filename;
