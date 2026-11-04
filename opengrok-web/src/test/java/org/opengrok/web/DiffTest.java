@@ -145,12 +145,20 @@ class DiffTest {
         );
     }
 
+    /**
+     * Commit two versions of a special-character filename, load their diff, then
+     * decode and follow the diff link built from its revision parameters.
+     * The second request must resolve the same file and revisions without decoding
+     * the servlet parameters again.
+     */
     @Test
     void testDiffLinksPreserveSpecialCharacters() throws Exception {
         File gitDirectory = new File(repository.getSourceRoot(), "git");
+        // '+' and percent-escape-looking text expose accidental second decoding of revision paths.
         String filename = "diff space+&percent%20#@café%.txt";
         File file = new File(gitDirectory, filename);
         String[] revisions = new String[2];
+        // Create two committed versions so the diff must retrieve this exact filename at both revisions.
         try (Git git = Git.open(gitDirectory)) {
             for (int i = 0; i < revisions.length; i++) {
                 Files.writeString(file.toPath(), "revision " + i + "\n");
@@ -163,6 +171,7 @@ class DiffTest {
         }
 
         String path = "/git/" + filename;
+        // Servlet parameters have already been decoded once when PageConfig receives them.
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getPathInfo()).thenReturn(path);
         when(req.getContextPath()).thenReturn("/source");
@@ -173,6 +182,7 @@ class DiffTest {
         assertEquals("revision 0", data.getFile(0)[0]);
         assertEquals("revision 1", data.getFile(1)[0]);
 
+        // Follow the generated diff link through one query-decoding round trip.
         URL link = new URI("http://localhost/source/diff" + Util.uriEncodePath(path)
                 + "?r1=" + data.getParam(0) + "&r2=" + data.getParam(1)).toURL();
         Map<String, List<String>> params = Util.getQueryParams(link);
@@ -180,6 +190,7 @@ class DiffTest {
         assertEquals(List.of(path + "@" + revisions[0]), params.get("r1"));
         assertEquals(List.of(path + "@" + revisions[1]), params.get("r2"));
 
+        // The next request must still resolve the same revisions and preserve the link parameters.
         when(req.getParameter("r1")).thenReturn(params.get("r1").getFirst());
         when(req.getParameter("r2")).thenReturn(params.get("r2").getFirst());
         DiffData linkedData = PageConfig.get(req).getDiffData();
