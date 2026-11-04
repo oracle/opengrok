@@ -315,8 +315,7 @@ public class PageConfig {
                 // The Executor used by given repository will enforce the timeout.
                 in[i] = (InputStream) future[i].get();
                 if (in[i] == null) {
-                    data.errorMsg = "Unable to get revision "
-                            + data.rev[i] + " for file: " + getPath();
+                    data.errorMsg = "Unable to get revision " + data.rev[i] + " for file: " + getPath();
                     return;
                 }
             }
@@ -342,8 +341,7 @@ public class PageConfig {
                 }
             }
         } catch (Exception e) {
-            data.errorMsg = "Error reading revisions: "
-                    + Util.htmlize(e.getMessage());
+            data.errorMsg = "Error reading revisions: " + e.getMessage();
         } finally {
             Arrays.stream(in)
                     .forEach(IOUtils::close);
@@ -364,8 +362,7 @@ public class PageConfig {
                     data.errorMsg = "Unable to determine the file type";
                 }
             } catch (IOException e) {
-                data.errorMsg = "Unable to determine the file type: "
-                        + Util.htmlize(e.getMessage());
+                data.errorMsg = "Unable to determine the file type: " + e.getMessage();
             }
         }
     }
