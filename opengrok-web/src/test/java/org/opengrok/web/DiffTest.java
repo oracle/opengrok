@@ -180,8 +180,8 @@ class DiffTest {
         assertEquals(List.of(path + "@" + revisions[0]), params.get("r1"));
         assertEquals(List.of(path + "@" + revisions[1]), params.get("r2"));
 
-        when(req.getParameter("r1")).thenReturn(params.get("r1").get(0));
-        when(req.getParameter("r2")).thenReturn(params.get("r2").get(0));
+        when(req.getParameter("r1")).thenReturn(params.get("r1").getFirst());
+        when(req.getParameter("r2")).thenReturn(params.get("r2").getFirst());
         DiffData linkedData = PageConfig.get(req).getDiffData();
         assertNull(linkedData.getErrorMsg());
         assertEquals(data.getParam(0), linkedData.getParam(0));
