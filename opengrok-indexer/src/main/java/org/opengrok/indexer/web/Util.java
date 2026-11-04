@@ -315,8 +315,7 @@ public final class Util {
                 }
                 break;
             default:
-                if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' &&
-                    Character.isWhitespace(codePoint))) {
+                if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' && Character.isWhitespace(codePoint))) {
                     dest.append((char) codePoint);
                 } else {
                     dest.append("&#").append(Integer.toString(codePoint)).append(';');
