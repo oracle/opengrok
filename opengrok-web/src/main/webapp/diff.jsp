@@ -144,7 +144,7 @@ include file="/mast.jsp"
         int ln2 = 0;
         String rp1 = data.getParam(0);
         String rp2 = data.getParam(1);
-        String baseURL = Util.htmlize(request.getContextPath() + Prefix.DIFF_P + cfg.getUriEncodedPath());
+        String encodedBaseURL = request.getContextPath() + Prefix.DIFF_P + cfg.getUriEncodedPath();
         String[] file1 = data.getFile(0);
         String[] file2 = data.getFile(1);
 
@@ -168,7 +168,7 @@ include file="/mast.jsp"
                 }
             %></span><%
             } else {
-        %> <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+        %> <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= t.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
@@ -185,7 +185,7 @@ include file="/mast.jsp"
     <div class="ctype"><%
         if (!full) {
         %>
-        <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+        <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1">full</a></span>
@@ -193,13 +193,13 @@ include file="/mast.jsp"
         } else {
         %>
         <span class="active">full</span>
-        <span> <a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+        <span> <a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>0">compact</a></span><%
         }
         %><span><a href="#" id="toggle-jumper">jumper</a></span>
-        <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+        <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= DiffType.TEXT %>&amp;
 action=download">download diff</a></span><%
@@ -276,7 +276,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -340,7 +340,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn1 - ln1 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -357,7 +357,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -399,7 +399,7 @@ action=download">download diff</a></span><%
             Util.htmlize(file1[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn1 - ln1 - 16
-            %> unchanged lines hidden</strong> (<a href="<%= baseURL
+            %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -431,7 +431,7 @@ action=download">download diff</a></span><%
             Util.htmlize(file2[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn2 - ln2 - 16
-            %> unchanged lines hidden</strong> (<a href="<%= baseURL
+            %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
