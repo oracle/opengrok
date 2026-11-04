@@ -378,9 +378,9 @@ public class PageConfig {
         }
     }
 
-    private void populateRevisionURLDetails(DiffData data, String[] filePath) {
+    private void populateRevisionURLDetails(DiffData data, String[] filePaths) {
         IntStream.range(0, 2)
-                .forEach(i -> data.param[i] = Util.uriEncode(filePath[i] + "@" + data.rev[i]));
+                .forEach(i -> data.param[i] = Util.uriEncode(filePaths[i] + "@" + data.rev[i]));
     }
 
     /**
