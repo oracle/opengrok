@@ -258,9 +258,7 @@ public class PageConfig {
         if (data.rev[0] == null || data.rev[1] == null
                 || data.rev[0].isEmpty() || data.rev[1].isEmpty()
                 || data.rev[0].equals(data.rev[1])) {
-            data.errorMsg = "Please pick two revisions to compare the changes "
-                    + "from the <a href=\"" + context + Prefix.HIST_L
-                    + getUriEncodedPath() + "\">history</a>";
+            data.errorMsg = "Please pick two revisions to compare the changes from the history of " + getPath();
             return false;
         }
 
