@@ -211,7 +211,7 @@ action=download">download diff</a></span><%
         if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
         %><table class="plain" aria-label="table with old and new content"><%
             if (type == DiffType.SIDEBYSIDE) {
-                String encodedLinkPrefix = Util.htmlize(request.getContextPath() + Prefix.XREF_P + cfg.getUriEncodedPath()) +
+                String encodedLinkPrefix = request.getContextPath() + Prefix.XREF_P + cfg.getUriEncodedPath() +
                         "?" + QueryParameters.REVISION_PARAM_EQ;
             %>
             <thead><tr>
