@@ -233,8 +233,10 @@ public final class Util {
      */
     public static void htmlize(CharSequence q, Appendable dest, boolean pre)
             throws IOException {
-        for (int i = 0; i < q.length(); i++) {
-            htmlize(q.charAt(i), dest, pre);
+        for (int i = 0; i < q.length();) {
+            int codePoint = Character.codePointAt(q, i);
+            htmlize(codePoint, dest, pre);
+            i += Character.charCount(codePoint);
         }
     }
 
@@ -265,26 +267,31 @@ public final class Util {
     public static void htmlize(char[] cs, int length, Appendable dest)
             throws IOException {
         int len = Math.min(cs.length, length);
-        for (int i = 0; i < len; i++) {
-            htmlize(cs[i], dest, false);
+        for (int i = 0; i < len;) {
+            int codePoint = Character.codePointAt(cs, i, len);
+            htmlize(codePoint, dest, false);
+            i += Character.charCount(codePoint);
         }
     }
 
     /**
-     * Append a character to the given destination whereby special characters
-     * special for HTML or characters that are not printable ASCII are
-     * escaped accordingly.
+     * Append a code point to the given destination whereby special characters special for HTML or characters
+     * that are not printable ASCII are escaped accordingly.
      *
-     * @param c the character to append
+     * @param codePoint the code point to append
      * @param dest where to append the character to
      * @param pre a value indicating whether the output is pre-formatted -- if
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      * @see #needsHtmlize(char, boolean)
      */
-    private static void htmlize(char c, Appendable dest, boolean pre)
+    private static void htmlize(int codePoint, Appendable dest, boolean pre)
             throws IOException {
-        switch (c) {
+        // An unpaired UTF-16 surrogate is not a valid HTML character reference.
+        if (codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE) {
+            codePoint = 0xFFFD;
+        }
+        switch (codePoint) {
             case '\'':
                 dest.append("&apos;");
                 break;
@@ -302,17 +309,17 @@ public final class Util {
                 break;
             case '\n':
                 if (pre) {
-                    dest.append(c);
+                    dest.append((char) codePoint);
                 } else {
                     dest.append("<br/>");
                 }
                 break;
             default:
-                if ((c >= ' ' && c <= '~') || (c < ' ' &&
-                    Character.isWhitespace(c))) {
-                    dest.append(c);
+                if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' &&
+                    Character.isWhitespace(codePoint))) {
+                    dest.append((char) codePoint);
                 } else {
-                    dest.append("&#").append(Integer.toString(c)).append(';');
+                    dest.append("&#").append(Integer.toString(codePoint)).append(';');
                 }
                 break;
         }
@@ -324,7 +331,7 @@ public final class Util {
      * @param c the character to examine
      * @param pre a value indicating whether the output is pre-formatted -- if
      * true then LFs will not be converted to &lt;br&gt; elements
-     * @see #htmlize(char, java.lang.Appendable, boolean)
+     * @see #htmlize(int, java.lang.Appendable, boolean)
      */
     private static boolean needsHtmlize(char c, boolean pre) {
         switch (c) {

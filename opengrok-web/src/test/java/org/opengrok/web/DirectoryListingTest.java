@@ -472,21 +472,34 @@ class DirectoryListingTest {
         String payload = "<img src=x onerror=alert(1)>";
         String encodedPayload = Util.uriEncodePath(payload);
         String escapedPayload = "&lt;img src=x onerror=alert(1)&gt;";
+        String supplementaryCharacter = "\uD83D\uDE00";
+        String encodedSupplementaryCharacter = Util.uriEncodePath(supplementaryCharacter);
+        String escapedSupplementaryCharacter = "&#128512;";
         return Stream.of(
                 Arguments.of("readme" + payload + ".txt", null, false,
                         "<td><a href=\"readme" + encodedPayload + ".txt\">readme" + escapedPayload + ".txt</a></td>"),
+                Arguments.of("readme" + supplementaryCharacter + ".txt", null, false,
+                        "<td><a href=\"readme" + encodedSupplementaryCharacter + ".txt\">readme" +
+                                escapedSupplementaryCharacter + ".txt</a></td>"),
                 Arguments.of(payload, null, true,
                         "<td><a href=\"" + encodedPayload + "/\"><b>" + escapedPayload + "</b></a>/</td>"),
+                Arguments.of(supplementaryCharacter, null, true,
+                        "<td><a href=\"" + encodedSupplementaryCharacter + "/\"><b>" +
+                                escapedSupplementaryCharacter + "</b></a>/</td>"),
                 Arguments.of("safe", null, true,
                         "<td><a href=\"safe/\"><b>safe</b></a>/</td>"),
                 Arguments.of("safe", payload, true,
                         "<td><a href=\"safe/" + encodedPayload + "/\"><b>" +
-                                "<span class=\"simplified-path\">safe/</span>" + escapedPayload + "</b></a>/</td>"));
+                                "<span class=\"simplified-path\">safe/</span>" + escapedPayload + "</b></a>/</td>"),
+                Arguments.of("safe", supplementaryCharacter, true,
+                        "<td><a href=\"safe/" + encodedSupplementaryCharacter + "/\"><b>" +
+                                "<span class=\"simplified-path\">safe/</span>" + escapedSupplementaryCharacter +
+                                "</b></a>/</td>"));
     }
 
     @ParameterizedTest
     @MethodSource("directoryListingEscapeCases")
-    // The payload contains '<' and '>', which Windows does not allow in file or directory names.
+    // Some cases contain '<' and '>', which Windows does not allow in file or directory names.
     @EnabledOnOs({OS.LINUX, OS.MAC})
     void testDirectoryListingEscapes(String name, String nestedName, boolean isDirectory,
                                      String expected) throws Exception {

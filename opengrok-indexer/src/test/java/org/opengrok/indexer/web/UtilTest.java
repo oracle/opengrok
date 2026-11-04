@@ -93,6 +93,10 @@ class UtilTest {
                 {"This is a test", "This is a test"},
                 {"Newline\nshould become <br/>", "Newline<br/>should become &lt;br/&gt;"},
                 {"Open & Grok", "Open &amp; Grok"},
+                // Supplementary characters must be escaped as code points, not separate UTF-16 surrogates.
+                {"readme\uD83D\uDE00.txt", "readme&#128512;.txt"},
+                {"readme\uD83D.txt", "readme&#65533;.txt"},
+                {"readme\uDE00.txt", "readme&#65533;.txt"},
                 {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"}};
         for (String[] in_out : input_output) {
             // 1 arg
@@ -102,6 +106,18 @@ class UtilTest {
             Util.htmlize(in_out[0], sb);
             assertEquals(in_out[1], sb.toString());
         }
+    }
+
+    @Test
+    void htmlizeCharacterArray() throws IOException {
+        char[] name = "readme\uD83D\uDE00.txt".toCharArray();
+        StringBuilder result = new StringBuilder();
+        Util.htmlize(name, name.length, result);
+        assertEquals("readme&#128512;.txt", result.toString());
+
+        result.setLength(0);
+        Util.htmlize(name, 7, result);
+        assertEquals("readme&#65533;", result.toString());
     }
 
     @Test
