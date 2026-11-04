@@ -109,13 +109,15 @@ def test_getoutput():
 # Uses /bin/ls, therefore Unix only.
 @posix_only
 def test_work_dir():
-    os.chdir("/")
     orig_cwd = os.getcwd()
-    assert tempfile.gettempdir() != orig_cwd
-    cmd = Command(['/bin/ls', '/etc/passwd'],
-                  work_dir=tempfile.gettempdir())
-    cmd.execute()
-    assert os.getcwd() == orig_cwd
+    try:
+        assert tempfile.gettempdir() != orig_cwd
+        cmd = Command(['/bin/ls', '/etc/passwd'],
+                      work_dir=tempfile.gettempdir())
+        cmd.execute()
+        assert os.getcwd() == orig_cwd
+    finally:
+        os.chdir(orig_cwd)
 
 
 @system_binary('env')
