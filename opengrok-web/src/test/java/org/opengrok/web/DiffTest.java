@@ -101,8 +101,8 @@ class DiffTest {
         final HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getPathInfo()).thenReturn("git/main.c");
         when(req.getContextPath()).thenReturn("/source");
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "1")).thenReturn("main.c@abc");
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "2")).thenReturn("main.c@xyz");
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn("main.c@abc");
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn("main.c@xyz");
 
         PageConfig pageConfig = PageConfig.get(req);
         DiffData diffData = pageConfig.getDiffData();
@@ -124,9 +124,9 @@ class DiffTest {
         when(req.getContextPath()).thenReturn("/source");
         final String rev1 = "bb74b7e";
         final String rev2 = "aa35c25";
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "1")).
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).
                 thenReturn("/git/main.c@" + rev1);
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "2")).
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).
                 thenReturn("/git/main.c@" + rev2);
 
         PageConfig pageConfig = PageConfig.get(req);
@@ -175,8 +175,8 @@ class DiffTest {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getPathInfo()).thenReturn(path);
         when(req.getContextPath()).thenReturn("/source");
-        when(req.getParameter("r1")).thenReturn(path + "@" + revisions[0]);
-        when(req.getParameter("r2")).thenReturn(path + "@" + revisions[1]);
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn(path + "@" + revisions[0]);
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn(path + "@" + revisions[1]);
         DiffData data = PageConfig.get(req).getDiffData();
         assertNull(data.getErrorMsg());
         assertEquals("revision 0", data.getFile(0)[0]);
@@ -184,15 +184,18 @@ class DiffTest {
 
         // Follow the generated diff link through one query-decoding round trip.
         URL link = new URI("http://localhost/source/diff" + Util.uriEncodePath(path)
-                + "?r1=" + data.getParam(0) + "&r2=" + data.getParam(1)).toURL();
+                + "?" + QueryParameters.REVISION_1_PARAM_EQ + data.getParam(0)
+                + "&" + QueryParameters.REVISION_2_PARAM_EQ + data.getParam(1)).toURL();
         Map<String, List<String>> params = Util.getQueryParams(link);
         assertEquals(2, params.size());
-        assertEquals(List.of(path + "@" + revisions[0]), params.get("r1"));
-        assertEquals(List.of(path + "@" + revisions[1]), params.get("r2"));
+        assertEquals(List.of(path + "@" + revisions[0]), params.get(QueryParameters.REVISION_1_PARAM));
+        assertEquals(List.of(path + "@" + revisions[1]), params.get(QueryParameters.REVISION_2_PARAM));
 
         // The next request must still resolve the same revisions and preserve the link parameters.
-        when(req.getParameter("r1")).thenReturn(params.get("r1").getFirst());
-        when(req.getParameter("r2")).thenReturn(params.get("r2").getFirst());
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn(
+                params.get(QueryParameters.REVISION_1_PARAM).getFirst());
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn(
+                params.get(QueryParameters.REVISION_2_PARAM).getFirst());
         DiffData linkedData = PageConfig.get(req).getDiffData();
         assertNull(linkedData.getErrorMsg());
         assertEquals(data.getParam(0), linkedData.getParam(0));
