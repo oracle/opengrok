@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 
@@ -186,7 +186,7 @@ document.pageReady.push(function() { pageReadyList();});
     if (lcName.endsWith(".md") || lcName.endsWith(".markdown")) {
     %><div id="src<%=i%>" data-markdown>
         <div class="markdown-heading">
-            <h3><%= readMes.get(i) %></h3>
+            <h3><%= Util.htmlize(readMes.get(i)) %></h3>
         </div>
         <div class="markdown-content"
              data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.uriEncodePath(cfg.getPath() + readMes.get(i)) %>">
@@ -196,7 +196,7 @@ document.pageReady.push(function() { pageReadyList();});
         %></pre>
     </div>
 <% } else { %>
-    <h3><%= readMes.get(i) %></h3>
+    <h3><%= Util.htmlize(readMes.get(i)) %></h3>
     <div id="src<%=i%>">
         <pre><%
             Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));

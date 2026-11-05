@@ -34,8 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -241,28 +239,29 @@ public class PageConfig {
      * The code extracts file path and revision from the URI.
      * @param data DiffData object (output parameter)
      * @param context context path
-     * @param filepath file path array (output parameter)
+     * @param filePaths file path array (output parameter)
      * @return true if the extraction was successful, false otherwise
      * (in which case {@link DiffData#errorMsg} will be set)
      */
-    private boolean getFileRevision(DiffData data, String context, String[] filepath) {
+    private boolean getFileRevision(DiffData data, String context, String[] filePaths) {
         for (int i = 1; i <= 2; i++) {
             String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
-            if (p != null) {
-                int j = p.lastIndexOf("@");
-                if (j != -1) {
-                    filepath[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
-                    data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
-                }
+            if (Objects.isNull(p)) {
+                data.errorMsg = "Missing the " + QueryParameters.REVISION_PARAM + i + " parameter";
+                return false;
+            }
+
+            int j = p.lastIndexOf("@");
+            if (j != -1) {
+                filePaths[i - 1] = Laundromat.launderUriPath(p.substring(0, j));
+                data.rev[i - 1] = Laundromat.launderRevision(p.substring(j + 1));
             }
         }
 
         if (data.rev[0] == null || data.rev[1] == null
                 || data.rev[0].isEmpty() || data.rev[1].isEmpty()
                 || data.rev[0].equals(data.rev[1])) {
-            data.errorMsg = "Please pick two revisions to compare the changes "
-                    + "from the <a href=\"" + context + Prefix.HIST_L
-                    + getUriEncodedPath() + "\">history</a>";
+            data.errorMsg = "Please pick two revisions to compare the changes from the history of " + getPath();
             return false;
         }
 
@@ -283,16 +282,16 @@ public class PageConfig {
                 getResourceFile().getName());
 
         String context = req.getContextPath();
-        String[] filepath = new String[2];
+        String[] filePaths = new String[2];
 
-        if (!getFileRevision(data, context, filepath)) {
+        if (!getFileRevision(data, context, filePaths)) {
             return data;
         }
 
         data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
         Optional.of(data)
                 .filter(this::isTextGenre)
-                .ifPresent(textData -> generatePlainTextDiffData(textData, filepath));
+                .ifPresent(textData -> generatePlainTextDiffData(textData, filePaths));
        return data;
     }
 
@@ -300,14 +299,14 @@ public class PageConfig {
         return data.genre == null || txtGenres.contains(data.genre);
     }
 
-    private void generatePlainTextDiffData(DiffData data, String[] filepath) {
+    private void generatePlainTextDiffData(DiffData data, String[] filePaths) {
         String srcRoot = getSourceRootPath();
         InputStream[] in = new InputStream[2];
         try {
             // Get input stream for both older and newer file.
             Future<?>[] future = new Future<?>[2];
             for (int i = 0; i < 2; i++) {
-                File f = new File(srcRoot + filepath[i]);
+                File f = new File(srcRoot + filePaths[i]);
                 final String revision = data.rev[i];
                 future[i] = executor.submit(() -> HistoryGuru.getInstance().
                         getRevision(f.getParent(), f.getName(), revision));
@@ -317,9 +316,7 @@ public class PageConfig {
                 // The Executor used by given repository will enforce the timeout.
                 in[i] = (InputStream) future[i].get();
                 if (in[i] == null) {
-                    data.errorMsg = "Unable to get revision "
-                            + Util.htmlize(data.rev[i]) + " for file: "
-                            + Util.htmlize(getPath());
+                    data.errorMsg = "Unable to get revision " + data.rev[i] + " for file: " + getPath();
                     return;
                 }
             }
@@ -345,15 +342,14 @@ public class PageConfig {
                 }
             }
         } catch (Exception e) {
-            data.errorMsg = "Error reading revisions: "
-                    + Util.htmlize(e.getMessage());
+            data.errorMsg = "Error reading revisions: " + e.getMessage();
         } finally {
             Arrays.stream(in)
                     .forEach(IOUtils::close);
         }
         if (Objects.isNull(data.errorMsg)) {
             populateRevisionData(data);
-            populateRevisionURLDetails(data, filepath);
+            populateRevisionURLDetails(data, filePaths);
             data.full = fullDiff();
             data.type = getDiffType();
         }
@@ -367,8 +363,7 @@ public class PageConfig {
                     data.errorMsg = "Unable to determine the file type";
                 }
             } catch (IOException e) {
-                data.errorMsg = "Unable to determine the file type: "
-                        + Util.htmlize(e.getMessage());
+                data.errorMsg = "Unable to determine the file type: " + e.getMessage();
             }
         }
     }
@@ -381,17 +376,9 @@ public class PageConfig {
         }
     }
 
-    private void populateRevisionURLDetails(DiffData data, String[] filePath) {
+    private void populateRevisionURLDetails(DiffData data, String[] filePaths) {
         IntStream.range(0, 2)
-                .forEach(i -> {
-                    try {
-                        URI u = new URI(null, null, null,
-                                filePath[i] + "@" + data.rev[i], null);
-                        data.param[i] = u.getRawQuery();
-                    } catch (URISyntaxException e) {
-                        LOGGER.log(Level.WARNING, "Failed to create URI: {}", Laundromat.launderLog(e.toString()));
-                    }
-                });
+                .forEach(i -> data.param[i] = Util.uriEncode(filePaths[i] + "@" + data.rev[i]));
     }
 
     /**

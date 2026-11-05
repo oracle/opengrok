@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -211,17 +211,17 @@ public final class Results {
             for (int docId : entry.getValue()) {
                 Document doc = storedFields.document(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
-                String rpathE = Util.uriEncodePath(rpath);
+                String rpathEncoded = Util.uriEncodePath(rpath);
                 if (evenRow) {
                     out.write("<tr class=\"search-result-even-row\">");
                 } else {
                     out.write("<tr>");
                 }
                 evenRow = !evenRow;
-                Util.writeHAD(out, sh.getContextPath(), rpathE);
+                Util.writeHAD(out, sh.getContextPath(), rpath);
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
-                out.write(rpathE);
+                out.write(rpathEncoded);
                 out.write("\"");
                 if (env.isLastEditedDisplayMode()) {
                     printLastEditedDate(out, doc);

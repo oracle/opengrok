@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2021, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,14 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.QueryParameters;
+import org.opengrok.indexer.web.Util;
 
+import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,7 +93,7 @@ class DiffTest {
         DiffData diffData = pageConfig.getDiffData();
         assertNotNull(diffData);
         assertNotNull(diffData.getErrorMsg());
-        assertTrue(diffData.getErrorMsg().startsWith("Please pick"));
+        assertTrue(diffData.getErrorMsg().startsWith("Missing the"));
     }
 
     @Test
@@ -94,8 +101,8 @@ class DiffTest {
         final HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getPathInfo()).thenReturn("git/main.c");
         when(req.getContextPath()).thenReturn("/source");
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "1")).thenReturn("main.c@abc");
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "2")).thenReturn("main.c@xyz");
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn("main.c@abc");
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn("main.c@xyz");
 
         PageConfig pageConfig = PageConfig.get(req);
         DiffData diffData = pageConfig.getDiffData();
@@ -117,9 +124,9 @@ class DiffTest {
         when(req.getContextPath()).thenReturn("/source");
         final String rev1 = "bb74b7e";
         final String rev2 = "aa35c25";
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "1")).
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).
                 thenReturn("/git/main.c@" + rev1);
-        when(req.getParameter(QueryParameters.REVISION_PARAM + "2")).
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).
                 thenReturn("/git/main.c@" + rev2);
 
         PageConfig pageConfig = PageConfig.get(req);
@@ -131,10 +138,67 @@ class DiffTest {
                 () -> assertTrue(diffData.getFile(0).length > 0),
                 () -> assertTrue(diffData.getFile(1).length > 0),
                 () -> assertNotNull(diffData.getRevision()),
-                () -> assertEquals("/git/main.c@bb74b7e", diffData.getParam(0)),
-                () -> assertEquals("/git/main.c@aa35c25", diffData.getParam(1)),
+                () -> assertEquals("%2Fgit%2Fmain.c%40bb74b7e", diffData.getParam(0)),
+                () -> assertEquals("%2Fgit%2Fmain.c%40aa35c25", diffData.getParam(1)),
                 () -> assertEquals(DiffType.SIDEBYSIDE, diffData.getType()),
                 () -> assertFalse(diffData.isFull())
         );
+    }
+
+    /**
+     * Commit two versions of a special-character filename, load their diff, then
+     * decode and follow the diff link built from its revision parameters.
+     * The second request must resolve the same file and revisions without decoding
+     * the servlet parameters again.
+     */
+    @Test
+    void testDiffLinksPreserveSpecialCharacters() throws Exception {
+        File gitDirectory = new File(repository.getSourceRoot(), "git");
+        // '+' and percent-escape-looking text expose accidental second decoding of revision paths.
+        String filename = "diff space+&percent%20#@café%.txt";
+        File file = new File(gitDirectory, filename);
+        String[] revisions = new String[2];
+        // Create two committed versions so the diff must retrieve this exact filename at both revisions.
+        try (Git git = Git.open(gitDirectory)) {
+            for (int i = 0; i < revisions.length; i++) {
+                Files.writeString(file.toPath(), "revision " + i + "\n");
+                git.add().addFilepattern(filename).call();
+                revisions[i] = git.commit().setSign(false)
+                        .setAuthor("Diff Test", "diff@example.com")
+                        .setCommitter("Diff Test", "diff@example.com")
+                        .setMessage("revision " + i).call().getName();
+            }
+        }
+
+        String path = "/git/" + filename;
+        // Servlet parameters have already been decoded once when PageConfig receives them.
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getPathInfo()).thenReturn(path);
+        when(req.getContextPath()).thenReturn("/source");
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn(path + "@" + revisions[0]);
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn(path + "@" + revisions[1]);
+        DiffData data = PageConfig.get(req).getDiffData();
+        assertNull(data.getErrorMsg());
+        assertEquals("revision 0", data.getFile(0)[0]);
+        assertEquals("revision 1", data.getFile(1)[0]);
+
+        // Follow the generated diff link through one query-decoding round trip.
+        URL link = new URI("http://localhost/source/diff" + Util.uriEncodePath(path)
+                + "?" + QueryParameters.REVISION_1_PARAM_EQ + data.getParam(0)
+                + "&" + QueryParameters.REVISION_2_PARAM_EQ + data.getParam(1)).toURL();
+        Map<String, List<String>> params = Util.getQueryParams(link);
+        assertEquals(2, params.size());
+        assertEquals(List.of(path + "@" + revisions[0]), params.get(QueryParameters.REVISION_1_PARAM));
+        assertEquals(List.of(path + "@" + revisions[1]), params.get(QueryParameters.REVISION_2_PARAM));
+
+        // The next request must still resolve the same revisions and preserve the link parameters.
+        when(req.getParameter(QueryParameters.REVISION_1_PARAM)).thenReturn(
+                params.get(QueryParameters.REVISION_1_PARAM).getFirst());
+        when(req.getParameter(QueryParameters.REVISION_2_PARAM)).thenReturn(
+                params.get(QueryParameters.REVISION_2_PARAM).getFirst());
+        DiffData linkedData = PageConfig.get(req).getDiffData();
+        assertNull(linkedData.getErrorMsg());
+        assertEquals(data.getParam(0), linkedData.getParam(0));
+        assertEquals(data.getParam(1), linkedData.getParam(1));
     }
 }

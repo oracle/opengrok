@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -55,6 +55,7 @@ import org.opengrok.indexer.web.Util;
  */
 public class DirectoryListing {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
+    protected static final String TD_BEGIN_TAG = "<td>";
     protected static final String TD_END_TAG = "</td>";
 
     protected static final String BLANK_PLACEHOLDER = "-";
@@ -279,22 +280,40 @@ public class DirectoryListing {
         out.write("<p class=\"");
         out.write(isDir ? 'r' : 'p');
         out.write("\"/>");
-        out.write("</td><td><a href=\"");
+        out.write(TD_END_TAG);
+        printEntry(out, entry, isDir);
+        Util.writeHAD(out, contextPath, path + filename);
+        printDateSize(out, child, entry.getDate(), dateFormatter);
+        printNumlines(out, entry, isDir);
+        printLoc(out, entry, isDir);
+        var strPathDescription = Optional.ofNullable(entry.getPathDescription())
+                .filter(pathDescription -> !pathDescription.isEmpty())
+                .map(pathDescription -> TD_BEGIN_TAG + Util.htmlize(pathDescription) + TD_END_TAG)
+                .orElse("");
+        out.write(strPathDescription);
+        out.write("</tr>\n");
+    }
+
+    @VisibleForTesting
+    static void printEntry(Writer out, DirectoryEntry entry, boolean isDir) throws IOException {
+
+        out.write(TD_BEGIN_TAG + "<a href=\"");
         if (isDir) {
-            String longpath = getSimplifiedPath(child);
-            out.write(Util.uriEncodePath(longpath));
+            String longPath = getSimplifiedPath(entry.getFile());
+            out.write(Util.uriEncodePath(longPath));
             out.write("/\"><b>");
             int idx;
-            if ((idx = longpath.lastIndexOf('/')) > 0) {
+            if ((idx = longPath.lastIndexOf('/')) > 0) {
                 out.write("<span class=\"simplified-path\">");
-                out.write(longpath.substring(0, idx + 1));
+                out.write(Util.htmlize(longPath.substring(0, idx + 1)));
                 out.write("</span>");
-                out.write(longpath.substring(idx + 1));
+                out.write(Util.htmlize(longPath.substring(idx + 1)));
             } else {
-                out.write(longpath);
+                out.write(Util.htmlize(longPath));
             }
             out.write("</b></a>/");
         } else {
+            String filename = entry.getFile().getName();
             out.write(Util.uriEncodePath(filename));
             out.write("\"");
             if (entry.getDescription() != null) {
@@ -304,20 +323,10 @@ public class DirectoryListing {
                 out.write("\"");
             }
             out.write(">");
-            out.write(filename);
+            out.write(Util.htmlize(filename));
             out.write("</a>");
         }
         out.write(TD_END_TAG);
-        Util.writeHAD(out, contextPath, path + filename);
-        printDateSize(out, child, entry.getDate(), dateFormatter);
-        printNumlines(out, entry, isDir);
-        printLoc(out, entry, isDir);
-        var strPathDescription = Optional.ofNullable(entry.getPathDescription())
-                .filter(pathDescription -> !pathDescription.isEmpty())
-                .map(pathDescription -> "<td>" + pathDescription + TD_END_TAG)
-                .orElse("");
-        out.write(strPathDescription);
-        out.write("</tr>\n");
     }
 
     private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)

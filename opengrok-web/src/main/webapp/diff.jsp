@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -49,7 +49,8 @@ private String getAnnotateRevision(DiffData data) {
     cfg.addScript("diff");
     cfg.checkSourceRootExistence();
     /*
-     * This block must be the first block before any other output in the response.
+     * This block which handles diff download must be the first block
+     * before any other output in the response.
      * If there is already any output written into the response, and we
      * use the same response and reset the content and the headers then we have
      * a collision with the response streams and the "getOutputStream() has
@@ -90,7 +91,7 @@ include file="/mast.jsp"
     PageConfig cfg = PageConfig.get(request);
     DiffData data = (DiffData) request.getAttribute("diff.jsp-data");
 
-    // the data is never null as the getDiffData always return valid object
+    // The data object is never null as PageConfig.getDiffData() always returns valid object.
     if (data.getErrorMsg() != null)  {
 
 %>
@@ -100,7 +101,7 @@ include file="/mast.jsp"
 </div><%
     } else if (data.getGenre() == AbstractAnalyzer.Genre.IMAGE) {
 
-        String link = request.getContextPath() + Prefix.DOWNLOAD_P + Util.htmlize(cfg.getPath());
+        String encodedPath = request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath();
 %>
 <div id="difftable">
     <table class="image" aria-label="table with old and new image">
@@ -112,10 +113,8 @@ include file="/mast.jsp"
         </thead>
         <tbody>
         <tr>
-            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>" alt="previous"/>
-            </td>
-            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>" alt="new"/>
-            </td>
+            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>" alt="previous"/></td>
+            <td><img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>" alt="new"/></td>
         </tr>
         </tbody>
     </table>
@@ -123,13 +122,13 @@ include file="/mast.jsp"
 
     } else if (data.getGenre() != AbstractAnalyzer.Genre.PLAIN && data.getGenre() != AbstractAnalyzer.Genre.HTML) {
 
-        String link = request.getContextPath() + Prefix.DOWNLOAD_P + Util.uriEncodePath(cfg.getPath());
+        String encodedPath = request.getContextPath() + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath();
 %>
 <div id="src">Diffs for binary files cannot be displayed! Files are
-    <a href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>">
+    <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(0)) %>">
         <%= Util.htmlize(data.getFilename()) %>(revision <%= Util.htmlize(data.getRev(0)) %>)
     </a> and
-    <a href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>">
+    <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(data.getRev(1)) %>">
         <%= Util.htmlize(data.getFilename()) %>(revision <%= Util.htmlize(data.getRev(1)) %>)
     </a>.
 </div><%
@@ -145,7 +144,7 @@ include file="/mast.jsp"
         int ln2 = 0;
         String rp1 = data.getParam(0);
         String rp2 = data.getParam(1);
-        String baseURL = request.getContextPath() + Prefix.DIFF_P + cfg.getUriEncodedPath();
+        String encodedBaseURL = request.getContextPath() + Prefix.DIFF_P + cfg.getUriEncodedPath();
         String[] file1 = data.getFile(0);
         String[] file2 = data.getFile(1);
 
@@ -169,7 +168,7 @@ include file="/mast.jsp"
                 }
             %></span><%
             } else {
-        %> <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+        %> <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= t.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
@@ -186,22 +185,22 @@ include file="/mast.jsp"
     <div class="ctype"><%
         if (!full) {
         %>
-        <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
+        <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1">full</a></span>
         <span class="active">compact</span><%
         } else {
         %>
         <span class="active">full</span>
-        <span> <a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
+        <span> <a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>0">compact</a></span><%
         }
         %><span><a href="#" id="toggle-jumper">jumper</a></span>
-        <span><a href="<%= baseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= Util.uriEncode(rp1) %>&amp;
-<%= QueryParameters.REVISION_2_PARAM_EQ %><%= Util.uriEncode(rp2) %>&amp;
+        <span><a href="<%= encodedBaseURL %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= DiffType.TEXT %>&amp;
 action=download">download diff</a></span><%
     %></div>
@@ -212,12 +211,12 @@ action=download">download diff</a></span><%
         if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
         %><table class="plain" aria-label="table with old and new content"><%
             if (type == DiffType.SIDEBYSIDE) {
-                String linkPrefix = request.getContextPath() + Prefix.XREF_P + Util.uriEncodePath(cfg.getPath()) +
+                String encodedLinkPrefix = request.getContextPath() + Prefix.XREF_P + cfg.getUriEncodedPath() +
                         "?" + QueryParameters.REVISION_PARAM_EQ;
             %>
             <thead><tr>
-                <th><a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(0)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(0)) %>)</a></th>
-                <th><a href="<%= linkPrefix %><%= Util.uriEncode(data.getRev(1)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(1)) %>)</a></th>
+                <th><a href="<%= encodedLinkPrefix %><%= Util.uriEncode(data.getRev(0)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(0)) %>)</a></th>
+                <th><a href="<%= encodedLinkPrefix %><%= Util.uriEncode(data.getRev(1)) %>"><%= Util.htmlize(data.getFilename()) %> (<%= Util.htmlize(data.getRev(1)) %>)</a></th>
             </tr></thead><%
             }
             %>
@@ -277,7 +276,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -341,7 +340,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn1 - ln1 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -358,7 +357,7 @@ action=download">download diff</a></span><%
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
-                    %> unchanged lines hidden</strong> (<a href="<%= baseURL
+                    %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -400,7 +399,7 @@ action=download">download diff</a></span><%
             Util.htmlize(file1[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn1 - ln1 - 16
-            %> unchanged lines hidden</strong> (<a href="<%= baseURL
+            %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
@@ -432,7 +431,7 @@ action=download">download diff</a></span><%
             Util.htmlize(file2[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn2 - ln2 - 16
-            %> unchanged lines hidden</strong> (<a href="<%= baseURL
+            %> unchanged lines hidden</strong> (<a href="<%= encodedBaseURL
 %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
 <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
 <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
