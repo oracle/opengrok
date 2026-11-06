@@ -102,11 +102,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180612_00
+     * @return {@code 20261106_00}
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180612_00; // Edit comment above too!
+        return 20261106_00; // Edit comment above too!
     }
 
     @Override
@@ -311,7 +311,7 @@ private static final String RCBREOL = "}\n";
             fout.write(SPACE);
             t = fld.getName();
             tdef = tagDef(t);
-            out.write(Util.htmlize(tdef));
+            out.write(tdef);
             fout.write(tdef);
             defs.add(t);
             refs.add(t);
