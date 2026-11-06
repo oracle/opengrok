@@ -1000,8 +1000,7 @@ public final class Util {
      * is not enclosed in double quotes. The caller needs to add those.
      *
      * @param q string to escape.
-     * @return an empty string if a parameter is {@code null}, the mangled
-     * string otherwise.
+     * @return an empty string if a parameter is {@code null}, the mangled string otherwise.
      */
     public static String formQuoteEscape(String q) {
         if (q == null || q.isEmpty()) {
