@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
@@ -118,6 +121,16 @@ class UtilTest {
         result.setLength(0);
         Util.htmlize(name, 7, result);
         assertEquals("readme&#65533;", result.toString());
+    }
+
+    @Test
+    void htmlizeCodePoint() {
+        assertEquals("a", Util.htmlize('a', false));
+        assertEquals("&lt;", Util.htmlize('<', false));
+        assertEquals("<br/>", Util.htmlize('\n', false));
+        assertEquals("\n", Util.htmlize('\n', true));
+        assertEquals("&#128512;", Util.htmlize(0x1F600, false));
+        assertEquals("&#65533;", Util.htmlize(0xD83D, false));
     }
 
     @Test
@@ -335,10 +348,17 @@ class UtilTest {
                 new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 
-    @Test
-    void jsStringLiteral() {
-        assertEquals("\"abc\\n\\r\\\"\\\\\"",
-                Util.jsStringLiteral("abc\n\r\"\\"));
+    static Stream<Arguments> jsStringLiteralArguments() {
+        return Stream.of(
+                Arguments.of("\"abc\\n\\r\\\"\\\\\"", "abc\n\r\"\\"),
+                Arguments.of("\"&lt;foo&gt;\"", "<foo>"),
+                Arguments.of("\"caf&#233; &#128512;\"", "café 😀"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("jsStringLiteralArguments")
+    void jsStringLiteral(String expected, String input) throws Exception {
+        assertEquals(expected, Util.jsStringLiteral(input));
     }
 
     @Test
