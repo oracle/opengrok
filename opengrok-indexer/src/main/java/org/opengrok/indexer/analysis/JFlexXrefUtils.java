@@ -99,19 +99,17 @@ public class JFlexXrefUtils {
     }
 
     /**
-     * Writes if {@code project} is not null an XML &amp;amp; followed by
-     * the {@link Project#getName()} to the specified {@code out}
-     * {@link Writer}.
+     * If {@code project} is not {@code null}, write an XML &amp;amp; followed by
+     * the {@link Project#getName()} to the specified {@code out} {@link Writer}.
      * @param out a defined instance
      * @param project possibly a defined instance or null
      * @throws IOException if {@link Writer#write(java.lang.String)} fails
      */
-    public static void appendProject(Writer out, Project project)
-            throws IOException {
+    public static void appendProject(Writer out, Project project) throws IOException {
         if (project != null) {
             out.write("&amp;");
             out.write(QueryParameters.PROJECT_SEARCH_PARAM_EQ);
-            out.write(project.getName());
+            out.write(Util.uriEncode(project.getName()));
         }
     }
 

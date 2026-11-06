@@ -305,7 +305,7 @@ private static final String RCBREOL = "}\n";
                 out.write(SPACE);
             }
             fldsig = Utility.typeSignatureToString(fld.getSignature(), true);
-            out.write(fldsig);
+            out.write(Util.htmlize(fldsig));
             fout.write(fldsig);
             out.write(SPACE);
             fout.write(SPACE);
