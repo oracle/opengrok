@@ -251,6 +251,7 @@ class UtilTest {
         assertEquals("abc", Util.formQuoteEscape("abc"));
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
         assertEquals("&amp;aring;", Util.formQuoteEscape("&aring;"));
+        assertEquals("line\n&quot;<&amp;", Util.formQuoteEscape("line\n\"<&"));
     }
 
     @Test
@@ -456,6 +457,10 @@ class UtilTest {
         assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
+        assertEquals("&lt;one&gt; &amp; &quot;two&quot;",
+                Util.linkify("<one> & \"two\""));
+        assertEquals("http://example.com/a&quot;b",
+                Util.linkify("http://example.com/a\"b"));
     }
 
     @Test
