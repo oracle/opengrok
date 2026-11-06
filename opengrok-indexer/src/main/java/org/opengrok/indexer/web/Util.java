@@ -299,25 +299,20 @@ public final class Util {
         if (codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE) {
             codePoint = 0xFFFD;
         }
-        switch (codePoint) {
-            case '\'':
-                return "&apos;";
-            case '"':
-                return QUOTE;
-            case '&':
-                return AMP;
-            case '>':
-                return "&gt;";
-            case '<':
-                return "&lt;";
-            case '\n':
-                return pre ? "\n" : "<br/>";
-            default:
+        return switch (codePoint) {
+            case '\'' -> "&apos;";
+            case '"' -> QUOTE;
+            case '&' -> AMP;
+            case '>' -> "&gt;";
+            case '<' -> "&lt;";
+            case '\n' -> pre ? "\n" : "<br/>";
+            default -> {
                 if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' && Character.isWhitespace(codePoint))) {
-                    return Character.toString((char) codePoint);
+                    yield Character.toString((char) codePoint);
                 }
-                return "&#" + codePoint + ';';
-        }
+                yield "&#" + codePoint + ';';
+            }
+        };
     }
 
     /**
