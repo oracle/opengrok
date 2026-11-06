@@ -232,11 +232,11 @@ document.domReady.push(function() {domReadyHistory();});
             <th><input type="submit" value=" Compare "/>
             <% if (hist.getHistoryEntries().size() > revision1Index && revision1Index >= 0) { %>
                 <input type="hidden" id="input_r1" name="<%= QueryParameters.REVISION_1_PARAM %>"
-                value="<%= Util.htmlize(path + '@' + hist.getHistoryEntries().get(revision1Index).getRevision()) %>"/>
+                value="<%= Util.formQuoteEscape(path + '@' + hist.getHistoryEntries().get(revision1Index).getRevision()) %>"/>
             <% } %>
             <% if (hist.getHistoryEntries().size() > revision2Index && revision2Index >= 0) { %>
                 <input type="hidden" id="input_r2" name="<%= QueryParameters.REVISION_2_PARAM %>"
-                value="<%= Util.htmlize(path + '@' + hist.getHistoryEntries().get(revision2Index).getRevision()) %>"/>
+                value="<%= Util.formQuoteEscape(path + '@' + hist.getHistoryEntries().get(revision2Index).getRevision()) %>"/>
             <% } %>
             </th><%
             }
@@ -306,7 +306,7 @@ document.domReady.push(function() {domReadyHistory();});
                         data-revision-1="<%= (startIndex + count) %>"
                         data-revision-2="<%= revision2Index %>"
                         data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
-                        data-revision-path="<%= Util.htmlize(path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision())%>"
+                        data-revision-path="<%= Util.formQuoteEscape(path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision())%>"
                 <%
                 if (count + startIndex > revision1Index || (count + startIndex > revision2Index && count + startIndex <= revision1Index - 1)) {
                     // revision1 enabled
@@ -324,7 +324,7 @@ document.domReady.push(function() {domReadyHistory();});
                         data-revision-1="<%= revision1Index %>"
                         data-revision-2="<%= (startIndex + count) %>"
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"
-                        data-revision-path="<%= Util.htmlize(path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision()) %>"
+                        data-revision-path="<%= Util.formQuoteEscape(path + '@' + hist.getHistoryEntries().get(startIndex + count).getRevision()) %>"
                 <%
                 if (count + startIndex < revision2Index || (count + startIndex > revision2Index && count + startIndex <= revision1Index - 1)) {
                     // revision2 enabled
