@@ -23,14 +23,23 @@
  */
 package org.opengrok.indexer.analysis.javascript;
 
-import org.junit.jupiter.api.Test;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.List;
 
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.document.Document;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.StreamUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
-
-import java.io.InputStream;
-import java.util.List;
 
 /**
  * Tests the {@link JavaScriptSymbolTokenizer} class.
@@ -67,5 +76,65 @@ class JavaScriptSymbolTokenizerTest {
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(JavaScriptSymbolTokenizer.class, jsres, expectedSymbols);
+    }
+
+    @Test
+    void largeJavaScriptFixtureTruncatesRefsButKeepsFullField() throws Exception {
+        int tokenLimit = 1;
+        LimitedJavaScriptAnalyzer analyzer = new LimitedJavaScriptAnalyzer(tokenLimit);
+        Document doc = new Document();
+
+        analyzer.analyze(doc, StreamUtils.sourceFromEmbedded("sources/javascript/testlong.js"), null);
+
+        OGKTextField refsField = (OGKTextField) doc.getField(QueryBuilder.REFS);
+        assertNotNull(refsField);
+        assertEquals(tokenLimit, countTokens(refsField.tokenStreamValue()));
+
+        OGKTextField fullField = (OGKTextField) doc.getField(QueryBuilder.FULL);
+        assertNotNull(fullField);
+        try (TokenStream fullStream = analyzer.tokenStream(
+                QueryBuilder.FULL, (Reader) fullField.readerValue())) {
+            CharTermAttribute term = fullStream.addAttribute(CharTermAttribute.class);
+            fullStream.reset();
+            assertTrue(fullStream.incrementToken());
+            assertEquals("beforelongline", term.toString());
+            assertTrue(countAtLeast(fullStream, tokenLimit + 1));
+            fullStream.end();
+        }
+    }
+
+    private static int countTokens(TokenStream tokenStream) throws Exception {
+        int count = 0;
+        try (TokenStream stream = tokenStream) {
+            stream.addAttribute(CharTermAttribute.class);
+            stream.reset();
+            while (stream.incrementToken()) {
+                count++;
+            }
+            stream.end();
+        }
+        return count;
+    }
+
+    private static boolean countAtLeast(TokenStream tokenStream, int minimumTokenCount) throws Exception {
+        int count = 1;
+        while (count < minimumTokenCount && tokenStream.incrementToken()) {
+            count++;
+        }
+        return count >= minimumTokenCount;
+    }
+
+    private static final class LimitedJavaScriptAnalyzer extends JavaScriptAnalyzer {
+        private final int refsTokenLimit;
+
+        private LimitedJavaScriptAnalyzer(int refsTokenLimit) {
+            super(new JavaScriptAnalyzerFactory());
+            this.refsTokenLimit = refsTokenLimit;
+        }
+
+        @Override
+        protected int getRefsTokenLimit() {
+            return refsTokenLimit;
+        }
     }
 }
