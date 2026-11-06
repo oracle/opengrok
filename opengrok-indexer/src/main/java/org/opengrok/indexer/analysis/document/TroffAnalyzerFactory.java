@@ -35,8 +35,7 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
-        public AnalyzerFactory isMagic(byte[] contents, InputStream in)
-                throws IOException {
+        public AnalyzerFactory isMagic(byte[] contents, InputStream in) throws IOException {
             return getTrueMatcher().isMagic(contents, in);
         }
 
