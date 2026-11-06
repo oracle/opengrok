@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -260,7 +260,7 @@ T[\{\}] { chkLOC(); }
     chkLOC();
     out.write(Util.breadcrumbPath(urlPrefix + QueryParameters.PATH_SEARCH_PARAM_EQ, yytext(), '/'));
  }
-\\&.    { chkLOC(); out.write(yycharat(yylength() - 1)); }
+\\&.    { chkLOC(); out.write(Util.htmlize(yycharat(yylength() - 1), false)); }
 \\-     { chkLOC(); out.write('-'); }
 "\\ "   { out.write(' '); }
 "<"     { chkLOC(); out.write( "&lt;"); }

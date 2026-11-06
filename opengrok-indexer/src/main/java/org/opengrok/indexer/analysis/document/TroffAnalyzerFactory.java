@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
@@ -35,8 +35,7 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
-        public AnalyzerFactory isMagic(byte[] contents, InputStream in)
-                throws IOException {
+        public AnalyzerFactory isMagic(byte[] contents, InputStream in) throws IOException {
             return getTrueMatcher().isMagic(contents, in);
         }
 

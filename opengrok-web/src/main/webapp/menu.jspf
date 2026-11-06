@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
@@ -85,7 +85,7 @@ document.domReady.push(function() { domReadyMenu(); });
                 // TODO below "selected" has no effect if one refreshes the page
                 // with F5
 
-                %><option value="<%= p.getName() %>"<%
+                %><option value="<%= Util.htmlize(p.getName()) %>"<%
                     if (pRequested.contains(p.getName())) {
                         %> selected="selected"<%
                         pRequested.remove(p.getName());

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -409,7 +409,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatche
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + QueryParameters.PROJECT_SEARCH_PARAM_EQ +
-                project.getName());
+                Util.uriEncode(project.getName()));
     }
 
     protected void startScope() {
@@ -515,8 +515,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatche
      * Terminate the current line and insert preamble for the next line. The
      * line count is taken from {@link ScanningSymbolMatcher#getLineNumber()}.
      * The lines-of-code count may be incremented if {@link #didSeePhysicalLOC}
-     * has been set to {@code true} (after which it will be reset to
-     * {@code false}).
+     * has been set to {@code true} (after which it will be reset to {@code false}).
      * @throws IOException on error when writing the xref
      */
     public void startNewLine() throws IOException {

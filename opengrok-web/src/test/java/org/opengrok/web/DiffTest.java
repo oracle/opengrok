@@ -155,7 +155,7 @@ class DiffTest {
     void testDiffLinksPreserveSpecialCharacters() throws Exception {
         File gitDirectory = new File(repository.getSourceRoot(), "git");
         // '+' and percent-escape-looking text expose accidental second decoding of revision paths.
-        String filename = "diff space+&percent%20#@café%.txt";
+        String filename = "diff \"quoted\" space+&percent%20#@café%.txt";
         File file = new File(gitDirectory, filename);
         String[] revisions = new String[2];
         // Create two committed versions so the diff must retrieve this exact filename at both revisions.
@@ -171,6 +171,9 @@ class DiffTest {
         }
 
         String path = "/git/" + filename;
+        String historyValue = Util.formQuoteEscape(path + "@" + revisions[0]);
+        assertTrue(historyValue.contains("&quot;quoted&quot;"));
+        assertTrue(historyValue.contains("&amp;percent"));
         // Servlet parameters have already been decoded once when PageConfig receives them.
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getPathInfo()).thenReturn(path);
@@ -201,4 +204,5 @@ class DiffTest {
         assertEquals(data.getParam(0), linkedData.getParam(0));
         assertEquals(data.getParam(1), linkedData.getParam(1));
     }
+
 }

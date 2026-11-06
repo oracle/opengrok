@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
@@ -118,6 +121,16 @@ class UtilTest {
         result.setLength(0);
         Util.htmlize(name, 7, result);
         assertEquals("readme&#65533;", result.toString());
+    }
+
+    @Test
+    void htmlizeCodePoint() {
+        assertEquals("a", Util.htmlize('a', false));
+        assertEquals("&lt;", Util.htmlize('<', false));
+        assertEquals("<br/>", Util.htmlize('\n', false));
+        assertEquals("\n", Util.htmlize('\n', true));
+        assertEquals("&#128512;", Util.htmlize(0x1F600, false));
+        assertEquals("&#65533;", Util.htmlize(0xD83D, false));
     }
 
     @Test
@@ -238,6 +251,7 @@ class UtilTest {
         assertEquals("abc", Util.formQuoteEscape("abc"));
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
         assertEquals("&amp;aring;", Util.formQuoteEscape("&aring;"));
+        assertEquals("line\n&quot;<&amp;", Util.formQuoteEscape("line\n\"<&"));
     }
 
     @Test
@@ -335,10 +349,19 @@ class UtilTest {
                 new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 
-    @Test
-    void jsStringLiteral() {
-        assertEquals("\"abc\\n\\r\\\"\\\\\"",
-                Util.jsStringLiteral("abc\n\r\"\\"));
+    static Stream<Arguments> jsStringLiteralArguments() {
+        return Stream.of(
+                Arguments.of("\"abc\\n\\r\\\"\\\\\"", "abc\n\r\"\\"),
+                Arguments.of("\"\\u003cfoo\\u003e\"", "<foo>"),
+                Arguments.of("\"café 😀\"", "café 😀"),
+                Arguments.of("\"\\u003c/script\\u003e\\u0026\"", "</script>&"),
+                Arguments.of("\"\\u0009\\u2028\\u2029\"", "\t\u2028\u2029"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("jsStringLiteralArguments")
+    void jsStringLiteral(String expected, String input) {
+        assertEquals(expected, Util.jsStringLiteral(input));
     }
 
     @Test
@@ -434,6 +457,10 @@ class UtilTest {
         assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
+        assertEquals("&lt;one&gt; &amp; &quot;two&quot;",
+                Util.linkify("<one> & \"two\""));
+        assertEquals("http://example.com/a&quot;b",
+                Util.linkify("http://example.com/a\"b"));
     }
 
     @Test

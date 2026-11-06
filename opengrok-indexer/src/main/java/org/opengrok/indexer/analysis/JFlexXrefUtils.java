@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -99,19 +99,17 @@ public class JFlexXrefUtils {
     }
 
     /**
-     * Writes if {@code project} is not null an XML &amp;amp; followed by
-     * the {@link Project#getName()} to the specified {@code out}
-     * {@link Writer}.
+     * If {@code project} is not {@code null}, write an XML &amp;amp; followed by
+     * the {@link Project#getName()} to the specified {@code out} {@link Writer}.
      * @param out a defined instance
      * @param project possibly a defined instance or null
      * @throws IOException if {@link Writer#write(java.lang.String)} fails
      */
-    public static void appendProject(Writer out, Project project)
-            throws IOException {
+    public static void appendProject(Writer out, Project project) throws IOException {
         if (project != null) {
             out.write("&amp;");
             out.write(QueryParameters.PROJECT_SEARCH_PARAM_EQ);
-            out.write(project.getName());
+            out.write(Util.uriEncode(project.getName()));
         }
     }
 
