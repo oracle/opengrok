@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +35,11 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.bcel.Const;
+import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.Field;
+import org.apache.bcel.generic.ClassGen;
+import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.lucene.document.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,6 +61,7 @@ import org.opengrok.indexer.analysis.sh.ShXref;
 import org.opengrok.indexer.analysis.sql.SQLXref;
 import org.opengrok.indexer.analysis.tcl.TclXref;
 import org.opengrok.indexer.analysis.uue.UuencodeXref;
+import org.opengrok.indexer.configuration.Project;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -515,6 +522,56 @@ class JFlexXrefTest {
                 DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new InputSource(new StringReader("<doc>" + out + "</doc>")))
         );
+    }
+
+    @Test
+    void testJavaClassAnalyzerEscapesFieldTypeAndPreservesDefinitionLink() throws Exception {
+        ClassGen generated = new ClassGen("XssFixture", "java.lang.Object", "XssFixture.java",
+                Const.ACC_PUBLIC, null);
+        ConstantPoolGen constants = generated.getConstantPool();
+        generated.addField(new Field(Const.ACC_PUBLIC, constants.addUtf8("safeField"),
+                constants.addUtf8("Ljava/util/List<Ljava/lang/String;>;"),
+                new Attribute[0], constants.getConstantPool()));
+        byte[] classBytes = generated.getJavaClass().getBytes();
+        StreamSource src = new StreamSource() {
+            @Override
+            public InputStream getStream() {
+                return new ByteArrayInputStream(classBytes);
+            }
+        };
+
+        StringWriter out = new StringWriter();
+        JavaClassAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer().analyze(new Document(), src, out);
+        String xref = out.toString();
+        assertTrue(xref.contains("&lt;String&gt;"), xref);
+        assertTrue(xref.contains("<a class=\"d\" name=\"safeField\""), xref);
+        assertDoesNotThrow(() -> DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + xref + "</doc>"))));
+    }
+
+    @Test
+    void testProjectNamesAreEncodedInXrefQueryParameters() throws Exception {
+        Project project = new Project("team\"& project");
+        JFlexXref xref = new JFlexXref(new CXref(new StringReader("")));
+        xref.setProject(project);
+        assertEquals("&amp;project=team%22%26+project", xref.getProjectPostfix(true));
+        assertEquals("&project=team%22%26+project", xref.getProjectPostfix(false));
+
+        StringWriter out = new StringWriter();
+        JFlexXrefUtils.appendProject(out, project);
+        assertEquals("&amp;project=team%22%26+project", out.toString());
+    }
+
+    @Test
+    void testSymbolTableEscapesScriptBoundaryWithoutChangingSymbol() throws Exception {
+        Definitions defs = new Definitions();
+        defs.addTag(1, "</script> café &", "function", "", 0, 0);
+
+        StringWriter out = new StringWriter();
+        JFlexXrefUtils.writeSymbolTable(out, defs);
+        String script = out.toString();
+        assertTrue(script.contains("[\"\\u003c/script\\u003e café \\u0026\",1]"), script);
+        assertEquals(script.indexOf("</script>"), script.lastIndexOf("</script>"), script);
     }
 
     /**
