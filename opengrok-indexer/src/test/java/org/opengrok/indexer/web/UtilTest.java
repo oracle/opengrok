@@ -351,13 +351,15 @@ class UtilTest {
     static Stream<Arguments> jsStringLiteralArguments() {
         return Stream.of(
                 Arguments.of("\"abc\\n\\r\\\"\\\\\"", "abc\n\r\"\\"),
-                Arguments.of("\"&lt;foo&gt;\"", "<foo>"),
-                Arguments.of("\"caf&#233; &#128512;\"", "café 😀"));
+                Arguments.of("\"\\u003cfoo\\u003e\"", "<foo>"),
+                Arguments.of("\"café 😀\"", "café 😀"),
+                Arguments.of("\"\\u003c/script\\u003e\\u0026\"", "</script>&"),
+                Arguments.of("\"\\u0009\\u2028\\u2029\"", "\t\u2028\u2029"));
     }
 
     @ParameterizedTest
     @MethodSource("jsStringLiteralArguments")
-    void jsStringLiteral(String expected, String input) throws Exception {
+    void jsStringLiteral(String expected, String input) {
         assertEquals(expected, Util.jsStringLiteral(input));
     }
 
