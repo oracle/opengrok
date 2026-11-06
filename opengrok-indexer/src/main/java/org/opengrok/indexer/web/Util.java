@@ -231,8 +231,7 @@ public final class Util {
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(CharSequence q, Appendable dest, boolean pre)
-            throws IOException {
+    public static void htmlize(CharSequence q, Appendable dest, boolean pre) throws IOException {
         for (int i = 0; i < q.length();) {
             int codePoint = Character.codePointAt(q, i);
             htmlize(codePoint, dest, pre);
@@ -249,8 +248,7 @@ public final class Util {
      * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(CharSequence q, Appendable dest)
-            throws IOException {
+    public static void htmlize(CharSequence q, Appendable dest) throws IOException {
         htmlize(q, dest, false);
     }
 
@@ -264,8 +262,7 @@ public final class Util {
      * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(char[] cs, int length, Appendable dest)
-            throws IOException {
+    public static void htmlize(char[] cs, int length, Appendable dest) throws IOException {
         int len = Math.min(cs.length, length);
         for (int i = 0; i < len;) {
             int codePoint = Character.codePointAt(cs, i, len);
@@ -284,43 +281,42 @@ public final class Util {
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      * @see #needsHtmlize(char, boolean)
+     * @see #htmlize(int, boolean)
      */
-    private static void htmlize(int codePoint, Appendable dest, boolean pre)
-            throws IOException {
+    private static void htmlize(int codePoint, Appendable dest, boolean pre) throws IOException {
+        dest.append(htmlize(codePoint, pre));
+    }
+
+    /**
+     * Return the HTML representation of a code point.
+     *
+     * @param codePoint the code point to escape
+     * @param pre whether the output is pre-formatted
+     * @return the escaped code point
+     */
+    public static String htmlize(int codePoint, boolean pre) {
         // An unpaired UTF-16 surrogate is not a valid HTML character reference.
         if (codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE) {
             codePoint = 0xFFFD;
         }
         switch (codePoint) {
             case '\'':
-                dest.append("&apos;");
-                break;
+                return "&apos;";
             case '"':
-                dest.append(QUOTE);
-                break;
+                return QUOTE;
             case '&':
-                dest.append(AMP);
-                break;
+                return AMP;
             case '>':
-                dest.append("&gt;");
-                break;
+                return "&gt;";
             case '<':
-                dest.append("&lt;");
-                break;
+                return "&lt;";
             case '\n':
-                if (pre) {
-                    dest.append((char) codePoint);
-                } else {
-                    dest.append("<br/>");
-                }
-                break;
+                return pre ? "\n" : "<br/>";
             default:
                 if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' && Character.isWhitespace(codePoint))) {
-                    dest.append((char) codePoint);
-                } else {
-                    dest.append("&#").append(Integer.toString(codePoint)).append(';');
+                    return Character.toString((char) codePoint);
                 }
-                break;
+                return "&#" + codePoint + ';';
         }
     }
 
@@ -1294,12 +1290,12 @@ public final class Util {
      * @param str the string to be represented by the literal
      * @return a JavaScript string literal
      */
-    public static String jsStringLiteral(String str) {
+    public static String jsStringLiteral(String str) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append('"');
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            switch (c) {
+        for (int offset = 0; offset < str.length(); ) {
+            int codePoint = str.codePointAt(offset);
+            switch (codePoint) {
                 case '"':
                     sb.append("\\\"");
                     break;
@@ -1313,8 +1309,9 @@ public final class Util {
                     sb.append("\\r");
                     break;
                 default:
-                    sb.append(c);
+                    htmlize(codePoint, sb, false);
             }
+            offset += Character.charCount(codePoint);
         }
         sb.append('"');
         return sb.toString();
@@ -1502,7 +1499,7 @@ public final class Util {
 
     /**
      * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
-     * then it is returned as it was received.
+     * then it is returned as it was received, just HTML escaped.
      *
      * @param url the HTTP URL
      * @param newTab if the link should open in a new tab
@@ -1520,10 +1517,10 @@ public final class Util {
                 }
                 return buildLink(url, attrs);
             } catch (URISyntaxException | MalformedURLException ex) {
-                return url;
+                return Util.htmlize(url);
             }
         }
-        return url;
+        return Util.htmlize(url);
     }
 
     /**

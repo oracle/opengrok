@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Lubos Kosco <tarzanek@gmail.com>.
  */
@@ -116,8 +116,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    void analyze(Document doc, InputStream in, Writer xrefOut,
-            JFieldBuilder jfbuilder) throws IOException {
+    void analyze(Document doc, InputStream in, Writer xrefOut, JFieldBuilder jfbuilder) throws IOException {
         List<String> defs = new ArrayList<>();
         List<String> refs = new ArrayList<>();
         List<String> full = new ArrayList<>();
@@ -133,8 +132,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             fout = jfbuilder.write(QueryBuilder.FULL);
         }
 
-        ClassParser classparser = new ClassParser(in,
-            doc.get(QueryBuilder.PATH));
+        ClassParser classparser = new ClassParser(in, doc.get(QueryBuilder.PATH));
         StringWriter xout = new StringWriter();
         getContent(xout, fout, classparser.parse(), defs, refs, full);
         String xref = xout.toString();
@@ -221,7 +219,6 @@ private static final String RCBREOL = "}\n";
         String t;
         ConstantPool cp = c.getConstantPool();
 
-
         int[] v = new int[cp.getLength() + 1];
         out.write(linkPath(t = c.getSourceFileName()));
         defs.add(t);
@@ -301,7 +298,7 @@ private static final String RCBREOL = "}\n";
             out.write(TAB);
             fout.write(TAB);
             aflgs = Utility.accessToString(fld.getAccessFlags());
-            if (aflgs != null && aflgs.length() > 0) {
+            if (aflgs != null && !aflgs.isEmpty()) {
                 out.write(aflgs);
                 fout.write(aflgs);
                 fout.write(SPACE);
@@ -312,8 +309,9 @@ private static final String RCBREOL = "}\n";
             fout.write(fldsig);
             out.write(SPACE);
             fout.write(SPACE);
-            tdef = tagDef(t = fld.getName());
-            out.write(tdef);
+            t = fld.getName();
+            tdef = tagDef(t);
+            out.write(Util.htmlize(tdef));
             fout.write(tdef);
             defs.add(t);
             refs.add(t);
@@ -329,7 +327,7 @@ private static final String RCBREOL = "}\n";
             out.write(TAB);
             fout.write(TAB);
             aflgs = Utility.accessToString(m.getAccessFlags());
-            if (aflgs != null && aflgs.length() > 0) {
+            if (aflgs != null && !aflgs.isEmpty()) {
                 out.write(aflgs);
                 fout.write(aflgs);
                 out.write(SPACE);
@@ -337,7 +335,7 @@ private static final String RCBREOL = "}\n";
             }
             sig = m.getSignature();
             msig = Utility.methodSignatureReturnType(sig, false);
-            out.write(msig);
+            out.write(Util.htmlize(msig));
             fout.write(msig);
             out.write(SPACE);
             fout.write(SPACE);
@@ -351,7 +349,7 @@ private static final String RCBREOL = "}\n";
             String[] args = Utility.methodSignatureArgumentTypes(sig, false);
             for (int i = 0; i < args.length; i++) {
                 t = args[i];
-                out.write(t);
+                out.write(Util.htmlize(t));
                 fout.write(t);
                 int spi = t.indexOf(SPACE);
                 if (spi > 0) {
@@ -424,12 +422,12 @@ private static final String RCBREOL = "}\n";
             fout.write(TAB);
             fout.write(TAB);
             String sig = Utility.typeSignatureToString(l.getSignature(), true);
-            out.write(sig);
+            out.write(Util.htmlize(sig));
             fout.write(sig);
             out.write(SPACE);
             fout.write(SPACE);
-            String t;
-            out.write(t = l.getName());
+            String t = l.getName();
+            out.write(Util.htmlize(t));
             defs.add(t);
             refs.add(t);
             fout.write(t);
@@ -441,7 +439,7 @@ private static final String RCBREOL = "}\n";
     public String constantToString(Constant c, ConstantPool cp, int[] v)
             throws ClassFormatException {
         String str;
-        int i, j, k;
+        int i, j;
         byte tag = c.getTag();
 
         switch (tag) {

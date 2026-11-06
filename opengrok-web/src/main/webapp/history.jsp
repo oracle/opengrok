@@ -279,7 +279,7 @@ document.domReady.push(function() {domReadyHistory();});
                     %>
         <tr class="revtags-hidden">
             <td colspan="<%= colspan %>" class="revtags">
-                <span class="bold">Revision tags:</span> <%= tags %>
+                <span class="bold">Revision tags:</span> <%= Util.htmlize(tags) %>
             </td>
         </tr><tr style="display: none;"></tr><%
                 }

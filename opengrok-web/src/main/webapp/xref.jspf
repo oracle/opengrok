@@ -87,8 +87,8 @@ org.opengrok.indexer.web.QueryParameters"
                 if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
 %>
 <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.uriEncode(rev) %>"><%= basename %></a>
+    Download binary file, <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+<%= Util.uriEncode(rev) %>"><%= Util.htmlize(basename) %></a>
 </div><%
                 } else {
 %>
@@ -131,7 +131,7 @@ org.opengrok.indexer.web.QueryParameters"
                             defs, annotation, project, resourceFile);
                     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="from Source Repository"/>
+    <img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="from Source Repository"/>
     <pre><%
                     } else if (g == AbstractAnalyzer.Genre.HTML) {
                         /*
@@ -144,8 +144,8 @@ org.opengrok.indexer.web.QueryParameters"
                          */
                         Util.dumpXref(out, r, request.getContextPath(), resourceFile);
                     } else {
-    %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.uriEncode(rev) %>"><%= basename %></a><%
+    %>Download binary file, <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+<%= Util.uriEncode(rev) %>"><%= Util.htmlize(basename) %></a><%
                     }
                 }
             } catch (IOException e) {
@@ -176,14 +176,14 @@ org.opengrok.indexer.web.QueryParameters"
     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>"
+    <img src="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>"
          alt="from Source Repository"/>
 </div><%
     } else {
 %>
 <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.uriEncode(rev) %>"><%= basename %></a>
+    Download binary file, <a href="<%= encodedPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+<%= Util.uriEncode(rev) %>"><%= Util.htmlize(basename) %></a>
 </div><%
     }
 }
