@@ -1290,12 +1290,12 @@ public final class Util {
      * @param str the string to be represented by the literal
      * @return a JavaScript string literal
      */
-    public static String jsStringLiteral(String str) throws IOException {
+    public static String jsStringLiteral(String str) {
         StringBuilder sb = new StringBuilder();
         sb.append('"');
-        for (int offset = 0; offset < str.length(); ) {
-            int codePoint = str.codePointAt(offset);
-            switch (codePoint) {
+        for (int offset = 0; offset < str.length(); offset++) {
+            char ch = str.charAt(offset);
+            switch (ch) {
                 case '"':
                     sb.append("\\\"");
                     break;
@@ -1309,9 +1309,16 @@ public final class Util {
                     sb.append("\\r");
                     break;
                 default:
-                    htmlize(codePoint, sb, false);
+                    if (ch < 0x20 || ch == '\u2028' || ch == '\u2029'
+                            || ch == '<' || ch == '>' || ch == '&') {
+                        sb.append("\\u");
+                        for (int shift = 12; shift >= 0; shift -= 4) {
+                            sb.append(Character.forDigit((ch >> shift) & 0xf, 16));
+                        }
+                    } else {
+                        sb.append(ch);
+                    }
             }
-            offset += Character.charCount(codePoint);
         }
         sb.append('"');
         return sb.toString();
