@@ -263,7 +263,7 @@ def test_cleanup():
         )
         assert commands is not None
         commands.run()
-        assert list(commands.retcodes.values()) == 1
+        assert len(list(commands.retcodes.values())) == 1
         # Running 'cat' on non-existing entry causes it to return positive value.
         assert list(commands.retcodes.values())[0] > 0
         # Check that cleanup commands ran and failure of one of them did not terminate the rest.
