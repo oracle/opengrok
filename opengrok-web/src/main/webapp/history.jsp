@@ -49,7 +49,6 @@ org.opengrok.indexer.web.Util"
 <%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="java.util.Optional" %>
 <%@ page import="org.opengrok.indexer.web.Laundromat" %>
-<%@ page import="java.util.stream.Collectors" %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
     final Logger LOGGER = LoggerFactory.getLogger(getClass());
