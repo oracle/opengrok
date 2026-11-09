@@ -240,8 +240,7 @@ public final class Util {
     }
 
     /**
-     * Calls
-     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * Calls {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
      * with {@code q}, {@code dest}, and {@code false}.
      *
      * @param q a character sequence to escape
@@ -324,18 +323,11 @@ public final class Util {
      * @see #htmlize(int, java.lang.Appendable, boolean)
      */
     private static boolean needsHtmlize(char c, boolean pre) {
-        switch (c) {
-            case '\'':
-            case '"':
-            case '&':
-            case '>':
-            case '<':
-                return true;
-            case '\n':
-                return !pre;
-            default:
-                return (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
-        }
+        return switch (c) {
+            case '\'', '"', '&', '>', '<' -> true;
+            case '\n' -> !pre;
+            default -> (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
+        };
     }
 
     private static boolean needsHtmlize(CharSequence q, boolean pre) {
@@ -562,7 +554,7 @@ public final class Util {
         StringBuilder sb = new StringBuilder(6);
         sb.append("\\u");
         String hex = Integer.toHexString(c);
-        sb.append("0".repeat(4 - hex.length()));
+        sb.repeat("0", 4 - hex.length());
         sb.append(hex);
         return sb.toString();
     }
@@ -1617,11 +1609,11 @@ public final class Util {
         try {
             StringBuilder stringBuilder = new StringBuilder();
             if (result.start(0) < result.start(1)) {
-                stringBuilder.append(text.substring(result.start(0), result.start(1)));
+                stringBuilder.append(text, result.start(0), result.start(1));
             }
             stringBuilder.append(buildLink(group1, appendedUrl, true));
             if (result.end(1) < result.end(0)) {
-                stringBuilder.append(text.substring(result.end(1), result.end(0)));
+                stringBuilder.append(text, result.end(1), result.end(0));
             }
             return stringBuilder.toString();
         } catch (URISyntaxException | MalformedURLException e) {
