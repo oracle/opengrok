@@ -1020,9 +1020,8 @@ public final class Util {
      *
      * @param line1 line of the original file
      * @param line2 line of the changed/new file
-     * @return the tagged lines (field[0] ~= line1, field[1] ~= line2).
-     * @throws NullPointerException if one of the given parameters is
-     * {@code null}.
+     * @return the tagged lines ({@code field[0] ~= line1}, {@code field[1] ~= line2}).
+     * @throws NullPointerException if one of the given parameters is {@code null}.
      */
     public static String[] diffline(StringBuilder line1, StringBuilder line2) {
         String[] ret = new String[2];
