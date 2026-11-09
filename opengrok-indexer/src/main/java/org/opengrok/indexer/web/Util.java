@@ -1234,8 +1234,7 @@ public final class Util {
      * @param cells the values to print in the cells of the row
      * @throws IOException if an error happens while writing to {@code out}
      */
-    private static void printTableRow(Appendable out, Object... cells)
-            throws IOException {
+    private static void printTableRow(Appendable out, Object... cells) throws IOException {
         out.append("<tr>");
         StringBuilder buf = new StringBuilder(256);
         for (Object cell : cells) {
@@ -1256,8 +1255,7 @@ public final class Util {
      * @param items the list items
      * @throws IOException if an error happens while writing to {@code out}
      */
-    private static void printUnorderedList(Appendable out,
-            Collection<String> items) throws IOException {
+    private static void printUnorderedList(Appendable out, Collection<String> items) throws IOException {
         out.append("<ul>");
         StringBuilder buf = new StringBuilder(256);
         for (String item : items) {
