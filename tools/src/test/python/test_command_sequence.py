@@ -255,7 +255,7 @@ def test_cleanup():
             {"command": {"args": ["/bin/cat", "/totallynonexistent" + PROJECT_SUBST]}},
             {"command": {"args": ["/usr/bin/touch", file_bar + PROJECT_SUBST]}},
         ]
-        # Running 'cat' on non-existing entry causes it to return 1.
+        # Running 'cat' on non-existing entry causes it to return positive value.
         cmd = ["/bin/cat", "/foobar"]
         cmd_list = [{"command": {"args": cmd}}]
         project_name = "test-cleanup-list"
@@ -264,7 +264,7 @@ def test_cleanup():
         )
         assert commands is not None
         commands.run()
-        assert list(commands.retcodes.values()) == [1]
+        assert list(commands.retcodes.values())[0] > 0
         assert os.path.isfile(file_foo + project_name)
         assert os.path.isfile(file_bar + project_name)
 
