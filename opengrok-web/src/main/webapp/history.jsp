@@ -49,6 +49,7 @@ org.opengrok.indexer.web.Util"
 <%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%@ page import="java.util.Optional" %>
 <%@ page import="org.opengrok.indexer.web.Laundromat" %>
+<%@ page import="java.util.stream.Collectors" %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
     final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -403,15 +404,14 @@ document.domReady.push(function() {domReadyHistory();});
                 Set<String> files = entry.getFiles();
                 if (files != null) {
                 %><div class="filelist-hidden"><br/><%
-                    for (String ifile : files) {
-                        ifile = Util.fixPathIfWindows(ifile);
-                        String displayPath = Util.stripPathPrefix(path, ifile);
+                    for (String filePath : files.stream().map(Util::fixPathIfWindows).toList()) {
+                        String displayPath = Util.stripPathPrefix(path, filePath);
                         if (Objects.equals(rev, "")) {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>"><%= Util.htmlize(displayPath) %></a><br/><%
+<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(filePath) %>"><%= Util.htmlize(displayPath) %></a><br/><%
                         } else {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(filePath) %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.uriEncode(rev) %>"><%= Util.htmlize(displayPath) %></a><br/><%
                         }
                     }
