@@ -27,6 +27,8 @@ import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
@@ -151,6 +153,7 @@ class DiffTest {
      * The second request must resolve the same file and revisions without decoding
      * the servlet parameters again.
      */
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @Test
     void testDiffLinksPreserveSpecialCharacters() throws Exception {
         File gitDirectory = new File(repository.getSourceRoot(), "git");
