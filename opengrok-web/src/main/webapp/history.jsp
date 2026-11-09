@@ -405,14 +405,14 @@ document.domReady.push(function() {domReadyHistory();});
                 %><div class="filelist-hidden"><br/><%
                     for (String ifile : files) {
                         ifile = Util.fixPathIfWindows(ifile);
-                        String jfile = Util.stripPathPrefix(path, ifile);
+                        String displayPath = Util.stripPathPrefix(path, ifile);
                         if (Objects.equals(rev, "")) {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>"><%= Util.htmlize(jfile) %></a><br/><%
+<a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>"><%= Util.htmlize(displayPath) %></a><br/><%
                         } else {
                 %>
 <a class="h" href="<%= context + Prefix.XREF_P + Util.uriEncodePath(ifile) %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.uriEncode(rev) %>"><%= Util.htmlize(jfile) %></a><br/><%
+<%= Util.uriEncode(rev) %>"><%= Util.htmlize(displayPath) %></a><br/><%
                         }
                     }
                 %></div><%
