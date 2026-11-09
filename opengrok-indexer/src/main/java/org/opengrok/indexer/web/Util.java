@@ -1295,8 +1295,7 @@ public final class Util {
                     sb.append("\\r");
                     break;
                 default:
-                    if (ch < 0x20 || ch == '\u2028' || ch == '\u2029'
-                            || ch == '<' || ch == '>' || ch == '&') {
+                    if (ch < 0x20 || ch == '\u2028' || ch == '\u2029' || ch == '<' || ch == '>' || ch == '&') {
                         sb.append("\\u");
                         for (int shift = 12; shift >= 0; shift -= 4) {
                             sb.append(Character.forDigit((ch >> shift) & 0xf, 16));
