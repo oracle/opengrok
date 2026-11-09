@@ -88,6 +88,18 @@ org.opengrok.indexer.web.Util"%><%
             (cfg.getRequestedRevision().isEmpty() ? "" : "?" +
             QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="raw"></span>Raw</a></li>
+        <%
+        if (cfg.getPrefix() == Prefix.XREF_P
+                && cfg.getPath().toLowerCase(java.util.Locale.ROOT).matches(".*\\.(md|markdown)$")) {
+        %><li id="markdown-tabs" hidden>
+            <a href="#markdown-preview" id="markdown-preview-tab" aria-pressed="false"
+                    aria-controls="markdown-preview"
+                    data-markdown-download="<%= Util.formQuoteEscape(context + Prefix.DOWNLOAD_P
+                        + cfg.getUriEncodedPath() + (cfg.getRequestedRevision().isEmpty() ? "" : "?"
+                        + QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))) %>"><span class="markdown-menu-separator">|</span>Preview</a>
+        </li><%
+        }
+        %>
 	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath() +
             (cfg.getRequestedRevision().isEmpty() ? "" : "?" +
             QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))

@@ -412,7 +412,8 @@
                 dataType: 'script',
                 cache: true,
                 timeout: 10000
-            }).fail(function () {
+            }).fail(() => {
+                delete this.scriptsDownloaded[url];
                 console.debug('Failed to download "' + url + '" module');
             });
             return this.scriptsDownloaded[url];
@@ -1489,36 +1490,123 @@ function init_tablesorter() {
     });
 }
 
-function init_markdown_converter() {
-    let converter = null;
-    $('[data-markdown]').each(function () {
-        var $that = $(this);
-        $.script.loadScript('webjars/xss/1.0.10/dist/xss.min.js').done(function () {
-            $.script.loadScript('webjars/showdown/2.1.0/dist/showdown.min.js').done(function () {
-                $that.find('.markdown-content[data-markdown-download]').each(function () {
-                    var $dataMarkdownDownloadEl = $(this);
-                    if (converter === null) {
-                        converter = new showdown.Converter();
-                        converter.setOption('tables', true);
-                        converter.setOption('strikethrough', true);
-                        converter.setOption('tasklists', true);
-                        converter.setOption('simplifiedAutoLink', true);
-                        converter.setOption('parseImgDimension', true);
-                        converter.setOption('literalMidWordUnderscores', true);
+// Share the renderer between directory READMEs and file previews.
+let markdownRenderer;
+function render_markdown($content) {
+    if (!markdownRenderer) {
+        markdownRenderer = $.script.loadScript('webjars/xss/1.0.10/dist/xss.min.js').then(function () {
+            return $.script.loadScript('webjars/showdown/2.1.0/dist/showdown.min.js');
+        }).then(function () {
+            const converter = new showdown.Converter();
+            converter.setFlavor('github');
+            converter.setOption('simpleLineBreaks', false);
+            return converter;
+        });
+        markdownRenderer.fail(function () { markdownRenderer = null; });
+    }
+    return markdownRenderer.then(function (converter) {
+        return $.ajax({
+            url: $content.data('markdown-download'),
+            dataType: 'text',
+            timeout: 5000,
+            mimeType: 'text/plain'
+        }).then(function (payload) {
+            $content.html(filterXSS(converter.makeHtml(payload), {
+                whiteList: Object.assign({}, filterXSS.whiteList, { input: ['type', 'checked', 'disabled'] }),
+                safeAttrValue: function (tag, name, value, cssFilter) {
+                    if ((tag === 'a' && name === 'href') || (tag === 'img' && name === 'src')) {
+                        const decoded = filterXSS.friendlyAttrValue(value).trim();
+                        // xss requires a ./ prefix for bare relative paths.
+                        if (decoded && !/^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(decoded)) {
+                            try {
+                                const target = new URL(decoded, window.location.href);
+                                if (target.protocol === 'http:' || target.protocol === 'https:') {
+                                    value = './' + decoded;
+                                }
+                            } catch (e) { return ''; }
+                        }
                     }
-
-                    $.ajax({
-                        url: $(this).data('markdown-download'),
-                        dataType: 'text',
-                        timeout: 5000,
-                        mimeType: 'text/plain'
-                    }).done(function (payload) {
-                        $dataMarkdownDownloadEl.html(filterXSS(converter.makeHtml(payload))).show();
-                        $that.addClass('markdown').find('[data-markdown-original]').hide();
-                    });
-                });
+                    return filterXSS.safeAttrValue(tag, name, value, cssFilter);
+                }
+            }));
+            $content.find('input').attr('type', 'checkbox').prop('disabled', true);
+            // Images need the file contents rather than the xref HTML page.
+            const base = new URL($content.data('markdown-download'), window.location.href);
+            $content.find('img[src]').each(function () {
+                const src = $(this).attr('src');
+                if (src && !/^(?:[a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(src)) {
+                    const image = new URL(src, base);
+                    if (base.search) {
+                        image.search = base.search;
+                    }
+                    $(this).attr('src', image.href);
+                }
             });
         });
+    });
+}
+
+function init_markdown_converter() {
+    $('[data-markdown]').each(function () {
+        const $container = $(this);
+        const $content = $container.find('.markdown-content[data-markdown-download]');
+        render_markdown($content).done(function () {
+            $content.show();
+            $container.addClass('markdown').find('[data-markdown-original]').hide();
+        });
+    });
+
+    const $source = $('#src');
+    const $tabs = $('#markdown-tabs');
+    if (!$source.length || !$tabs.length) {
+        return;
+    }
+    const $sourceMenu = $('#bar > ul');
+    const $previewMenu = $('<ul id="markdown-preview-menu" hidden aria-label="Markdown preview">'
+        + '<li><a class="markdown-home">Home</a></li>'
+        + '<li><a id="markdown-source-tab" href=""><span class="markdown-menu-separator">|</span>Source</a></li>'
+        + '</ul>').insertAfter($sourceMenu);
+    $previewMenu.find('.markdown-home').attr('href', $('#home').parent('a').attr('href'));
+    $('#markdown-source-tab').attr('href', window.location.href);
+    const $preview = $('<div id="markdown-preview" class="markdown" hidden>'
+        + '<div class="markdown-content"></div></div>').insertAfter($source);
+    const $content = $preview.find('.markdown-content').data('markdown-download',
+        $('#markdown-preview-tab').data('markdown-download'));
+    const $status = $('<p role="status"></p>').prependTo($preview);
+    let loaded = false;
+    let loading = false;
+    $tabs.prop('hidden', false);
+    function selectPreview(preview) {
+        $source.toggle(!preview);
+        $sourceMenu.prop('hidden', preview);
+        $previewMenu.prop('hidden', !preview);
+        $preview.prop('hidden', !preview);
+        $('#markdown-source-tab').attr('aria-pressed', String(!preview));
+        $('#markdown-preview-tab').attr('aria-pressed', String(preview));
+    }
+    $('#markdown-source-tab').on('click', function (event) {
+        event.preventDefault();
+        selectPreview(false);
+    });
+    $('#markdown-preview-tab').on('click', function (event) {
+        event.preventDefault();
+        selectPreview(true);
+        if (loaded || loading) {
+            return;
+        }
+        loading = true;
+        $status.text('Loading Markdown preview…').show();
+        render_markdown($content).done(function () {
+            loaded = true;
+            $status.hide();
+            $content.show();
+        }).fail(function () {
+            $status.text('Unable to load Markdown preview. ').append(
+                $('<a href="#markdown-preview">Retry</a>').on('click', function (event) {
+                    event.preventDefault();
+                    $('#markdown-preview-tab').trigger('click');
+                }));
+        }).always(function () { loading = false; });
     });
 }
 
@@ -1610,9 +1698,7 @@ $(document).ready(function () {
 
     /**
      * Initialize the markdown converter.
-     *
-     * WARNING: The converter is not XSS safe. If you're not sure about what
-     * could occur in the readmes then rather comment out this.
+     * Sanitize rendered HTML before inserting it into the page.
      */
     init_markdown_converter();
 
