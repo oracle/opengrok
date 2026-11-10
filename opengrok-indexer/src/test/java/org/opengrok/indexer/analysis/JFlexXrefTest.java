@@ -550,12 +550,18 @@ class JFlexXrefTest {
     }
 
     @Test
+    void testNullProject() throws Exception {
+        JFlexXref xref = new JFlexXref(new CXref(new StringReader("")));
+        xref.setProject(null);
+        assertEquals("", xref.getProjectPostfix());
+    }
+
+    @Test
     void testProjectNamesAreEncodedInXrefQueryParameters() throws Exception {
         Project project = new Project("team\"& project");
         JFlexXref xref = new JFlexXref(new CXref(new StringReader("")));
         xref.setProject(project);
-        assertEquals("&amp;project=team%22%26+project", xref.getProjectPostfix(true));
-        assertEquals("&project=team%22%26+project", xref.getProjectPostfix(false));
+        assertEquals("&amp;project=team%22%26+project", xref.getProjectPostfix());
 
         StringWriter out = new StringWriter();
         JFlexXrefUtils.appendProject(out, project);

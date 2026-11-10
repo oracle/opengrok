@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -28,6 +28,7 @@ import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.analysis.Scopes.Scope;
@@ -59,8 +60,7 @@ import org.opengrok.indexer.web.Util;
  * "The [troff or mandoc(5)] xref could show the markup, and then there could
  * be a button you could click to see the rendered output."
  */
-public abstract class JFlexNonXref extends JFlexStateStacker
-        implements Xrefer {
+public abstract class JFlexNonXref extends JFlexStateStacker implements Xrefer {
 
     protected Writer out;
     protected String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
@@ -109,11 +109,11 @@ public abstract class JFlexNonXref extends JFlexStateStacker
 
     protected JFlexNonXref() {
         userPageLink = RuntimeEnvironment.getInstance().getUserPage();
-        if (userPageLink != null && userPageLink.length() == 0) {
+        if (userPageLink != null && userPageLink.isEmpty()) {
             userPageLink = null;
         }
         userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
-        if (userPageSuffix != null && userPageSuffix.length() == 0) {
+        if (userPageSuffix != null && userPageSuffix.isEmpty()) {
             userPageSuffix = null;
         }
     }
@@ -249,17 +249,15 @@ public abstract class JFlexNonXref extends JFlexStateStacker
      * context should mark the start of a pushback
      * @throws IOException if an error occurs while appending
      */
-    protected void appendLink(String url, boolean doEndingPushback,
-        Pattern collateralCapture)
-            throws IOException {
+    protected void appendLink(String url, boolean doEndingPushback, Pattern collateralCapture) throws IOException {
         JFlexXrefUtils.appendLink(out, this, url, doEndingPushback,
             collateralCapture);
     }
 
-    protected String getProjectPostfix(boolean encoded) {
-        String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + QueryParameters.PROJECT_SEARCH_PARAM_EQ +
-                project.getName());
+    protected String getProjectPostfix() {
+        return Optional.ofNullable(project).
+                map(p -> "&amp;" + QueryParameters.PROJECT_SEARCH_PARAM_EQ + Util.uriEncode(project.getName())).
+                orElse("");
     }
 
     protected void startScope() {
@@ -419,7 +417,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-                getProjectPostfix(true), skipNl);
+                getProjectPostfix(), skipNl);
 
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {

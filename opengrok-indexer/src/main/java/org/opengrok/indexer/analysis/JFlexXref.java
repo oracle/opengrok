@@ -27,6 +27,8 @@ package org.opengrok.indexer.analysis;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Optional;
+
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -350,7 +352,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatche
         String str = evt.getStr();
         String breadcrumbPath = Util.breadcrumbPath(urlPrefix +
                 QueryParameters.PATH_SEARCH_PARAM_EQ, str, evt.getSep(),
-                getProjectPostfix(true), evt.getCanonicalize());
+                getProjectPostfix(), evt.getCanonicalize());
         try {
             out.write(breadcrumbPath);
         } catch (IOException ex) {
@@ -406,10 +408,10 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatche
         JFlexXrefUtils.appendLink(out, matcher, url, false, null);
     }
 
-    protected String getProjectPostfix(boolean encoded) {
-        String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + QueryParameters.PROJECT_SEARCH_PARAM_EQ +
-                Util.uriEncode(project.getName()));
+    protected String getProjectPostfix() {
+        return Optional.ofNullable(project).
+                map(p -> "&amp;" + QueryParameters.PROJECT_SEARCH_PARAM_EQ + Util.uriEncode(project.getName())).
+                orElse("");
     }
 
     protected void startScope() {
@@ -566,7 +568,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener, NonSymbolMatche
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-                getProjectPostfix(true), skipNl);
+                getProjectPostfix(), skipNl);
 
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
