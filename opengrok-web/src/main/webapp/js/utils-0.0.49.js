@@ -941,10 +941,17 @@
                     this.$search_refs.attr('href', this.getSearchLink('refs'));
                     this.$search_full.attr('href', this.getSearchLink('full'));
                     this.$search_files.attr('href', this.getSearchLink('path'));
-                    this.$search_google.attr('href', this.options.google_url + this.symbol);
+                    /*
+                     * Modified by Oracle for OpenGrok in 2026.
+                     */
+                    this.$search_google.attr('href', this.options.google_url + encodeURIComponent(this.symbol));
                 },
+                /*
+                 * Modified by Oracle for OpenGrok in 2026.
+                 */
                 getSearchLink: function (query) {
-                    return this.options.contextPath + '/search?' + query + '=' + this.symbol + '&project=' + this.project;
+                    return this.options.contextPath + '/search?' + query + '=' + encodeURIComponent(this.symbol)
+                        + '&project=' + encodeURIComponent(this.project);
                 },
                 getSymbolDescription: function (place) {
                     switch (place) {
@@ -1286,7 +1293,10 @@
                 $content: $('<div>'),
                 defaultHeight: 480,
                 buildLink: function (href, name, c) {
-                    return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow);
+                    /*
+                     * Modified by Oracle for OpenGrok in 2026.
+                     */
+                    return $('<a>').attr('href', '#' + href).attr('title', name).addClass(c).html(this.escapeHtml(name)).click(lnshow);
                 },
                 getTopOffset: function () {
                     return $("#content").offset().top;
