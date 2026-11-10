@@ -277,31 +277,34 @@ class UtilTest {
         assertEquals(expected, Util.uriEncodePath(input));
     }
 
-    @Test
-    void formQuoteEscape() {
-        assertEquals("", Util.formQuoteEscape(null));
-        assertEquals("abc", Util.formQuoteEscape("abc"));
-        assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
-        assertEquals("&amp;aring;", Util.formQuoteEscape("&aring;"));
-        assertEquals("line\n&quot;<&amp;", Util.formQuoteEscape("line\n\"<&"));
+    static Stream<Arguments> formQuoteEscapeArguments() {
+        return Stream.of(
+                Arguments.of(null, ""),
+                Arguments.of("abc", "abc"),
+                Arguments.of("\"abc\"", "&quot;abc&quot;"),
+                Arguments.of("&aring;", "&amp;aring;"),
+                Arguments.of("line\n\"<&", "line\n&quot;<&amp;"));
     }
 
-    @Test
-    void diffline() {
-        String[][] tests = {
-                {
+    @ParameterizedTest
+    @MethodSource("formQuoteEscapeArguments")
+    void formQuoteEscape(String input, String expected) {
+        assertEquals(expected, Util.formQuoteEscape(input));
+    }
+
+    static Stream<Arguments> difflineArguments() {
+        return Stream.of(
+                Arguments.of(
                         "if (a < b && foo < bar && c > d)",
                         "if (a < b && foo > bar && c > d)",
                         "if (a &lt; b &amp;&amp; foo <span class=\"d\">&lt;</span> bar &amp;&amp; c &gt; d)",
-                        "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"
-                },
-                {
+                        "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"),
+                Arguments.of(
                         "foo << 1",
                         "foo >> 1",
                         "foo <span class=\"d\">&lt;&lt;</span> 1",
-                        "foo <span class=\"a\">&gt;&gt;</span> 1"
-                },
-                {
+                        "foo <span class=\"a\">&gt;&gt;</span> 1"),
+                Arguments.of(
                         "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
                                 + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
                                 + "h_resp_mil) \"",
@@ -313,42 +316,37 @@ class UtilTest {
                                 + "h_resp_mil) &quot;",
                         "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
                                 + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
-                                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"
-                },
-                {
+                                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"),
+                Arguments.of(
                         "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                         "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                         "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;, values);",
                         "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
-                                + "class=\"a\">, ?</span>)&quot;, values);"
-                },
-                {
+                                + "class=\"a\">, ?</span>)&quot;, values);"),
+                Arguments.of(
                         "char    *config_list = NULL;",
                         "char    **config_list = NULL;",
                         "char    *config_list = NULL;",
-                        "char    *<span class=\"a\">*</span>config_list = NULL;"
-                },
-                {
+                        "char    *<span class=\"a\">*</span>config_list = NULL;"),
+                Arguments.of(
                         "char    **config_list = NULL;",
                         "char    *config_list = NULL;",
                         "char    *<span class=\"d\">*</span>config_list = NULL;",
-                        "char    *config_list = NULL;"
-                },
-                {
+                        "char    *config_list = NULL;"),
+                Arguments.of(
                         "* An error occured or there is non-numeric stuff at the end",
                         "* An error occurred or there is non-numeric stuff at the end",
                         "* An error occured or there is non-numeric stuff at the end",
                         "* An error occur<span class=\"a\">r</span>ed or there is "
-                                + "non-numeric stuff at the end"
-                }
-        };
-        for (int i = 0; i < tests.length; i++) {
-            String[] strings = Util.diffline(
-                    new StringBuilder(tests[i][0]),
-                    new StringBuilder(tests[i][1]));
-            assertEquals(tests[i][2], strings[0], "" + i + "," + 0);
-            assertEquals(tests[i][3], strings[1], "" + i + "," + 1);
-        }
+                                + "non-numeric stuff at the end"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("difflineArguments")
+    void diffline(String left, String right, String expectedLeft, String expectedRight) {
+        String[] actual = Util.diffline(new StringBuilder(left), new StringBuilder(right));
+        assertEquals(expectedLeft, actual[0]);
+        assertEquals(expectedRight, actual[1]);
     }
 
     static Stream<Arguments> encodeArguments() {
@@ -397,21 +395,27 @@ class UtilTest {
         assertEquals(expected, Util.jsStringLiteral(input));
     }
 
-    @Test
-    void stripPathPrefix() {
-        assertEquals("/", Util.stripPathPrefix("/", "/"));
-        assertEquals("/abc", Util.stripPathPrefix("/abc", "/abc"));
-        assertEquals("/abc/", Util.stripPathPrefix("/abc", "/abc/"));
-        assertEquals("/abc", Util.stripPathPrefix("/abc/", "/abc"));
-        assertEquals("/abc/", Util.stripPathPrefix("/abc/", "/abc/"));
-        assertEquals("abc", Util.stripPathPrefix("/", "/abc"));
-        assertEquals("abc/def", Util.stripPathPrefix("/", "/abc/def"));
-        assertEquals("def", Util.stripPathPrefix("/abc", "/abc/def"));
-        assertEquals("def", Util.stripPathPrefix("/abc/", "/abc/def"));
-        assertEquals("/abcdef", Util.stripPathPrefix("/abc", "/abcdef"));
-        assertEquals("/abcdef", Util.stripPathPrefix("/abc/", "/abcdef"));
-        assertEquals("def/ghi", Util.stripPathPrefix("/abc", "/abc/def/ghi"));
-        assertEquals("def/ghi", Util.stripPathPrefix("/abc/", "/abc/def/ghi"));
+    static Stream<Arguments> stripPathPrefixArguments() {
+        return Stream.of(
+                Arguments.of("/", "/", "/"),
+                Arguments.of("/abc", "/abc", "/abc"),
+                Arguments.of("/abc", "/abc/", "/abc/"),
+                Arguments.of("/abc/", "/abc", "/abc"),
+                Arguments.of("/abc/", "/abc/", "/abc/"),
+                Arguments.of("/", "/abc", "abc"),
+                Arguments.of("/", "/abc/def", "abc/def"),
+                Arguments.of("/abc", "/abc/def", "def"),
+                Arguments.of("/abc/", "/abc/def", "def"),
+                Arguments.of("/abc", "/abcdef", "/abcdef"),
+                Arguments.of("/abc/", "/abcdef", "/abcdef"),
+                Arguments.of("/abc", "/abc/def/ghi", "def/ghi"),
+                Arguments.of("/abc/", "/abc/def/ghi", "def/ghi"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("stripPathPrefixArguments")
+    void stripPathPrefix(String prefix, String fullPath, String expected) {
+        assertEquals(expected, Util.stripPathPrefix(prefix, fullPath));
     }
 
     @Test
