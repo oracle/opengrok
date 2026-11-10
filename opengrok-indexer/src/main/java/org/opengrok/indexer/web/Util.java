@@ -1536,7 +1536,8 @@ public final class Util {
             if (attr.getKey().equals("href")) {
                 value = new URI(value).toURL().toString();
             }
-            buffer.append(Util.htmlize(value));
+            // Use form escaping to escape certain characters while preserving newlines.
+            buffer.append(Util.formQuoteEscape(value));
             buffer.append("\"");
         }
         buffer.append(">");
