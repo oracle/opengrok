@@ -197,6 +197,9 @@
             return this.config.name || this.$originalElement.data('sol-name') || this.$originalElement.attr('name');
         },
 
+        /*
+         * Modified by Oracle for OpenGrok in 2026.
+         */
         _getProjectUrl: function (project) {
             return document.xrefPath + '/' + encodeURIComponent(project);
         },
@@ -278,6 +281,7 @@
                 .hide()
                 /*
                  * Modified for OpenGrok in 2016.
+                 * Modified by Oracle for OpenGrok in 2026.
                  */
                 .keydown(function (e) {
                     if (e.keyCode == 13) {
@@ -887,6 +891,7 @@
                 .append($labelText);
             /*
              * Modified for OpenGrok in 2016.
+             * Modified by Oracle for OpenGrok in 2026.
              */
             $displayElement = $('<div class="sol-option"/>').dblclick(function (e) {
                 let $el = $(this).find('.sol-checkbox');
@@ -913,6 +918,9 @@
         },
 
         _renderOptiongroup: function (solOptiongroup) {
+            /*
+             * Modified by Oracle for OpenGrok in 2026.
+             */
             let self = this,
                 $groupCaption = $('<div class="sol-optiongroup-label"/>')
                     .attr('title', solOptiongroup.tooltip)
@@ -1070,6 +1078,9 @@
             $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
                 .append($displayItemText)
                 .attr('title', solOptionItem.tooltip)
+                /*
+                 * Modified by Oracle for OpenGrok in 2026.
+                 */
                 .data('value', solOptionItem.value)
                 .appendTo(this.$showSelectionContainer)
                 .dblclick(function () { // Modified for OpenGrok in 2017.
