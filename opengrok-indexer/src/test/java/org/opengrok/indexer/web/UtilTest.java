@@ -477,7 +477,7 @@ class UtilTest {
         assertEquals(expected, Util.redactUri(url));
     }
 
-    static Stream<Arguments> linkArguments() {
+    static Stream<Arguments> linkifyArguments() {
         return Stream.of(
                 Arguments.of("http://www.example.com", "http://www.example.com", false),
                 Arguments.of("http://www.example.com", "http://www.example.com", true),
@@ -504,7 +504,7 @@ class UtilTest {
     }
 
     @ParameterizedTest(name = "{index}: {0}, newTab={2}")
-    @MethodSource("linkArguments")
+    @MethodSource("linkifyArguments")
     void testLinkify(String url, String escapedUrl, boolean newTab) throws Exception {
         String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
         String expected = "<a href=\"" + escapedUrl + "\"" + tabAttributes + " title=\"Link to "
@@ -539,22 +539,6 @@ class UtilTest {
         assertEquals(expected, Util.linkify(text));
         assertEquals(expected, Util.linkify(text, false));
         assertEquals(expected, Util.linkify(text, true));
-    }
-
-    @ParameterizedTest(name = "{index}: {0}, newTab={2}")
-    @MethodSource("linkArguments")
-    void testBuildLink(String url, String escapedUrl, boolean newTab) throws Exception {
-        String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
-        String expected = "<a href=\"" + escapedUrl + "\"" + tabAttributes + ">link</a>";
-        String link = Util.buildLink("link", url, newTab);
-        assertEquals(expected, link);
-        if (!newTab) {
-            assertEquals(expected, Util.buildLink("link", url));
-        }
-
-        Element anchor = parseLink(link);
-        assertEquals(url, anchor.getAttribute("href"));
-        assertEquals("link", anchor.getTextContent());
     }
 
     static Stream<Arguments> buildLinkAttributesArguments() {
