@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -76,11 +76,11 @@ public class FileAnalyzer extends AbstractAnalyzer {
      * value from {@link #getSpecializedVersionNo()}. Changing the root version
      * affects all analyzers simultaneously; while subclasses can override
      * {@link #getSpecializedVersionNo()} to allow changes that affect a few.
-     * @return ({@code 20261106_01 << 32}) | {@link #getSpecializedVersionNo()}
+     * @return (20061115_01 &lt;&lt; 32) | {@link #getSpecializedVersionNo()}
      */
     @Override
     public final long getVersionNo() {
-        final int rootVersionNo = 20261106_01; // Edit comment above too!
+        final int rootVersionNo = 20061115_01; // Edit comment above too!
         return ((long) rootVersionNo << 32) | getSpecializedVersionNo();
     }
 
