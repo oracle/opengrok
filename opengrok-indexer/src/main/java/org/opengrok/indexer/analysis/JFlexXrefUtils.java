@@ -329,20 +329,16 @@ public class JFlexXrefUtils {
      * @throws IOException if {@link Writer#append(java.lang.CharSequence)}
      * fails
      */
-    public static void writeSymbolTable(Writer out, Definitions defs)
-            throws IOException {
+    public static void writeSymbolTable(Writer out, Definitions defs) throws IOException {
         if (defs == null) {
             // No definitions, no symbol table to write
             return;
         }
 
-        // We want the symbol table to be sorted
-        // Order by symbol name, and then by line number if multiple
-        // definitions use the same symbol name
+        // We want the symbol table to be sorted. Order by symbol name, and then by line number
+        // if multiple definitions use the same symbol name.
         Comparator<Tag> cmp = Comparator.comparing((Tag tag) -> tag.symbol).thenComparingInt(tag -> tag.line);
-
         Map<String, SortedSet<Tag>> symbols = new HashMap<>();
-
         for (Tag tag : defs.getTags()) {
             XrefStyle style = XrefStyle.getStyle(tag.type);
             if (style != null && style.title != null) {
