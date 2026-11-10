@@ -25,6 +25,7 @@ package org.opengrok.indexer.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
@@ -32,12 +33,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,7 +65,6 @@ import org.opengrok.indexer.history.AnnotationData;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
-import org.w3c.dom.Element;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -479,46 +485,58 @@ class UtilTest {
 
     static Stream<Arguments> linkifyArguments() {
         return Stream.of(
-                Arguments.of("http://www.example.com", "http://www.example.com", false),
-                Arguments.of("http://www.example.com", "http://www.example.com", true),
-                Arguments.of("https://example.com", "https://example.com", false),
-                Arguments.of("https://example.com", "https://example.com", true),
+                Arguments.of("http://www.example.com", "http://www.example.com", "http://www.example.com", false),
+                Arguments.of("http://www.example.com", "http://www.example.com", "http://www.example.com", true),
+                Arguments.of("https://example.com", "https://example.com", "https://example.com", false),
+                Arguments.of("https://example.com", "https://example.com", "https://example.com", true),
                 Arguments.of("http://www.example.com?param=1&param2=2",
+                        "http://www.example.com?param=1&amp;param2=2",
                         "http://www.example.com?param=1&amp;param2=2", false),
                 Arguments.of("http://www.example.com?param=1&param2=2",
+                        "http://www.example.com?param=1&amp;param2=2",
                         "http://www.example.com?param=1&amp;param2=2", true),
-                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page", false),
-                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page", true),
+                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page",
+                        "https://www.example.com:8080/other/page", false),
+                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page",
+                        "https://www.example.com:8080/other/page", true),
                 Arguments.of("http://www.example.com?url=xasw&beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama",
                         "http://www.example.com?url=xasw&amp;beta=gama", false),
                 Arguments.of("http://www.example.com?url=xasw&beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama",
                         "http://www.example.com?url=xasw&amp;beta=gama", true),
-                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2", false),
-                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2", true),
-                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;", false),
-                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;", true),
+                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2",
+                        "https://example.com/repo?a=1&amp;copy;=2", false),
+                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2",
+                        "https://example.com/repo?a=1&amp;copy;=2", true),
+                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;",
+                        "https://example.com/repo?value=&amp;amp;", false),
+                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;",
+                        "https://example.com/repo?value=&amp;amp;", true),
                 Arguments.of("https://example.com/café?value='%22'",
+                        "https://example.com/café?value='%22'",
                         "https://example.com/caf&#233;?value=&apos;%22&apos;", false),
                 Arguments.of("https://example.com/café?value='%22'",
+                        "https://example.com/café?value='%22'",
                         "https://example.com/caf&#233;?value=&apos;%22&apos;", true));
     }
 
-    @ParameterizedTest(name = "{index}: {0}, newTab={2}")
+    @ParameterizedTest(name = "{index}: {0}, newTab={3}")
     @MethodSource("linkifyArguments")
-    void testLinkify(String url, String escapedUrl, boolean newTab) throws Exception {
+    void testLinkify(String url, String escapedAttribute, String escapedText, boolean newTab) throws Exception {
         String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
-        String expected = "<a href=\"" + escapedUrl + "\"" + tabAttributes + " title=\"Link to "
-                + escapedUrl + "\">" + escapedUrl + "</a>";
+        String expected = "<a href=\"" + escapedAttribute + "\"" + tabAttributes + " title=\"Link to "
+                + escapedAttribute + "\">" + escapedText + "</a>";
         String link = Util.linkify(url, newTab);
         assertEquals(expected, link);
         if (newTab) {
             assertEquals(expected, Util.linkify(url));
         }
 
-        Element anchor = parseLink(link);
-        assertEquals(url, anchor.getAttribute("href"));
-        assertEquals("Link to " + url, anchor.getAttribute("title"));
-        assertEquals(url, anchor.getTextContent());
+        AttributeSet attributes = parseLinkAttributes(link);
+        assertEquals(url, attributes.getAttribute(HTML.Attribute.HREF));
+        assertEquals("Link to " + url, attributes.getAttribute(HTML.Attribute.TITLE));
+        assertEquals(newTab ? 4 : 2, attributes.getAttributeCount());
     }
 
     static Stream<Arguments> linkifyPlainTextArguments() {
@@ -543,15 +561,18 @@ class UtilTest {
 
     static Stream<Arguments> buildLinkAttributesArguments() {
         return Stream.of(
-                Arguments.of("Some important title", "Some important title"),
+                Arguments.of("Some important title", "Some important title", "Some important title"),
                 Arguments.of("<one> & \"two\" 'three' café 😀",
+                        "<one> &amp; &quot;two&quot; 'three' café 😀",
                         "&lt;one&gt; &amp; &quot;two&quot; &apos;three&apos; caf&#233; &#128512;"),
-                Arguments.of("&amp; &copy;", "&amp;amp; &amp;copy;"));
+                Arguments.of("&amp; &copy;", "&amp;amp; &amp;copy;", "&amp;amp; &amp;copy;"),
+                Arguments.of("first\n<second> & \"third\"", "first\n<second> &amp; &quot;third&quot;",
+                        "first<br/>&lt;second&gt; &amp; &quot;third&quot;"));
     }
 
     @ParameterizedTest
     @MethodSource("buildLinkAttributesArguments")
-    void testBuildLinkAttributes(String text, String escapedText) throws Exception {
+    void testBuildLinkAttributes(String text, String escapedAttribute, String escapedText) throws Exception {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", "https://www.example.com/abcd/acbd");
         attrs.put("title", text);
@@ -559,16 +580,27 @@ class UtilTest {
 
         String link = Util.buildLink(text, attrs);
         assertEquals("<a data-id=\"123456\" href=\"https://www.example.com/abcd/acbd\" title=\""
-                + escapedText + "\">" + escapedText + "</a>", link);
-        Element anchor = parseLink(link);
-        assertEquals(text, anchor.getAttribute("title"));
-        assertEquals(text, anchor.getTextContent());
-        assertEquals(3, anchor.getAttributes().getLength());
+                + escapedAttribute + "\">" + escapedText + "</a>", link);
+        AttributeSet attributes = parseLinkAttributes(link);
+        assertEquals(text, attributes.getAttribute(HTML.Attribute.TITLE));
+        assertEquals(attrs.get("href"), attributes.getAttribute(HTML.Attribute.HREF));
+        assertEquals(attrs.get("data-id"), attributes.getAttribute("data-id"));
+        assertEquals(3, attributes.getAttributeCount());
     }
 
-    private static Element parseLink(String link) throws Exception {
-        return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                new ByteArrayInputStream(link.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
+    private static AttributeSet parseLinkAttributes(String link) throws IOException {
+        // Quoted HTML attributes allow literal '<' and preserve newlines, unlike XML attributes.
+        List<AttributeSet> anchors = new ArrayList<>();
+        new ParserDelegator().parse(new StringReader(link), new HTMLEditorKit.ParserCallback() {
+            @Override
+            public void handleStartTag(HTML.Tag tag, MutableAttributeSet attributes, int position) {
+                if (tag == HTML.Tag.A) {
+                    anchors.add(attributes.copyAttributes());
+                }
+            }
+        }, true);
+        assertEquals(1, anchors.size());
+        return anchors.getFirst();
     }
 
     @Test
