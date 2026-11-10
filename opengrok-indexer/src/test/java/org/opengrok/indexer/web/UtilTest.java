@@ -477,7 +477,7 @@ class UtilTest {
         assertEquals(expected, Util.redactUri(url));
     }
 
-    static Stream<Arguments> testLinkifyArguments() {
+    static Stream<Arguments> linkArguments() {
         return Stream.of(
                 Arguments.of("http://www.example.com", "http://www.example.com", false),
                 Arguments.of("http://www.example.com", "http://www.example.com", true),
@@ -504,7 +504,7 @@ class UtilTest {
     }
 
     @ParameterizedTest(name = "{index}: {0}, newTab={2}")
-    @MethodSource("testLinkifyArguments")
+    @MethodSource("linkArguments")
     void testLinkify(String url, String escapedUrl, boolean newTab) throws Exception {
         String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
         String expected = "<a href=\"" + escapedUrl + "\"" + tabAttributes + " title=\"Link to "
@@ -542,7 +542,7 @@ class UtilTest {
     }
 
     @ParameterizedTest(name = "{index}: {0}, newTab={2}")
-    @MethodSource("testLinkifyArguments")
+    @MethodSource("linkArguments")
     void testBuildLink(String url, String escapedUrl, boolean newTab) throws Exception {
         String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
         String expected = "<a href=\"" + escapedUrl + "\"" + tabAttributes + ">link</a>";
