@@ -62,10 +62,10 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
             ${Util.htmlize(name)}
         </a>
 
-        <c:set var="messages" value="${MessagesUtils.messagesToJson(project)}"/>
+        <c:set var="messages" value="${Util.formQuoteEscape(MessagesUtils.messagesToJson(project))}"/>
         <c:if test="${not empty messages}">
             <span class="note-${MessagesUtils.getMessageLevel(project.getName())} important-note important-note-rounded"
-                  data-messages='${messages}'>!</span>
+                  data-messages="${messages}">!</span>
         </c:if>
     </td>
     <td>${Util.htmlize(ObjectUtils.defaultIfNull(repositoryInfo.type, "N/A"))}:

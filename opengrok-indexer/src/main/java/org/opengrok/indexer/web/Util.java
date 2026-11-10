@@ -908,8 +908,10 @@ public final class Util {
      * @return {@code null} if failed, otherwise the encoded string
      * @see URLEncoder#encode(String, String)
      */
-    public static String uriEncode(String string) {
-        return string == null ? "" : URLEncoder.encode(string, StandardCharsets.UTF_8);
+    public static String uriEncode(@Nullable String string) {
+        return Optional.ofNullable(string).
+                map(s -> URLEncoder.encode(string, StandardCharsets.UTF_8)).
+                orElse("");
     }
 
     /**
@@ -918,7 +920,7 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O
      */
-    public static void uriEncode(String str, Appendable dest) throws IOException {
+    public static void uriEncode(@Nullable String str, Appendable dest) throws IOException {
         dest.append(uriEncode(str));
     }
 
@@ -1518,7 +1520,7 @@ public final class Util {
      * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
-     * @param attrs map of attributes for the html element
+     * @param attrs map of attributes for the HTML element
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax

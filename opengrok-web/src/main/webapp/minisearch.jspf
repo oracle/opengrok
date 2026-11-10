@@ -100,7 +100,7 @@ org.opengrok.indexer.web.Util"%><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
         %><li><label><input id="minisearch-path" type="checkbox"
-                  name="<%= QueryParameters.PATH_SEARCH_PARAM %>" value='"<%= vals[0]
+                  name="<%= QueryParameters.PATH_SEARCH_PARAM %>" value='"<%= Util.htmlize(vals[0])
             %>"' <%= vals[2] %>/> current directory</label></li>
     </ul><%
     if (proj != null) {

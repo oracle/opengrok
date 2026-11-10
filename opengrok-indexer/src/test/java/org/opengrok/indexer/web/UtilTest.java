@@ -457,10 +457,8 @@ class UtilTest {
         assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
         assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
         assertEquals("just some crazy text", Util.linkify("just some crazy text"));
-        assertEquals("&lt;one&gt; &amp; &quot;two&quot;",
-                Util.linkify("<one> & \"two\""));
-        assertEquals("http://example.com/a&quot;b",
-                Util.linkify("http://example.com/a\"b"));
+        assertEquals("&lt;one&gt; &amp; &quot;two&quot;", Util.linkify("<one> & \"two\""));
+        assertEquals("http://example.com/a&quot;b", Util.linkify("http://example.com/a\"b"));
     }
 
     @Test
