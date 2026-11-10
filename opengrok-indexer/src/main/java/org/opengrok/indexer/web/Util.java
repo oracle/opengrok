@@ -1487,12 +1487,12 @@ public final class Util {
     }
 
     /**
-     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL or not URL at all,
      * then it is returned as it was received, just HTML escaped.
      *
-     * @param url the HTTP URL
-     * @param newTab if the link should open in a new tab
-     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt;
+     * @param url HTTP URL candidate
+     * @param newTab whether the link should open in a new tab
+     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt; or HTML escaped input
      */
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
