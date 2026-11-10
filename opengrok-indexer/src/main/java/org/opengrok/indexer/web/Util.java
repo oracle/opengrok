@@ -636,8 +636,7 @@ public final class Util {
     }
 
     /**
-     * Converts different HTML special characters into their encodings used in
-     * html.
+     * Converts different HTML special characters into their encodings used in HTML.
      *
      * @param s input text
      * @param dest appendable destination for appending the encoded characters
@@ -667,10 +666,9 @@ public final class Util {
      * Write out line information wrt. to the given annotation in the format:
      * {@code Linenumber Blame Author} incl. appropriate links.
      *
-     * @param num linenumber to print
+     * @param num line number to print
      * @param out print destination
-     * @param annotation annotation to use. If {@code null} only the linenumber
-     * gets printed.
+     * @param annotation annotation to use. If {@code null} only the line number gets printed.
      * @param userPageLink see {@link RuntimeEnvironment#getUserPage()}
      * @param userPageSuffix see {@link RuntimeEnvironment#getUserPageSuffix()}
      * @param project project that is used
@@ -1501,7 +1499,7 @@ public final class Util {
             try {
                 Map<String, String> attrs = new TreeMap<>();
                 attrs.put("href", url);
-                attrs.put("title", String.format("Link to %s", Util.encode(url)));
+                attrs.put("title", String.format("Link to %s", url));
                 if (newTab) {
                     attrs.put("target", "_blank");
                     attrs.put("rel", "noreferrer");
@@ -1538,7 +1536,7 @@ public final class Util {
             if (attr.getKey().equals("href")) {
                 value = new URI(value).toURL().toString();
             }
-            buffer.append(value);
+            buffer.append(Util.htmlize(value));
             buffer.append("\"");
         }
         buffer.append(">");
