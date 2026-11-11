@@ -1490,6 +1490,51 @@ function init_tablesorter() {
     });
 }
 
+// Mermaid is optional: keep the source readable if loading or rendering fails.
+let mermaidRenderer;
+let mermaidDiagramId = 0;
+function load_mermaid() {
+    if (!mermaidRenderer) {
+        mermaidRenderer = $.script.loadScript('webjars/mermaid/12.2.0/dist/mermaid.min.js').then(function () {
+            mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', suppressErrorRendering: true });
+            return mermaid;
+        });
+        mermaidRenderer.fail(function () { mermaidRenderer = null; });
+    }
+    return mermaidRenderer;
+}
+
+function render_mermaid($content) {
+    const diagrams = $content.find('pre > code.language-mermaid').toArray().map(function (code) {
+        const $source = $(code).parent();
+        const $status = $('<p class="mermaid-status" role="status"></p>').insertAfter($source);
+        let loading = false;
+        function render() {
+            if (loading) {
+                return $.when();
+            }
+            loading = true;
+            $status.text('Loading diagram…');
+            return load_mermaid().then(function (renderer) {
+                // Mermaid measures in its own temporary container, including when Preview is hidden.
+                return renderer.render('opengrok-mermaid-' + (++mermaidDiagramId), code.textContent);
+            }).then(function (result) {
+                // Mermaid sanitizes SVG in strict mode; never insert the diagram source as HTML.
+                $source.replaceWith($('<div class="mermaid-diagram"></div>').html(result.svg));
+                $status.remove();
+            }, function () {
+                $status.text('Unable to display diagram. ').append(
+                    $('<a href="#">Retry</a>').on('click', function (event) {
+                        event.preventDefault();
+                        render();
+                    }));
+            }).always(function () { loading = false; });
+        }
+        return render();
+    });
+    return $.when.apply($, diagrams);
+}
+
 // Share the renderer between directory READMEs and file previews.
 let markdownRenderer;
 function render_markdown($content) {
@@ -1512,7 +1557,9 @@ function render_markdown($content) {
             mimeType: 'text/plain'
         }).then(function (payload) {
             $content.html(filterXSS(converter.makeHtml(payload), {
-                whiteList: Object.assign({}, filterXSS.whiteList, { input: ['type', 'checked', 'disabled'] }),
+                whiteList: Object.assign({}, filterXSS.whiteList, {
+                    input: ['type', 'checked', 'disabled'], code: ['class']
+                }),
                 safeAttrValue: function (tag, name, value, cssFilter) {
                     if ((tag === 'a' && name === 'href') || (tag === 'img' && name === 'src')) {
                         const decoded = filterXSS.friendlyAttrValue(value).trim();
@@ -1542,6 +1589,7 @@ function render_markdown($content) {
                     $(this).attr('src', image.href);
                 }
             });
+            return render_mermaid($content);
         });
     });
 }

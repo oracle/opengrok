@@ -130,6 +130,18 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
         <dependency>
             <groupId>org.webjars.npm</groupId>
+            <artifactId>mermaid</artifactId>
+            <version>12.2.0</version>
+            <!-- The browser bundle includes its dependencies. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
             <artifactId>tablesorter</artifactId>
             <version>2.31.3</version>
             <!-- dependencies not required -->

@@ -30,15 +30,15 @@ const { JSDOM } = require('jsdom');
 const jquery = require('jquery');
 const showdown = require('showdown');
 const filterXSS = require('xss');
-const source = fs.readFileSync(path.join(__dirname, '../../main/webapp/js/utils-0.0.51.js'), 'utf8');
-const renderer = source.slice(source.indexOf('let markdownRenderer;'), source.indexOf('\nwindow.onload'));
+const source = fs.readFileSync(path.join(__dirname, '../../main/webapp/js/utils-0.0.52.js'), 'utf8');
+const renderer = source.slice(source.indexOf('let mermaidRenderer;'), source.indexOf('\nwindow.onload'));
 const markdown = '# Heading\n\n| A | B |\n| --- | --- |\n| one | two |\n\n'
     + '- [x] Done\n- [ ] Pending\n\n~~removed~~\n\n```js\nconst x = 1;\n```\n\n'
     + '![diagram](images/test.png)\n\n[Other](other.md)\n\n'
     + '<img src="x" onerror="alert(1)"><script>alert(1)</script>\n\n'
     + '<a href="javascript:alert(1)">bad link</a>';
 
-function setup(html, failFirstScript = false) {
+function setup(html, failFirstScript = false, diagramOptions = {}) {
     if (!html.includes('id="bar"')) {
         html = '<div id="bar"><ul><li><a href="/source/"><span id="home"></span>Home</a></li></ul></div>' + html;
     }
@@ -48,6 +48,18 @@ function setup(html, failFirstScript = false) {
     const $ = jquery(window);
     const requests = [];
     const scripts = [];
+    const diagrams = [];
+    const configurations = [];
+    window.mermaid = {
+        initialize: config => configurations.push(config),
+        render: (id, text) => {
+            diagrams.push({ id, text });
+            if (diagramOptions.failRender || text.includes('INVALID')) {
+                return Promise.reject(new Error('Invalid diagram'));
+            }
+            return Promise.resolve({ svg: '<svg role="img"><text>Diagram</text></svg>' });
+        }
+    };
     window.$ = $;
     window.showdown = showdown;
     window.filterXSS = filterXSS;
@@ -58,7 +70,9 @@ function setup(html, failFirstScript = false) {
         if (options.dataType === 'script') {
             scripts.push(options.url);
             window.setTimeout(() => {
-                if (failFirstScript) {
+                if (diagramOptions.failLoad && options.url.includes('/mermaid/')) {
+                    deferred.reject();
+                } else if (failFirstScript) {
                     failFirstScript = false;
                     deferred.reject();
                 } else {
@@ -78,7 +92,7 @@ function setup(html, failFirstScript = false) {
     window.eval(renderer);
     window.init_markdown_converter();
     window.init_file_preview();
-    return { dom, $, requests, scripts };
+    return { dom, $, requests, scripts, diagrams, configurations };
 }
 async function until(predicate) {
     for (let i = 0; i < 100; i++) {
@@ -230,6 +244,43 @@ async function test() {
         rendered.window.close();
         html.dom.window.close();
     }
-    console.log('File preview checks passed (Markdown, sandboxed HTML, menu order, supported types, revisions, caching and retry).');
+    const diagramSource = 'flowchart TD\n    A[Start] --> B[End]';
+    const diagramMarkdown = '# Diagrams\n\n```mermaid\n' + diagramSource + '\n```\n\n'
+        + '```mermaid\nINVALID\n```\n\n```js\nconst normal = true;\n```';
+    const diagramOptions = { failLoad: true };
+    const diagrams = setup('<div id="file-preview-tabs" hidden><a id="file-preview-tab"'
+        + ' data-preview-download="/source/download/project/chart.md">Preview</a></div>'
+        + '<div id="src">source</div><div data-markdown><div class="markdown-content"'
+        + ' data-markdown-download="/source/download/project/README.md"></div></div>', false, diagramOptions);
+    await until(() => diagrams.requests.length === 1);
+    diagrams.requests[0].deferred.resolve('```mermaid\n' + diagramSource + '\n```');
+    await until(() => diagrams.$('[data-markdown] .mermaid-status').text().includes('Unable'));
+    assert.strictEqual(diagrams.$('[data-markdown] code.language-mermaid').text().trim(), diagramSource);
+    diagramOptions.failLoad = false;
+    diagrams.$('[data-markdown] .mermaid-status a').trigger('click').trigger('click');
+    await until(() => diagrams.$('[data-markdown] .mermaid-diagram svg').length === 1);
+    assert.strictEqual(diagrams.$('[data-markdown] code.language-mermaid, [data-markdown] .mermaid-status').length, 0);
+    assert.strictEqual(diagrams.configurations.length, 1);
+    assert.strictEqual(diagrams.configurations[0].securityLevel, 'strict');
+    assert.strictEqual(diagrams.configurations[0].startOnLoad, false);
+    assert.strictEqual(diagrams.configurations[0].suppressErrorRendering, true);
+    diagrams.$('#file-preview-tab').trigger('click');
+    await until(() => diagrams.requests.length === 2);
+    diagrams.$('#file-source-tab').trigger('click');
+    diagrams.requests[1].deferred.resolve(diagramMarkdown);
+    await until(() => diagrams.$('#file-preview .mermaid-diagram svg').length === 1
+        && diagrams.$('#file-preview .mermaid-status').text().includes('Unable'));
+    assert.strictEqual(diagrams.$('#file-preview').prop('hidden'), true);
+    assert.strictEqual(diagrams.$('#file-preview pre > code.language-mermaid').text().trim(), 'INVALID');
+    assert.strictEqual(diagrams.$('#file-preview pre > code.language-js').text().trim(), 'const normal = true;');
+    assert.strictEqual(diagrams.$('#src').text(), 'source');
+    assert.strictEqual(diagrams.diagrams.length, 3);
+    assert.strictEqual(new Set(diagrams.diagrams.map(diagram => diagram.id)).size, 3);
+    assert.strictEqual(diagrams.scripts.filter(url => url.includes('/mermaid/')).length, 2);
+    diagrams.$('#file-preview-tab').trigger('click');
+    assert.strictEqual(diagrams.requests.length, 2);
+    assert.strictEqual(diagrams.diagrams.length, 3);
+    diagrams.dom.window.close();
+    console.log('File preview checks passed (Markdown, sandboxed HTML, menu order, supported types, revisions, Mermaid, caching and retry).');
 }
 test().catch(error => { console.error(error); process.exitCode = 1; });
