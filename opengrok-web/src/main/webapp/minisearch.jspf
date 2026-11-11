@@ -92,7 +92,16 @@ org.opengrok.indexer.web.Util"%><%
             (cfg.getRequestedRevision().isEmpty() ? "" : "?" +
             QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="download"></span>Download</a></li>
-	<%
+        <%
+        if (cfg.getPrefix() == Prefix.XREF_P) {
+        %><li id="file-preview-tabs" hidden>
+            <a href="#file-preview" id="file-preview-tab" aria-pressed="false"
+                    aria-controls="file-preview"
+                    data-preview-download="<%= Util.formQuoteEscape(context + Prefix.DOWNLOAD_P
+                        + cfg.getUriEncodedPath() + (cfg.getRequestedRevision().isEmpty() ? "" : "?"
+                        + QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))) %>"><span class="preview-menu-separator">|</span>Preview</a>
+        </li><%
+        }
     }
         %><li><input type="text" id="search" name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
                   class="q" aria-label="Search"/></li>
