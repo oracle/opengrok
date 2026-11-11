@@ -1609,14 +1609,16 @@ td#typeLabelTd {
 .markdown-content tbody tr:nth-child(2n) { background: var(--og-markdown-bg); }
 .markdown-content hr { height: .25em; padding: 0; margin: 24px 0; border: 0; background: var(--og-border); }
 
-#bar ul[hidden], #markdown-tabs[hidden], #markdown-preview[hidden] { display: none; }
+#bar ul[hidden], #file-preview-tabs[hidden], #file-preview[hidden] { display: none; }
 
-.markdown-menu-separator {
+.preview-menu-separator {
     padding: 0.5ex;
     color: var(--og-fg);
     font-size: large;
     font-weight: normal;
 }
+
+.html-preview { display: block; width: 100%; height: 80vh; border: 0; background: white; }
 
 @media (max-width: 767px) {
     .markdown { padding: 16px; }

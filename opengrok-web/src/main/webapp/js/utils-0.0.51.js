@@ -1555,23 +1555,65 @@ function init_markdown_converter() {
             $container.addClass('markdown').find('[data-markdown-original]').hide();
         });
     });
+}
 
+// Add a renderer here to support another file type; menu and loading behavior are shared.
+const filePreviewRenderers = [
+    {
+        extensions: ['md', 'markdown'],
+        render: function ($content, url) {
+            $content.parent().addClass('markdown');
+            $content.addClass('markdown-content').data('markdown-download', url);
+            return render_markdown($content);
+        }
+    },
+    {
+        extensions: ['html', 'htm'],
+        render: function ($content, url) {
+            return $.ajax({ url: url, dataType: 'text', timeout: 5000, mimeType: 'text/plain' })
+                .then(function (payload) {
+                    // Keep file HTML isolated from OpenGrok and disable scripts, forms and popups.
+                    const frame = document.createElement('iframe');
+                    frame.title = 'HTML preview';
+                    frame.className = 'html-preview';
+                    frame.setAttribute('sandbox', '');
+                    const html = new DOMParser().parseFromString(payload, 'text/html');
+                    html.querySelectorAll('base').forEach(function (base) { base.remove(); });
+                    const base = html.createElement('base');
+                    base.href = new URL(url, window.location.href).href;
+                    html.head.prepend(base);
+                    frame.srcdoc = '<!DOCTYPE html>\n' + html.documentElement.outerHTML;
+                    $content.empty().append(frame);
+                });
+        }
+    }
+];
+
+function init_file_preview() {
     const $source = $('#src');
-    const $tabs = $('#markdown-tabs');
+    const $tabs = $('#file-preview-tabs');
     if (!$source.length || !$tabs.length) {
         return;
     }
+    const $tab = $('#file-preview-tab');
+    const url = $tab.data('preview-download');
+    const extension = new URL(url, window.location.href).pathname.split('.').pop().toLowerCase();
+    const renderer = filePreviewRenderers.find(function (entry) {
+        return entry.extensions.includes(extension);
+    });
+    if (!renderer) {
+        return;
+    }
     const $sourceMenu = $('#bar > ul');
-    const $previewMenu = $('<ul id="markdown-preview-menu" hidden aria-label="Markdown preview">'
-        + '<li><a class="markdown-home">Home</a></li>'
-        + '<li><a id="markdown-source-tab" href=""><span class="markdown-menu-separator">|</span>Source</a></li>'
+    const $previewMenu = $('<ul id="file-preview-menu" hidden aria-label="File preview">'
+        + '<li><a class="preview-home">Home</a></li>'
+        + '<li><a id="file-source-tab" href=""><span class="preview-menu-separator">|</span>Source</a></li>'
         + '</ul>').insertAfter($sourceMenu);
-    $previewMenu.find('.markdown-home').attr('href', $('#home').parent('a').attr('href'));
-    $('#markdown-source-tab').attr('href', window.location.href);
-    const $preview = $('<div id="markdown-preview" class="markdown" hidden>'
-        + '<div class="markdown-content"></div></div>').insertAfter($source);
-    const $content = $preview.find('.markdown-content').data('markdown-download',
-        $('#markdown-preview-tab').data('markdown-download'));
+    $previewMenu.find('.preview-home').attr('href', $('#home').parent('a').attr('href'));
+    $('#file-source-tab').attr('href', window.location.href);
+    const $preview = $('<div id="file-preview" hidden>'
+        + '<div class="preview-content"></div></div>').insertAfter($source);
+    const $content = $preview.find('.preview-content');
     const $status = $('<p role="status"></p>').prependTo($preview);
     let loaded = false;
     let loading = false;
@@ -1581,30 +1623,30 @@ function init_markdown_converter() {
         $sourceMenu.prop('hidden', preview);
         $previewMenu.prop('hidden', !preview);
         $preview.prop('hidden', !preview);
-        $('#markdown-source-tab').attr('aria-pressed', String(!preview));
-        $('#markdown-preview-tab').attr('aria-pressed', String(preview));
+        $('#file-source-tab').attr('aria-pressed', String(!preview));
+        $('#file-preview-tab').attr('aria-pressed', String(preview));
     }
-    $('#markdown-source-tab').on('click', function (event) {
+    $('#file-source-tab').on('click', function (event) {
         event.preventDefault();
         selectPreview(false);
     });
-    $('#markdown-preview-tab').on('click', function (event) {
+    $('#file-preview-tab').on('click', function (event) {
         event.preventDefault();
         selectPreview(true);
         if (loaded || loading) {
             return;
         }
         loading = true;
-        $status.text('Loading Markdown preview…').show();
-        render_markdown($content).done(function () {
+        $status.text('Loading file preview…').show();
+        renderer.render($content, url).done(function () {
             loaded = true;
             $status.hide();
             $content.show();
         }).fail(function () {
-            $status.text('Unable to load Markdown preview. ').append(
-                $('<a href="#markdown-preview">Retry</a>').on('click', function (event) {
+            $status.text('Unable to load file preview. ').append(
+                $('<a href="#file-preview">Retry</a>').on('click', function (event) {
                     event.preventDefault();
-                    $('#markdown-preview-tab').trigger('click');
+                    $('#file-preview-tab').trigger('click');
                 }));
         }).always(function () { loading = false; });
     });
@@ -1701,6 +1743,7 @@ $(document).ready(function () {
      * Sanitize rendered HTML before inserting it into the page.
      */
     init_markdown_converter();
+    init_file_preview();
 
     restoreFocusAfterSearchSubmit();
 });
