@@ -32,12 +32,13 @@ org.opengrok.indexer.analysis.AbstractAnalyzer,
 org.opengrok.web.DiffData,
 org.opengrok.web.DiffType"
 %>
+<%@ page import="java.io.IOException" %>
 <%!
-private String getAnnotateRevision(DiffData data) {
+private String getAnnotateRevision(DiffData data) throws IOException {
     if (data.getType() == DiffType.OLD || data.getType() == DiffType.NEW) {
         String rev = data.getRev(data.getType() == DiffType.NEW ? 1 : 0);
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
-            + "document.rev = function() { return " + Util.htmlize(Util.jsStringLiteral(rev))
+            + "document.rev = function() { return " + Util.jsStringLiteral(rev)
             + "; } /* ]]> */</script>";
     }
     return "";

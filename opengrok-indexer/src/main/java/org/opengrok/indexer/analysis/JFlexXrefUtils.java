@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -99,19 +99,17 @@ public class JFlexXrefUtils {
     }
 
     /**
-     * Writes if {@code project} is not null an XML &amp;amp; followed by
-     * the {@link Project#getName()} to the specified {@code out}
-     * {@link Writer}.
+     * If {@code project} is not {@code null}, write an XML &amp;amp; followed by
+     * the {@link Project#getName()} to the specified {@code out} {@link Writer}.
      * @param out a defined instance
      * @param project possibly a defined instance or null
      * @throws IOException if {@link Writer#write(java.lang.String)} fails
      */
-    public static void appendProject(Writer out, Project project)
-            throws IOException {
+    public static void appendProject(Writer out, Project project) throws IOException {
         if (project != null) {
             out.write("&amp;");
             out.write(QueryParameters.PROJECT_SEARCH_PARAM_EQ);
-            out.write(project.getName());
+            out.write(Util.uriEncode(project.getName()));
         }
     }
 
@@ -331,20 +329,16 @@ public class JFlexXrefUtils {
      * @throws IOException if {@link Writer#append(java.lang.CharSequence)}
      * fails
      */
-    public static void writeSymbolTable(Writer out, Definitions defs)
-            throws IOException {
+    public static void writeSymbolTable(Writer out, Definitions defs) throws IOException {
         if (defs == null) {
             // No definitions, no symbol table to write
             return;
         }
 
-        // We want the symbol table to be sorted
-        // Order by symbol name, and then by line number if multiple
-        // definitions use the same symbol name
+        // We want the symbol table to be sorted. Order by symbol name, and then by line number
+        // if multiple definitions use the same symbol name.
         Comparator<Tag> cmp = Comparator.comparing((Tag tag) -> tag.symbol).thenComparingInt(tag -> tag.line);
-
         Map<String, SortedSet<Tag>> symbols = new HashMap<>();
-
         for (Tag tag : defs.getTags()) {
             XrefStyle style = XrefStyle.getStyle(tag.type);
             if (style != null && style.title != null) {

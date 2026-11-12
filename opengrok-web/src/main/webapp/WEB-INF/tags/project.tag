@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@ tag import="org.opengrok.indexer.web.Prefix" %>
@@ -29,7 +29,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
 <tr>
     <td colspan="3" class="name repository">
-        <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
+        <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${Util.uriEncodePath(project.name)}"
            title="Xref for project ${Util.htmlize(project.name)}">
             ${Util.htmlize(project.name)}
         </a>

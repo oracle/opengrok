@@ -5,6 +5,7 @@
  *
  * Copyright 2015, Patrick Bauerochse
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the MIT license:
  * http://www.opensource.org/licenses/MIT
@@ -196,6 +197,13 @@
             return this.config.name || this.$originalElement.data('sol-name') || this.$originalElement.attr('name');
         },
 
+        /*
+         * Modified by Oracle for OpenGrok in 2026.
+         */
+        _getProjectUrl: function (project) {
+            return document.xrefPath + '/' + encodeURIComponent(project);
+        },
+
         // shows an error label
         _showErrorLabel: function (message) {
             let $errorMessage = $('<div style="color: red; font-weight: bold;" />').html(message);
@@ -273,6 +281,7 @@
                 .hide()
                 /*
                  * Modified for OpenGrok in 2016.
+                 * Modified by Oracle for OpenGrok in 2026.
                  */
                 .keydown(function (e) {
                     if (e.keyCode == 13) {
@@ -283,22 +292,20 @@
                         if (e.keyCode == 13 && concat === '') {
                             // follow the project user's typed (may not exist)
                             if(self.$input.val() !== '') {
-                                window.location = document.xrefPath + '/' + self.$input.val();
+                                window.location = self._getProjectUrl(self.$input.val());
                                 return false;
                             }
                             let $el = $(".keyboard-selection").first().find(".sol-checkbox")
                             // follow the actual project
                             if($el.length && $el.data('sol-item') &&
-                                    $el.data('sol-item').label) {
-                                window.location = document.xrefPath + 
-                                                    '/' + 
-                                                    $el.data('sol-item').label;
+                                    $el.data('sol-item').value) {
+                                window.location = self._getProjectUrl($el.data('sol-item').value);
                                 return false;
                             }
                             // follow first selected project
                             $el = $(".sol-selected-display-item").first()
-                            if($el.length && $el.data('label')) {
-                               window.location = document.xrefPath + '/' + $el.data('label');
+                            if($el.length && $el.data('value')) {
+                                window.location = self._getProjectUrl($el.data('value'));
                                 return false;
                             }
                             return false;
@@ -884,12 +891,13 @@
                 .append($labelText);
             /*
              * Modified for OpenGrok in 2016.
+             * Modified by Oracle for OpenGrok in 2026.
              */
             $displayElement = $('<div class="sol-option"/>').dblclick(function (e) {
                 let $el = $(this).find('.sol-checkbox');
-                if ($el.length && $el.data('sol-item') && $el.data('sol-item').label) {
+                if ($el.length && $el.data('sol-item') && $el.data('sol-item').value) {
                     // go first project
-                    window.location = document.xrefPath + '/' + $(this).find('.sol-checkbox').data('sol-item').label;
+                    window.location = self._getProjectUrl($el.data('sol-item').value);
                 }
             }).append($label);
             /*
@@ -910,11 +918,15 @@
         },
 
         _renderOptiongroup: function (solOptiongroup) {
+            /*
+             * Modified by Oracle for OpenGrok in 2026.
+             */
             let self = this,
                 $groupCaption = $('<div class="sol-optiongroup-label"/>')
                     .attr('title', solOptiongroup.tooltip)
-                    .html(solOptiongroup.label),
-                $groupCheckbox = $('<input class="sol-checkbox" style="display: none" type="checkbox" name="group" value="' + solOptiongroup.label+ '"/>'),
+                    .text(solOptiongroup.label),
+                $groupCheckbox = $('<input class="sol-checkbox" style="display: none" type="checkbox" name="group"/>')
+                    .val(solOptiongroup.label),
                 $groupItem = $('<div class="sol-optiongroup"/>').append($groupCaption).append($groupCheckbox);
 
             if (solOptiongroup.disabled) {
@@ -1066,7 +1078,10 @@
             $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
                 .append($displayItemText)
                 .attr('title', solOptionItem.tooltip)
-                .data('label', solOptionItem.label)
+                /*
+                 * Modified by Oracle for OpenGrok in 2026.
+                 */
+                .data('value', solOptionItem.value)
                 .appendTo(this.$showSelectionContainer)
                 .dblclick(function () { // Modified for OpenGrok in 2017.
                     $changedItem.dblclick();

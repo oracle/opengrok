@@ -25,6 +25,7 @@ package org.opengrok.indexer.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
@@ -32,11 +33,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +54,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
@@ -61,7 +71,6 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
@@ -87,25 +96,25 @@ class UtilTest {
         savedLocale = null;
     }
 
-    @Test
-    void htmlize() throws IOException {
-        String[][] input_output = {
-                {"This is a test", "This is a test"},
-                {"Newline\nshould become <br/>", "Newline<br/>should become &lt;br/&gt;"},
-                {"Open & Grok", "Open &amp; Grok"},
-                // Supplementary characters must be escaped as code points, not separate UTF-16 surrogates.
-                {"readme\uD83D\uDE00.txt", "readme&#128512;.txt"},
-                {"readme\uD83D.txt", "readme&#65533;.txt"},
-                {"readme\uDE00.txt", "readme&#65533;.txt"},
-                {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"}};
-        for (String[] in_out : input_output) {
-            // 1 arg
-            assertEquals(in_out[1], Util.htmlize(in_out[0]));
-            // 2 args
-            StringBuilder sb = new StringBuilder();
-            Util.htmlize(in_out[0], sb);
-            assertEquals(in_out[1], sb.toString());
-        }
+    static Stream<Arguments> htmlizeArguments() {
+        return Stream.of(
+                Arguments.of("This is a test", "This is a test"),
+                Arguments.of("Newline\nshould become <br/>", "Newline<br/>should become &lt;br/&gt;"),
+                Arguments.of("Open & Grok", "Open &amp; Grok"),
+                // Supplementary characters are escaped as code points, not separate UTF-16 surrogates.
+                Arguments.of("readme\uD83D\uDE00.txt", "readme&#128512;.txt"),
+                Arguments.of("readme\uD83D.txt", "readme&#65533;.txt"),
+                Arguments.of("readme\uDE00.txt", "readme&#65533;.txt"),
+                Arguments.of("&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("htmlizeArguments")
+    void htmlize(String input, String expected) throws IOException {
+        assertEquals(expected, Util.htmlize(input));
+        StringBuilder sb = new StringBuilder();
+        Util.htmlize(input, sb);
+        assertEquals(expected, sb.toString());
     }
 
     @Test
@@ -120,59 +129,93 @@ class UtilTest {
         assertEquals("readme&#65533;", result.toString());
     }
 
-    @Test
-    void breadcrumbPath() {
-        assertNull(Util.breadcrumbPath("/root/", null));
-
-        assertEquals("", Util.breadcrumbPath("/root/", ""));
-
-        assertEquals("<a href=\"/root/x\">x</a>",
-                Util.breadcrumbPath("/root/", "x"));
-        assertEquals("<a href=\"/root/xx\">xx</a>",
-                Util.breadcrumbPath("/root/", "xx"));
-
-        // parent directories have a trailing slash in href
-        assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b\">b</a>",
-                Util.breadcrumbPath("/r/", "a/b"));
-        // if basename is a dir (ends with file separator), href link also ends with a '/'
-        assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b/\">b</a>/",
-                Util.breadcrumbPath("/r/", "a/b/"));
-        // should work the same way with a '.' as file separator
-        assertEquals("<a href=\"/r/java/\">java</a>."
-                        + "<a href=\"/r/java/lang/\">lang</a>."
-                        + "<a href=\"/r/java/lang/String\">String</a>",
-                Util.breadcrumbPath("/r/", "java.lang.String", '.'));
-        // suffix added to the link?
-        assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
-                Util.breadcrumbPath("/root/", "xx", '/', "&project=y", false));
-        // compact: path needs to be resolved to /xx and no link is added
-        // for the virtual root directory (parent) but emitted as plain text.
-        // Prefix gets just prefixed as is and not mangled wrt. path -> "//"
-        assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
-                Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
-        // relative paths are resolved wrt. / , so path resolves to /a/c/d
-        assertEquals("/<a href=\"/r//a/\">a</a>/"
-                        + "<a href=\"/r//a/c/\">c</a>/"
-                        + "<a href=\"/r//a/c/d\">d</a>",
-                Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
-        // path components should be URI encoded and htmlized
-        assertEquals("<a href=\"/root/foo/&project=y\">foo</a>/"
-                + "<a href=\"/root/foo/bar%3E&project=y\">bar&gt;</a>",
-                Util.breadcrumbPath("/root/", "foo/bar>", '/', "&project=y", true));
+    static Stream<Arguments> htmlizeCodePointArguments() {
+        return Stream.of(
+                Arguments.of((int) 'a', false, "a"),
+                Arguments.of((int) '<', false, "&lt;"),
+                Arguments.of((int) '\n', false, "<br/>"),
+                Arguments.of((int) '\n', true, "\n"),
+                Arguments.of(0x1F600, false, "&#128512;"),
+                Arguments.of(0xD83D, false, "&#65533;"));
     }
 
-    @Test
-    void readableSize() {
-        assertEquals("0 ", Util.readableSize(0));
-        assertEquals("1 ", Util.readableSize(1));
-        assertEquals("-1 ", Util.readableSize(-1));
-        assertEquals("1,000 ", Util.readableSize(1000));
-        assertEquals("1 KiB", Util.readableSize(1024));
-        assertEquals("2.4 KiB", Util.readableSize(2500));
-        assertEquals("<b>1.4 MiB</b>", Util.readableSize(1474560));
-        assertEquals("<b>3.5 GiB</b>", Util.readableSize(3758489600L));
-        assertEquals("<b>8,589,934,592 GiB</b>",
-                Util.readableSize(Long.MAX_VALUE));
+    @ParameterizedTest
+    @MethodSource("htmlizeCodePointArguments")
+    void htmlizeCodePoint(int codePoint, boolean pre, String expected) {
+        assertEquals(expected, Util.htmlize(codePoint, pre));
+    }
+
+    static Stream<Arguments> breadcrumbPathArguments() {
+        return Stream.of(
+                Arguments.of("/root/", null, null),
+                Arguments.of("/root/", "", ""),
+                Arguments.of("/root/", "x", "<a href=\"/root/x\">x</a>"),
+                Arguments.of("/root/", "xx", "<a href=\"/root/xx\">xx</a>"),
+                // Parent directories have a trailing slash in the link.
+                Arguments.of("/r/", "a/b", "<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b\">b</a>"),
+                Arguments.of("/r/", "a/b/", "<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b/\">b</a>/"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("breadcrumbPathArguments")
+    void breadcrumbPath(String prefix, String path, String expected) {
+        assertEquals(expected, Util.breadcrumbPath(prefix, path));
+    }
+
+    static Stream<Arguments> breadcrumbPathWithSeparatorArguments() {
+        return Stream.of(Arguments.of("/r/", "java.lang.String", '.',
+                "<a href=\"/r/java/\">java</a>."
+                        + "<a href=\"/r/java/lang/\">lang</a>."
+                        + "<a href=\"/r/java/lang/String\">String</a>"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("breadcrumbPathWithSeparatorArguments")
+    void breadcrumbPathWithSeparator(String prefix, String path, char separator, String expected) {
+        assertEquals(expected, Util.breadcrumbPath(prefix, path, separator));
+    }
+
+    static Stream<Arguments> breadcrumbPathWithOptionsArguments() {
+        return Stream.of(
+                Arguments.of("/root/", "xx", '/', "&project=y", false,
+                        "<a href=\"/root/xx&project=y\">xx</a>"),
+                // Compact paths retain the leading slash but have no link for the virtual root.
+                Arguments.of("/root/", "../xx", '/', "&project=y", true,
+                        "/<a href=\"/root//xx&project=y\">xx</a>"),
+                Arguments.of("/r/", "../a/b/../c//d", '/', "", true,
+                        "/<a href=\"/r//a/\">a</a>/"
+                                + "<a href=\"/r//a/c/\">c</a>/"
+                                + "<a href=\"/r//a/c/d\">d</a>"),
+                // Path components are URI encoded in links and HTML escaped in labels.
+                Arguments.of("/root/", "foo/bar>", '/', "&project=y", true,
+                        "<a href=\"/root/foo/&project=y\">foo</a>/"
+                                + "<a href=\"/root/foo/bar%3E&project=y\">bar&gt;</a>"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("breadcrumbPathWithOptionsArguments")
+    void breadcrumbPathWithOptions(String prefix, String path, char separator,
+            String postfix, boolean compact, String expected) {
+        assertEquals(expected, Util.breadcrumbPath(prefix, path, separator, postfix, compact));
+    }
+
+    static Stream<Arguments> readableSizeArguments() {
+        return Stream.of(
+                Arguments.of(0L, "0 "),
+                Arguments.of(1L, "1 "),
+                Arguments.of(-1L, "-1 "),
+                Arguments.of(1000L, "1,000 "),
+                Arguments.of(1024L, "1 KiB"),
+                Arguments.of(2500L, "2.4 KiB"),
+                Arguments.of(1474560L, "<b>1.4 MiB</b>"),
+                Arguments.of(3758489600L, "<b>3.5 GiB</b>"),
+                Arguments.of(Long.MAX_VALUE, "<b>8,589,934,592 GiB</b>"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("readableSizeArguments")
+    void readableSize(long size, String expected) {
+        assertEquals(expected, Util.readableSize(size));
     }
 
     @Test
@@ -191,8 +234,7 @@ class UtilTest {
 
     @Test
     void path2uid() {
-        assertEquals("\u0000etc\u0000passwd\u0000date",
-                Util.path2uid("/etc/passwd", "date"));
+        assertEquals("\u0000etc\u0000passwd\u0000date", Util.path2uid("/etc/passwd", "date"));
     }
 
     @Test
@@ -203,59 +245,72 @@ class UtilTest {
 
     @Test
     void uid2url() {
-        assertEquals("/etc/passwd", Util.uid2url(
-                Util.path2uid("/etc/passwd", "date")));
+        assertEquals("/etc/passwd", Util.uid2url(Util.path2uid("/etc/passwd", "date")));
     }
 
-    @Test
-    void testUriEncode() {
-        assertEquals("", Util.uriEncode(""));
-        assertEquals("a+b", Util.uriEncode("a b"));
-        assertEquals("a%23b", Util.uriEncode("a#b"));
-        assertEquals("a%2Fb", Util.uriEncode("a/b"));
-        assertEquals("README.txt", Util.uriEncode("README.txt"));
+    static Stream<Arguments> uriEncodeArguments() {
+        return Stream.of(
+                Arguments.of((String) null, ""),
+                Arguments.of("", ""),
+                Arguments.of("a b", "a+b"),
+                Arguments.of("a#b", "a%23b"),
+                Arguments.of("a/b", "a%2Fb"),
+                Arguments.of("README.txt", "README.txt"));
     }
 
-    @Test
-    void testUriEncodePath() {
-        assertEquals("", Util.uriEncodePath(""));
-        assertEquals("/", Util.uriEncodePath("/"));
-        assertEquals("a", Util.uriEncodePath("a"));
-        assertEquals("%09", Util.uriEncodePath("\t"));
-        assertEquals("a%2Bb", Util.uriEncodePath("a+b"));
-        assertEquals("a%20b", Util.uriEncodePath("a b"));
-        assertEquals("/a//x/yz/%23%23/%20/%20%3F",
-                Util.uriEncodePath("/a//x/yz/##/ / ?"));
-        assertEquals("foo%3A%3Abar%3A%3Atest.js",
-                Util.uriEncodePath("foo::bar::test.js"));
-        assertEquals("bl%C3%A5b%C3%A6rsyltet%C3%B8y",
-                Util.uriEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
+    @ParameterizedTest
+    @MethodSource("uriEncodeArguments")
+    void testUriEncode(String input, String expected) {
+        assertEquals(expected, Util.uriEncode(input));
     }
 
-    @Test
-    void formQuoteEscape() {
-        assertEquals("", Util.formQuoteEscape(null));
-        assertEquals("abc", Util.formQuoteEscape("abc"));
-        assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
-        assertEquals("&amp;aring;", Util.formQuoteEscape("&aring;"));
+    static Stream<Arguments> uriEncodePathArguments() {
+        return Stream.of(
+                Arguments.of("", ""),
+                Arguments.of("/", "/"),
+                Arguments.of("a", "a"),
+                Arguments.of("\t", "%09"),
+                Arguments.of("a+b", "a%2Bb"),
+                Arguments.of("a b", "a%20b"),
+                Arguments.of("/a//x/yz/##/ / ?", "/a//x/yz/%23%23/%20/%20%3F"),
+                Arguments.of("foo::bar::test.js", "foo%3A%3Abar%3A%3Atest.js"),
+                Arguments.of("bl\u00E5b\u00E6rsyltet\u00F8y", "bl%C3%A5b%C3%A6rsyltet%C3%B8y"));
     }
 
-    @Test
-    void diffline() {
-        String[][] tests = {
-                {
+    @ParameterizedTest
+    @MethodSource("uriEncodePathArguments")
+    void testUriEncodePath(String input, String expected) {
+        assertEquals(expected, Util.uriEncodePath(input));
+    }
+
+    static Stream<Arguments> formQuoteEscapeArguments() {
+        return Stream.of(
+                Arguments.of(null, ""),
+                Arguments.of("abc", "abc"),
+                Arguments.of("\"abc\"", "&quot;abc&quot;"),
+                Arguments.of("&aring;", "&amp;aring;"),
+                Arguments.of("line\n\"<&", "line\n&quot;<&amp;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("formQuoteEscapeArguments")
+    void formQuoteEscape(String input, String expected) {
+        assertEquals(expected, Util.formQuoteEscape(input));
+    }
+
+    static Stream<Arguments> difflineArguments() {
+        return Stream.of(
+                Arguments.of(
                         "if (a < b && foo < bar && c > d)",
                         "if (a < b && foo > bar && c > d)",
                         "if (a &lt; b &amp;&amp; foo <span class=\"d\">&lt;</span> bar &amp;&amp; c &gt; d)",
-                        "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"
-                },
-                {
+                        "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"),
+                Arguments.of(
                         "foo << 1",
                         "foo >> 1",
                         "foo <span class=\"d\">&lt;&lt;</span> 1",
-                        "foo <span class=\"a\">&gt;&gt;</span> 1"
-                },
-                {
+                        "foo <span class=\"a\">&gt;&gt;</span> 1"),
+                Arguments.of(
                         "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
                                 + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
                                 + "h_resp_mil) \"",
@@ -267,57 +322,53 @@ class UtilTest {
                                 + "h_resp_mil) &quot;",
                         "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
                                 + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
-                                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"
-                },
-                {
+                                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"),
+                Arguments.of(
                         "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                         "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                         "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;, values);",
                         "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
-                                + "class=\"a\">, ?</span>)&quot;, values);"
-                },
-                {
+                                + "class=\"a\">, ?</span>)&quot;, values);"),
+                Arguments.of(
                         "char    *config_list = NULL;",
                         "char    **config_list = NULL;",
                         "char    *config_list = NULL;",
-                        "char    *<span class=\"a\">*</span>config_list = NULL;"
-                },
-                {
+                        "char    *<span class=\"a\">*</span>config_list = NULL;"),
+                Arguments.of(
                         "char    **config_list = NULL;",
                         "char    *config_list = NULL;",
                         "char    *<span class=\"d\">*</span>config_list = NULL;",
-                        "char    *config_list = NULL;"
-                },
-                {
+                        "char    *config_list = NULL;"),
+                Arguments.of(
                         "* An error occured or there is non-numeric stuff at the end",
                         "* An error occurred or there is non-numeric stuff at the end",
                         "* An error occured or there is non-numeric stuff at the end",
                         "* An error occur<span class=\"a\">r</span>ed or there is "
-                                + "non-numeric stuff at the end"
-                }
-        };
-        for (int i = 0; i < tests.length; i++) {
-            String[] strings = Util.diffline(
-                    new StringBuilder(tests[i][0]),
-                    new StringBuilder(tests[i][1]));
-            assertEquals(tests[i][2], strings[0], "" + i + "," + 0);
-            assertEquals(tests[i][3], strings[1], "" + i + "," + 1);
-        }
+                                + "non-numeric stuff at the end"));
     }
 
-    @Test
-    void testEncode() {
-        String[][] tests = new String[][] {
-                {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
-                {"ahoj", "ahoj"},
-                {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"},
-                {"tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"},
-                {"multi\nline\t\nstring", "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"}
-        };
+    @ParameterizedTest
+    @MethodSource("difflineArguments")
+    void diffline(String left, String right, String expectedLeft, String expectedRight) {
+        String[] actual = Util.diffline(new StringBuilder(left), new StringBuilder(right));
+        assertEquals(expectedLeft, actual[0]);
+        assertEquals(expectedRight, actual[1]);
+    }
 
-        for (String[] test : tests) {
-            assertEquals(test[1], Util.encode(test[0]));
-        }
+    static Stream<Arguments> encodeArguments() {
+        return Stream.of(
+                Arguments.of("Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"),
+                Arguments.of("ahoj", "ahoj"),
+                Arguments.of("<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"),
+                Arguments.of("tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"),
+                Arguments.of("multi\nline\t\nstring",
+                        "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("encodeArguments")
+    void testEncode(String input, String expected) {
+        assertEquals(expected, Util.encode(input));
     }
 
     @Test
@@ -335,27 +386,42 @@ class UtilTest {
                 new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 
-    @Test
-    void jsStringLiteral() {
-        assertEquals("\"abc\\n\\r\\\"\\\\\"",
-                Util.jsStringLiteral("abc\n\r\"\\"));
+    static Stream<Arguments> jsStringLiteralArguments() {
+        return Stream.of(
+                Arguments.of("\"abc\\n\\r\\\"\\\\\"", "abc\n\r\"\\"),
+                Arguments.of("\"\\u003cfoo\\u003e\"", "<foo>"),
+                Arguments.of("\"café 😀\"", "café 😀"),
+                Arguments.of("\"\\u003c/script\\u003e\\u0026\"", "</script>&"),
+                Arguments.of("\"\\u0009\\u2028\\u2029\"", "\t\u2028\u2029"));
     }
 
-    @Test
-    void stripPathPrefix() {
-        assertEquals("/", Util.stripPathPrefix("/", "/"));
-        assertEquals("/abc", Util.stripPathPrefix("/abc", "/abc"));
-        assertEquals("/abc/", Util.stripPathPrefix("/abc", "/abc/"));
-        assertEquals("/abc", Util.stripPathPrefix("/abc/", "/abc"));
-        assertEquals("/abc/", Util.stripPathPrefix("/abc/", "/abc/"));
-        assertEquals("abc", Util.stripPathPrefix("/", "/abc"));
-        assertEquals("abc/def", Util.stripPathPrefix("/", "/abc/def"));
-        assertEquals("def", Util.stripPathPrefix("/abc", "/abc/def"));
-        assertEquals("def", Util.stripPathPrefix("/abc/", "/abc/def"));
-        assertEquals("/abcdef", Util.stripPathPrefix("/abc", "/abcdef"));
-        assertEquals("/abcdef", Util.stripPathPrefix("/abc/", "/abcdef"));
-        assertEquals("def/ghi", Util.stripPathPrefix("/abc", "/abc/def/ghi"));
-        assertEquals("def/ghi", Util.stripPathPrefix("/abc/", "/abc/def/ghi"));
+    @ParameterizedTest
+    @MethodSource("jsStringLiteralArguments")
+    void jsStringLiteral(String expected, String input) {
+        assertEquals(expected, Util.jsStringLiteral(input));
+    }
+
+    static Stream<Arguments> stripPathPrefixArguments() {
+        return Stream.of(
+                Arguments.of("/", "/", "/"),
+                Arguments.of("/abc", "/abc", "/abc"),
+                Arguments.of("/abc", "/abc/", "/abc/"),
+                Arguments.of("/abc/", "/abc", "/abc"),
+                Arguments.of("/abc/", "/abc/", "/abc/"),
+                Arguments.of("/", "/abc", "abc"),
+                Arguments.of("/", "/abc/def", "abc/def"),
+                Arguments.of("/abc", "/abc/def", "def"),
+                Arguments.of("/abc/", "/abc/def", "def"),
+                Arguments.of("/abc", "/abcdef", "/abcdef"),
+                Arguments.of("/abc/", "/abcdef", "/abcdef"),
+                Arguments.of("/abc", "/abc/def/ghi", "def/ghi"),
+                Arguments.of("/abc/", "/abc/def/ghi", "def/ghi"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("stripPathPrefixArguments")
+    void stripPathPrefix(String prefix, String fullPath, String expected) {
+        assertEquals(expected, Util.stripPathPrefix(prefix, fullPath));
     }
 
     @Test
@@ -374,91 +440,167 @@ class UtilTest {
         assertFalse(Util.createSlider(0, 10, 0).contains(">1<"), "Does not contain page 1");
     }
 
-    @Test
-    void testIsUrl() {
-        assertTrue(Util.isHttpUri("http://www.example.com"));
-        assertTrue(Util.isHttpUri("http://example.com"));
-        assertTrue(Util.isHttpUri("https://example.com"));
-        assertTrue(Util.isHttpUri("https://www.example.com"));
-        assertTrue(Util.isHttpUri("http://www.example.com?param=1&param2=2"));
-        assertTrue(Util.isHttpUri("http://www.example.com/other/page"));
-        assertTrue(Util.isHttpUri("https://www.example.com?param=1&param2=2"));
-        assertTrue(Util.isHttpUri("https://www.example.com/other/page"));
-        assertTrue(Util.isHttpUri("http://www.example.com:80/other/page"));
-        assertTrue(Util.isHttpUri("http://www.example.com:8080/other/page"));
-        assertTrue(Util.isHttpUri("https://www.example.com:80/other/page"));
-        assertTrue(Util.isHttpUri("https://www.example.com:8080/other/page"));
-
-        assertFalse(Util.isHttpUri("git@github.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUri("hg@mercurial.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUri("ssh://git@github.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUri("ldap://example.com/OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUri("smtp://example.com/OpenGrok/OpenGrok"));
+    static Stream<Arguments> isUrlArguments() {
+        return Stream.of(
+                Arguments.of("http://www.example.com", true),
+                Arguments.of("http://example.com", true),
+                Arguments.of("https://example.com", true),
+                Arguments.of("https://www.example.com", true),
+                Arguments.of("http://www.example.com?param=1&param2=2", true),
+                Arguments.of("http://www.example.com/other/page", true),
+                Arguments.of("https://www.example.com?param=1&param2=2", true),
+                Arguments.of("https://www.example.com/other/page", true),
+                Arguments.of("http://www.example.com:80/other/page", true),
+                Arguments.of("http://www.example.com:8080/other/page", true),
+                Arguments.of("https://www.example.com:80/other/page", true),
+                Arguments.of("https://www.example.com:8080/other/page", true),
+                Arguments.of("git@github.com:OpenGrok/OpenGrok", false),
+                Arguments.of("hg@mercurial.com:OpenGrok/OpenGrok", false),
+                Arguments.of("ssh://git@github.com:OpenGrok/OpenGrok", false),
+                Arguments.of("ldap://example.com/OpenGrok/OpenGrok", false),
+                Arguments.of("smtp://example.com/OpenGrok/OpenGrok", false));
     }
 
-    @Test
-    void testRedactUri() {
-        assertEquals("/foo/bar", Util.redactUri("/foo/bar"));
-        assertEquals("http://foo/bar?r=xxx", Util.redactUri("http://foo/bar?r=xxx"));
-        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUri("http://user@foo/bar?r=xxx"));
-        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
-                Util.redactUri("http://user:pass@foo/bar?r=xxx"));
+    @ParameterizedTest
+    @MethodSource("isUrlArguments")
+    void testIsUrl(String url, boolean expected) {
+        assertEquals(expected, Util.isHttpUri(url));
     }
 
-    @Test
-    void testLinkify() throws URISyntaxException, MalformedURLException {
-        assertTrue(Util.linkify("http://www.example.com")
-                .matches("<a.*?href=\"http://www\\.example\\.com\".*?>.*?</a>"));
-        assertTrue(Util.linkify("https://example.com")
-                .matches("<a.*?href=\"https://example\\.com\".*?>.*?</a>"));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2")
-                .matches("<a.*?href=\"http://www\\.example\\.com\\?param=1&param2=2\".*?>.*?</a>"));
-        assertTrue(Util.linkify("https://www.example.com:8080/other/page")
-                .matches("<a.*?href=\"https://www\\.example\\.com:8080/other/page\".*?>.*?</a>"));
-
-        assertTrue(Util.linkify("http://www.example.com", true).contains("target=\"_blank\""));
-        assertTrue(Util.linkify("https://example.com", true).contains("target=\"_blank\""));
-        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2", true).contains("target=\"_blank\""));
-        assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("target=\"_blank\""));
-        assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("rel=\"noreferrer\""));
-
-        assertFalse(Util.linkify("http://www.example.com", false).contains("target=\"_blank\""));
-        assertFalse(Util.linkify("https://example.com", false).contains("target=\"_blank\""));
-        assertFalse(Util.linkify("http://www.example.com?param=1&param2=2", false).contains("target=\"_blank\""));
-        assertFalse(Util.linkify("https://www.example.com:8080/other/page", false).contains("target=\"_blank\""));
-
-        assertEquals("git@github.com:OpenGrok/OpenGrok", Util.linkify("git@github.com:OpenGrok/OpenGrok"));
-        assertEquals("hg@mercurial.com:OpenGrok/OpenGrok", Util.linkify("hg@mercurial.com:OpenGrok/OpenGrok"));
-        assertEquals("ssh://git@github.com:OpenGrok/OpenGrok", Util.linkify("ssh://git@github.com:OpenGrok/OpenGrok"));
-        assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
-        assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
-        assertEquals("just some crazy text", Util.linkify("just some crazy text"));
+    static Stream<Arguments> redactUriArguments() {
+        return Stream.of(
+                Arguments.of("/foo/bar", "/foo/bar"),
+                Arguments.of("http://foo/bar?r=xxx", "http://foo/bar?r=xxx"),
+                Arguments.of("http://user@foo/bar?r=xxx",
+                        "http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx"),
+                Arguments.of("http://user:pass@foo/bar?r=xxx",
+                        "http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx"));
     }
 
-    @Test
-    void testBuildLink() throws URISyntaxException, MalformedURLException {
-        assertEquals("<a href=\"http://www.example.com\">link</a>", Util.buildLink("link", "http://www.example.com"));
-        assertEquals("<a href=\"http://www.example.com?url=xasw&beta=gama\">link</a>",
-                Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama"));
+    @ParameterizedTest
+    @MethodSource("redactUriArguments")
+    void testRedactUri(String url, String expected) {
+        assertEquals(expected, Util.redactUri(url));
+    }
 
-        String link = Util.buildLink("link", "http://www.example.com", true);
-        assertTrue(link.contains("href=\"http://www.example.com\""));
-        assertTrue(link.contains("target=\"_blank\""));
+    static Stream<Arguments> linkifyArguments() {
+        return Stream.of(
+                Arguments.of("http://www.example.com", "http://www.example.com", "http://www.example.com", false),
+                Arguments.of("http://www.example.com", "http://www.example.com", "http://www.example.com", true),
+                Arguments.of("https://example.com", "https://example.com", "https://example.com", false),
+                Arguments.of("https://example.com", "https://example.com", "https://example.com", true),
+                Arguments.of("http://www.example.com?param=1&param2=2",
+                        "http://www.example.com?param=1&amp;param2=2",
+                        "http://www.example.com?param=1&amp;param2=2", false),
+                Arguments.of("http://www.example.com?param=1&param2=2",
+                        "http://www.example.com?param=1&amp;param2=2",
+                        "http://www.example.com?param=1&amp;param2=2", true),
+                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page",
+                        "https://www.example.com:8080/other/page", false),
+                Arguments.of("https://www.example.com:8080/other/page", "https://www.example.com:8080/other/page",
+                        "https://www.example.com:8080/other/page", true),
+                Arguments.of("http://www.example.com?url=xasw&beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama", false),
+                Arguments.of("http://www.example.com?url=xasw&beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama",
+                        "http://www.example.com?url=xasw&amp;beta=gama", true),
+                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2",
+                        "https://example.com/repo?a=1&amp;copy;=2", false),
+                Arguments.of("https://example.com/repo?a=1&copy;=2", "https://example.com/repo?a=1&amp;copy;=2",
+                        "https://example.com/repo?a=1&amp;copy;=2", true),
+                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;",
+                        "https://example.com/repo?value=&amp;amp;", false),
+                Arguments.of("https://example.com/repo?value=&amp;", "https://example.com/repo?value=&amp;amp;",
+                        "https://example.com/repo?value=&amp;amp;", true),
+                Arguments.of("https://example.com/café?value='%22'",
+                        "https://example.com/café?value='%22'",
+                        "https://example.com/caf&#233;?value=&apos;%22&apos;", false),
+                Arguments.of("https://example.com/café?value='%22'",
+                        "https://example.com/café?value='%22'",
+                        "https://example.com/caf&#233;?value=&apos;%22&apos;", true));
+    }
 
-        link = Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama", true);
-        assertTrue(link.contains("href=\"http://www.example.com?url=xasw&beta=gama\""));
-        assertTrue(link.contains("target=\"_blank\""));
+    @ParameterizedTest(name = "{index}: {0}, newTab={3}")
+    @MethodSource("linkifyArguments")
+    void testLinkify(String url, String escapedAttribute, String escapedText, boolean newTab) throws Exception {
+        String tabAttributes = newTab ? " rel=\"noreferrer\" target=\"_blank\"" : "";
+        String expected = "<a href=\"" + escapedAttribute + "\"" + tabAttributes + " title=\"Link to "
+                + escapedAttribute + "\">" + escapedText + "</a>";
+        String link = Util.linkify(url, newTab);
+        assertEquals(expected, link);
+        if (newTab) {
+            assertEquals(expected, Util.linkify(url));
+        }
 
+        AttributeSet attributes = parseLinkAttributes(link);
+        assertEquals(url, attributes.getAttribute(HTML.Attribute.HREF));
+        assertEquals("Link to " + url, attributes.getAttribute(HTML.Attribute.TITLE));
+        assertEquals(newTab ? 4 : 2, attributes.getAttributeCount());
+    }
+
+    static Stream<Arguments> linkifyPlainTextArguments() {
+        return Stream.of(
+                Arguments.of("git@github.com:OpenGrok/OpenGrok", "git@github.com:OpenGrok/OpenGrok"),
+                Arguments.of("hg@mercurial.com:OpenGrok/OpenGrok", "hg@mercurial.com:OpenGrok/OpenGrok"),
+                Arguments.of("ssh://git@github.com:OpenGrok/OpenGrok", "ssh://git@github.com:OpenGrok/OpenGrok"),
+                Arguments.of("ldap://example.com/OpenGrok/OpenGrok", "ldap://example.com/OpenGrok/OpenGrok"),
+                Arguments.of("smtp://example.com/OpenGrok/OpenGrok", "smtp://example.com/OpenGrok/OpenGrok"),
+                Arguments.of("just some crazy text", "just some crazy text"),
+                Arguments.of("<one> & \"two\"", "&lt;one&gt; &amp; &quot;two&quot;"),
+                Arguments.of("http://example.com/a\"b", "http://example.com/a&quot;b"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("linkifyPlainTextArguments")
+    void testLinkifyPlainText(String text, String expected) {
+        assertEquals(expected, Util.linkify(text));
+        assertEquals(expected, Util.linkify(text, false));
+        assertEquals(expected, Util.linkify(text, true));
+    }
+
+    static Stream<Arguments> buildLinkAttributesArguments() {
+        return Stream.of(
+                Arguments.of("Some important title", "Some important title", "Some important title"),
+                Arguments.of("<one> & \"two\" 'three' café 😀",
+                        "<one> &amp; &quot;two&quot; 'three' café 😀",
+                        "&lt;one&gt; &amp; &quot;two&quot; &apos;three&apos; caf&#233; &#128512;"),
+                Arguments.of("&amp; &copy;", "&amp;amp; &amp;copy;", "&amp;amp; &amp;copy;"),
+                Arguments.of("first\n<second> & \"third\"", "first\n<second> &amp; &quot;third&quot;",
+                        "first<br/>&lt;second&gt; &amp; &quot;third&quot;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("buildLinkAttributesArguments")
+    void testBuildLinkAttributes(String text, String escapedAttribute, String escapedText) throws Exception {
         Map<String, String> attrs = new TreeMap<>();
         attrs.put("href", "https://www.example.com/abcd/acbd");
-        attrs.put("title", "Some important title");
+        attrs.put("title", text);
         attrs.put("data-id", "123456");
 
-        link = Util.buildLink("link", attrs);
-        assertTrue(link.contains("href=\"https://www.example.com/abcd/acbd\""));
-        assertTrue(link.contains("title=\"Some important title\""));
-        assertTrue(link.contains("data-id=\"123456\""));
+        String link = Util.buildLink(text, attrs);
+        assertEquals("<a data-id=\"123456\" href=\"https://www.example.com/abcd/acbd\" title=\""
+                + escapedAttribute + "\">" + escapedText + "</a>", link);
+        AttributeSet attributes = parseLinkAttributes(link);
+        assertEquals(text, attributes.getAttribute(HTML.Attribute.TITLE));
+        assertEquals(attrs.get("href"), attributes.getAttribute(HTML.Attribute.HREF));
+        assertEquals(attrs.get("data-id"), attributes.getAttribute("data-id"));
+        assertEquals(3, attributes.getAttributeCount());
+    }
+
+    private static AttributeSet parseLinkAttributes(String link) throws IOException {
+        // Quoted HTML attributes allow literal '<' and preserve newlines, unlike XML attributes.
+        List<AttributeSet> anchors = new ArrayList<>();
+        new ParserDelegator().parse(new StringReader(link), new HTMLEditorKit.ParserCallback() {
+            @Override
+            public void handleStartTag(HTML.Tag tag, MutableAttributeSet attributes, int position) {
+                if (tag == HTML.Tag.A) {
+                    anchors.add(attributes.copyAttributes());
+                }
+            }
+        }, true);
+        assertEquals(1, anchors.size());
+        return anchors.getFirst();
     }
 
     @Test
@@ -523,8 +665,25 @@ class UtilTest {
                 Util.linkifyPattern(text, Pattern.compile("[0-9]{3,}"), "http://www.example.com?bug="));
     }
 
-    @Test
-    void testCompleteUrl() {
+    static Stream<Arguments> completeUrlArguments() {
+        return Stream.of(
+                // Absolute URLs retain their hostname.
+                Arguments.of("http://example.com/user=", "http://example.com/user="),
+                Arguments.of("http://opengrok.cz.example.com/user=", "http://opengrok.cz.example.com/user="),
+                Arguments.of("http://example.com/user=123&id=", "http://example.com/user=123&id="),
+                // Root-relative and relative URLs use the request URL.
+                Arguments.of("/cgi-bin/user=", "http://www.example.com:8080/cgi-bin/user="),
+                Arguments.of("/cgi-bin/user=123&id=", "http://www.example.com:8080/cgi-bin/user=123&id="),
+                Arguments.of("cgi-bin/user=", "http://www.example.com:8080/source/location/undefined/cgi-bin/user="),
+                Arguments.of("cgi-bin/user=123&id=",
+                        "http://www.example.com:8080/source/location/undefined/cgi-bin/user=123&id="),
+                Arguments.of("", "http://www.example.com:8080/source/location/undefined"),
+                Arguments.of("/cgi-\"bin/user=123&id=", "http://www.example.com:8080/cgi-%22bin/user=123&id="));
+    }
+
+    @ParameterizedTest
+    @MethodSource("completeUrlArguments")
+    void testCompleteUrl(String url, String expected) {
         HttpServletRequest req = new DummyHttpServletRequest() {
             @Override
             public int getServerPort() {
@@ -547,21 +706,7 @@ class UtilTest {
             }
         };
 
-        // Absolute including hostname.
-        assertEquals("http://opengrok.com/user=", Util.completeUrl("http://opengrok.com/user=", req));
-        assertEquals("http://opengrok.cz.grok.com/user=", Util.completeUrl("http://opengrok.cz.grok.com/user=", req));
-        assertEquals("http://opengrok.com/user=123&id=", Util.completeUrl("http://opengrok.com/user=123&id=", req));
-
-        // Absolute/relative without the hostname.
-        assertEquals("http://www.example.com:8080/cgi-bin/user=", Util.completeUrl("/cgi-bin/user=", req));
-        assertEquals("http://www.example.com:8080/cgi-bin/user=123&id=", Util.completeUrl("/cgi-bin/user=123&id=", req));
-        assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=", Util.completeUrl("cgi-bin/user=", req));
-        assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=123&id=", Util.completeUrl("cgi-bin/user=123&id=", req));
-
-        assertEquals("http://www.example.com:8080/source/location/undefined", Util.completeUrl("", req));
-
-        // Escaping should work.
-        assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
+        assertEquals(expected, Util.completeUrl(url, req));
     }
 
     @Test
