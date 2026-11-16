@@ -259,7 +259,7 @@ public class SearchEngine {
         if (getSortOrder() == SortOrder.LASTMODIFIED) {
             luceneSort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
         } else if (getSortOrder() == SortOrder.BY_PATH) {
-            luceneSort = new Sort(new SortField(QueryBuilder.FULLPATH, SortField.Type.STRING));
+            luceneSort = new Sort(new SortField(QueryBuilder.PATH, SortField.Type.STRING));
         }
         return luceneSort;
     }
