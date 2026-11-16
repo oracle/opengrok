@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -608,6 +608,14 @@ public class AnalyzerGuru {
 
         // 'path' is not null, as it was passed to Util.path2uid() above.
         doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
+        /*
+         * Sort by the path relative to the source root rather than by FULLPATH.
+         * FULLPATH is an absolute path, so its ordering can be affected by the
+         * location of the source root (e.g. when parts of the tree are symlinked
+         * or when the index was created from a different location). PATH is what
+         * is displayed in the UI and is therefore the expected sort key.
+         */
+        doc.add(new SortedDocValuesField(QueryBuilder.PATH, new BytesRef(path)));
         Project project = Project.getProject(path);
         if (project != null) {
             doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
