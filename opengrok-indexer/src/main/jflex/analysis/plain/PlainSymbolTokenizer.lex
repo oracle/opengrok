@@ -36,7 +36,7 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %char
 
 %%
-[a-zA-Z_] [a-zA-Z0-9_]* {
+[a-zA-Z_] [a-zA-Z0-9_.]* {
     onSymbolMatched(yytext(), yychar);
     return yystate();
 }
