@@ -246,7 +246,7 @@ def main():
                         help='OpenGrok instance base directory')
     parser.add_argument('-R', '--roconfig',
                         help='OpenGrok read-only configuration file')
-    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source/',
                         help='URI of the webapp with context path')
     parser.add_argument('-c', '--configmerge',
                         help='path to the ConfigMerge program')
