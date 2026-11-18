@@ -97,7 +97,7 @@ def main():
                         help='config file in JSON/YAML format')
     parser.add_argument('--check_config', action='store_true',
                         help='check configuration and exit')
-    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source/',
                         help='uri of the webapp with context path')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')

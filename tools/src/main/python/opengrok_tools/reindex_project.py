@@ -90,7 +90,7 @@ def main():
                         help='Project name')
     parser.add_argument('-d', '--directory',
                         help='Logging directory')
-    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source/',
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
     add_http_headers(parser)

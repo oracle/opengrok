@@ -207,7 +207,7 @@ def main():
                              'The project name can be fnmatch-like pattern')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON/YAML format')
-    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source/',
                         help='URI of the webapp with context path')
     parser.add_argument('-f', '--driveon', action='store_true', default=False,
                         help='continue command sequence processing even '
