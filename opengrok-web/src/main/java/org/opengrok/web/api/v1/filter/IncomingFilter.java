@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.filter;
 
@@ -41,8 +41,6 @@ import org.opengrok.web.api.v1.controller.SearchController;
 import org.opengrok.web.api.v1.controller.SuggesterController;
 import org.opengrok.web.api.v1.controller.SystemController;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -52,10 +50,8 @@ import java.util.logging.Logger;
 
 /**
  * This filter allows the request in case it contains the correct authentication bearer token
- * (needs to come in via HTTPS) or it is coming from localhost or its path matches the list
- * of built in paths.
- * If the request does not contain valid token and appears to come from localhost however is proxied
- * (contains either X-Forwarded-For or Forwarded HTTP headers) it is denied.
+ * (needs to come in via HTTPS unless insecure tokens are explicitly allowed) or its path matches
+ * the list of built-in paths.
  */
 @Provider
 @PreMatching
@@ -66,21 +62,18 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
     /**
      * Endpoint paths that are exempted from this filter.
      * @see SearchController#search(HttpServletRequest, String, String, String, String, String, String,
-     * java.util.List, int, int, String)
+     * java.util.List, int, int, String, int)
      * @see SuggesterController#getSuggestions(org.opengrok.web.api.v1.suggester.model.SuggesterQueryData)
      * @see SuggesterController#getConfig()
      */
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
             SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config",
-            HistoryController.PATH, FileController.PATH, AnnotationController.PATH,
+            HistoryController.PATH, FileController.PATH + "/content", FileController.PATH + "/genre",
+            FileController.PATH + "/defs", AnnotationController.PATH,
             SystemController.PATH + "/ping", SystemController.PATH + "/" + SystemController.INDEX_TIME ));
 
     @Context
     private HttpServletRequest request;
-
-    private final Set<String> localAddresses = new HashSet<>(Arrays.asList(
-            "127.0.0.1", "0:0:0:0:0:0:0:1", "localhost"
-    ));
 
     static final String BEARER = "Bearer ";  // Authorization header value prefix
 
@@ -96,15 +89,6 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
 
     @PostConstruct
     public void init() {
-        try {
-            localAddresses.add(InetAddress.getLocalHost().getHostAddress());
-            for (InetAddress inetAddress : InetAddress.getAllByName("localhost")) {
-                localAddresses.add(inetAddress.getHostAddress());
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Could not get localhost addresses", e);
-        }
-
         // Cache the tokens to avoid locking.
         setTokens(RuntimeEnvironment.getInstance().getAuthenticationTokens());
 
@@ -135,26 +119,12 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
                 LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication token", sanitizedPath);
                 return;
             } else {
-                LOGGER.log(Level.FINEST, "request to {0} has a valid token however is not secure", sanitizedPath);
+                LOGGER.log(Level.WARNING, "request to {0} has a valid token however is not secure", sanitizedPath);
             }
         }
 
         if (allowedPaths.contains(path)) {
             LOGGER.log(Level.FINEST, "allowing request to {0} based on allow listed path", path);
-            return;
-        }
-
-        // In a reverse proxy environment the connection appears to be coming from localhost.
-        // These request should really be using tokens.
-        if (request.getHeader("X-Forwarded-For") != null || request.getHeader("Forwarded") != null) {
-            LOGGER.log(Level.FINEST, "denying request to {0} due to existence of forwarded header in the request",
-                    path);
-            context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-            return;
-        }
-
-        if (localAddresses.contains(request.getRemoteAddr())) {
-            LOGGER.log(Level.FINEST, "allowing request to {0} based on localhost IP address", path);
             return;
         }
 

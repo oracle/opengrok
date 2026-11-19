@@ -17,12 +17,17 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opengrok.web.api.v1.filter;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 @Provider
 @CorsEnable
@@ -30,18 +35,26 @@ public class CorsFilter implements ContainerResponseFilter {
 
     public static final String ALLOW_CORS_HEADER = "Access-Control-Allow-Origin";
     public static final String CORS_REQUEST_HEADER = "Origin";
+    public static final String VARY_HEADER = "Vary";
 
     /**
      * Method for ContainerResponseFilter.
      */
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) {
+        String origin = request.getHeaderString(CORS_REQUEST_HEADER);
+
         // if there is no Origin header, then it is not a
-        // cross origin request. We don't do anything.
-        if (request.getHeaderString(CORS_REQUEST_HEADER) == null) {
+        // cross-origin request. We don't do anything.
+        if (origin == null) {
             return;
         }
 
-        response.getHeaders().add(ALLOW_CORS_HEADER, "*");
+        // The CORS response depends on Origin; make shared caches key this response accordingly.
+        response.getHeaders().add(VARY_HEADER, CORS_REQUEST_HEADER);
+
+        if (RuntimeEnvironment.getInstance().getAllowedOrigins().contains(origin)) {
+            response.getHeaders().add(ALLOW_CORS_HEADER, origin);
+        }
     }
 }

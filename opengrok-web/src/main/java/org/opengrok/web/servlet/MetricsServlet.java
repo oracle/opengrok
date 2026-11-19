@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.servlet;
 
@@ -45,6 +45,7 @@ public class MetricsServlet extends HttpServlet {
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) {
+        resp.setContentType(Metrics.getPrometheusContentType());
         try (PrintWriter pw = resp.getWriter()) {
             pw.print(Metrics.getPrometheusRegistry().scrape());
         } catch (IOException e) {

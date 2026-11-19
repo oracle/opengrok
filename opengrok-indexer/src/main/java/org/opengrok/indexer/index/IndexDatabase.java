@@ -249,7 +249,7 @@ public class IndexDatabase {
      * @param indexWriterConfigFactory {@link IndexWriterConfigFactory} instance
      * @throws java.io.IOException if an error occurs while creating directories
      */
-    IndexDatabase(@NotNull Project project, IndexDownArgsFactory indexDownArgsFactory,
+    IndexDatabase(Project project, IndexDownArgsFactory indexDownArgsFactory,
                          IndexWriterConfigFactory indexWriterConfigFactory) throws IOException {
         this.indexDownArgsFactory = indexDownArgsFactory;
         this.project = project;

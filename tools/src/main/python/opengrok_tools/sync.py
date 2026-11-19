@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -38,11 +38,18 @@ from os import path
 
 from filelock import Timeout, FileLock
 
-from .utils.commandsequence import CommandSequence, CommandSequenceBase, CommandConfigurationException
+from .utils.commandsequence import (
+    CommandSequence,
+    CommandSequenceBase,
+    CommandConfigurationException,
+    HEADERS_FILE_PROPERTY,
+    HEADERS_PROPERTY,
+)
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
+from .utils.restful import read_headers_file
 from .utils.webutil import is_web_uri
 from .utils.exitvals import (
     FAILURE_EXITVAL,
@@ -54,7 +61,41 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.5"
+__version__ = "1.6"
+
+
+def update_headers_from_config(logger, config, headers):
+    """
+    Update HTTP headers with top-level configuration directives.
+    :param logger: logger to be used in this function
+    :param config: dictionary with opengrok-sync configuration
+    :param headers: dictionary with HTTP headers to update
+    :return updated HTTP headers dictionary
+    """
+    config_headers = config.get(HEADERS_PROPERTY)
+    if config_headers:
+        if not isinstance(config_headers, dict):
+            raise CommandConfigurationException("headers must be a dictionary")
+
+        logger.debug("Updating HTTP headers with headers from the configuration: {}".
+                     format(config_headers))
+        headers.update(config_headers)
+
+    config_headers_file = config.get(HEADERS_FILE_PROPERTY)
+    if config_headers_file:
+        if not isinstance(config_headers_file, str):
+            raise CommandConfigurationException("headers_file must be a string")
+
+        try:
+            file_headers = read_headers_file(config_headers_file)
+        except OSError as exc:
+            raise CommandConfigurationException(f"cannot open headers_file {config_headers_file}") from exc
+
+        logger.debug("Updating HTTP headers with headers from the configuration file {}: {}".
+                     format(config_headers_file, file_headers))
+        headers.update(file_headers)
+
+    return headers
 
 
 def worker(base):
@@ -219,11 +260,11 @@ def main():
         return FAILURE_EXITVAL
 
     headers = get_headers(args.header)
-    config_headers = config.get("headers")
-    if config_headers:
-        logger.debug("Updating HTTP headers with headers from the configuration: {}".
-                     format(config_headers))
-        headers.update(config_headers)
+    try:
+        headers = update_headers_from_config(logger, config, headers)
+    except CommandConfigurationException as exc:
+        logger.error("Invalid configuration: {}".format(exc))
+        return FAILURE_EXITVAL
 
     directory = args.directory
     if not args.directory and not args.project and not args.indexed:

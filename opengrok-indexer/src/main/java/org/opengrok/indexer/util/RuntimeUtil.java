@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -31,8 +31,8 @@ public class RuntimeUtil {
     /*
      * interval of supported Java versions
      */
-    static final int JAVA_VERSION_MIN = 11;
-    static final int JAVA_VERSION_MAX = 21;
+    static final int JAVA_VERSION_MIN = 21;
+    static final int JAVA_VERSION_MAX = 25;
 
     /**
      * @throws RuntimeException if the Java runtime version is outside
@@ -40,7 +40,7 @@ public class RuntimeUtil {
      */
     public static void checkJavaVersion() throws RuntimeException {
         Runtime.Version javaVersion = Runtime.version();
-        int majorVersion = javaVersion.version().get(0);
+        int majorVersion = javaVersion.version().getFirst();
         if (majorVersion < JAVA_VERSION_MIN || majorVersion > JAVA_VERSION_MAX) {
             throw new RuntimeException(String.format("unsupported Java version %d [%d,%d)",
                     majorVersion, JAVA_VERSION_MIN, JAVA_VERSION_MAX));
@@ -73,7 +73,7 @@ public class RuntimeUtil {
             value /= 1024;
             idx++;
         }
-        return String.format("%.1f %siB", value, units.substring(idx, idx + 1));
+        return String.format("%.1f %siB", value, units.charAt(idx));
     }
 
     /**

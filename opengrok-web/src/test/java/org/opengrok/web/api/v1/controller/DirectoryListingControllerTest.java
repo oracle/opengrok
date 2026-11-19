@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2023, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
@@ -52,6 +53,7 @@ import org.opengrok.web.api.v1.RestApp;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -65,12 +67,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.controller.DirectoryListingController.getDirectoryEntriesDTO;
 
 class DirectoryListingControllerTest extends OGKJerseyTest {
+    private static final String AUTH_TOKEN = "directory-listing-controller-test-token";
+    private static final String AUTH_HEADER = "Bearer " + AUTH_TOKEN;
+
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 
     @Override
     protected DeploymentContext configureDeployment() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
 
@@ -115,6 +123,8 @@ class DirectoryListingControllerTest extends OGKJerseyTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<>());
         env.getProjectRepositoriesMap().clear();
+        env.setAuthenticationTokens(Collections.emptySet());
+        env.setAllowInsecureTokens(false);
 
         repository.destroy();
     }
@@ -177,6 +187,7 @@ class DirectoryListingControllerTest extends OGKJerseyTest {
         Response response = target("list")
                 .queryParam("path", "/" + path)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get();
         List<DirectoryListingController.DirectoryEntryDTO> entriesResp = response.readEntity(new GenericType<>() {
         });

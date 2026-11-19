@@ -9,32 +9,40 @@ on:
   schedule:
   - cron: "0 0 * * 0"
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: ${{ matrix.os }} with Java 21
+    name: ${{ matrix.os }} with Java ${{ matrix.java }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+        java: ['21', '25']
     steps:
     - name: Checkout master branch
-      uses: actions/checkout@v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0
     - name: Set up JDK
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
       with:
         distribution: 'oracle'
-        java-version: '21'
+        java-version: ${{ matrix.java }}
+    - name: Set up Python
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.13'
     - name: Cache Maven packages
-      uses: actions/cache@v5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Checkout Universal ctags
-      uses: actions/checkout@v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         repository: universal-ctags/ctags
         path: ctags
@@ -43,7 +51,18 @@ jobs:
       run: ./dev/before_install
     - name: Install Universal ctags (Windows)
       if: runner.os == 'Windows'
-      run: choco install universal-ctags
+      shell: cmd
+      working-directory: ctags
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VS_INSTALL=%%i"
+        if not defined VS_INSTALL exit /b 1
+        call "%VS_INSTALL%\VC\Auxiliary\Build\vcvars64.bat"
+        if errorlevel 1 exit /b 1
+        nmake /f mk_mvc.mak
+        if errorlevel 1 exit /b 1
+        .\ctags.exe --version
+        if errorlevel 1 exit /b 1
+        echo %CD%>>"%GITHUB_PATH%"
     - name: Before build actions
       shell: bash
       run: ./dev/before
@@ -57,7 +76,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: opengrok-${{ github.sha }}-${{ matrix.os }}.tar.gz
         path: distribution/target/opengrok-*.tar.gz

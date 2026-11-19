@@ -1,0 +1,157 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
+ */
+package org.opengrok.indexer.web;
+
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.opengrok.indexer.logger.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class AsyncApiCallResult {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsyncApiCallResult.class);
+
+    private final int apiTimeout;
+    private final int connectTimeout;
+    private final String bearerToken;
+
+    /**
+     * Creates a new {@code AsyncApiCallResult} instance with the given API and connection timeouts.
+     * <p>
+     * This is a convenience constructor equivalent to calling
+     * {@link #AsyncApiCallResult(int, int, String) AsyncApiCallResult(apiTimeout, connectTimeout, null)}.
+     * See {@link #AsyncApiCallResult(int, int, String)} for detailed parameter semantics.
+     * </p>
+     *
+     * @param apiTimeout     maximum time to wait, in seconds, for the asynchronous API
+     *                       call to complete
+     * @param connectTimeout connection timeout, in seconds, used for each HTTP request
+     */
+    public AsyncApiCallResult(int apiTimeout, int connectTimeout) {
+        this(apiTimeout, connectTimeout, null);
+    }
+
+    /**
+     * Creates a new {@code AsyncApiCallResult} instance with the given timeouts and
+     * optional bearer token for authorization.
+     * <p>
+     * The {@code apiTimeout} parameter specifies the maximum duration, in seconds,
+     * to wait for completion of the asynchronous API call. The {@code connectTimeout}
+     * parameter specifies the connection timeout, in seconds, for each HTTP request.
+     * When {@code bearerToken} is not {@code null}, it is sent as a {@code Bearer}
+     * authorization header with all outgoing requests.
+     *
+     * @param apiTimeout     maximum time to wait, in seconds, for the asynchronous API
+     *                       call to complete
+     * @param connectTimeout connection timeout, in seconds, used for each HTTP request
+     * @param bearerToken    optional bearer token used for authenticated calls; when
+     *                       not {@code null}, an {@code Authorization} header is added
+     */
+    public AsyncApiCallResult(int apiTimeout, int connectTimeout, @Nullable String bearerToken) {
+        this.apiTimeout = apiTimeout;
+        this.connectTimeout = connectTimeout;
+        this.bearerToken = bearerToken;
+    }
+
+    /**
+     * Busy waits for API call to complete by repeatedly querying the status API endpoint passed
+     * in the {@code Location} header in the response parameter. The overall time is governed
+     * by the API timeout configured in the constructor, however each individual status check
+     * uses the connect timeout configured in the constructor so in the worst case the total time can be
+     * {@code apiTimeout * connectTimeout}.
+     * <p>
+     * Once the asynchronous request is processed, i.e. after the remote returns anything other
+     * than {@code ACCEPTED} code before the timeout expires, a {@code DELETE} call is made
+     * to the location found in the original response to perform cleanup.
+     * In case the request is still in the {@code ACCEPTED} state after the timeout expires,
+     * the response is returned without making the {@code DELETE} call.
+     * If the {@code DELETE} call fails, the method will merely log this event.
+     * </p>
+     * @param response response returned from the server upon asynchronous API request
+     * @return last response from the status API call
+     * @throws InterruptedException on sleep interruption
+     * @throws IllegalArgumentException on invalid request (no {@code Location} header in the response)
+     */
+    public @NotNull Response waitFor(@NotNull Response response)
+            throws InterruptedException, IllegalArgumentException {
+
+        if (response.getStatus() != Response.Status.ACCEPTED.getStatusCode()) {
+            LOGGER.log(Level.WARNING, "API request not accepted: {0}", response);
+            return response;
+        }
+
+        final String location = response.getHeaderString(HttpHeaders.LOCATION);
+        if (location == null) {
+            throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));
+        }
+
+        LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
+        for (int i = 0; i < apiTimeout; i++) {
+            response = getRequestBuilder(location).get();
+            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                Thread.sleep(1000);
+            } else {
+                break;
+            }
+        }
+
+        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+            LOGGER.log(Level.WARNING, "API request still not completed: {0}", response);
+            return response;
+        }
+
+        LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
+        try (Response deleteResponse = getRequestBuilder(location).delete()) {
+            if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
+                        new Object[]{location, response.getStatusInfo()});
+            }
+        }
+
+        return response;
+    }
+
+    private Invocation.Builder getRequestBuilder(@NotNull String location) {
+        /*
+         * The Client object is not closed (e.g. assigned to within the try-with-resources block),
+         * because the response is returned from the method and when it is closed (perhaps in its own
+         * try-with-resources block), the owning Client object has to be still valid, otherwise
+         * Jersey/HK2 IllegalStateException will ensue.
+         */
+        Invocation.Builder request = ClientBuilder.newBuilder().
+                connectTimeout(connectTimeout, TimeUnit.SECONDS).build().
+                target(location).request();
+        if (bearerToken != null) {
+            request.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        }
+
+        return request;
+    }
+}

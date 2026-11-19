@@ -20,17 +20,19 @@
 #
 
 #
-# Copyright (c) 2022, 2023, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
+import os
+import tempfile
 
 import pytest
 from multiprocessing import pool
 
 from mockito import verify, ANY, patch
 
-from opengrok_tools.sync import do_sync
+from opengrok_tools.sync import do_sync, update_headers_from_config
 from opengrok_tools.utils.commandsequence import CommandConfigurationException
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 
@@ -71,3 +73,51 @@ def test_dosync_check_config_invalid():
     with pytest.raises(CommandConfigurationException):
         do_sync(logging.INFO, commands, None, ["foo", "bar"], [],
                 "http://localhost:8080/source", 42, check_config=True)
+
+
+def test_update_headers_from_config():
+    logger = logging.getLogger("test_update_headers_from_config")
+    headers = {"CLI": "header", "Common": "cli"}
+    config_headers = {"Config": "header", "Common": "config"}
+    file_headers = {"File": "header", "Common": "file"}
+
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False) as headers_file:
+        for header, value in file_headers.items():
+            headers_file.write(f"{header}: {value}\n")
+
+    try:
+        assert update_headers_from_config(logger, {
+            "headers": config_headers,
+            "headers_file": headers_file.name,
+        }, headers) == {
+            "CLI": "header",
+            "Config": "header",
+            "File": "header",
+            "Common": "file",
+        }
+    finally:
+        os.remove(headers_file.name)
+
+
+def test_update_headers_from_config_invalid_headers():
+    logger = logging.getLogger("test_update_headers_from_config_invalid_headers")
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        update_headers_from_config(logger, {"headers": "invalid"}, {})
+
+    assert str(exc_info.value) == "headers must be a dictionary"
+
+
+def test_update_headers_from_config_invalid_headers_file():
+    logger = logging.getLogger("test_update_headers_from_config_invalid_headers_file")
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        update_headers_from_config(logger, {"headers_file": 42}, {})
+
+    assert str(exc_info.value) == "headers_file must be a string"
+
+
+def test_update_headers_from_config_missing_headers_file():
+    logger = logging.getLogger("test_update_headers_from_config_missing_headers_file")
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        update_headers_from_config(logger, {"headers_file": "/does/not/exist"}, {})
+
+    assert str(exc_info.value).startswith("cannot open headers_file")

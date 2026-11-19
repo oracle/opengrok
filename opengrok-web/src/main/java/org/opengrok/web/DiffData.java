@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2011, Jens Elkner.
- * Copyright (c) 2009, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -43,7 +43,7 @@ public class DiffData {
     /** the original and new revision container. */
     Revision revision;
     /**
-     * the URI encoded parameter values of the request. {@code param[0]}
+     * the URL-encoded query parameter values, ready to include in links without further encoding. {@code param[0]}
      * belongs to {@code r1}, {@code param[1]} to {@code r2}.
      */
     String[] param;

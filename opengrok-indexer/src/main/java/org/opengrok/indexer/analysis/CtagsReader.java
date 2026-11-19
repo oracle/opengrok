@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -100,7 +100,8 @@ public class CtagsReader {
         //        KIND("kind"),
         LINE("line"),
         //        NAMESPACE("namespace"), //this is not defined in above format docs, but both universal and exuberant ctags use it
-        //        PROGRAM("program"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+//        PROGRAM("program"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        RECORD("record"),
         SIGNATURE("signature");
 
         //NOTE: if you edit above, always consult below charCmpEndOffset
@@ -122,12 +123,13 @@ public class CtagsReader {
          * enough to get rid of disambiguation.
          * <p>TODO:
          * <p>NOTE this is a big tradeoff in terms of input data, e.g. field
-         * "find" will be considered "file" and overwrite the value, so if
-         * ctags will send us buggy input, we will output buggy data TOO!
+         * some unknown field with the same prefix as a consumed field will
+         * overwrite the value, so if ctags will send us buggy input, we will
+         * output buggy data TOO!
          * NO VALIDATION happens of input - but then we gain LOTS of speed, due to
          * not comparing the same field names again and again fully.
          */
-        private static final int CHAR_CMP_END_OFFSET = 0;
+        private static final int CHAR_CMP_END_OFFSET = 1;
 
         /**
          * Quickly get if the field name matches allowed/consumed ones.
@@ -220,7 +222,10 @@ public class CtagsReader {
 
         String lnum = fields.get(tagFields.LINE);
         String signature = fields.get(tagFields.SIGNATURE);
-        String classInher = fields.get(tagFields.CLASS);
+        String namespace = fields.get(tagFields.CLASS);
+        if (namespace == null) {
+            namespace = fields.get(tagFields.RECORD);
+        }
 
         final String whole;
         final String match;
@@ -243,7 +248,7 @@ public class CtagsReader {
         // Bug #809: Keep track of which symbols have already been
         // seen to prevent duplicating them in memory.
 
-        final String type = classInher == null ? kind : kind + " in " + classInher;
+        final String type = namespace == null ? kind : kind + " in " + namespace;
 
         int lineno;
         try {
@@ -255,7 +260,7 @@ public class CtagsReader {
         }
 
         CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
-        addTag(defs, cidx.lineno, def, type, match, classInher, signature,
+        addTag(defs, cidx.lineno, def, type, match, namespace, signature,
             cidx.lineStart, cidx.lineEnd);
 
         if (signature != null && !signature.equals("()") &&

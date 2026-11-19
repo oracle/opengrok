@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -55,6 +55,7 @@ public class XrefStyle {
         new XrefStyle("local", "xl", null),
         new XrefStyle("variable", "xv", "Variable"),
         new XrefStyle("class", "xc", "Class"),
+        new XrefStyle("record", "xr", "Record"),
         new XrefStyle("package", "xp", "Package"),
         new XrefStyle("interface", "xi", "Interface"),
         new XrefStyle("namespace", "xn", "Namespace"),

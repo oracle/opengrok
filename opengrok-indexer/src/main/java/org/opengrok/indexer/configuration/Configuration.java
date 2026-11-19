@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -298,9 +299,10 @@ public final class Configuration {
 
     private Set<String> disabledRepositories;
 
-    private Set<String> authenticationTokens; // for non-localhost API access
-    private String indexerAuthenticationToken;
-    private boolean allowInsecureTokens;
+    private Set<String> authenticationTokens; // set of bearer tokens used by the webapp to validate access to certain API endpoints
+    private String indexerAuthenticationToken;  // bearer token used by the indexer to communicate with the webapp
+    private boolean allowInsecureTokens;    // whether to allow bearer tokens over plain HTTP (as opposed to HTTPS)
+    private Set<String> allowedOrigins; // set of origins allowed to read CORS-enabled API responses
 
     private int historyChunkCount;
     private boolean historyCachePerPartesEnabled = true;
@@ -552,6 +554,7 @@ public final class Configuration {
         // This list of calls is sorted alphabetically so please keep it.
         cmds = new HashMap<>();
         setAllowLeadingWildcard(true);
+        setAllowedOrigins(new HashSet<>());
         setAllowedSymlinks(new HashSet<>());
         setAnnotationCacheEnabled(false);
         setApiTimeout(300); // 5 minutes
@@ -629,7 +632,7 @@ public final class Configuration {
         if (clazzName == null) {
             return null;
         }
-        if (cmd == null || cmd.length() == 0) {
+        if (cmd == null || cmd.isEmpty()) {
             return cmds.remove(clazzName);
         }
         return cmds.put(clazzName, cmd);
@@ -1424,6 +1427,14 @@ public final class Configuration {
         this.allowInsecureTokens = value;
     }
 
+    public Set<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
+
+    public void setAllowedOrigins(Set<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
     public int getHistoryChunkCount() {
         return historyChunkCount;
     }
@@ -1557,7 +1568,7 @@ public final class Configuration {
 
         List<Group> nonRootGroups = conf.groups.values().stream()
                 .filter(g -> Objects.nonNull(g.getParent()))
-                .collect(Collectors.toList());
+                .toList();
         nonRootGroups.forEach(g ->
                     conf.groups.remove(g.getName())
         );
@@ -1605,7 +1616,8 @@ public final class Configuration {
     }
 
     public static class ConfigurationException extends Exception {
-        static final long serialVersionUID = -1;
+        @Serial
+        private static final long serialVersionUID = -1;
 
         public ConfigurationException(String message) {
             super(message);

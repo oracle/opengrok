@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
 #
 
 import json
@@ -144,6 +144,24 @@ def subst(src, substitutions):
     return src
 
 
+def read_headers_file(path):
+    """
+    Read HTTP headers from a file. Each header has to be on a separate line
+    in the form of 'name: value'. Lines not matching this form are ignored.
+    :param path: path to the headers file
+    :return: dictionary indexed with header names
+    """
+    headers = {}
+    with open(path, encoding="utf-8") as headers_file:
+        for line in headers_file:
+            line = line.rstrip()
+            if ': ' in line:
+                name, value = line.split(': ', 1)
+                headers[name] = value
+
+    return headers
+
+
 def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api_timeout=None):
     """
     Make REST API call. Occurrence of the pattern in the URI
@@ -163,7 +181,11 @@ def call_rest_api(call, substitutions=None, http_headers=None, timeout=None, api
     logger = logging.getLogger(__name__)
 
     logger.debug(f"Headers from the ApiCall object: {call.headers}")
-    headers = call.headers
+    headers = dict(call.headers)
+    if call.headers_file:
+        logger.debug(f"Updating HTTP headers from file: {call.headers_file}")
+        headers.update(read_headers_file(call.headers_file))
+
     if http_headers:
         logger.debug("Updating HTTP headers for API call {} with {}".
                      format(call, http_headers))

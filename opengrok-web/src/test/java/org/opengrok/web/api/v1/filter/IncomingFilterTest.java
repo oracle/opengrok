@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.filter;
 
@@ -29,6 +29,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -49,9 +51,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class IncomingFilterTest {
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
     @BeforeEach
     void beforeTest() {
-        RuntimeEnvironment.getInstance().setAuthenticationTokens(new HashSet<>());
+        env.setAuthenticationTokens(new HashSet<>());
+        env.setAllowInsecureTokens(false);
     }
 
     @Test
@@ -60,9 +66,9 @@ class IncomingFilterTest {
 
         Set<String> tokens = new HashSet<>();
         tokens.add(allowedToken);
-        RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
+        env.setAuthenticationTokens(tokens);
 
-        nonLocalhostTestWithToken(true, allowedToken);
+        nonLocalhostTestWithToken(true, allowedToken, true);
     }
 
     @Test
@@ -71,20 +77,35 @@ class IncomingFilterTest {
 
         Set<String> tokens = new HashSet<>();
         tokens.add(allowedToken);
-        RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
+        env.setAuthenticationTokens(tokens);
 
-        nonLocalhostTestWithToken(false, allowedToken + "_");
+        nonLocalhostTestWithToken(false, allowedToken + "_", true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void nonLocalhostTestWithValidTokenInsecure(boolean isSecure) throws Exception {
+        String allowedToken = "foo";
+
+        Set<String> tokens = new HashSet<>();
+        tokens.add(allowedToken);
+        env.setAuthenticationTokens(tokens);
+        boolean insecureOrigValue = env.isAllowInsecureTokens();
+        env.setAllowInsecureTokens(true);
+
+        nonLocalhostTestWithToken(true, allowedToken, isSecure);
+
+        // cleanup
+        env.setAllowInsecureTokens(insecureOrigValue);
     }
 
     @Test
     void nonLocalhostTestWithTokenChange() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         String token = "foobar";
 
-        Map<String, String> headers = new TreeMap<>();
         final String authHeaderValue = IncomingFilter.BEARER + token;
-        headers.put(HttpHeaders.AUTHORIZATION, authHeaderValue);
+        Map<String, String> headers = new TreeMap<>(Map.of(HttpHeaders.AUTHORIZATION, authHeaderValue));
         assertTrue(env.getAuthenticationTokens().isEmpty());
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
 
@@ -109,11 +130,10 @@ class IncomingFilterTest {
         verify(context, never()).abortWith(captor.capture());
     }
 
-    private void nonLocalhostTestWithToken(boolean allowed, String token) throws Exception {
-        Map<String, String> headers = new TreeMap<>();
+    private void nonLocalhostTestWithToken(boolean allowed, String token, boolean isSecure) throws Exception {
         final String authHeaderValue = IncomingFilter.BEARER + token;
-        headers.put(HttpHeaders.AUTHORIZATION, authHeaderValue);
-        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
+        Map<String, String> headers = new TreeMap<>(Map.of(HttpHeaders.AUTHORIZATION, authHeaderValue));
+        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, isSecure);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
 
@@ -125,13 +145,13 @@ class IncomingFilterTest {
             verify(context, never()).abortWith(captor.capture());
         } else {
             verify(context).abortWith(captor.capture());
+            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
         }
     }
 
     @Test
-    void localhostTestWithForwardedHeader() throws Exception {
-        Map<String, String> headers = new TreeMap<>();
-        headers.put("X-Forwarded-For", "192.0.2.43, 2001:db8:cafe::17");
+    void forwardedHeaderTestWithoutToken() throws Exception {
+        Map<String, String> headers = new TreeMap<>(Map.of("X-Forwarded-For", "192.0.2.43, 2001:db8:cafe::17"));
         IncomingFilter filter = mockWithRemoteAddress("127.0.0.1", headers, true);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
@@ -159,7 +179,7 @@ class IncomingFilterTest {
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
     }
 
-    private IncomingFilter mockWithRemoteAddress(final String remoteAddr, Map<String, String> headers, boolean secure)
+    private IncomingFilter mockWithRemoteAddress(final String remoteAddr, Map<String, String> headers, boolean isSecure)
             throws Exception {
         IncomingFilter filter = new IncomingFilter();
         filter.init();
@@ -168,7 +188,7 @@ class IncomingFilterTest {
         for (String name : headers.keySet()) {
             when(request.getHeader(name)).thenReturn(headers.get(name));
         }
-        when(request.isSecure()).thenReturn(secure);
+        when(request.isSecure()).thenReturn(isSecure);
         when(request.getRemoteAddr()).thenReturn(remoteAddr);
 
         setHttpRequest(filter, request);
@@ -198,8 +218,8 @@ class IncomingFilterTest {
     }
 
     @Test
-    void localhostTest() throws Exception {
-        assertFilterDoesNotBlockAddress("127.0.0.1", "test");
+    void localhostTestWithoutToken() throws Exception {
+        assertFilterBlocksAddress("127.0.0.1", "test");
     }
 
     private void assertFilterDoesNotBlockAddress(final String remoteAddr, final String url) throws Exception {
@@ -214,9 +234,22 @@ class IncomingFilterTest {
         verify(context, never()).abortWith(captor.capture());
     }
 
+    private void assertFilterBlocksAddress(final String remoteAddr, final String url) throws Exception {
+        IncomingFilter filter = mockWithRemoteAddress(remoteAddr);
+
+        ContainerRequestContext context = mockContainerRequestContext(url);
+
+        ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
+
+        filter.filter(context);
+
+        verify(context).abortWith(captor.capture());
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
+    }
+
     @Test
-    void localhostIPv6Test() throws Exception {
-        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1", "test");
+    void localhostIPv6TestWithoutToken() throws Exception {
+        assertFilterBlocksAddress("0:0:0:0:0:0:0:1", "test");
     }
 
     @Test
@@ -227,6 +260,17 @@ class IncomingFilterTest {
     @Test
     void systemPingRemoteWithoutTokenTest() throws Exception {
         assertFilterDoesNotBlockAddress("10.0.0.1", "system/ping");
+    }
+
+    @Test
+    void suggestConfigRemoteWithoutTokenTest() throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", "suggest/config");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"file/genre", "file/defs", "file/content"})
+    void fileRemoteWithoutTokenTest(final String path) throws Exception {
+        assertFilterDoesNotBlockAddress("10.0.0.1", path);
     }
 
     @Test

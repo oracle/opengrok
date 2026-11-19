@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.14.11</version>
+    <version>1.14.21</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
@@ -74,8 +74,9 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <maven-surefire.version>3.0.0-M5</maven-surefire.version>
         <apache-commons-lang3.version>3.18.0</apache-commons-lang3.version>
         <micrometer.version>1.14.1</micrometer.version>
-        <mockito.version>5.17.0</mockito.version>
+        <mockito.version>5.23.0</mockito.version>
         <commons-io.version>2.14.0</commons-io.version>
+        <openapi-generator.version>7.15.0</openapi-generator.version>
     </properties>
 
     <dependencyManagement>
@@ -283,7 +284,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.10</version>
+                <version>0.8.15</version>
                 <executions>
                     <!-- Prepare execution with Surefire -->
                     <execution>
@@ -327,6 +328,27 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                         </property>
                     </javaApiLinks>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>validate-openapi</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/openapi.yaml</inputSpec>
+                            <generatorName>html2</generatorName>
+                            <output>${project.build.directory}/openapi-validation</output>
+                            <skipValidateSpec>false</skipValidateSpec>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>

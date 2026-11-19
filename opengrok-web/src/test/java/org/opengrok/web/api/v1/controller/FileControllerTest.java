@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2022, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
@@ -55,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -66,8 +68,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.VARY_HEADER;
 
 class FileControllerTest extends OGKJerseyTest {
+
+    private static final String AUTH_TOKEN = "file-controller-test-token";
+    private static final String AUTH_HEADER = "Bearer " + AUTH_TOKEN;
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -77,6 +85,9 @@ class FileControllerTest extends OGKJerseyTest {
 
     @Override
     protected DeploymentContext configureDeployment() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(Collections.singleton(AUTH_TOKEN));
+        RuntimeEnvironment.getInstance().setAllowInsecureTokens(true);
+
         return ServletDeploymentContext.forServlet(new ServletContainer(new RestApp())).build();
     }
 
@@ -89,6 +100,7 @@ class FileControllerTest extends OGKJerseyTest {
     @BeforeEach
     @Override
     public void setUp() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         super.setUp();
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
@@ -97,6 +109,7 @@ class FileControllerTest extends OGKJerseyTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setAllowedOrigins(Set.of("http://example.com"));
         RepositoryFactory.initializeIgnoredNames(env);
 
         Indexer.getInstance().prepareIndexer(
@@ -120,6 +133,9 @@ class FileControllerTest extends OGKJerseyTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<>());
         env.getProjectRepositoriesMap().clear();
+        env.setAuthenticationTokens(Collections.emptySet());
+        env.setAllowInsecureTokens(false);
+        env.setAllowedOrigins(Collections.emptySet());
 
         repository.destroy();
     }
@@ -133,6 +149,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("content")
                 .queryParam("path", path)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(String.class);
         assertEquals(contents, output);
     }
@@ -143,8 +160,45 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("genre")
                 .queryParam("path", validPath)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(String.class);
         assertEquals("PLAIN", genre);
+    }
+
+    @Test
+    void testFileCorsDeniedOrigin() {
+        Response contentResponse = target("file")
+                .path("content")
+                .queryParam("path", "git/header.h")
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        Response genreResponse = target("file")
+                .path("genre")
+                .queryParam("path", validPath)
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+        Response defsResponse = target("file")
+                .path("defs")
+                .queryParam("path", validPath)
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .header(CORS_REQUEST_HEADER, "http://denied.example.com")
+                .get();
+
+        assertAll(
+                () -> assertEquals(Response.Status.OK.getStatusCode(), contentResponse.getStatus()),
+                () -> assertEquals(Response.Status.OK.getStatusCode(), genreResponse.getStatus()),
+                () -> assertEquals(Response.Status.OK.getStatusCode(), defsResponse.getStatus()),
+                () -> assertNull(contentResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertNull(genreResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertNull(defsResponse.getHeaderString(ALLOW_CORS_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, contentResponse.getHeaderString(VARY_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, genreResponse.getHeaderString(VARY_HEADER)),
+                () -> assertEquals(CORS_REQUEST_HEADER, defsResponse.getHeaderString(VARY_HEADER)));
     }
 
     @Test
@@ -155,6 +209,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("defs")
                 .queryParam("path", validPath)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(type);
         assertFalse(defs.isEmpty());
         assertAll(() -> assertFalse(defs.stream().map(Definitions.Tag::getType).anyMatch(Objects::isNull)),
@@ -183,6 +238,7 @@ class FileControllerTest extends OGKJerseyTest {
                 .path("defs")
                 .queryParam("path", path)
                 .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
                 .get(type);
         assertTrue(defs.isEmpty());
     }
@@ -209,7 +265,9 @@ class FileControllerTest extends OGKJerseyTest {
         Response response = target("file")
                 .path("defs")
                 .queryParam("path", validPath)
-                .request().get();
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER)
+                .get();
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
 
         // Cleanup.

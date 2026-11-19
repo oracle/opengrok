@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -210,7 +210,7 @@ public final class SuggesterController {
                         if (fieldQueryText.size() > 2) {
                             logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
                         } else {
-                            getQuery(field, fieldQueryText.get(0))
+                            getQuery(field, fieldQueryText.getFirst())
                                     .ifPresent(q -> suggester.onSearch(projects, q));
 
                         }

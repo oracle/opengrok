@@ -98,7 +98,7 @@ class JarAnalyzerTest {
 
     @Test
     void testSearchForJar() {
-        SearchEngine instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine(Integer.MAX_VALUE);
         instance.setFile(TESTPLUGINS_JAR);
         int noHits = instance.search();
         assertTrue(noHits > 0, "noHits for " + TESTPLUGINS_JAR + " should be positive");

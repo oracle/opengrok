@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -81,7 +81,7 @@ import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
 import org.opengrok.indexer.util.Statistics;
-import org.opengrok.indexer.web.ApiUtils;
+import org.opengrok.indexer.web.AsyncApiCallResult;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
@@ -275,8 +275,8 @@ public final class RuntimeEnvironment {
         return new PathAccepter(getIgnoredNames(), getIncludedNames());
     }
 
-    private String getCanonicalPath(String s) {
-        if (s == null) {
+    private @Nullable String getCanonicalPath(String s) {
+        if (s == null || s.isEmpty()) {
             return null;
         }
         try {
@@ -1003,7 +1003,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the user page for the history listing.
      *
-     * @return the URL string fragment preceeding the username
+     * @return the URL string fragment preceding the username
      */
     public String getUserPage() {
         return syncReadConfiguration(Configuration::getUserPage);
@@ -1042,7 +1042,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the user page for the history listing.
      *
-     * @param userPage the URL fragment preceeding the username from history
+     * @param userPage the URL fragment preceding the username from history
      */
     public void setUserPage(String userPage) {
         syncWriteConfiguration(userPage, Configuration::setUserPage);
@@ -1070,7 +1070,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the bug page for the history listing.
      *
-     * @return the URL string fragment preceeding the bug ID
+     * @return the URL string fragment preceding the bug ID
      */
     public String getBugPage() {
         return syncReadConfiguration(Configuration::getBugPage);
@@ -1079,7 +1079,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the bug page for the history listing.
      *
-     * @param bugPage the URL fragment preceeding the bug ID
+     * @param bugPage the URL fragment preceding the bug ID
      */
     public void setBugPage(String bugPage) {
         syncWriteConfiguration(bugPage, Configuration::setBugPage);
@@ -1106,7 +1106,7 @@ public final class RuntimeEnvironment {
     /**
      * Returns the review(ARC) page for the history listing.
      *
-     * @return the URL string fragment preceeding the review page ID
+     * @return the URL string fragment preceding the review page ID
      */
     public String getReviewPage() {
         return syncReadConfiguration(Configuration::getReviewPage);
@@ -1115,7 +1115,7 @@ public final class RuntimeEnvironment {
     /**
      * Sets the review(ARC) page for the history listing.
      *
-     * @param reviewPage the URL fragment preceeding the review page ID
+     * @param reviewPage the URL fragment preceding the review page ID
      */
     public void setReviewPage(String reviewPage) {
         syncWriteConfiguration(reviewPage, Configuration::setReviewPage);
@@ -1614,7 +1614,8 @@ public final class RuntimeEnvironment {
             Response.StatusType statusType = response.getStatusInfo();
 
             if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                Response apiResponse = ApiUtils.waitForAsyncApi(response);
+                Response apiResponse = new AsyncApiCallResult(getApiTimeout(), getConnectTimeout(),
+                        getIndexerAuthenticationToken()).waitFor(response);
                 statusType = apiResponse.getStatusInfo();
             }
 
@@ -1682,10 +1683,11 @@ public final class RuntimeEnvironment {
 
             // add project to the groups
             for (Group group : copy) {
-                if (repository_map.get(project) == null) {
-                    group.addProject(project);
-                } else {
+                List<RepositoryInfo> repositories = repository_map.get(project);
+                if (repositories != null && !repositories.isEmpty()) {
                     group.addRepository(project);
+                } else {
+                    group.addProject(project);
                 }
                 project.addGroup(group);
             }
@@ -2181,6 +2183,14 @@ public final class RuntimeEnvironment {
 
     public void setAllowInsecureTokens(boolean value) {
         syncWriteConfiguration(value, Configuration::setAllowInsecureTokens);
+    }
+
+    public Set<String> getAllowedOrigins() {
+        return Collections.unmodifiableSet(syncReadConfiguration(Configuration::getAllowedOrigins));
+    }
+
+    public void setAllowedOrigins(Set<String> origins) {
+        syncWriteConfiguration(origins, Configuration::setAllowedOrigins);
     }
 
     public void registerListener(ConfigurationChangedListener listener) {

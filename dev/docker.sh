@@ -10,6 +10,10 @@
 # These are set via https://github.com/oracle/opengrok/settings/secrets
 #
 
+#
+# Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
+#
+
 set -e
 
 echo "Running linter"
@@ -45,20 +49,18 @@ if [[ -n $OPENGROK_TAG ]]; then
 	    -t "$IMAGE:$VERSION" \
 	    -t "$IMAGE:$VERSION_SHORT" \
 	    -t "$IMAGE:latest" .
+
+	TEST_IMAGE="$IMAGE:latest"
 else
 	TAGS="master"
 
 	echo "Building docker image for master"
 	docker buildx build -t $IMAGE:master .
+
+  TEST_IMAGE="$IMAGE:master"
 fi
 
-#
-# Run the image in a container. This is not strictly needed however
-# serves as additional test in automatic builds.
-#
-echo "Running the image in container"
-docker run -d $IMAGE
-docker ps -a
+./dev/docker_test.sh "$TEST_IMAGE"
 
 # This can only work on home repository since it needs encrypted variables.
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
@@ -69,6 +71,11 @@ fi
 # The push only works on the main repository.
 if [[ "$OPENGROK_REPO_SLUG" != "oracle/opengrok" ]]; then
 	echo "Not pushing Docker image for non main repository"
+	exit 0
+fi
+
+if [[ "$OPENGROK_REF" != "refs/heads/master" && "$OPENGROK_REF" != refs/tags/* ]]; then
+	echo "Not pushing Docker image for ref $OPENGROK_REF"
 	exit 0
 fi
 
@@ -83,7 +90,7 @@ if [[ -z $DOCKER_PAT ]]; then
 fi
 
 # Publish the image to Docker hub.
-if [ -n "$DOCKER_PAT" -a -n "$DOCKER_USERNAME" -a -n "$TAGS" ]; then
+if [[ -n "$DOCKER_PAT" ]] && [[ -n "$DOCKER_USERNAME" ]] && [[ -n "$TAGS" ]]; then
 	echo "Logging into Docker Hub"
 	echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
 

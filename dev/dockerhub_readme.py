@@ -33,7 +33,9 @@ def get_token(username, pat):
     logger.debug("Getting Docker hub token using username/pat")
     headers = {"Content-Type": "application/json", "User-Agent": "Docker-Client/1.0"}
     data = {"username": f"{username}", "password": f"{pat}"}
-    response = requests.post(f"{API_URL}/users/login/", headers=headers, json=data)
+    response = requests.post(
+        f"{API_URL}/users/login/", headers=headers, json=data, timeout=10
+    )
     response.raise_for_status()
 
     return response.json()["token"]
@@ -52,14 +54,12 @@ def update_readme(image, readme_file_path, username, pat):
 
     token = get_token(username, pat)
     headers = {"Content-Type": "application/json", "Authorization": f"JWT {token}"}
-    with open(readme_file_path, "r") as readme_fp:
+    with open(readme_file_path, "r", encoding="utf-8") as readme_fp:
         readme_data = readme_fp.read()
     logger.info("Updating README file on Docker hub")
     body_data = {"full_description": readme_data}
     response = requests.patch(
-        f"{API_URL}/repositories/{image}/",
-        headers=headers,
-        json=body_data,
+        f"{API_URL}/repositories/{image}/", headers=headers, json=body_data, timeout=10
     )
     response.raise_for_status()
 
@@ -88,6 +88,15 @@ def check_push_env():
     event_type = os.environ.get("GITHUB_EVENT_NAME")
     if event_type and event_type == "pull_request":
         logger.info("Not updating Docker hub README for pull requests")
+        sys.exit(0)
+
+    opengrok_ref = os.environ.get("OPENGROK_REF")
+    if (
+        opengrok_ref
+        and opengrok_ref != "refs/heads/master"
+        and not opengrok_ref.startswith("refs/tags/")
+    ):
+        logger.info(f"Not updating Docker image README for ref {opengrok_ref}")
         sys.exit(0)
 
     docker_username = os.environ.get("DOCKER_USERNAME")

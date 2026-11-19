@@ -6,6 +6,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: read
+
 jobs:
   ubuntu:
     runs-on: ubuntu-latest
@@ -14,10 +17,10 @@ jobs:
       shell: bash
       run: env
     - name: Checkout master branch
-      uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
-        python-version: '3.10'
+        python-version: '3.13'
     - name: Install dependencies
       run: python3 -m pip install -r docker/requirements.txt
     - name: Install opengrok-tools so that pylint can perform the checks
@@ -33,7 +36,7 @@ jobs:
       run: black --check docker/*.py
     - name: Run isort in check mode
       run: isort --settings-file docker/.isort.cfg docker/*.py  --check --diff
-    - name: Build and optionally push Docker image
+    - name: Build, test and optionally push Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
@@ -47,4 +50,5 @@ jobs:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PAT: ${{ secrets.DOCKER_PAT }}
+        OPENGROK_REF: ${{ github.ref }}
       run: ./dev/dockerhub_readme.py

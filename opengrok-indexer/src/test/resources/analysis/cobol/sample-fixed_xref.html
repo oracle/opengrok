@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<a class="l" name="1" href="#1">1</a>000100 <b>IDENTIFICATION</b> <b>DIVISION</b>.
+<a class="l" name="2" href="#2">2</a>000200 <b>PROGRAM-ID</b>. <a href="/source/s?defs=SAMPLE%5C-FIXED" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SAMPLE-FIXED</a>.
+<a class="l" name="3" href="#3">3</a>000300<span class="c">* Demonstrates fixed-format COBOL parsing.</span>
+<a class="l" name="4" href="#4">4</a>000400 <b>ENVIRONMENT</b> <b>DIVISION</b>.
+<a class="l" name="5" href="#5">5</a>000500 <b>DATA</b> <b>DIVISION</b>.
+<a class="l" name="6" href="#6">6</a>000600 <b>WORKING-STORAGE</b> <b>SECTION</b>.
+<a class="l" name="7" href="#7">7</a>000700 <span class="n">01</span>  <a href="/source/s?defs=WS%5C-CUSTOMER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-CUSTOMER</a>.
+<a class="l" name="8" href="#8">8</a>000800     <span class="n">05</span>  <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>       <b>PIC</b> <a href="/source/s?defs=X" class="intelliWindow-symbol" data-definition-place="undefined-in-file">X</a>(<span class="n">30</span>).
+<a class="l" name="9" href="#9">9</a>000900     <span class="n">05</span>  <a href="/source/s?defs=WS%5C-AGE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-AGE</a>        <b>PIC</b> <span class="n">9</span>(<span class="n">03</span>).
+<a class="hl" name="10" href="#10">10</a>001000     <span class="n">05</span>  <a href="/source/s?defs=WS%5C-BALANCE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-BALANCE</a>    <b>PIC</b> <span class="n">9</span>(<span class="n">7</span>)<a href="/source/s?defs=V99" class="intelliWindow-symbol" data-definition-place="undefined-in-file">V99</a>.
+<a class="l" name="11" href="#11">11</a>001100 <b>PROCEDURE</b> <b>DIVISION</b>.
+<a class="l" name="12" href="#12">12</a>001200 <a href="/source/s?defs=MAIN%5C-PARA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">MAIN-PARA</a>.
+<a class="l" name="13" href="#13">13</a>001300     <b>MOVE</b> <span class="s">&quot;JOHN DOE&quot;</span> <b>TO</b> <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>.
+<a class="l" name="14" href="#14">14</a>001400     <b>MOVE</b> <span class="n">42</span>         <b>TO</b> <a href="/source/s?defs=WS%5C-AGE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-AGE</a>.
+<a class="l" name="15" href="#15">15</a>001500     <b>COMPUTE</b> <a href="/source/s?defs=WS%5C-BALANCE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-BALANCE</a> = <span class="n">1000.50</span> + <span class="n">250.</span>
+<a class="l" name="16" href="#16">16</a>001600     <b>DISPLAY</b> <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>.
+<a class="l" name="17" href="#17">17</a>001700<span class="c">* The next two lines exercise the continuation indicator (col 7 = &quot;-&quot;).</span>
+<a class="l" name="18" href="#18">18</a>001800     <b>MOVE</b> <span class="s">&quot;FOO&quot;</span>
+<a class="l" name="19" href="#19">19</a>001900<span class="c">-</span>       <b>TO</b> <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>.
+<a class="hl" name="20" href="#20">20</a>002000D    <b>DISPLAY</b> <span class="s">&quot;DEBUG ONLY&quot;</span>.
+<a class="l" name="21" href="#21">21</a>002100     <b>MOVE</b> <span class="s">&quot;He said &quot;&quot;hi&quot;&quot;&quot;</span> <b>TO</b> <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>.
+<a class="l" name="22" href="#22">22</a>002200     <b>MOVE</b> <span class="s">&apos;JANE&apos;&apos;S NAME&apos;</span>  <b>TO</b> <a href="/source/s?defs=WS%5C-NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">WS-NAME</a>.
+<a class="l" name="23" href="#23">23</a>002300     <b>STOP</b> <b>RUN</b>.</body>
+</html>

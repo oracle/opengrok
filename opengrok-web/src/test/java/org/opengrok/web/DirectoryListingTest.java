@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -46,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -70,6 +72,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -118,11 +121,11 @@ class DirectoryListingTest {
         long lastModified;
         /**
          * FileEntry size. May be:
-         * <pre>
-         * positive integer - for a file
-         * -2 - for a directory
-         * -1 - for an unparseable size
-         * </pre>
+         * <ul>
+         * <li>positive integer - for a file</li>
+         * <li><code>-2</code> - for a directory</li>
+         * <li><code>-1</code> - for an unparseable size</li>
+         * </ul>
          */
         long size;
         String readableSize;
@@ -188,15 +191,15 @@ class DirectoryListingTest {
                 return ret;
             }
 
-            // this is a file so the size must be exact
             if (subdirs == null) {
+                // This is a file so the size must be exact, unless it is in human-readable form.
                 if (fe.size == INVALID_SIZE) {
                     ret = readableSize.compareTo(fe.readableSize);
                 } else {
                     ret = Long.compare(size, fe.size);
                 }
             } else {
-                // this is a directory so the size must have been "-" char
+                // This is a directory so the size must be the "-" char.
                 if (size != DIRECTORY_INTERNAL_SIZE) {
                     ret = Long.compare(size, DIRECTORY_INTERNAL_SIZE);
                 }
@@ -218,7 +221,7 @@ class DirectoryListingTest {
     @BeforeEach
     void setUp() throws Exception {
         repositories = new TestRepository();
-        repositories.create(getClass().getResource("/repositories"));
+        repositories.create(Objects.requireNonNull(getClass().getResource("/repositories")));
 
         // Needed for HistoryGuru to operate normally.
         env.setRepositories(repositories.getSourceRoot());
@@ -465,6 +468,58 @@ class DirectoryListingTest {
         }
     }
 
+    private static Stream<Arguments> directoryListingEscapeCases() {
+        String payload = "<img src=x onerror=alert(1)>";
+        String encodedPayload = Util.uriEncodePath(payload);
+        String escapedPayload = "&lt;img src=x onerror=alert(1)&gt;";
+        String supplementaryCharacter = "\uD83D\uDE00";
+        String encodedSupplementaryCharacter = Util.uriEncodePath(supplementaryCharacter);
+        String escapedSupplementaryCharacter = "&#128512;";
+        return Stream.of(
+                Arguments.of("readme" + payload + ".txt", null, false,
+                        "<td><a href=\"readme" + encodedPayload + ".txt\">readme" + escapedPayload + ".txt</a></td>"),
+                Arguments.of("readme" + supplementaryCharacter + ".txt", null, false,
+                        "<td><a href=\"readme" + encodedSupplementaryCharacter + ".txt\">readme" +
+                                escapedSupplementaryCharacter + ".txt</a></td>"),
+                Arguments.of(payload, null, true,
+                        "<td><a href=\"" + encodedPayload + "/\"><b>" + escapedPayload + "</b></a>/</td>"),
+                Arguments.of(supplementaryCharacter, null, true,
+                        "<td><a href=\"" + encodedSupplementaryCharacter + "/\"><b>" +
+                                escapedSupplementaryCharacter + "</b></a>/</td>"),
+                Arguments.of("safe", null, true,
+                        "<td><a href=\"safe/\"><b>safe</b></a>/</td>"),
+                Arguments.of("safe", payload, true,
+                        "<td><a href=\"safe/" + encodedPayload + "/\"><b>" +
+                                "<span class=\"simplified-path\">safe/</span>" + escapedPayload + "</b></a>/</td>"),
+                Arguments.of("safe", supplementaryCharacter, true,
+                        "<td><a href=\"safe/" + encodedSupplementaryCharacter + "/\"><b>" +
+                                "<span class=\"simplified-path\">safe/</span>" + escapedSupplementaryCharacter +
+                                "</b></a>/</td>"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("directoryListingEscapeCases")
+    // Some cases contain '<' and '>', which Windows does not allow in file or directory names.
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    void testDirectoryListingEscapes(String name, String nestedName, boolean isDirectory,
+                                     String expected) throws Exception {
+        String payload = "<img src=x onerror=alert(1)>";
+        File listedEntry = new File(directory, name);
+        if (isDirectory) {
+            File deepestDirectory = nestedName == null ? listedEntry : new File(listedEntry, nestedName);
+            assertTrue(deepestDirectory.mkdirs());
+        } else {
+            assertTrue(listedEntry.createNewFile());
+        }
+
+        StringWriter out = new StringWriter();
+        DirectoryListing.printEntry(out, new DirectoryEntry(listedEntry), isDirectory);
+
+        String listing = out.toString();
+        assertFalse(listing.contains(payload));
+        assertEquals(expected, listing);
+    }
+
     private void setEntries(boolean useHistoryCache, EftarFileReader eftarFileReader) throws Exception {
         File[] files = directory.listFiles();
         assertNotNull(files);
@@ -537,7 +592,7 @@ class DirectoryListingTest {
         }
         assertNotNull(directory.list());
         instance.listTo("ctx", directory, out, directory.getName(),
-                Arrays.asList(directory.list()));
+                Arrays.asList(Objects.requireNonNull(directory.list())));
 
         verify(out, never()).write((String) ArgumentMatchers.isNull());
 

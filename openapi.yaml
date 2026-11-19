@@ -1,0 +1,1449 @@
+openapi: 3.0.3
+info:
+  title: OpenGrok RESTful API
+  description: |
+    OpenGrok RESTful API documentation. Unless overridden on an operation, endpoints are accessible under `/api/v1`.
+
+    Protected endpoints require an authentication bearer token configured in the web application and supplied via the
+    `Authorization` HTTP header (`Authorization: Bearer <token>`). Bearer tokens are accepted over HTTPS connections;
+    HTTP token use has to be explicitly enabled with the `allowInsecureTokens` configuration option and should be limited
+    to trusted internal deployments.
+
+    The access to the `/annotation`, `/file`, `/history`, `/search` and `/suggest` endpoints is controlled with the
+    authorization framework and requires user authentication if set up.
+
+    The `/system/ping`, `/system/indextime`, `/suggest/config` and `/metrics` endpoints are public and do not require
+    bearer token authentication.
+
+    Some APIs are asynchronous. They return status code 202 (Accepted) and a `Location` header that contains the URL for
+    the status endpoint to check for the result of the API call. Once the status API returns a result other than 202, the
+    client should issue a DELETE request to this URL to clean up server resources.
+
+    For all entry points that modify web application configuration, the configuration has to be retrieved and stored on
+    disk (using the configuration-specific entry points) in order to be persistent, for example after application server
+    restart or web application redeploy.
+  version: "1.0.0"
+servers:
+  - url: /api/v1
+tags:
+  - name: Annotation
+  - name: Configuration
+  - name: File
+  - name: History
+  - name: Directory listing
+  - name: System
+  - name: Messages
+  - name: Monitoring
+  - name: Groups
+  - name: Projects
+  - name: Repositories
+  - name: Search
+  - name: Suggester
+  - name: Status
+paths:
+  /annotation:
+    get:
+      tags: [Annotation]
+      summary: Get annotation for a file
+      operationId: getAnnotation
+      parameters:
+        - $ref: '#/components/parameters/PathQuery'
+      responses:
+        '200':
+          description: Annotation entries for the requested file.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnnotationEntry'
+              example:
+                - revision: c55d5891
+                  author: "Adam Hornáček"
+                  description: "changeset: c55d5891\nsummary: Rewrite README.txt to use markdown syntax\nuser: Adam Hornáček <adam.hornacek@oracle.com>\ndate: Wed Aug 30 17:42:12 CEST 2017"
+                  version: "1/15"
+                - revision: 5e0c6b22
+                  author: Vladimir Kotal
+                  description: "changeset: 5e0c6b22\nsummary: bump year\nuser: Vladimir Kotal <vlada@devnull.cz>\ndate: Thu Jul 18 14:43:01 CEST 2019"
+                  version: "14/15"
+  /configuration/authorization/reload:
+    post:
+      tags: [Configuration]
+      summary: Reload authorization framework
+      description: This is an asynchronous API endpoint.
+      operationId: reloadAuthorizationFramework
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '204':
+          description: Authorization framework reloaded.
+        '202':
+          $ref: '#/components/responses/AcceptedAsync'
+  /configuration:
+    get:
+      tags: [Configuration]
+      summary: Return XML representation of configuration
+      operationId: getConfiguration
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: XML representation of the current configuration.
+          content:
+            application/xml:
+              schema:
+                type: string
+              example: |
+                <?xml version="1.0" encoding="UTF-8"?>
+                <java version="1.8.0_172" class="java.beans.XMLDecoder">
+                 <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
+                  <void property="allowLeadingWildcard">
+                   <boolean>true</boolean>
+                  </void>
+                 </object>
+                </java>
+    put:
+      tags: [Configuration]
+      summary: Set configuration from XML representation
+      description: This is an asynchronous API endpoint.
+      operationId: setConfiguration
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              type: string
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <java version="1.8.0_172" class="java.beans.XMLDecoder">
+               <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
+                <void property="allowLeadingWildcard">
+                 <boolean>true</boolean>
+                </void>
+               </object>
+              </java>
+      responses:
+        '201':
+          description: Configuration accepted.
+          content:
+            application/json:
+              schema: {}
+        '202':
+          $ref: '#/components/responses/AcceptedAsync'
+  /configuration/{field}:
+    get:
+      tags: [Configuration]
+      summary: Return a specific configuration field
+      operationId: getConfigurationField
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConfigurationField'
+      responses:
+        '200':
+          description: Configuration field value.
+          content:
+            application/json:
+              schema: {}
+    put:
+      tags: [Configuration]
+      summary: Set a specific configuration field
+      description: This is an asynchronous API endpoint.
+      operationId: setConfigurationField
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConfigurationField'
+        - name: reindex
+          in: query
+          description: Specifies if the underlying data were also reindexed. Refreshes some searchers and additional data structures.
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: string value of the field to set
+      responses:
+        '204':
+          description: Configuration field updated.
+        '202':
+          $ref: '#/components/responses/AcceptedAsync'
+  /file/content:
+    get:
+      tags: [File]
+      summary: Get file content
+      description: |
+        Honors the `Accept` header. If the value of the header is `text/plain` and there is a document in the index that
+        has the genre detected as plain text, the contents of the document will be returned. If the document is not found,
+        HTTP error 404 will be returned. If the genre of the document is not plain text, HTTP error 406 will be returned.
+        Alternatively, use `application/octet-stream` to bypass the document and genre check. The `Content-Type` header of
+        the reply will be set accordingly.
+      operationId: getFileContent
+      parameters:
+        - $ref: '#/components/parameters/PathQuery'
+      responses:
+        '200':
+          description: File content.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                foo
+                bar
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Document not found.
+        '406':
+          description: Document genre is not plain text.
+  /file/genre:
+    get:
+      tags: [File]
+      summary: Get file genre
+      operationId: getFileGenre
+      parameters:
+        - $ref: '#/components/parameters/PathQuery'
+      responses:
+        '200':
+          description: File genre as identified by analyzer.
+          content:
+            text/plain:
+              schema:
+                type: string
+                enum: [PLAIN, XREFABLE, IMAGE, DATA, HTML]
+              example: PLAIN
+  /file/defs:
+    get:
+      tags: [File]
+      summary: Get file definitions
+      operationId: getFileDefinitions
+      parameters:
+        - $ref: '#/components/parameters/PathQuery'
+      responses:
+        '200':
+          description: File definitions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileDefinition'
+              example:
+                - type: function
+                  signature: "(const unsigned char * in,unsigned char * out,size_t len,const AES_KEY * key,unsigned char * ivec,const int enc)"
+                  text: "void AES_cbc_encrypt(const unsigned char *in, unsigned char *out,"
+                  symbol: AES_cbc_encrypt
+                  lineStart: 5
+                  lineEnd: 20
+                  line: 20
+                  namespace: null
+  /history:
+    get:
+      tags: [History]
+      summary: Get history entries
+      operationId: getHistory
+      parameters:
+        - name: path
+          in: query
+          description: Path of file/directory to get history for, relative to source root.
+          required: true
+          schema:
+            type: string
+        - name: withFiles
+          in: query
+          description: Whether to include list of files.
+          required: false
+          schema:
+            type: boolean
+        - name: start
+          in: query
+          description: Start index.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: max
+          in: query
+          description: Number of entries to get.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1000
+      responses:
+        '200':
+          description: History entries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+              example:
+                entries:
+                  - revision: 86b0ab6b
+                    date: 1565163646000
+                    author: Adam Hornacek <adam.hornacek@oracle.com>
+                    tags: null
+                    message: Try to use mvnw in CI
+                    files:
+                      - /opengrok/docker/README.md
+                start: 5
+                count: 3
+                total: 24
+  /list:
+    get:
+      tags: [Directory listing]
+      summary: Get directory entries
+      operationId: getDirectoryListing
+      parameters:
+        - name: path
+          in: query
+          description: Path of file/directory to get listing for, relative to source root, starting with `/`.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Directory entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DirectoryEntry'
+              example:
+                - path: /lucene/.github
+                  numLines: 178
+                  loc: 125
+                  date: 1673456294670
+                  description: null
+                  pathDescription: ""
+                  isDirectory: true
+                  size: null
+                - path: /lucene/.asf.yaml
+                  numLines: 25
+                  loc: 21
+                  date: 1673456294670
+                  description: null
+                  pathDescription: ""
+                  isDirectory: false
+                  size: 574
+  /system/includes/reload:
+    put:
+      tags: [System]
+      summary: Reload all include files for web application
+      operationId: reloadIncludes
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Include files reloaded.
+  /system/indextime:
+    get:
+      tags: [System]
+      summary: Retrieve last index time
+      description: The time is in ISO 8601 format in UTC time zone.
+      operationId: getLastIndexTime
+      security: []
+      responses:
+        '200':
+          description: Last index time.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: date-time
+              example: "2021-02-15T16:39:16.409+00:00"
+  /messages:
+    post:
+      tags: [Messages]
+      summary: Add message to the system
+      description: |
+        Usable values for `messageLevel` are `success`, `info`, `warning`, and `error`. This affects the CSS class of
+        the displayed message. Values in the `tags` list can be `main`, a project name, or a project group name.
+        The format of `duration` is the same as Java's `java.time.Duration` class.
+      operationId: addMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreateRequest'
+            example:
+              tags: [main]
+              messageLevel: info
+              text: test message
+              duration: PT10M
+      responses:
+        '201':
+          description: Message added.
+    delete:
+      tags: [Messages]
+      summary: Delete messages with specified tag
+      operationId: deleteMessages
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MessageTag'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: string value of the message text - only messages with the text (and specified tag) will be deleted
+      responses:
+        '204':
+          description: Matching messages deleted.
+    get:
+      tags: [Messages]
+      summary: Return all messages with specified tag
+      operationId: getMessages
+      parameters:
+        - $ref: '#/components/parameters/MessageTag'
+      responses:
+        '200':
+          description: Messages with specified tag.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+              example:
+                - expired: false
+                  created: "2019-01-23 20:39:31 CET"
+                  tags: [main]
+                  expiration: "2019-01-23 20:49:31 CET"
+                  cssClass: class
+                  text: test&nbsp;message
+  /metrics/prometheus:
+    get:
+      tags: [Monitoring]
+      summary: Retrieve web application metrics in Prometheus format
+      operationId: getPrometheusMetrics
+      servers:
+        - url: /
+      security: []
+      responses:
+        '200':
+          description: Prometheus metrics.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /system/pathdesc:
+    post:
+      tags: [System]
+      summary: Update path descriptions for web application
+      description: |
+        Refreshes path descriptions. The web application stores descriptions in a file under the data root so it is not
+        necessary to load path descriptions manually after each web application redeploy. Paths are relative to source
+        root, starting with `/`.
+      operationId: updatePathDescriptions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PathDescription'
+            example:
+              - path: /foo
+                description: foo foo
+              - path: /bar
+                description: bar
+      responses:
+        '204':
+          description: Path descriptions updated.
+  /system/version:
+    get:
+      tags: [System]
+      summary: Get web application version as string
+      operationId: getWebAppVersion
+      responses:
+        '200':
+          description: Web application version.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 1.9.0 (a5ac05426bc5029158fedffee1cd44abf033bb61)
+  /system/ping:
+    get:
+      tags: [System]
+      summary: Check if web app is deployed and alive
+      description: This endpoint is used by the indexer when running with the `-U` option.
+      operationId: ping
+      security: []
+      responses:
+        '200':
+          description: Web application is alive.
+  /groups:
+    get:
+      tags: [Groups]
+      summary: Return a list of all groups
+      operationId: getGroups
+      responses:
+        '200':
+          description: List of groups.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [foo, bar]
+  /groups/{group}/allprojects:
+    get:
+      tags: [Groups]
+      summary: Return list of all projects for a group
+      description: Includes projects of any sub-groups.
+      operationId: getGroupProjects
+      parameters:
+        - $ref: '#/components/parameters/GroupName'
+      responses:
+        '200':
+          description: List of all projects for the group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [foo, bar]
+  /groups/{group}/pattern:
+    get:
+      tags: [Groups]
+      summary: Return pattern for given group
+      operationId: getGroupPattern
+      parameters:
+        - $ref: '#/components/parameters/GroupName'
+      responses:
+        '200':
+          description: Group pattern.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ^foo-.*
+  /groups/{group}/match:
+    post:
+      tags: [Groups]
+      summary: Check if project name matches group pattern
+      operationId: matchGroupPattern
+      parameters:
+        - $ref: '#/components/parameters/GroupName'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: name of the project
+      responses:
+        '200':
+          description: Name matches group pattern.
+        '204':
+          description: Name does not match group pattern.
+  /projects:
+    get:
+      tags: [Projects]
+      summary: Return a list of all projects
+      operationId: getProjects
+      responses:
+        '200':
+          description: List of projects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [foo, bar]
+    post:
+      tags: [Projects]
+      summary: Add project
+      description: |
+        This merely adds the project and its repositories to the web application configuration. The project will not be
+        searchable, and thus appear in the UI, until it is indexed. If the project is already present in the
+        configuration, the list of its repositories will be refreshed if history is enabled.
+      operationId: addProject
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: text/plain name of the project
+      responses:
+        '201':
+          description: Project added.
+  /projects/{project}:
+    delete:
+      tags: [Projects]
+      summary: Delete project
+      description: Removes the project and its repositories from the web application configuration and deletes project-specific data such as index, cross-reference pages, history index and suggester data.
+      operationId: deleteProject
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '204':
+          description: Project deleted.
+  /projects/{project}/data:
+    delete:
+      tags: [Projects]
+      summary: Delete project index data
+      description: Deletes project index data but keeps the project in web application configuration so it can be indexed from scratch. Project source data is left intact. The project is also marked as not indexed.
+      operationId: deleteProjectData
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '204':
+          description: Project index data deleted.
+  /projects/{project}/historycache:
+    delete:
+      tags: [Projects]
+      summary: Delete history cache for a project
+      description: Returns list of repository paths for which the cache was successfully deleted.
+      operationId: deleteProjectHistoryCache
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '200':
+          description: Repository paths for which history cache was deleted.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [/project/repository1, /project/repository2]
+  /projects/{project}/annotationcache:
+    delete:
+      tags: [Projects]
+      summary: Delete annotation cache for a project
+      description: Returns list of repository paths for which the cache was successfully deleted.
+      operationId: deleteProjectAnnotationCache
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '200':
+          description: Repository paths for which annotation cache was deleted.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [/project/repository1, /project/repository2]
+  /projects/{project}/indexed:
+    put:
+      tags: [Projects]
+      summary: Mark project as indexed
+      description: This asynchronous endpoint is used by the Indexer once it finishes indexing a project.
+      operationId: markProjectIndexed
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      requestBody:
+        required: false
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: ""
+      responses:
+        '204':
+          description: Project marked as indexed.
+        '202':
+          $ref: '#/components/responses/AcceptedAsync'
+  /projects/{project}/files:
+    get:
+      tags: [Projects]
+      summary: Get list of files tracked by the index database for given project
+      operationId: getProjectFiles
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '200':
+          description: Files tracked by the index database.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [/project/foo.txt, /project/bar.txt]
+  /projects/{project}/property/{propertyname}:
+    put:
+      tags: [Projects]
+      summary: Set property value for the project
+      description: Per-project properties are documented at https://github.com/oracle/opengrok/wiki/Per-project-configuration#properties
+      operationId: setProjectProperty
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/PropertyName'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: body - string representation of the value to set
+      responses:
+        '204':
+          description: Project property updated.
+    get:
+      tags: [Projects]
+      summary: Return the property value
+      operationId: getProjectProperty
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/PropertyName'
+      responses:
+        '200':
+          description: Project property value.
+          content:
+            application/json:
+              schema: {}
+  /projects/{project}/repositories:
+    get:
+      tags: [Projects]
+      summary: Return a list of repositories for the specified project
+      description: Native path separators of the system running the service will be used for repository paths.
+      operationId: getProjectRepositories
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '200':
+          description: Project repositories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                - /opengrok-master/testdata/repositories/teamware
+                - /opengrok-master/testdata/sources/rfe2575
+                - /opengrok-master/testdata/repositories/rcs_test
+                - /opengrok-master
+  /projects/{project}/repositories/type:
+    get:
+      tags: [Projects]
+      summary: Return types of project repositories
+      operationId: getProjectRepositoryTypes
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '200':
+          description: Repository types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [RCS, git, SCCS]
+  /projects/indexed:
+    get:
+      tags: [Projects]
+      summary: Return a list of indexed projects
+      operationId: getIndexedProjects
+      responses:
+        '200':
+          description: Indexed projects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: [sc-2, sc-1]
+  /repositories/property/{field}:
+    get:
+      tags: [Repositories]
+      summary: Return the repository field value
+      description: |
+        The repository path is relative to source root. Examples of field names:
+        - `working` (boolean): is the repository capable of running underlying SCM commands
+        - `type` (string): type of SCM
+        - `remote` (boolean): is the SCM source remote
+        - `parent` (string): origin/parent of the SCM
+        - `branch` (string): branch identification
+        - `currentVersion` (string): current revision ID
+        - `handleRenamedFiles` (boolean): whether to handle renamed files for history cache generation
+        - `historyEnabled` (boolean): is history enabled
+        - `annotationCacheEnabled` (boolean): is annotation cache enabled
+      operationId: getRepositoryProperty
+      parameters:
+        - name: field
+          in: path
+          required: true
+          description: Repository field name.
+          schema:
+            type: string
+        - name: repository
+          in: query
+          required: true
+          description: Repository path with native path separators of the machine running the service, starting with path separator.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Repository field value.
+          content:
+            application/json:
+              schema: {}
+  /search:
+    get:
+      tags: [Search]
+      summary: Return search results
+      description: The `results` map preserves the order of the `sort` parameter (Lucene scoring order for `relevancy`).
+      operationId: search
+      parameters:
+        - name: full
+          in: query
+          description: Full search field value to search for.
+          schema:
+            type: string
+        - name: def
+          in: query
+          description: Definition field value to search for.
+          schema:
+            type: string
+        - name: symbol
+          in: query
+          description: Symbol field value to search for.
+          schema:
+            type: string
+        - name: path
+          in: query
+          description: File path field value to search for.
+          schema:
+            type: string
+        - name: hist
+          in: query
+          description: History field value to search for.
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Type of files to search for.
+          schema:
+            type: string
+        - name: projects
+          in: query
+          description: Projects to search in.
+          schema:
+            type: string
+        - name: maxresults
+          in: query
+          description: Maximum number of documents whose hits will be returned.
+          schema:
+            type: integer
+            default: 1000
+        - name: start
+          in: query
+          description: Start index from which to return results.
+          schema:
+            type: integer
+        - name: maxhitsperfile
+          in: query
+          description: Maximum number of matching lines returned per file. `0` returns all matching lines.
+          schema:
+            type: integer
+            default: 0
+        - name: sort
+          in: query
+          description: Sort order for results.
+          schema:
+            type: string
+            default: relevancy
+            enum: [relevancy, fullpath, lastmodtime]
+      responses:
+        '200':
+          description: Search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example:
+                time: 1229
+                resultCount: 8
+                startDocument: 0
+                endDocument: 7
+                results:
+                  /onnv/usr/src/lib/libnisdb/db_pickle.cc:
+                    - line: "pickle_file::<b>transfer</b>(pptr p, bool_t (*f) (XDR*, pptr))"
+                      lineNumber: "106"
+                      tag: "function in pickle_file"
+                  /onnv/usr/src/cmd/pools/poold/com/sun/solaris/service/pools/Resource.java:
+                    - line: "\tpublic void <b>transfer</b>(Resource donor, long qty) throws PoolsException"
+                      lineNumber: "93"
+                      tag: "method in Resource"
+                    - line: "\tpublic void <b>transfer</b>(Resource donor, List components)"
+                      lineNumber: "110"
+                      tag: "method in Resource"
+  /suggest:
+    get:
+      tags: [Suggester]
+      summary: Return suggestions
+      operationId: getSuggestions
+      parameters:
+        - name: projects
+          in: query
+          description: List of projects for which to retrieve suggestions.
+          required: true
+          schema:
+            type: string
+        - name: field
+          in: query
+          description: Field for which to suggest.
+          required: true
+          schema:
+            type: string
+        - name: caret
+          in: query
+          description: Position of the caret in the input field.
+          required: true
+          schema:
+            type: integer
+        - name: full
+          in: query
+          description: Value of the Full Search input.
+          schema:
+            type: string
+        - name: defs
+          in: query
+          description: Value of the Definitions input.
+          schema:
+            type: string
+        - name: refs
+          in: query
+          description: Value of Symbol input.
+          schema:
+            type: string
+        - name: path
+          in: query
+          description: Value of the File Path input.
+          schema:
+            type: string
+        - name: hist
+          in: query
+          description: Value of the History input.
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Value of the Type input.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Suggestions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestResponse'
+              example:
+                time: 60
+                suggestions:
+                  - phrase: package
+                    projects: [kotlin]
+                    score: 387
+                identifier: pprttq
+                queryText: pprttq
+                partialResult: false
+  /suggest/config:
+    get:
+      tags: [Suggester]
+      summary: Return suggester configuration
+      operationId: getSuggesterConfig
+      security: []
+      responses:
+        '200':
+          description: Suggester configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggesterConfig'
+              example:
+                enabled: true
+                maxResults: 10
+                minChars: 4
+                allowedProjects: null
+                maxProjects: 2147483647
+                allowedFields: [defs, path, hist, refs, type, full]
+                allowComplexQueries: true
+                allowMostPopular: true
+                showScores: false
+                showProjects: true
+                showTime: false
+                rebuildCronConfig: "0 0 * * *"
+                buildTerminationTime: 1800
+                timeThreshold: 2000
+  /suggest/init/queries:
+    post:
+      tags: [Suggester]
+      summary: Update popularity data based on queries
+      operationId: initializeSuggesterPopularityFromQueries
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example:
+              - http://localhost:8080/source/search?project=kotlin&full=text
+      responses:
+        '204':
+          description: Popularity data updated.
+  /suggest/init/raw:
+    post:
+      tags: [Suggester]
+      summary: Update popularity data based on the provided data
+      operationId: initializeSuggesterPopularityFromRawData
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SuggesterRawPopularityData'
+            example:
+              - project: kotlin
+                field: full
+                token: args
+                increment: 100
+      responses:
+        '204':
+          description: Popularity data updated.
+  /suggest/popularity/{project}:
+    get:
+      tags: [Suggester]
+      summary: Retrieve popularity data for project
+      operationId: getSuggesterPopularityData
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - name: field
+          in: query
+          description: Field for which to retrieve data.
+          schema:
+            type: string
+            default: full
+        - name: page
+          in: query
+          description: Page of data.
+          schema:
+            type: integer
+            default: 0
+        - name: pageSize
+          in: query
+          description: Size of the page.
+          schema:
+            type: integer
+            default: 100
+        - name: all
+          in: query
+          description: If all data should be retrieved. If true, `page` and `pageSize` are ignored.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Popularity data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    type: integer
+              example:
+                - iso: 3
+                - the: 3
+                - to: 3
+                - conform: 3
+  /suggest/rebuild:
+    put:
+      tags: [Suggester]
+      summary: Rebuild suggester data for all projects
+      description: Kicks off suggester data rebuild in the background; it will likely complete after this API call returns.
+      operationId: rebuildSuggesterData
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Suggester data rebuild started.
+  /suggest/rebuild/{project}:
+    put:
+      tags: [Suggester]
+      summary: Rebuild suggester data for given project
+      description: Kicks off suggester data rebuild in the background; it will likely complete after this API call returns.
+      operationId: rebuildProjectSuggesterData
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        '204':
+          description: Project suggester data rebuild started.
+  /status/{uuid}:
+    get:
+      tags: [Status]
+      summary: Check the state of an API request
+      operationId: getApiRequestStatus
+      parameters:
+        - $ref: '#/components/parameters/Uuid'
+      responses:
+        '202':
+          description: API request is still being processed.
+    delete:
+      tags: [Status]
+      summary: Delete state associated with API request tracking
+      description: This should be done only after the API request is completed, i.e. after the GET request for the API request state returns an appropriate status code such as 201.
+      operationId: deleteApiRequestStatus
+      parameters:
+        - $ref: '#/components/parameters/Uuid'
+      responses:
+        '200':
+          description: API request state deleted.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+  parameters:
+    PathQuery:
+      name: path
+      in: query
+      description: Path of file, relative to source root.
+      required: true
+      schema:
+        type: string
+    ConfigurationField:
+      name: field
+      in: path
+      description: Configuration field name.
+      required: true
+      schema:
+        type: string
+    MessageTag:
+      name: tag
+      in: query
+      description: Message tag.
+      required: true
+      schema:
+        type: string
+    GroupName:
+      name: group
+      in: path
+      description: Group name.
+      required: true
+      schema:
+        type: string
+    ProjectName:
+      name: project
+      in: path
+      description: Project name.
+      required: true
+      schema:
+        type: string
+    PropertyName:
+      name: propertyname
+      in: path
+      description: Property name.
+      required: true
+      schema:
+        type: string
+    Uuid:
+      name: uuid
+      in: path
+      description: API request UUID.
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    AcceptedAsync:
+      description: Request accepted for asynchronous processing.
+      headers:
+        Location:
+          description: URL of the status endpoint to check for the result of the API call.
+          schema:
+            type: string
+            format: uri-reference
+  schemas:
+    AnnotationEntry:
+      type: object
+      properties:
+        revision:
+          type: string
+        author:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+    FileDefinition:
+      type: object
+      properties:
+        type:
+          type: string
+        signature:
+          type: string
+        text:
+          type: string
+        symbol:
+          type: string
+        lineStart:
+          type: integer
+        lineEnd:
+          type: integer
+        line:
+          type: integer
+        namespace:
+          type: string
+          nullable: true
+    HistoryResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryEntry'
+        start:
+          type: integer
+        count:
+          type: integer
+        total:
+          type: integer
+    HistoryEntry:
+      type: object
+      properties:
+        revision:
+          type: string
+        date:
+          type: integer
+          format: int64
+        author:
+          type: string
+        tags:
+          type: string
+          nullable: true
+        message:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+          nullable: true
+    DirectoryEntry:
+      type: object
+      properties:
+        path:
+          type: string
+        numLines:
+          type: integer
+          nullable: true
+        loc:
+          type: integer
+          nullable: true
+        date:
+          type: integer
+          format: int64
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        pathDescription:
+          type: string
+        isDirectory:
+          type: boolean
+        size:
+          type: integer
+          format: int64
+          nullable: true
+    MessageCreateRequest:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+        messageLevel:
+          type: string
+          enum: [success, info, warning, error]
+        text:
+          type: string
+        duration:
+          type: string
+          description: Java `java.time.Duration` string.
+      required: [tags, messageLevel, text]
+    Message:
+      type: object
+      properties:
+        expired:
+          type: boolean
+        created:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        expiration:
+          type: string
+        cssClass:
+          type: string
+        text:
+          type: string
+    PathDescription:
+      type: object
+      properties:
+        path:
+          type: string
+        description:
+          type: string
+      required: [path, description]
+    SearchResponse:
+      type: object
+      properties:
+        time:
+          type: integer
+        resultCount:
+          type: integer
+        startDocument:
+          type: integer
+        endDocument:
+          type: integer
+        results:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchHit'
+    SearchHit:
+      type: object
+      properties:
+        line:
+          type: string
+        lineNumber:
+          type: string
+        tag:
+          type: string
+    SuggestResponse:
+      type: object
+      properties:
+        time:
+          type: integer
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Suggestion'
+        identifier:
+          type: string
+        queryText:
+          type: string
+        partialResult:
+          type: boolean
+    Suggestion:
+      type: object
+      properties:
+        phrase:
+          type: string
+        projects:
+          type: array
+          items:
+            type: string
+        score:
+          type: number
+    SuggesterConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        maxResults:
+          type: integer
+        minChars:
+          type: integer
+        allowedProjects:
+          type: array
+          nullable: true
+          items:
+            type: string
+        maxProjects:
+          type: integer
+        allowedFields:
+          type: array
+          items:
+            type: string
+        allowComplexQueries:
+          type: boolean
+        allowMostPopular:
+          type: boolean
+        showScores:
+          type: boolean
+        showProjects:
+          type: boolean
+        showTime:
+          type: boolean
+        rebuildCronConfig:
+          type: string
+        buildTerminationTime:
+          type: integer
+        timeThreshold:
+          type: integer
+    SuggesterRawPopularityData:
+      type: object
+      properties:
+        project:
+          type: string
+        field:
+          type: string
+        token:
+          type: string
+        increment:
+          type: integer
+      required: [project, field, token, increment]

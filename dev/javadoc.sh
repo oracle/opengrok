@@ -34,7 +34,11 @@ if [[ -d ./javadoc ]]; then
 fi
 cp -Rf "$OPENGROK_BUILD_DIR/target/site/apidocs" ./javadoc
 git add -f ./javadoc
-git commit -m "Lastest javadoc auto-pushed to branch $BRANCH"
+if [[ -z $( git status -s ) ]]; then
+  echo "No change, bailing out"
+  exit 0
+fi
+git commit -m "Latest javadoc auto-pushed to branch $BRANCH"
 git push -fq origin "$BRANCH"
 
 echo -e "Published Javadoc to branch $BRANCH.\n"

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -36,6 +36,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.web.QueryParameters;
@@ -48,6 +49,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +60,6 @@ public class SearchController {
 
     public static final String PATH = "search";
 
-    private static final int MAX_RESULTS = 1000;
     private static final String DEFAULT_SORT_ORDER = "relevancy";
 
     private final SuggesterService suggester;
@@ -81,12 +82,34 @@ public class SearchController {
             @QueryParam(QueryParameters.HIST_SEARCH_PARAM) final String hist,
             @QueryParam(QueryParameters.TYPE_SEARCH_PARAM) final String type,
             @QueryParam("projects") final List<String> projects,
-            @QueryParam("maxresults") // Akin to QueryParameters.COUNT_PARAM
-            @DefaultValue(MAX_RESULTS + "") final int maxResults,
+            @QueryParam(QueryParameters.MAXRESULTS_PARAM) final Integer maxResultsParam,
             @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex,
-            @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort
+            @QueryParam(QueryParameters.SORT_PARAM) @DefaultValue(DEFAULT_SORT_ORDER) final String sort,
+            @QueryParam(QueryParameters.MAXHITSPERFILE_PARAM) @DefaultValue("0") final int maxHitsPerFile
     ) {
-        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type, SortOrder.get(sort))) {
+        if ((maxResultsParam != null && maxResultsParam < 0) || startDocIndex < 0 || maxHitsPerFile < 0) {
+            throw new WebApplicationException("Negative integer parameters are not allowed",
+                    Response.Status.BAD_REQUEST);
+        }
+
+        final int maxResults;
+        if (maxResultsParam != null) {
+            maxResults = maxResultsParam;
+        } else {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            maxResults = env.getHitsPerPage() * env.getCachePages();
+        }
+
+        final int maxDocs;
+        try {
+            maxDocs = Math.max(Math.addExact(startDocIndex, maxResults), 1);
+        } catch (ArithmeticException e) {
+            throw new WebApplicationException("Sum of start and maxresults parameters must not exceed "
+                    + Integer.MAX_VALUE, Response.Status.BAD_REQUEST);
+        }
+
+        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type,
+                SortOrder.get(sort), maxHitsPerFile, maxDocs)) {
 
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
@@ -99,12 +122,14 @@ public class SearchController {
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
                     .collect(Collectors.groupingBy(Hit::getPath,
+                            LinkedHashMap::new,
                             Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno(), h.getTag()),
                                     Collectors.toList())));
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
-            int endDocument = startDocIndex + hits.size() - 1;
+            int pageSize = Math.clamp(engine.numResults - startDocIndex, 0, maxResults);
+            int endDocument = pageSize > 0 ? startDocIndex + pageSize - 1 : startDocIndex;
 
             return new SearchResult(duration, engine.numResults, hits, startDocIndex, endDocument);
         }
@@ -112,7 +137,7 @@ public class SearchController {
 
     private static class SearchEngineWrapper implements AutoCloseable {
 
-        private final SearchEngine engine = new SearchEngine();
+        private final SearchEngine engine;
 
         private int numResults;
 
@@ -123,8 +148,11 @@ public class SearchController {
                 final String path,
                 final String hist,
                 final String type,
-                final SortOrder sortOrder
+                final SortOrder sortOrder,
+                final int maxHitsPerFile,
+                final int maxDocs
         ) {
+            engine = new SearchEngine(maxDocs);
             engine.setFreetext(full);
             engine.setDefinition(def);
             engine.setSymbol(symbol);
@@ -132,6 +160,7 @@ public class SearchController {
             engine.setHistory(hist);
             engine.setType(type);
             engine.setSortOrder(sortOrder);
+            engine.setMaxHitsPerFile(maxHitsPerFile);
         }
 
         public List<Hit> search(
@@ -141,19 +170,21 @@ public class SearchController {
                 final int maxResults
         ) {
             Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
+            int collected;
             if (projects == null || projects.isEmpty()) {
-                numResults = engine.search(new ArrayList<>(allProjects));
+                collected = engine.search(new ArrayList<>(allProjects));
             } else {
-                numResults = engine.search(allProjects.stream()
+                collected = engine.search(allProjects.stream()
                         .filter(p -> projects.contains(p.getName()))
                         .collect(Collectors.toList()));
             }
+            numResults = engine.getTotalHits();
 
-            if (startDocIndex > numResults) {
+            if (startDocIndex >= collected) {
                 return Collections.emptyList();
             }
 
-            int resultSize = numResults - startDocIndex;
+            int resultSize = collected - startDocIndex;
             if (resultSize > maxResults) {
                 resultSize = maxResults;
             }
@@ -178,78 +209,15 @@ public class SearchController {
         }
     }
 
-    private static class SearchResult {
-
-        private final long time;
-
-        private final int resultCount;
-
-        private final int startDocument;
-
-        private final int endDocument;
-
-        private final Map<String, List<SearchHit>> results;
-
-        private SearchResult(
-                final long time,
-                final int resultCount,
-                final Map<String, List<SearchHit>> results,
-                final int startDocument,
-                final int endDocument
-        ) {
-            this.time = time;
-            this.resultCount = resultCount;
-            this.results = results;
-            this.startDocument = startDocument;
-            this.endDocument = endDocument;
-        }
-
-        public long getTime() {
-            return time;
-        }
-
-        public int getResultCount() {
-            return resultCount;
-        }
-
-        public Map<String, List<SearchHit>> getResults() {
-            return results;
-        }
-
-        public int getStartDocument() {
-            return startDocument;
-        }
-
-        public int getEndDocument() {
-            return endDocument;
-        }
+    private record SearchResult(
+            long time,
+            int resultCount,
+            Map<String, List<SearchHit>> results,
+            int startDocument,
+            int endDocument
+    ) {
     }
 
-    private static class SearchHit {
-
-        private final String line;
-
-        private final String lineNumber;
-
-        private final String tag;
-
-        private SearchHit(final String line, final String lineNumber, final String tag) {
-            this.line = line;
-            this.lineNumber = lineNumber;
-            this.tag = tag;
-        }
-
-        public String getLine() {
-            return line;
-        }
-
-        public String getLineNumber() {
-            return lineNumber;
-        }
-
-        public String getTag() {
-            return tag;
-        }
+    private record SearchHit(String line, String lineNumber, String tag) {
     }
-
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -626,6 +626,7 @@ public final class Suggester implements Closeable {
      * @param project project where the term resides
      * @param term term for which to increase search count
      * @param value positive value by which to increase the search count
+     * @param waitForLock whether to use block for reading
      * @return false if update failed, otherwise true
      */
     public boolean increaseSearchCount(final String project, final Term term, final int value, final boolean waitForLock) {

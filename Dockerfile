@@ -41,7 +41,7 @@ RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 # Store the version in a file so that the tools can report it.
 RUN /mvn/mvnw help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
 
-FROM tomcat:10.1.52-jdk21
+FROM tomcat:10.1.61-jdk21
 LABEL maintainer="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.source="https://github.com/oracle/opengrok"
 LABEL org.opencontainers.image.description="OpenGrok code search"
@@ -98,14 +98,14 @@ COPY --from=build /mvn/VERSION /opengrok/VERSION
 RUN groupadd -g 1111 -r appgroup && useradd -r -g appgroup -u 1111 appuser
 
 # environment variables
-ENV SRC_ROOT /opengrok/src
-ENV DATA_ROOT /opengrok/data
-ENV URL_ROOT /
-ENV CATALINA_HOME /usr/local/tomcat
-ENV CATALINA_BASE /usr/local/tomcat
-ENV CATALINA_TMPDIR /usr/local/tomcat/temp
-ENV PATH $CATALINA_HOME/bin:$PATH
-ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
+ENV SRC_ROOT=/opengrok/src
+ENV DATA_ROOT=/opengrok/data
+ENV URL_ROOT=/
+ENV CATALINA_HOME=/usr/local/tomcat
+ENV CATALINA_BASE=/usr/local/tomcat
+ENV CATALINA_TMPDIR=/usr/local/tomcat/temp
+ENV PATH=$CATALINA_HOME/bin:$PATH
+ENV CLASSPATH=/usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 ENV JAVA_OPTS="--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED --add-exports=java.base/sun.nio.ch=ALL-UNNAMED \
 --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
 --add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED \

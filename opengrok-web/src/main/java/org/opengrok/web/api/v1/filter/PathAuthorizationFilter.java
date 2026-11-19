@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.filter;
 
@@ -28,13 +28,15 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.web.util.FileUtil;
+import org.opengrok.web.util.NoPathParameterException;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.nio.file.InvalidPathException;
 
 /**
  * Serves for authorization of REST API endpoints that have a path parameter
@@ -44,8 +46,6 @@ import java.util.logging.Logger;
 @PathAuthorized
 public class PathAuthorizationFilter implements ContainerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(PathAuthorizationFilter.class);
-
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public static final String PATH_PARAM = "path";
@@ -53,37 +53,34 @@ public class PathAuthorizationFilter implements ContainerRequestFilter {
     @Context
     private HttpServletRequest request;
 
-    private static boolean isPathAuthorized(String path, HttpServletRequest request) {
-        if (request != null) {
-            AuthorizationFramework auth = env.getAuthorizationFramework();
-            if (auth != null) {
-                Project p = Project.getProject(path.startsWith("/") ? path : "/" + path);
-                return p == null || auth.isAllowed(request, p);
-            }
+    private static boolean isPathAuthorized(@NotNull HttpServletRequest request)
+            throws IOException, NoPathParameterException {
+
+        AuthorizationFramework auth = env.getAuthorizationFramework();
+        if (auth != null) {
+            /*
+             * The 'path' parameter comes from the request, hence needs to be used in its canonical form
+             * via getProject(file) before performing the isAllowed() check.
+             */
+            Project p = Project.getProject(FileUtil.toFile(request.getParameter(PATH_PARAM)));
+            return p == null || auth.isAllowed(request, p);
         }
 
         return false;
     }
 
     @Override
-    public void filter(final ContainerRequestContext context) {
+    public void filter(final ContainerRequestContext context) throws IOException {
         if (request == null) { // happens in tests
             return;
         }
 
-        String path = request.getParameter(PATH_PARAM);
-        if (path == null || path.isEmpty()) {
-            logger.log(Level.WARNING, "request does not contain \"{0}\" parameter: {1}",
-                    new Object[]{PATH_PARAM, request});
-            // This should align with whatever NoPathExceptionMapper does.
-            // We cannot throw the exception here as it would not match the filter() signature.
+        try {
+            if (!isPathAuthorized(request)) {
+                context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+            }
+        } catch (NoPathParameterException | InvalidPathException e) {
             context.abortWith(Response.status(Response.Status.NOT_ACCEPTABLE).build());
-            return;
-        }
-
-        if (!isPathAuthorized(path, request)) {
-            // TODO: this should probably update statistics for denied requests like in AuthorizationFilter
-            context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
         }
     }
 }

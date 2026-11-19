@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -151,8 +151,8 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     }
 
     /**
-     * Expand {@code LdapUser} / {@code User} object attribute values into the filter.
-     * Use \% for printing the '%' character.
+     * Expand {@link LdapUser} / {@link User} object attribute values into the filter.
+     * Use <code>\%</code> for printing the <code>%</code> character.
      *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
@@ -174,6 +174,12 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
                     LOGGER.log(Level.WARNING,
                             String.format("Failed to expand filter ''%s'' with name ''%s'' and value ''%s''",
                                     filter, name, value), ex);
+                }
+            } else {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,
+                            String.format("ignoring expansion of filter ''%s'' for multi-value name ''%s''",
+                                    filter, entry.getKey()));
                 }
             }
         }
