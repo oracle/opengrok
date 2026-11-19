@@ -502,7 +502,7 @@ public class QueryBuilder {
      */
     private boolean hasClause(BooleanQuery query, Occur occur) {
         for (BooleanClause clause : query) {
-            if (clause.getOccur().equals(occur)) {
+            if (clause.occur().equals(occur)) {
                 return true;
             }
         }

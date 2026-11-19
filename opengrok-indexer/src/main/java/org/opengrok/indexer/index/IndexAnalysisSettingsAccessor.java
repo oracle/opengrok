@@ -89,7 +89,7 @@ public class IndexAnalysisSettingsAccessor {
         }
         TopDocs top = searcher.search(q, n);
 
-        int nres = top.totalHits.value > n ? n : (int) top.totalHits.value;
+        int nres = top.totalHits.value() > n ? n : (int) top.totalHits.value();
         IndexAnalysisSettings3[] res = new IndexAnalysisSettings3[nres];
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();

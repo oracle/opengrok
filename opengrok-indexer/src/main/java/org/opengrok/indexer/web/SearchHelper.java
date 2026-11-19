@@ -487,7 +487,7 @@ public class SearchHelper {
             } else {
                 fdocs = searcher.search(query, new TopFieldCollectorManager(sort, numHits, Integer.MAX_VALUE));
             }
-            totalHits = fdocs.totalHits.value;
+            totalHits = fdocs.totalHits.value();
             hits = fdocs.scoreDocs;
 
             /*
@@ -754,7 +754,7 @@ public class SearchHelper {
         query = singleBuilder.setPath(path).build();
 
         TopDocs top = searcher.search(query, 1);
-        if (top.totalHits.value == 0) {
+        if (top.totalHits.value() == 0) {
             return -1;
         }
 
