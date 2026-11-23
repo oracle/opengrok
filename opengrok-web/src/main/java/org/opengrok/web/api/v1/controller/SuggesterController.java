@@ -211,7 +211,7 @@ public final class SuggesterController {
                             logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
                         } else {
                             getQuery(field, fieldQueryText.getFirst())
-                                    .ifPresent(q -> suggester.onSearch(projects, q));
+                                    .ifPresent(q -> suggester.onSearch(projects, q, true));
 
                         }
                     }

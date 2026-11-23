@@ -56,6 +56,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -246,7 +247,7 @@ public final class Suggester implements Closeable {
         SuggesterProjectData projectData = null;
         try {
             projectData = new SuggesterProjectData(FSDirectory.open(indexDir.path),
-                    getSuggesterDir(indexDir.name), allowMostPopular, allowedFields);
+                    getSuggesterDir(indexDir.name), allowMostPopular, allowedFields, () -> terminating);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, String.format("creating suggester data for %s failed", indexDir), e);
             return null;
@@ -306,6 +307,8 @@ public final class Suggester implements Closeable {
                 LOGGER.log(Level.FINE, "Finished initialization of suggester data in ''{0}'', took {1}",
                         new Object[] {data, duration});
                 progress.increment();
+            } catch (CancellationException e) {
+                LOGGER.log(Level.INFO, "Initialization of suggester data in ''{0}'' was cancelled", data);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for '%s'", data), e);
             }
@@ -364,6 +367,9 @@ public final class Suggester implements Closeable {
                 Level.INFO, isPrintProgress)) {
             List<Future<?>> futures = new ArrayList<>();
             for (NamedIndexDir indexDir : indexDirs) {
+                if (terminating) {
+                    break;
+                }
                 SuggesterProjectData projectData = this.projectDataMap.computeIfAbsent(getProjectDataKey(indexDir),
                         dir -> createProjectData(indexDir));
                 if (projectData != null) {
@@ -384,7 +390,8 @@ public final class Suggester implements Closeable {
             }
 
             Duration duration = Duration.between(start, Instant.now());
-            LOGGER.log(Level.INFO, "{0} (took {1})", new Object[]{"Suggesters for " + indexDirs + " were rebuilt",
+            LOGGER.log(Level.INFO, "{0} (took {1})", new Object[]{"Suggesters for " + indexDirs
+                    + (terminating ? " were cancelled" : " were rebuilt"),
                     DurationFormatUtils.formatDurationWords(duration.toMillis(),
                             true, true)});
         }
@@ -431,6 +438,8 @@ public final class Suggester implements Closeable {
                 suggesterRebuildTimer.record(duration);
                 LOGGER.log(Level.FINE, "Rebuild of {0} finished, took {1}", new Object[] {data, duration});
                 progress.increment();
+            } catch (CancellationException e) {
+                LOGGER.log(Level.INFO, "Rebuild of {0} was cancelled", data);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Could not rebuild suggester", e);
             }
@@ -669,7 +678,7 @@ public final class Suggester implements Closeable {
     }
 
     /**
-     * Do not allow more suggester rebuilds.
+     * Do not allow more suggester initializations and rebuilds, and stop the ones in progress.
      */
     public void terminate() {
         terminating = true;

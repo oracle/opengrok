@@ -55,7 +55,9 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -166,6 +168,47 @@ class SuggesterTest {
             doc.add(new TextField("test", text, Field.Store.NO));
 
             iw.addDocument(doc);
+        }
+    }
+
+    @Test
+    void testTerminateDuringRebuild() throws Exception {
+        List<Path> dirs = new ArrayList<>();
+        List<Suggester.NamedIndexDir> indexDirs = new ArrayList<>();
+        try {
+            for (int project = 0; project < 3; project++) {
+                Path indexDir = Files.createTempDirectory("opengrok");
+                dirs.add(indexDir);
+                indexDirs.add(new Suggester.NamedIndexDir("p" + project, indexDir));
+                try (Directory dir = FSDirectory.open(indexDir)) {
+                    addText(dir, IntStream.range(0, 500_000)
+                            .mapToObj(i -> "term" + i)
+                            .collect(Collectors.joining(" ")));
+                }
+            }
+            Path suggesterDir = Files.createTempDirectory("opengrok");
+            dirs.add(suggesterDir);
+
+            Suggester s = new Suggester(suggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
+                    true, Collections.singleton("test"), Integer.MAX_VALUE, 1, 1, registry, false);
+            try {
+                Thread rebuild = new Thread(() -> s.rebuild(indexDirs));
+                rebuild.start();
+                await().atMost(Duration.ofSeconds(30)).until(() -> rebuild.getState() == Thread.State.WAITING);
+
+                s.terminate();
+
+                rebuild.join(Duration.ofSeconds(10));
+                assertFalse(rebuild.isAlive(), "rebuild() must return after terminate()");
+                assertFalse(Files.exists(suggesterDir.resolve("p0").resolve("test.wfst")),
+                        "the running build must stop");
+            } finally {
+                s.close();
+            }
+        } finally {
+            for (Path dir : dirs) {
+                FileUtils.deleteDirectory(dir.toFile());
+            }
         }
     }
 

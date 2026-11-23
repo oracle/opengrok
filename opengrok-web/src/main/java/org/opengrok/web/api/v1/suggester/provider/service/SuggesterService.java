@@ -88,10 +88,19 @@ public interface SuggesterService {
 
     /**
      * Increments most popular completion data according to the passed parameters.
+     * Skips the update when the suggester is busy, so that a search does not wait for it.
      * @param projects projects that were searched
      * @param q search query
      */
     void onSearch(Iterable<String> projects, Query q);
+
+    /**
+     * Increments most popular completion data according to the passed parameters.
+     * @param projects projects that were searched
+     * @param q search query
+     * @param waitForLock wait until the suggester is available instead of skipping the update
+     */
+    void onSearch(Iterable<String> projects, Query q, boolean waitForLock);
 
     /**
      * Increments most popular completion data for the specified {@code term} by {@code value}.
