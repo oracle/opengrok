@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -96,7 +96,7 @@ class IndexCheckTest {
     }
 
     /**
-     * Generate index(es) with history enabled, check the index.
+     * Generate index(es) with history disabled, check the index.
      */
     private void testIndex(boolean projectsEnabled, List<String> subFiles, IndexCheck.IndexCheckMode mode) throws Exception {
         env.setHistoryEnabled(false);
@@ -140,6 +140,17 @@ class IndexCheckTest {
         testIndex(false, new ArrayList<>(), IndexCheck.IndexCheckMode.VERSION);
     }
 
+    /**
+     * Verify that an index created with an older Lucene version fails the version check.
+     * <p>
+     * To regenerate {@code oldindex.zip}, build the last OpenGrok version before the Lucene upgrade and run:
+     * <pre>{@code
+     * mkdir -p src/foo
+     * touch src/foo/bar.txt
+     * java -jar distribution/target/dist/opengrok-<version>.jar -s src -d data
+     * }</pre>
+     * The resulting {@code data/index} directory contains the old index files to archive into {@code oldindex.zip}.
+     */
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testIndexVersionOldIndex(boolean isProjectsEnabled) throws Exception {
