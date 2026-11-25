@@ -33,7 +33,6 @@ import org.apache.lucene.search.ConjunctionUtils;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
-import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.FixedBitSet;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.suggest.query.PhraseScorer;
@@ -72,18 +71,16 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     // custom – constructor parameters
     /**
      * Creates custom sloppy phrase scorer which remembers the positions of the found matches.
-     * @param weight query weight
      * @param postings postings of the terms
      * @param slop "word edit distance"
      * @param offset the offset that is added to the found match position
      */
     CustomSloppyPhraseScorer(
-            final Weight weight,
             final CustomPhraseQuery.PostingsAndFreq[] postings,
             final int slop,
             final int offset
     ) {
-        super(weight);
+        super();
         this.slop = slop;
         this.offset = offset; // custom
         this.numPostings = postings.length;
@@ -628,7 +625,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
 
     @Override
     public String toString() {
-        return "CustomSloppyPhraseScorer(" + weight + ")"; // custom – renamed class
+        return "CustomSloppyPhraseScorer(" + this.numPostings + ")"; // custom – renamed class
     }
 
     @Override
