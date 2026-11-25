@@ -240,7 +240,7 @@ public class SearchEngine {
             topDocs = searcher.search(query, new TopFieldCollectorManager(luceneSort, numHits, Integer.MAX_VALUE));
         }
         hits = topDocs.scoreDocs;
-        totalHits = (int) topDocs.totalHits.value;
+        totalHits = (int) topDocs.totalHits.value();
 
         stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
                 "search.latency", new String[]{"category", "engine",

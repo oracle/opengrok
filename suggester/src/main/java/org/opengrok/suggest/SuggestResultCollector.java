@@ -121,8 +121,8 @@ class SuggestResultCollector implements Collector {
                         // it is mentioned in the documentation that #getChildren should not be called
                         // in #setScorer but no better way was found
                         for (var childScorer : scorer.getChildren()) {
-                            if (childScorer.child instanceof PhraseScorer) {
-                                data.scorer = (PhraseScorer) childScorer.child;
+                            if (childScorer.child() instanceof PhraseScorer) {
+                                data.scorer = (PhraseScorer) childScorer.child();
                             }
                         }
                     } catch (Exception e) {

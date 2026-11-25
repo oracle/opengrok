@@ -247,7 +247,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     protected OffsetSource getOptimizedOffsetSource(UHComponents components) {
 
         OffsetSource res = super.getOptimizedOffsetSource(components);
-        String field = components.getField();
+        String field = components.field();
         if (res == OffsetSource.ANALYSIS) {
             /*
                   Testing showed that UnifiedHighlighter falls back to
