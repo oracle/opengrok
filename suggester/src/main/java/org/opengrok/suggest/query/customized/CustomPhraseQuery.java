@@ -35,6 +35,7 @@ import org.apache.lucene.search.ScorerSupplier;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.IOSupplier;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -281,7 +282,8 @@ public class CustomPhraseQuery extends Query {
 
                 for(int i = 0; i < query.terms.length; ++i) {
                     Term t = query.terms[i];
-                    TermState state = this.states[i].get(leafReaderContext).get();
+                    IOSupplier<TermState> supplier = this.states[i].get(leafReaderContext);
+                    TermState state = supplier == null ? null : supplier.get();
                     if (state == null) {
                         return null;
                     }
@@ -294,13 +296,9 @@ public class CustomPhraseQuery extends Query {
                 if (query.slop == 0) {
                     ArrayUtil.timSort(postingsFreqs);
 
-                    //FIXME
-                    //return new CustomExactPhraseScorer(postingsFreqs, query.offset);
-                    return scorerSupplier(leafReaderContext);
+                    return new DefaultScorerSupplier(new CustomExactPhraseScorer(postingsFreqs, query.offset));
                 } else {
-                    //FIXME
-                    //return new CustomSloppyPhraseScorer(postingsFreqs, query.slop, query.offset);
-                    return scorerSupplier(leafReaderContext);
+                    return new DefaultScorerSupplier(new CustomSloppyPhraseScorer(postingsFreqs, query.slop, query.offset));
                 }
             }
         }

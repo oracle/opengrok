@@ -71,7 +71,6 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     // custom – constructor parameters
     /**
      * Creates custom sloppy phrase scorer which remembers the positions of the found matches.
-     * @param weight query weight
      * @param postings postings of the terms
      * @param slop "word edit distance"
      * @param offset the offset that is added to the found match position
