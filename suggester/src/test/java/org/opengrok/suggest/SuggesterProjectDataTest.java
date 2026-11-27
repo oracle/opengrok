@@ -47,7 +47,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -97,7 +102,7 @@ class SuggesterProjectDataTest {
     }
 
     private void init(boolean allowMostPopular) throws IOException {
-        data = new SuggesterProjectData(dir, tempDir, allowMostPopular, Collections.singleton(FIELD));
+        data = new SuggesterProjectData(dir, tempDir, allowMostPopular, Collections.singleton(FIELD), () -> false);
         data.init();
     }
 
@@ -160,6 +165,51 @@ class SuggesterProjectDataTest {
         List<String> suggestions = getSuggestions(FIELD, "t", 10);
 
         assertThat(suggestions, Matchers.containsInAnyOrder("term3", "term4", "term5"));
+    }
+
+    @Test
+    void testCancelledRebuild() throws IOException {
+        addText(FIELD, "term1 term2");
+        AtomicBoolean cancel = new AtomicBoolean();
+        AtomicInteger checks = new AtomicInteger();
+        // After the cancel, let two terms through, so that the cancel comes in the middle of the input.
+        data = new SuggesterProjectData(dir, tempDir, false, Collections.singleton(FIELD),
+                () -> cancel.get() && checks.incrementAndGet() > 2);
+        data.init();
+        addText(FIELD, "term3 term4 term5");
+        Set<Path> sortFiles = getSortTempFiles();
+
+        cancel.set(true);
+        assertThrows(CancellationException.class, data::rebuild);
+
+        assertTrue(checks.get() > 1, "the build must check for a cancel while it reads the input");
+        assertEquals(sortFiles, getSortTempFiles());
+        assertTrue(data.tryLock());
+        data.unlock();
+        assertThat(getSuggestions(FIELD, "t", 10), containsInAnyOrder("term1", "term2"));
+
+        // The cancelled rebuild did not store a new data version, so the next init builds the data again.
+        init(false);
+        assertThat(getSuggestions(FIELD, "t", 10), containsInAnyOrder("term1", "term2", "term3", "term4", "term5"));
+    }
+
+    private static Set<Path> getSortTempFiles() throws IOException {
+        try (Stream<Path> files = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
+            return files.filter(f -> f.getFileName().toString().startsWith("opengrok_suggester_wfst"))
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    @Test
+    void testInitWithEmptyVersionFile() throws IOException {
+        addText(FIELD, "term1 term2");
+        init(false);
+        // A write that fails partway can leave the version file empty.
+        Files.writeString(tempDir.resolve("version.txt"), "");
+
+        init(false);
+
+        assertThat(getSuggestions(FIELD, "t", 10), containsInAnyOrder("term1", "term2"));
     }
 
     @Test
@@ -276,7 +326,7 @@ class SuggesterProjectDataTest {
             iw.addDocument(doc);
         }
 
-        SuggesterProjectData data = new SuggesterProjectData(dir, tempDir, false, Collections.singleton("test"));
+        SuggesterProjectData data = new SuggesterProjectData(dir, tempDir, false, Collections.singleton("test"), () -> false);
         data.init();
         data.remove();
 
@@ -286,7 +336,7 @@ class SuggesterProjectDataTest {
     @Test
     void testUnknownFieldIgnored() throws IOException {
         addText(FIELD, "term");
-        data = new SuggesterProjectData(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")));
+        data = new SuggesterProjectData(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")), () -> false);
         data.init();
 
         List<Lookup.LookupResult> res = data.lookup("unknown", "a", 10);

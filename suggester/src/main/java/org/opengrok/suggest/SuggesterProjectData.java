@@ -57,6 +57,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -105,18 +107,22 @@ class SuggesterProjectData implements Closeable {
 
     private final Directory tempDir;
 
+    private final BooleanSupplier cancelled;
+
     private boolean initialized;    // Whether init() was called.
 
     SuggesterProjectData(
             final Directory indexDir,
             final Path suggesterDir,
             final boolean allowMostPopular,
-            final Set<String> allowedFields
+            final Set<String> allowedFields,
+            final BooleanSupplier cancelled
     ) throws IOException {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
         this.allowMostPopular = allowMostPopular;
         this.allowedFields = allowedFields;
+        this.cancelled = cancelled;
 
         tempDir = FSDirectory.open(Paths.get(System.getProperty(TMP_DIR_PROPERTY)));
 
@@ -266,6 +272,10 @@ class SuggesterProjectData implements Closeable {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : fields) {
                 WFSTCompletionLookup lookup = build(indexReader, field);
+                // A cancel ends the input early, so the lookup is incomplete.
+                if (cancelled.getAsBoolean()) {
+                    throw new CancellationException("Suggester build in " + suggesterDir + " was cancelled");
+                }
                 store(lookup, field);
 
                 lookups.put(field, lookup);
@@ -275,7 +285,8 @@ class SuggesterProjectData implements Closeable {
 
     private WFSTCompletionLookup build(final IndexReader indexReader, final String field) throws IOException {
         WFSTInputIterator iterator = new WFSTInputIterator(
-                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, getSearchCounts(field));
+                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, getSearchCounts(field),
+                cancelled);
 
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
@@ -540,7 +551,7 @@ class SuggesterProjectData implements Closeable {
         try {
             String str = FileUtils.readFileToString(versionFile, StandardCharsets.UTF_8.toString());
             return Long.parseLong(str);
-        } catch (IOException e) {
+        } catch (IOException | NumberFormatException e) {
             logger.log(Level.WARNING, "Could not read suggester data version", e);
         }
         return -1;
@@ -616,16 +627,20 @@ class SuggesterProjectData implements Closeable {
 
         private final PopularityCounter searchCounts;
 
+        private final BooleanSupplier cancelled;
+
         WFSTInputIterator(
                 final InputIterator wrapped,
                 final IndexReader indexReader,
                 final String field,
-                final PopularityCounter searchCounts
+                final PopularityCounter searchCounts,
+                final BooleanSupplier cancelled
         ) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
             this.field = field;
             this.searchCounts = searchCounts;
+            this.cancelled = cancelled;
         }
 
         private BytesRef last;
@@ -664,6 +679,12 @@ class SuggesterProjectData implements Closeable {
 
         @Override
         public BytesRef next() throws IOException {
+            // End the input instead of throwing. Lucene reads this input in the SortedInputIterator
+            // constructor, which does not delete its temporary sort files when the input throws.
+            if (cancelled.getAsBoolean()) {
+                last = null;
+                return null;
+            }
             last = wrapped.next();
 
             // skip very large terms because of the buffer exception

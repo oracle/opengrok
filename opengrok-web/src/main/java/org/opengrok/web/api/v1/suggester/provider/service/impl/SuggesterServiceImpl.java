@@ -27,6 +27,7 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import io.micrometer.core.instrument.Counter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
@@ -79,7 +80,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private static SuggesterServiceImpl instance;
 
-    private Suggester suggester;
+    private volatile Suggester suggester;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
             new OpenGrokThreadFactory("suggester-scheduler"));
@@ -89,6 +90,10 @@ public class SuggesterServiceImpl implements SuggesterService {
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final Counter skippedSearchCounts = Counter.builder("suggester.search.count.skipped")
+            .description("searches that did not update the search counts because the suggester was busy")
+            .register(Metrics.getRegistry());
 
     private SuggesterServiceImpl() {
     }
@@ -162,12 +167,20 @@ public class SuggesterServiceImpl implements SuggesterService {
     @Override
     public void refresh() {
         logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
+        // A rebuild holds the read lock for its whole duration, which can be minutes. While this thread
+        // waits for the write lock, the lock also parks every new reader, so stop the rebuild first.
+        Suggester current = suggester;
+        if (current != null) {
+            current.terminate();
+        }
         lock.writeLock().lock();
         try {
             // close and init from scratch because many things may have changed in the configuration
             // e.g. sourceRoot
             cancelScheduledRebuild();
             if (suggester != null) {
+                // Another refresh can replace the suggester between the read above and the lock.
+                suggester.terminate();
                 suggester.close();
             }
             suggester = null;
@@ -240,7 +253,20 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void onSearch(final Iterable<String> projects, final Query q) {
-        lock.readLock().lock();
+        onSearch(projects, q, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onSearch(final Iterable<String> projects, final Query q, final boolean waitForLock) {
+        if (waitForLock) {
+            lock.readLock().lock();
+        } else if (!lock.readLock().tryLock()) {
+            // tryLock() also succeeds when a writer is queued, where lock() would park.
+            skippedSearchCounts.increment();
+            logger.log(Level.FINEST, "Suggester is busy, ignoring query {0} in onSearch event", q);
+            return;
+        }
         try {
             if (suggester == null) {
                 logger.log(Level.FINEST, "Suggester not initialized, ignoring query {0} in onSearch event", q);

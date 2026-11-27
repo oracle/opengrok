@@ -28,6 +28,7 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.ServletDeploymentContext;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -49,21 +51,27 @@ import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.filter.AuthorizationFilter;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
@@ -701,5 +709,82 @@ class SuggesterControllerTest extends OGKJerseyTest {
 
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
         SuggesterServiceImpl.getInstance().waitForRebuild(15, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void zzTestSearchDoesNotWaitForQueuedRefresh() throws Exception {
+        SuggesterServiceImpl service = (SuggesterServiceImpl) SuggesterServiceImpl.getInstance();
+        ReentrantReadWriteLock lock = getLock(service);
+
+        // Hold the read lock as a long rebuild does, and queue refresh() for the write lock behind it.
+        CountDownLatch rebuildDone = new CountDownLatch(1);
+        Thread rebuild = new Thread(() -> {
+            lock.readLock().lock();
+            try {
+                rebuildDone.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.readLock().unlock();
+            }
+        });
+        rebuild.start();
+        await().until(() -> lock.getReadLockCount() == 1);
+        Thread refresh = new Thread(service::refresh);
+        refresh.start();
+        try {
+            await().until(lock::hasQueuedThreads);
+
+            assertTimeoutPreemptively(Duration.ofSeconds(5),
+                    () -> service.onSearch(Collections.singleton("c"), new TermQuery(new Term("full", "main"))));
+        } finally {
+            rebuildDone.countDown();
+            rebuild.join();
+            refresh.join();
+        }
+        service.waitForInit(15, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void zzTestSearchSkipsCountWhileRefreshHoldsWriteLock() throws Exception {
+        SuggesterServiceImpl service = (SuggesterServiceImpl) SuggesterServiceImpl.getInstance();
+        ReentrantReadWriteLock lock = getLock(service);
+        double skipped = getSkippedSearchCounts();
+
+        CountDownLatch locked = new CountDownLatch(1);
+        CountDownLatch refreshDone = new CountDownLatch(1);
+        Thread refresh = new Thread(() -> {
+            lock.writeLock().lock();
+            try {
+                locked.countDown();
+                refreshDone.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.writeLock().unlock();
+            }
+        });
+        refresh.start();
+        try {
+            locked.await();
+
+            assertTimeoutPreemptively(Duration.ofSeconds(5),
+                    () -> service.onSearch(Collections.singleton("c"), new TermQuery(new Term("full", "main"))));
+
+            assertEquals(skipped + 1, getSkippedSearchCounts());
+        } finally {
+            refreshDone.countDown();
+            refresh.join();
+        }
+    }
+
+    private static ReentrantReadWriteLock getLock(SuggesterServiceImpl service) throws ReflectiveOperationException {
+        Field lockField = SuggesterServiceImpl.class.getDeclaredField("lock");
+        lockField.setAccessible(true);
+        return (ReentrantReadWriteLock) lockField.get(service);
+    }
+
+    private static double getSkippedSearchCounts() {
+        return Metrics.getRegistry().get("suggester.search.count.skipped").counter().count();
     }
 }
