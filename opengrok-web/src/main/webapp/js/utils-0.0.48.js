@@ -1617,6 +1617,38 @@ $(document).ready(function () {
     init_markdown_converter();
 
     restoreFocusAfterSearchSubmit();
+
+    // Pre-populate the File Path field with the stored one if it's currently empty and not overridden in URL
+    try {
+        const storedPath = sessionStorage.getItem('opengrok_search_path');
+        if (storedPath && $('#path').length && !$('#path').val() && getParameter('path') === undefined) {
+            $('#path').val(storedPath);
+        }
+    } catch (e) {}
+
+    // Intercept clicks on symbol links to append the persistent file path
+    $(document).on('mousedown click', 'a[href*="search?"]', function (e) {
+        // Let the browser handle ctrl/cmd/shift/middle clicks naturally
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+
+        const href = $(this).attr('href');
+        if (!href) return;
+        
+        try {
+            const url = new URL(href, window.location.origin);
+            if (url.searchParams.has('defs') || url.searchParams.has('refs')) {
+                if (!url.searchParams.has('path')) {
+                    const storedPath = sessionStorage.getItem('opengrok_search_path');
+                    if (storedPath) {
+                        url.searchParams.set('path', storedPath);
+                        $(this).attr('href', url.pathname + url.search + url.hash);
+                    }
+                }
+            }
+        } catch (err) {
+            // Silently ignore malformed URLs
+        }
+    });
 });
 
 /**
@@ -2179,6 +2211,21 @@ function clearSearchFrom() {
         $(this).val("");
     });
     $("#type").searchableOptionList().selectRadio("");
+    try {
+        sessionStorage.removeItem('opengrok_search_path');
+    } catch (e) {}
+}
+
+function clearFilePath() {
+    $('#path').val('');
+    try {
+        sessionStorage.removeItem('opengrok_search_path');
+    } catch (e) {}
+    if (isOnSearchPage()) {
+        $('#sbox').submit();
+    } else {
+        $('#path').focus();
+    }
 }
 
 function getSelectedProjectNames() {
@@ -2246,7 +2293,7 @@ function scope_on_scroll() {
  * @returns true if on search page, false otherwise
  */
 function isOnSearchPage() {
-    return $(document.documentElement).hasClass('search');
+    return $(document.documentElement).hasClass('search') || $(document.documentElement).hasClass('s');
 }
 
 function checkIsOnSearchPage() {
@@ -2334,6 +2381,18 @@ function preprocess_searched_projects(form) {
  * @param {HTMLFormElement} form
  */
 function searchSubmit(form) {
+    // Save the path field value to sessionStorage
+    const pathVal = $('#path').val();
+    if (pathVal !== undefined) {
+        try {
+            if (pathVal) {
+                sessionStorage.setItem('opengrok_search_path', pathVal);
+            } else {
+                sessionStorage.removeItem('opengrok_search_path');
+            }
+        } catch (e) {}
+    }
+
     let submitInitiator = '';
     if (textInputHasFocus()) {
         submitInitiator = document.activeElement.getAttribute('id');
