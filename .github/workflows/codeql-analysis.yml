@@ -32,7 +32,7 @@ jobs:
         distribution: 'oracle'
         java-version: '21'
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+      uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4
       with:
         languages: ${{ matrix.language }}
     - name: Auto-build
