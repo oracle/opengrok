@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2024, Gino Augustine <gino.augustine@oracle.com>.
@@ -420,7 +420,7 @@ public class SearchHelper {
                     sort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
                     break;
                 case BY_PATH:
-                    sort = new Sort(new SortField(QueryBuilder.FULLPATH, SortField.Type.STRING));
+                    sort = new Sort(new SortField(QueryBuilder.PATH, SortField.Type.STRING));
                     break;
                 default:
                     sort = Sort.RELEVANCE;

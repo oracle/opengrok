@@ -18,14 +18,17 @@
  */
 
 /*
- * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DocValuesType;
+import org.apache.lucene.index.IndexableField;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -40,6 +43,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 import java.io.File;
 import java.io.Writer;
@@ -108,5 +112,31 @@ class AnalyzerGuruDocumentTest {
         verify(doc, atLeast(1)).add(argument.capture());
         assertEquals(historyEnabled,
                 argument.getAllValues().stream().anyMatch(e -> e.name().equals(QueryBuilder.HIST)));
+    }
+
+    /**
+     * {@link AnalyzerGuru#populateDocument(Document, File, String, AbstractAnalyzer, Writer)} should add
+     * the source root relative path as sorted doc values so that results can be sorted by the path
+     * that is displayed in the UI rather than by the absolute filesystem path.
+     */
+    @Test
+    void testPopulateDocumentPathSortValues() throws Exception {
+        AnalyzerGuru analyzerGuru = new AnalyzerGuru();
+        Document doc = new Document();
+        File file = Path.of(env.getSourceRootPath(), "git", "main.c").toFile();
+        assertTrue(file.exists());
+        String relativePath = env.getPathRelativeToSourceRoot(file);
+        String normalizedPath = Util.fixPathIfWindows(relativePath);
+        analyzerGuru.populateDocument(doc, file, relativePath, null, new NullWriter());
+
+        IndexableField pathDocValues = null;
+        for (IndexableField field : doc.getFields(QueryBuilder.PATH)) {
+            if (field.fieldType().docValuesType() == DocValuesType.SORTED) {
+                pathDocValues = field;
+                break;
+            }
+        }
+        assertNotNull(pathDocValues);
+        assertEquals(normalizedPath, pathDocValues.binaryValue().utf8ToString());
     }
 }
