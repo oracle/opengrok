@@ -18,18 +18,64 @@
  */
 
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2026, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
 import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MultivaluedMap;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class IndexerUtilTest {
+
+    private IndexerUtil indexerUtil;
+
+    @BeforeEach
+    void setUp() {
+        indexerUtil = new IndexerUtil(10, 30, null);
+    }
+
+    @Test
+    void testGetWebAppHeadersNotNull() {
+        MultivaluedMap<String, Object> headers = indexerUtil.getWebAppHeaders();
+
+        assertNotNull(headers);
+    }
+
+    @Test
+    void testGetWebAppHeadersWithoutBearerToken() {
+        MultivaluedMap<String, Object> headers = indexerUtil.getWebAppHeaders();
+
+        assertFalse(headers.containsKey(HttpHeaders.AUTHORIZATION));
+    }
+
+    @Test
+    void testGetWebAppHeadersWithBearerToken() {
+        IndexerUtil indexerUtil = new IndexerUtil(10, 30, "test-token");
+
+        MultivaluedMap<String, Object> headers = indexerUtil.getWebAppHeaders();
+
+        assertEquals("Bearer test-token",
+                headers.getFirst(HttpHeaders.AUTHORIZATION));
+    }
+
     @Test
     void testEnableProjectsInvalidUrl() {
-        assertThrows(ProcessingException.class, () -> IndexerUtil.enableProjects("http://non-existent.server.com:123"));
+        assertThrows(ProcessingException.class, () ->
+                indexerUtil.enableProjects("http://non-existent.server.com:123"));
+    }
+
+    @Test
+    void testGetProjectsInvalidUrl() {
+        assertThrows(ProcessingException.class, () ->
+                indexerUtil.getProjects("http://non-existent.server.com:123"));
     }
 }
