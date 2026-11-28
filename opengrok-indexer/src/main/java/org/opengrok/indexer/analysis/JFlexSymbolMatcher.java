@@ -282,8 +282,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * for a subscribed listener.
      * @param str the path text string
      * @param sep the path separator
-     * @param canonicalize a value indicating whether the path should be
-     * canonicalized
+     * @param canonicalize a value indicating whether the path should be canonicalized
      * @param start the text start position
      */
     protected void onPathlikeMatched(String str, char sep, boolean canonicalize, long start) {

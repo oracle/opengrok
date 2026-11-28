@@ -130,7 +130,7 @@ document.pageReady.push(function() { pageReadyList();});
     File resourceFile = cfg.getResourceFile();
     String path = cfg.getPath();
     String basename = resourceFile.getName();
-    String rawPath = request.getContextPath() + Prefix.DOWNLOAD_P + path;
+    String encodedPath = request.getContextPath() + Prefix.DOWNLOAD_P + Util.uriEncodePath(path);
     Reader r = null;
     if (cfg.isDir()) {
         Statistics statistics = new Statistics();
@@ -226,7 +226,7 @@ document.pageReady.push(function() { pageReadyList();});
                     if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>" alt="from Source Repository"/>
+    <img src="<%= encodedPath %>" alt="from Source Repository"/>
 </div><%
                     } else if ( g == AbstractAnalyzer.Genre.HTML) {
                         /*
@@ -253,7 +253,7 @@ document.pageReady.push(function() { pageReadyList();});
 </div><%
                     } else {
 %>
-Click <a href="<%= rawPath %>">download <%= basename %></a><%
+Click <a href="<%= encodedPath %>">download <%= Util.htmlize(basename) %></a><%
                     }
                 } finally {
                     if (r != null) {

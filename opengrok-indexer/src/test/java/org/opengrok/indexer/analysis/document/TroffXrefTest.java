@@ -18,14 +18,18 @@
  */
 
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
-import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the {@link TroffXref} class.
@@ -38,6 +42,14 @@ class TroffXrefTest extends XrefTestBase {
         writeAndCompare(new TroffAnalyzerFactory(),
                 "analysis/document/sync.1m",
                 "analysis/document/sync_xref.html", null, 20);
+    }
+
+    @Test
+    void escapedSpecialCharacterIsHtmlEncoded() throws IOException {
+        TroffXref xref = new TroffXref(new StringReader("\\&<"));
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertTrue(out.toString().contains("&lt;"), out.toString());
     }
 
     @Override

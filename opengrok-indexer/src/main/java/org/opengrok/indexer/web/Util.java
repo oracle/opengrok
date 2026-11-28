@@ -231,8 +231,7 @@ public final class Util {
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(CharSequence q, Appendable dest, boolean pre)
-            throws IOException {
+    public static void htmlize(CharSequence q, Appendable dest, boolean pre) throws IOException {
         for (int i = 0; i < q.length();) {
             int codePoint = Character.codePointAt(q, i);
             htmlize(codePoint, dest, pre);
@@ -241,16 +240,14 @@ public final class Util {
     }
 
     /**
-     * Calls
-     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * Calls {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
      * with {@code q}, {@code dest}, and {@code false}.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(CharSequence q, Appendable dest)
-            throws IOException {
+    public static void htmlize(CharSequence q, Appendable dest) throws IOException {
         htmlize(q, dest, false);
     }
 
@@ -264,8 +261,7 @@ public final class Util {
      * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(char[] cs, int length, Appendable dest)
-            throws IOException {
+    public static void htmlize(char[] cs, int length, Appendable dest) throws IOException {
         int len = Math.min(cs.length, length);
         for (int i = 0; i < len;) {
             int codePoint = Character.codePointAt(cs, i, len);
@@ -284,44 +280,38 @@ public final class Util {
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      * @see #needsHtmlize(char, boolean)
+     * @see #htmlize(int, boolean)
      */
-    private static void htmlize(int codePoint, Appendable dest, boolean pre)
-            throws IOException {
+    private static void htmlize(int codePoint, Appendable dest, boolean pre) throws IOException {
+        dest.append(htmlize(codePoint, pre));
+    }
+
+    /**
+     * Return the HTML representation of a code point.
+     *
+     * @param codePoint the code point to escape
+     * @param pre whether the output is pre-formatted
+     * @return the escaped code point
+     */
+    public static String htmlize(int codePoint, boolean pre) {
         // An unpaired UTF-16 surrogate is not a valid HTML character reference.
         if (codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE) {
             codePoint = 0xFFFD;
         }
-        switch (codePoint) {
-            case '\'':
-                dest.append("&apos;");
-                break;
-            case '"':
-                dest.append(QUOTE);
-                break;
-            case '&':
-                dest.append(AMP);
-                break;
-            case '>':
-                dest.append("&gt;");
-                break;
-            case '<':
-                dest.append("&lt;");
-                break;
-            case '\n':
-                if (pre) {
-                    dest.append((char) codePoint);
-                } else {
-                    dest.append("<br/>");
-                }
-                break;
-            default:
+        return switch (codePoint) {
+            case '\'' -> "&apos;";
+            case '"' -> QUOTE;
+            case '&' -> AMP;
+            case '>' -> "&gt;";
+            case '<' -> "&lt;";
+            case '\n' -> pre ? "\n" : "<br/>";
+            default -> {
                 if ((codePoint >= ' ' && codePoint <= '~') || (codePoint < ' ' && Character.isWhitespace(codePoint))) {
-                    dest.append((char) codePoint);
-                } else {
-                    dest.append("&#").append(Integer.toString(codePoint)).append(';');
+                    yield Character.toString((char) codePoint);
                 }
-                break;
-        }
+                yield "&#" + codePoint + ';';
+            }
+        };
     }
 
     /**
@@ -333,18 +323,11 @@ public final class Util {
      * @see #htmlize(int, java.lang.Appendable, boolean)
      */
     private static boolean needsHtmlize(char c, boolean pre) {
-        switch (c) {
-            case '\'':
-            case '"':
-            case '&':
-            case '>':
-            case '<':
-                return true;
-            case '\n':
-                return !pre;
-            default:
-                return (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
-        }
+        return switch (c) {
+            case '\'', '"', '&', '>', '<' -> true;
+            case '\n' -> !pre;
+            default -> (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
+        };
     }
 
     private static boolean needsHtmlize(CharSequence q, boolean pre) {
@@ -571,7 +554,7 @@ public final class Util {
         StringBuilder sb = new StringBuilder(6);
         sb.append("\\u");
         String hex = Integer.toHexString(c);
-        sb.append("0".repeat(4 - hex.length()));
+        sb.repeat("0", 4 - hex.length());
         sb.append(hex);
         return sb.toString();
     }
@@ -653,8 +636,7 @@ public final class Util {
     }
 
     /**
-     * Converts different HTML special characters into their encodings used in
-     * html.
+     * Converts different HTML special characters into their encodings used in HTML.
      *
      * @param s input text
      * @param dest appendable destination for appending the encoded characters
@@ -684,10 +666,9 @@ public final class Util {
      * Write out line information wrt. to the given annotation in the format:
      * {@code Linenumber Blame Author} incl. appropriate links.
      *
-     * @param num linenumber to print
+     * @param num line number to print
      * @param out print destination
-     * @param annotation annotation to use. If {@code null} only the linenumber
-     * gets printed.
+     * @param annotation annotation to use. If {@code null} only the line number gets printed.
      * @param userPageLink see {@link RuntimeEnvironment#getUserPage()}
      * @param userPageSuffix see {@link RuntimeEnvironment#getUserPageSuffix()}
      * @param project project that is used
@@ -925,8 +906,10 @@ public final class Util {
      * @return {@code null} if failed, otherwise the encoded string
      * @see URLEncoder#encode(String, String)
      */
-    public static String uriEncode(String string) {
-        return string == null ? "" : URLEncoder.encode(string, StandardCharsets.UTF_8);
+    public static String uriEncode(@Nullable String string) {
+        return Optional.ofNullable(string).
+                map(s -> URLEncoder.encode(string, StandardCharsets.UTF_8)).
+                orElse("");
     }
 
     /**
@@ -935,7 +918,7 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O
      */
-    public static void uriEncode(String str, Appendable dest) throws IOException {
+    public static void uriEncode(@Nullable String str, Appendable dest) throws IOException {
         dest.append(uriEncode(str));
     }
 
@@ -1004,8 +987,7 @@ public final class Util {
      * is not enclosed in double quotes. The caller needs to add those.
      *
      * @param q string to escape.
-     * @return an empty string if a parameter is {@code null}, the mangled
-     * string otherwise.
+     * @return an empty string if a parameter is {@code null}, the mangled string otherwise.
      */
     public static String formQuoteEscape(String q) {
         if (q == null || q.isEmpty()) {
@@ -1038,9 +1020,8 @@ public final class Util {
      *
      * @param line1 line of the original file
      * @param line2 line of the changed/new file
-     * @return the tagged lines (field[0] ~= line1, field[1] ~= line2).
-     * @throws NullPointerException if one of the given parameters is
-     * {@code null}.
+     * @return the tagged lines ({@code field[0] ~= line1}, {@code field[1] ~= line2}).
+     * @throws NullPointerException if one of the given parameters is {@code null}.
      */
     public static String[] diffline(StringBuilder line1, StringBuilder line2) {
         String[] ret = new String[2];
@@ -1252,8 +1233,7 @@ public final class Util {
      * @param cells the values to print in the cells of the row
      * @throws IOException if an error happens while writing to {@code out}
      */
-    private static void printTableRow(Appendable out, Object... cells)
-            throws IOException {
+    private static void printTableRow(Appendable out, Object... cells) throws IOException {
         out.append("<tr>");
         StringBuilder buf = new StringBuilder(256);
         for (Object cell : cells) {
@@ -1274,8 +1254,7 @@ public final class Util {
      * @param items the list items
      * @throws IOException if an error happens while writing to {@code out}
      */
-    private static void printUnorderedList(Appendable out,
-            Collection<String> items) throws IOException {
+    private static void printUnorderedList(Appendable out, Collection<String> items) throws IOException {
         out.append("<ul>");
         StringBuilder buf = new StringBuilder(256);
         for (String item : items) {
@@ -1297,9 +1276,9 @@ public final class Util {
     public static String jsStringLiteral(String str) {
         StringBuilder sb = new StringBuilder();
         sb.append('"');
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            switch (c) {
+        for (int offset = 0; offset < str.length(); offset++) {
+            char ch = str.charAt(offset);
+            switch (ch) {
                 case '"':
                     sb.append("\\\"");
                     break;
@@ -1313,7 +1292,14 @@ public final class Util {
                     sb.append("\\r");
                     break;
                 default:
-                    sb.append(c);
+                    if (ch < 0x20 || ch == '\u2028' || ch == '\u2029' || ch == '<' || ch == '>' || ch == '&') {
+                        sb.append("\\u");
+                        for (int shift = 12; shift >= 0; shift -= 4) {
+                            sb.append(Character.forDigit((ch >> shift) & 0xf, 16));
+                        }
+                    } else {
+                        sb.append(ch);
+                    }
             }
         }
         sb.append('"');
@@ -1501,29 +1487,29 @@ public final class Util {
     }
 
     /**
-     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL
-     * then it is returned as it was received.
+     * Build an HTML link to the given HTTP URL. If the URL is not an HTTP URL or not URL at all,
+     * then it is returned as it was received, just HTML escaped.
      *
-     * @param url the HTTP URL
-     * @param newTab if the link should open in a new tab
-     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt;
+     * @param url HTTP URL candidate
+     * @param newTab whether the link should open in a new tab
+     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt; or HTML escaped input
      */
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
             try {
                 Map<String, String> attrs = new TreeMap<>();
                 attrs.put("href", url);
-                attrs.put("title", String.format("Link to %s", Util.encode(url)));
+                attrs.put("title", String.format("Link to %s", url));
                 if (newTab) {
                     attrs.put("target", "_blank");
                     attrs.put("rel", "noreferrer");
                 }
                 return buildLink(url, attrs);
             } catch (URISyntaxException | MalformedURLException ex) {
-                return url;
+                return Util.htmlize(url);
             }
         }
-        return url;
+        return Util.htmlize(url);
     }
 
     /**
@@ -1532,7 +1518,7 @@ public final class Util {
      * Automatically escapes the name into HTML entities.
      *
      * @param name displayed name of the anchor
-     * @param attrs map of attributes for the html element
+     * @param attrs map of attributes for the HTML element
      * @return string containing the result
      *
      * @throws URISyntaxException URI syntax
@@ -1550,7 +1536,8 @@ public final class Util {
             if (attr.getKey().equals("href")) {
                 value = new URI(value).toURL().toString();
             }
-            buffer.append(value);
+            // Use form escaping to escape certain characters while preserving newlines.
+            buffer.append(Util.formQuoteEscape(value));
             buffer.append("\"");
         }
         buffer.append(">");
@@ -1619,11 +1606,11 @@ public final class Util {
         try {
             StringBuilder stringBuilder = new StringBuilder();
             if (result.start(0) < result.start(1)) {
-                stringBuilder.append(text.substring(result.start(0), result.start(1)));
+                stringBuilder.append(text, result.start(0), result.start(1));
             }
             stringBuilder.append(buildLink(group1, appendedUrl, true));
             if (result.end(1) < result.end(0)) {
-                stringBuilder.append(text.substring(result.end(1), result.end(0)));
+                stringBuilder.append(text, result.end(1), result.end(0));
             }
             return stringBuilder.toString();
         } catch (URISyntaxException | MalformedURLException e) {

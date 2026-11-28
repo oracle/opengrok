@@ -110,7 +110,7 @@ include file="/httpheader.jspf"
     %></span>
     <% if (!messages.isEmpty()) { %>
     <span class="note-<%= MessagesUtils.getMessageLevel(cfg.getProject().getName(), MessagesContainer.MESSAGES_MAIN_PAGE_TAG) %> important-note important-note-rounded"
-          data-messages='<%= messages %>'>!</span>
+          data-messages="<%= Util.formQuoteEscape(messages) %>">!</span>
     <% }
 }
 %>

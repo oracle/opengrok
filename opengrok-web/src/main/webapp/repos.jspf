@@ -41,9 +41,9 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
     printMessages(out, cfg.getMessages());
     
     ProjectHelper pHelper = cfg.getProjectHelper();
-    if (pHelper.getAllProjects().size() > 0) {
+    if (!pHelper.getAllProjects().isEmpty()) {
         Set<Group> groups = pHelper.getGroups();
-        if (groups.size() > 0) {
+        if (!groups.isEmpty()) {
             // recursively print all groups
             %>
 
@@ -99,7 +99,8 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
                                 <%
                                 if (!(messages = MessagesUtils.messagesToJson(group)).isEmpty()) { %>
-                                    <span class="note-<%= MessagesUtils.getMessageLevel(group.getName()) %> important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                    <span class="note-<%= MessagesUtils.getMessageLevel(group.getName()) %> important-note important-note-rounded"
+                                          data-messages="<%= Util.formQuoteEscape(messages) %>">!</span>
                                 <% } %>
                                 <small>
                                     [<a href="#" class="projects_select_all">select all</a>]
@@ -114,10 +115,10 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                     </div>
                         <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
                          <% if (pHelper.hasFavourite(group)
-                            || (pHelper.getAllGrouped(group).size() > 0 && pHelper.getAllGrouped(group).size() <= cfg.getGroupsCollapseThreshold())) {
+                            || (!pHelper.getAllGrouped(group).isEmpty() && pHelper.getAllGrouped(group).size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                 <%
-                if (pHelper.getAllGrouped(group).size() > 0) {
+                if (!pHelper.getAllGrouped(group).isEmpty()) {
                 %>
                     <table aria-label="Table of grouped projects and repositories">
                         <opengrok:repositories
@@ -138,9 +139,9 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
         // print the rest of projects which don't have a group
         Set<Project> projects = pHelper.getAllUngrouped();
-        if (projects.size() > 0) { %>
+        if (!projects.isEmpty()) { %>
             <div class="panel-group projects">
-                <% if (groups.size() > 0) { %>
+                <% if (!groups.isEmpty()) { %>
                     <div class="toggle-buttons">
                         <a href="#" class="accordion_show_all">
                             <button>Show all</button>
@@ -151,14 +152,15 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                     </div>
                 <% } %>
                 <div class="panel">
-                    <% if (groups.size() > 0) {%>
+                    <% if (!groups.isEmpty()) {%>
                         <div class="panel-heading-accordion">
                             <h4 class="clearfix">
                                 <span class="pull-left">
                                     <span class="name">Other</span>
                                     <%
                                     if (!(messages = messagesToJson("other")).isEmpty()) { %>
-                                        <span class="note-<%= MessagesUtils.getMessageLevel("other") %> important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                        <span class="note-<%= MessagesUtils.getMessageLevel("other") %> important-note important-note-rounded"
+                                              data-messages="<%= Util.formQuoteEscape(messages) %>">!</span>
                                     <% } %>
                                     <small>
                                         [<a href="#" class="projects_select_all">select all</a>]
@@ -171,9 +173,9 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                             </h4>
                         </div>
                     <% } %>
-                    <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                    <div class="panel-body<% if (!groups.isEmpty()) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
                          <% if (pHelper.hasUngroupedFavourite()
-                                || (projects.size() > 0 && projects.size() <= cfg.getGroupsCollapseThreshold())) {
+                                || (!projects.isEmpty() && projects.size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                         <table aria-label="Table of ungrouped projects and repositories">
                             <opengrok:repositories

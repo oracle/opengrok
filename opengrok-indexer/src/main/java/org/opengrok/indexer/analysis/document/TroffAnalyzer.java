@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
@@ -69,11 +69,11 @@ public class TroffAnalyzer extends TextAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180112_00
+     * @return {@code 20261106_00}
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180112_00; // Edit comment above too!
+        return 20261106_00; // Edit comment above too!
     }
 
     @Override

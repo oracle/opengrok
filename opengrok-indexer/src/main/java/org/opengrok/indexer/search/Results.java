@@ -196,9 +196,9 @@ public final class Results {
             p = Project.getProject(parent);
             String messages = MessagesUtils.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG);
             if (p != null && !messages.isEmpty()) {
-                out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
+                out.write(" <a href=\"" + xrefPrefix + "/" + Util.uriEncodePath(p.getName()) + "\">");
                 out.write("<span class=\"note-" + MessagesUtils.getMessageLevel(p.getName(), MESSAGES_MAIN_PAGE_TAG) +
-                        " important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
+                        " important-note important-note-rounded\" data-messages=\"" + Util.formQuoteEscape(messages) + "\">!</span>");
                 out.write("</a>");
             }
 

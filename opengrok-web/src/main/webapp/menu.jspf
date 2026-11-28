@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2025, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2026, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
@@ -76,7 +76,7 @@ document.domReady.push(function() { domReadyMenu(); });
         for (Group group : ph.getGroups()) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if (!groupProjects.isEmpty()) {
-                %><optgroup label="<%= group.getName() %>"><%
+                %><optgroup label="<%= Util.formQuoteEscape(group.getName()) %>"><%
                 for (Project p : groupProjects) {
                     if (!p.isIndexed()) {
                         continue;
@@ -85,15 +85,16 @@ document.domReady.push(function() { domReadyMenu(); });
                 // TODO below "selected" has no effect if one refreshes the page
                 // with F5
 
-                %><option value="<%= p.getName() %>"<%
+                %><option value="<%= Util.formQuoteEscape(p.getName()) %>"<%
                     if (pRequested.contains(p.getName())) {
                         %> selected="selected"<%
                         pRequested.remove(p.getName());
                     }
                     if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
-                        %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getMessageLevel(p.getName()) %>' <%
+                        %> data-messages="<%= Util.formQuoteEscape(messages) %>"
+                          data-messages-level="<%= MessagesUtils.getMessageLevel(p.getName()) %>" <%
                     }
-                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+                    %>><%= Util.htmlize(p.getName()) %></option><%
                 }
                 %></optgroup><%
             }
@@ -108,15 +109,16 @@ document.domReady.push(function() { domReadyMenu(); });
                 continue;
             }
 
-        %><option value="<%= p.getName() %>"<%
+        %><option value="<%= Util.formQuoteEscape(p.getName()) %>"<%
             if (pRequested.contains(p.getName())) {
                 %> selected="selected"<%
                 pRequested.remove(p.getName());
             }
             if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
-                %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getMessageLevel(p.getName()) %>' <%
+                %> data-messages="<%= Util.formQuoteEscape(messages) %>"
+                  data-messages-level="<%= MessagesUtils.getMessageLevel(p.getName()) %>" <%
             }
-            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+            %>><%= Util.htmlize(p.getName()) %></option><%
         }
         if (!ph.getGroups().isEmpty() && !ph.getAllUngrouped().isEmpty()) {
             %></optgroup><%
